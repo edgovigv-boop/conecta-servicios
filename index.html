@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#6f42c1" />
+  <title>Conecta Servicios</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
+      <div class="title-wrap">
+        <span id="mainTitle">Conecta Servicios</span>
+        <small id="subtitle">Versión piloto consolidada</small>
+      </div>
+      <button class="help-button" aria-label="Oficina" onclick="showSection('oficina')">☎</button>
+    </header>
+
+    <main class="content">
+      <section id="inicio" class="section active">
+        <div class="hero-card">
+          <div class="hero-badge">Modo piloto comunitario</div>
+          <h1>Encuentra ayuda y servicios por municipio.</h1>
+          <p>Conecta Servicios organiza pedidos y perfiles por estado, municipio y localidad. Las publicaciones nuevas pasan por revisión y los teléfonos se muestran parcialmente ocultos dentro de la app.</p>
+          <div class="hero-stats">
+            <span><strong id="jobsCount">0</strong> pedidos</span>
+            <span><strong id="helpersCount">0</strong> perfiles</span>
+          </div>
+          <p class="sync-status" id="syncStatus">Conectando con la base de datos...</p>
+        </div>
+
+        <div class="quick-actions">
+          <button class="action-card purple" onclick="showSection('ofertas')">
+            <span>🔍</span>
+            <strong>Necesito ayuda</strong>
+            <small>Ver pedidos o publicar uno</small>
+          </button>
+          <button class="action-card green" onclick="showSection('galeria')">
+            <span>🧰</span>
+            <strong>Quiero ayudar</strong>
+            <small>Ver perfiles o registrarme</small>
+          </button>
+        </div>
+
+        <button class="btn-big btn-outline" onclick="showSection('oficina')">
+          <span class="icon">🏠</span>
+          Oficina de registro
+          <small>Atención por WhatsApp</small>
+        </button>
+
+        <div class="info-grid">
+          <button class="mini-card" onclick="showSection('comoFunciona')">
+            <strong>¿Cómo funciona?</strong>
+            <small>3 pasos simples</small>
+          </button>
+          <button class="mini-card" onclick="showSection('reglas')">
+            <strong>Reglas y seguridad</strong>
+            <small>Antes de contactar</small>
+          </button>
+        </div>
+      </section>
+
+      <section id="ofertas" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Pedidos publicados</h2>
+            <p>Personas que buscan apoyo local. Solo aparecen pedidos aprobados por la oficina.</p>
+          </div>
+          <button class="btn-small btn-purple" onclick="showSection('publicar')">+ Publicar</button>
+        </div>
+
+        <div class="notice-card">
+          <strong>Antes de aceptar un pedido</strong>
+          <p>Confirma el lugar, horario, pago y condiciones por WhatsApp. Los teléfonos se muestran parcialmente ocultos en la app. Si ves algo extraño, repórtalo a la oficina. Si tu pedido ya fue atendido, usa “Ya se atendió”.</p>
+        </div>
+
+        <div class="filter-card">
+          <div class="filter-title">Filtrar por ubicación</div>
+          <label>Estado
+            <select id="jobStateFilter" data-state-select data-blank="true" data-default="México" onchange="renderJobs()"></select>
+          </label>
+          <label>Municipio
+            <input id="jobMunicipalityFilter" type="search" value="Chapultepec" placeholder="Ej. Chapultepec" oninput="renderJobs()" />
+          </label>
+          <button class="btn-small btn-outline" onclick="renderJobs()">Ver resultados</button>
+          <button class="btn-small btn-ghost" onclick="resetLocationFilters('job')">Restablecer Chapultepec</button>
+          <p id="jobFilterSummary" class="filter-summary">Mostrando resultados para: Chapultepec, México</p>
+        </div>
+
+        <label class="search-box">
+          Buscar pedido
+          <input id="jobSearch" type="search" placeholder="Ej. limpieza, pintura, Chapultepec" oninput="renderJobs()" />
+        </label>
+
+        <div id="jobsList" class="list"></div>
+      </section>
+
+      <section id="publicar" class="section">
+        <h2>Publicar pedido</h2>
+        <p class="muted">Describe lo que necesitas. Tu pedido quedará en revisión y aparecerá públicamente cuando la oficina lo apruebe.</p>
+
+        <form id="jobForm" class="form-card">
+          <label>¿Qué necesitas?
+            <input id="jobTitle" type="text" placeholder="Ej. Limpiar patio" required />
+          </label>
+
+          <label>Categoría
+            <select id="jobCategory" required>
+              <option value="">Selecciona una categoría</option>
+              <option>Limpieza</option>
+              <option>Construcción / Reparaciones</option>
+              <option>Jardinería</option>
+              <option>Cuidado de personas</option>
+              <option>Clases / Asesorías</option>
+              <option>Mandados / Apoyo general</option>
+              <option>Otro</option>
+            </select>
+          </label>
+
+          <div class="form-grid">
+            <label>Estado
+              <select id="jobState" data-state-select data-default="México" required></select>
+            </label>
+
+            <label>Municipio
+              <input id="jobMunicipality" type="text" value="Chapultepec" placeholder="Ej. Chapultepec" required />
+            </label>
+          </div>
+
+          <label>Colonia o localidad
+            <input id="jobLocality" type="text" value="Chapultepec Centro" placeholder="Ej. El Ameyal, Centro, Santa Ana" required />
+          </label>
+
+          <label>Zona o referencia
+            <input id="jobLocation" type="text" placeholder="Ej. Cerca de la primaria, calle principal" required />
+          </label>
+
+          <label>Fecha y hora
+            <input id="jobDate" type="datetime-local" required />
+          </label>
+
+          <label>Presupuesto sugerido
+            <input id="jobBudget" type="number" min="0" placeholder="Ej. 350" required />
+          </label>
+
+          <label>Teléfono o WhatsApp
+            <input id="jobPhone" type="tel" inputmode="numeric" placeholder="Ej. 7225703145" required />
+            <small class="field-help">Tu número se mostrará como xxxxxx3145. Al abrir WhatsApp, la otra persona podrá contactarte por esa vía.</small>
+          </label>
+
+          <label>Detalles adicionales
+            <textarea id="jobDescription" rows="4" placeholder="Describe el trabajo, materiales, referencias, etc."></textarea>
+          </label>
+
+          <div class="notice-card pilot-notice"><strong>Revisión previa y contacto protegido</strong><p>Tu pedido no aparecerá de inmediato. La oficina lo revisará para evitar bromas, spam o datos incorrectos. Tu teléfono se mostrará parcialmente oculto en la publicación.</p></div>
+
+          <label class="checkbox-line">
+            <input id="jobPrivacyAccept" type="checkbox" required />
+            <span>Acepto el <button type="button" class="link-button" onclick="showSection('avisoPrivacidad')">Aviso de Privacidad</button> y los <button type="button" class="link-button" onclick="showSection('terminos')">Términos y Condiciones</button>.</span>
+          </label>
+
+          <button class="btn-big btn-purple" type="submit">Enviar pedido a revisión ($25 simulado)</button>
+        </form>
+      </section>
+
+      <section id="galeria" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Personas listas para ayudar</h2>
+            <p>Perfiles aprobados para contacto por WhatsApp con teléfono parcialmente oculto.</p>
+          </div>
+          <button class="btn-small btn-green" onclick="showSection('registroAyudante')">+ Registrarme</button>
+        </div>
+
+        <div class="filter-card">
+          <div class="filter-title">Filtrar por ubicación</div>
+          <label>Estado
+            <select id="helperStateFilter" data-state-select data-blank="true" data-default="México" onchange="renderHelpers()"></select>
+          </label>
+          <label>Municipio
+            <input id="helperMunicipalityFilter" type="search" value="Chapultepec" placeholder="Ej. Chapultepec" oninput="renderHelpers()" />
+          </label>
+          <button class="btn-small btn-outline" onclick="renderHelpers()">Ver resultados</button>
+          <button class="btn-small btn-ghost" onclick="resetLocationFilters('helper')">Restablecer Chapultepec</button>
+          <p id="helperFilterSummary" class="filter-summary">Mostrando resultados para: Chapultepec, México</p>
+        </div>
+
+        <label class="search-box">
+          Buscar perfil
+          <input id="helperSearch" type="search" placeholder="Ej. plomería, clases, zona centro" oninput="renderHelpers()" />
+        </label>
+
+        <div id="helpersList" class="list"></div>
+      </section>
+
+      <section id="registroAyudante" class="section">
+        <h2>Registrar ayudante</h2>
+        <p class="muted">Crea un perfil básico en línea. Tu registro quedará en revisión y aparecerá cuando la oficina lo apruebe.</p>
+
+        <form id="helperForm" class="form-card">
+          <label>Nombre
+            <input id="helperName" type="text" placeholder="Ej. Don Pedro" required />
+          </label>
+
+          <label>Servicio principal
+            <input id="helperService" type="text" placeholder="Ej. Carpintería, limpieza, plomería" required />
+          </label>
+
+          <label>Categoría
+            <select id="helperCategory" required>
+              <option value="">Selecciona una categoría</option>
+              <option>Limpieza</option>
+              <option>Construcción / Reparaciones</option>
+              <option>Jardinería</option>
+              <option>Cuidado de personas</option>
+              <option>Clases / Asesorías</option>
+              <option>Mandados / Apoyo general</option>
+              <option>Otro</option>
+            </select>
+          </label>
+
+          <div class="form-grid">
+            <label>Estado
+              <select id="helperState" data-state-select data-default="México" required></select>
+            </label>
+
+            <label>Municipio
+              <input id="helperMunicipality" type="text" value="Chapultepec" placeholder="Ej. Chapultepec" required />
+            </label>
+          </div>
+
+          <label>Colonia o localidad
+            <input id="helperLocality" type="text" value="Chapultepec Centro" placeholder="Ej. El Ameyal, Centro, Santa Ana" required />
+          </label>
+
+          <label>Zona donde trabajas o referencia
+            <input id="helperLocation" type="text" placeholder="Ej. Chapultepec Centro y alrededores" required />
+          </label>
+
+          <label>Disponibilidad
+            <input id="helperAvailability" type="text" placeholder="Ej. Fines de semana" required />
+          </label>
+
+          <label>Teléfono o WhatsApp
+            <input id="helperPhone" type="tel" inputmode="numeric" placeholder="Ej. 7225703145" required />
+            <small class="field-help">Tu número se mostrará como xxxxxx3145. Al abrir WhatsApp, la otra persona podrá contactarte por esa vía.</small>
+          </label>
+
+          <label>Descripción
+            <textarea id="helperDescription" rows="4" placeholder="Cuenta tu experiencia, horarios, condiciones, etc."></textarea>
+          </label>
+
+          <div class="notice-card pilot-notice"><strong>Revisión previa y contacto protegido</strong><p>Tu perfil no aparecerá de inmediato. La oficina revisará que la información sea clara y segura. Tu teléfono se mostrará parcialmente oculto en la publicación.</p></div>
+
+          <label class="checkbox-line">
+            <input id="helperPrivacyAccept" type="checkbox" required />
+            <span>Acepto el <button type="button" class="link-button" onclick="showSection('avisoPrivacidad')">Aviso de Privacidad</button> y los <button type="button" class="link-button" onclick="showSection('terminos')">Términos y Condiciones</button>.</span>
+          </label>
+
+          <button class="btn-big btn-green" type="submit">Enviar perfil a revisión ($25 simulado)</button>
+        </form>
+      </section>
+
+      <section id="comoFunciona" class="section">
+        <h2>¿Cómo funciona?</h2>
+        <div class="step-card"><span>1</span><div><strong>Publica o busca</strong><p>Una persona publica lo que necesita o busca un perfil disponible por estado y municipio.</p></div></div>
+        <div class="step-card"><span>2</span><div><strong>La oficina revisa</strong><p>En modo piloto, los pedidos y perfiles nuevos se revisan antes de aparecer públicamente. Los pedidos atendidos se cierran desde administración para que dejen de mostrarse.</p></div></div>
+        <div class="step-card"><span>3</span><div><strong>Contacta por WhatsApp</strong><p>La app muestra los números parcialmente ocultos, pero permite iniciar conversación por WhatsApp para acordar detalles.</p></div></div>
+        <div class="step-card"><span>4</span><div><strong>Acuerden con claridad</strong><p>Precio, horario, materiales y pago se definen entre las personas involucradas.</p></div></div>
+        <button class="btn-big btn-purple" onclick="showSection('publicar')">Publicar un pedido</button>
+        <button class="btn-big btn-green" onclick="showSection('registroAyudante')">Registrar mi servicio</button>
+      </section>
+
+      <section id="reglas" class="section">
+        <h2>Reglas y seguridad</h2>
+        <div class="rule-card"><strong>✅ Somos un puente</strong><p>No somos jefes ni empleadores. Solo ayudamos a conectar personas.</p></div>
+        <div class="rule-card"><strong>✅ Trato directo</strong><p>Los acuerdos de precio, horario, materiales y forma de pago son entre solicitante y ayudante.</p></div>
+        <div class="rule-card"><strong>✅ Seguridad primero</strong><p>Verifica datos, acuerda lugares seguros, avisa a alguien de confianza y evita adelantos grandes. Los teléfonos se muestran parcialmente ocultos dentro de la app.</p></div>
+        <div class="rule-card"><strong>✅ Respeto obligatorio</strong><p>La honestidad, puntualidad y buen trato son necesarios para participar.</p></div>
+        <div class="rule-card danger"><strong>⚠️ Reportes</strong><p>Si una persona actúa de forma indebida, comunícate con la oficina para revisar el caso.</p></div>
+        <div class="rule-card"><strong>🛡️ Revisión en piloto</strong><p>Los nuevos pedidos y perfiles se revisan antes de mostrarse al público. Esto ayuda a reducir bromas, spam y datos incorrectos.</p></div>
+        <button class="btn-big btn-outline" onclick="showSection('avisoPrivacidad')">Aviso de Privacidad</button>
+        <button class="btn-big btn-outline" onclick="showSection('terminos')">Términos y Condiciones</button>
+      </section>
+
+
+      <section id="avisoPrivacidad" class="section">
+        <h2>Aviso de Privacidad</h2>
+        <div class="rule-card">
+          <strong>Responsable</strong>
+          <p>Conecta Servicios, en etapa piloto, usa la información que proporcionas para revisar publicaciones, mostrar pedidos o perfiles aprobados y facilitar el contacto por WhatsApp.</p>
+        </div>
+        <div class="rule-card">
+          <strong>Datos que se solicitan</strong>
+          <p>Nombre o referencia, teléfono o WhatsApp, estado, municipio, localidad, zona, descripción del pedido o servicio y datos necesarios para publicar.</p>
+        </div>
+        <div class="rule-card">
+          <strong>Uso de teléfono</strong>
+          <p>El teléfono se muestra parcialmente oculto dentro de la app, por ejemplo xxxxxx3145. El botón de WhatsApp puede abrir una conversación directa y WhatsApp puede mostrar el número real al iniciar el chat.</p>
+        </div>
+        <div class="rule-card">
+          <strong>Derechos y cambios</strong>
+          <p>Puedes solicitar corrección, ocultamiento o cierre de una publicación por WhatsApp con la oficina. Este aviso es una base para piloto y deberá revisarse formalmente antes de operar a gran escala.</p>
+        </div>
+        <button class="btn-big btn-purple" onclick="showSection('oficina')">Contactar oficina por WhatsApp</button>
+      </section>
+
+      <section id="terminos" class="section">
+        <h2>Términos y Condiciones</h2>
+        <div class="rule-card">
+          <strong>Conecta Servicios es un puente</strong>
+          <p>La app facilita que personas encuentren pedidos o servicios. No somos empleadores, contratistas ni responsables directos de los acuerdos entre usuarios.</p>
+        </div>
+        <div class="rule-card">
+          <strong>Acuerdos entre usuarios</strong>
+          <p>Precio, horario, materiales, traslado, condiciones y forma de pago se acuerdan directamente entre las personas involucradas.</p>
+        </div>
+        <div class="rule-card">
+          <strong>Uso responsable</strong>
+          <p>No se permiten bromas, spam, información falsa, lenguaje ofensivo ni publicaciones que pongan en riesgo a otras personas. La oficina puede ocultar registros problemáticos.</p>
+        </div>
+        <div class="rule-card">
+          <strong>Seguridad</strong>
+          <p>Antes de aceptar un servicio o pedido, verifica la información, comparte tu ubicación con alguien de confianza y evita anticipos grandes sin acuerdo claro.</p>
+        </div>
+        <button class="btn-big btn-purple" onclick="showSection('inicio')">Entendido</button>
+      </section>
+
+      <section id="oficina" class="section">
+        <h2>Oficina de registro</h2>
+        <p>Para dudas, registros asistidos o seguimiento de publicaciones, la atención será únicamente por WhatsApp.</p>
+
+        <div class="office-card" id="officeInfo"></div>
+
+        <button id="adminAccessButton" class="btn-big btn-admin hidden" onclick="showSection('admin')">🔐 Modo administrador</button>
+      </section>
+
+      <section id="admin" class="section">
+        <h2>Panel de administración</h2>
+        <p class="muted">Revisa pedidos y perfiles. En modo piloto, lo nuevo llega como “En revisión”. También puedes cerrar pedidos como “Atendido”.</p>
+
+        <div id="adminLogin" class="form-card">
+          <label>PIN de administrador
+            <input id="adminPinInput" type="password" inputmode="numeric" placeholder="Ingresa el PIN" />
+          </label>
+          <button class="btn-big btn-purple" onclick="unlockAdmin()">Entrar</button>
+          <p class="muted">Acceso interno para la persona encargada del piloto.</p>
+        </div>
+
+        <div id="adminPanel" class="admin-panel hidden">
+          <div class="notice-card">
+            <strong>Control de piloto</strong>
+            <p>Los registros nuevos llegan en revisión. Usa Aprobar para mostrarlos, Atendido para cerrar pedidos resueltos u Ocultar si son falsos, duplicados o problemáticos.</p>
+          </div>
+
+          <div class="admin-actions">
+            <button class="btn-small btn-purple" onclick="loadAdminData()">Actualizar listas</button>
+            <button class="btn-small btn-outline" onclick="lockAdmin()">Cerrar admin</button>
+          </div>
+
+          <label class="search-box">
+            Buscar en administración
+            <input id="adminSearch" type="search" placeholder="Nombre, pedido, teléfono, estado, municipio o zona" oninput="renderAdminLists()" />
+          </label>
+
+          <div class="admin-tabs">
+            <button id="adminTabPedidos" class="active" onclick="setAdminTab('pedidos')">Pedidos</button>
+            <button id="adminTabAyudantes" onclick="setAdminTab('ayudantes')">Perfiles</button>
+          </div>
+
+          <div id="adminPedidos" class="list"></div>
+          <div id="adminAyudantes" class="list hidden"></div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <button onclick="showSection('inicio')">🏠<br />Inicio</button>
+      <button onclick="showSection('ofertas')">🔍<br />Pedidos</button>
+      <button onclick="showSection('galeria')">🧰<br />Perfiles</button>
+      <button onclick="showSection('oficina')">☎<br />Oficina</button>
+    </nav>
+
+    <div id="toast" class="toast" role="status"></div>
+  </div>
+
+  <script src="app.js?v=3.4-final-piloto"></script>
+</body>
+</html>
