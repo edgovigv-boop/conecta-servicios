@@ -183,6 +183,7 @@ function showSection(id, pushToHistory = true) {
     ofertas: "Pedidos publicados",
     publicar: "Publicar pedido",
     galeria: "Perfiles disponibles",
+    registro: "Registrarme",
     registroAyudante: "Registrar ayudante",
     comoFunciona: "Cómo funciona",
     reglas: "Reglas y seguridad",
@@ -249,6 +250,98 @@ function maskPhone(phone) {
   if (!cleaned) return "xxxxxx----";
   const lastFour = cleaned.slice(-4);
   return `xxxxxx${lastFour}`;
+}
+
+function linkifyText(value) {
+  const text = String(value || "");
+  if (!text) return "";
+
+  const urlRegex = /(https?:\/\/[^\s<]+|www\.[^\s<]+|(?:facebook\.com|fb\.com|instagram\.com|tiktok\.com|maps\.app\.goo\.gl)\/[^\s<]+)/gi;
+  let output = "";
+  let lastIndex = 0;
+  let match;
+
+  while ((match = urlRegex.exec(text)) !== null) {
+    output += escapeHtml(text.slice(lastIndex, match.index));
+
+    let url = match[0];
+    let trailing = "";
+    while (/[.,;:!?)]$/.test(url)) {
+      trailing = url.slice(-1) + trailing;
+      url = url.slice(0, -1);
+    }
+
+    const href = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    output += `<a class="inline-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(url)}</a>${escapeHtml(trailing)}`;
+    lastIndex = match.index + match[0].length;
+  }
+
+  output += escapeHtml(text.slice(lastIndex));
+  return output.replace(/\n/g, "<br>");
+}
+
+function shareUrl(kind, id) {
+  const params = new URLSearchParams();
+  params.set(kind === "pedido" ? "pedido" : "perfil", id);
+  return `${location.origin}${location.pathname}?${params.toString()}`;
+}
+
+async function sharePublication(kind, id) {
+  const isJob = kind === "pedido";
+  const item = isJob ? jobsCache.find(row => row.id === id) : helpersCache.find(row => row.id === id);
+  if (!item) {
+    showToast("No se encontró la publicación");
+    return;
+  }
+
+  const title = isJob ? item.title : `${item.name} - ${item.service}`;
+  const folio = isJob ? pedidoFolio(item) : ayudanteFolio(item);
+  const url = shareUrl(kind, id);
+  const text = `${title}\nFolio: ${folio}\n${locationText(item)}\nConecta Servicios`;
+
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: "Conecta Servicios", text, url });
+      return;
+    }
+    await navigator.clipboard.writeText(`${text}\n${url}`);
+    showToast("Enlace copiado para compartir");
+  } catch (error) {
+    console.warn("No se pudo compartir", error);
+    prompt("Copia este enlace para compartir la publicación:", url);
+  }
+}
+
+function handleSharedTarget(kind, id) {
+  if (!kind || !id) return;
+  const isJob = kind === "pedido";
+  const item = isJob ? jobsCache.find(row => row.id === id) : helpersCache.find(row => row.id === id);
+  const prefix = isJob ? "job" : "helper";
+  const section = isJob ? "ofertas" : "galeria";
+
+  showSection(section, false);
+  if (item) {
+    const state = document.getElementById(`${prefix}StateFilter`);
+    const municipality = document.getElementById(`${prefix}MunicipalityFilter`);
+    const search = document.getElementById(isJob ? "jobSearch" : "helperSearch");
+    if (state) state.value = item.state || DEFAULT_STATE;
+    syncMunicipalityInput(prefix);
+    if (municipality) municipality.value = item.municipality || "";
+    if (search) search.value = "";
+    if (isJob) renderJobs();
+    else renderHelpers();
+
+    setTimeout(() => {
+      const el = document.getElementById(`${kind}-${id}`);
+      if (el) {
+        el.classList.add("shared-highlight");
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        setTimeout(() => el.classList.remove("shared-highlight"), 3500);
+      }
+    }, 250);
+  } else {
+    showToast("La publicación no está activa o ya no está disponible");
+  }
 }
 
 function officeNewJobMessage(job) {
@@ -493,7 +586,7 @@ function renderJobs() {
   list.innerHTML = jobs.map(job => {
     const message = `Hola, vi tu pedido en Conecta Servicios: "${job.title}". Me interesa ayudarte. ¿Me compartes más detalles?`;
     return `
-      <article class="card">
+      <article id="pedido-${job.id}" class="card">
         <div class="card-title">
           <strong>🔍 ${escapeHtml(job.title)}</strong>
           <span class="price-tag">$${Number(job.budget || 0).toLocaleString("es-MX")}</span>
@@ -503,11 +596,12 @@ function renderJobs() {
         <p class="meta">📍 ${escapeHtml(locationText(job))}</p>
         <p class="meta small-meta">Zona: ${escapeHtml(job.location)}</p>
         <p class="meta">📅 ${formatDate(job.date)}</p>
-        ${job.description ? `<p class="description">${escapeHtml(job.description)}</p>` : ""}
+        ${job.description ? `<p class="description">${linkifyText(job.description)}</p>` : ""}
         <p class="masked-contact">☎ Contacto: ${escapeHtml(maskPhone(job.phone))}</p>
         <div class="privacy-note">El número está parcialmente oculto en la app. Al abrir WhatsApp, la conversación puede mostrar el número real.</div>
         <div class="card-actions">
           <a class="whatsapp" href="${whatsappLink(job.phone, message)}" target="_blank" rel="noopener">Enviar WhatsApp</a>
+          <button class="share-button" type="button" onclick="sharePublication('pedido', '${job.id}')">Compartir</button>
           <button class="request-done" type="button" onclick="requestPedidoAtendido('${job.id}')">Solicitar atendido</button>
           <button class="request-edit" type="button" onclick="requestModification('pedido', '${job.id}')">Solicitar modificación</button>
         </div>
@@ -533,7 +627,7 @@ function renderHelpers() {
   list.innerHTML = helpers.map(helper => {
     const message = `Hola ${helper.name}, vi tu perfil en Conecta Servicios. Me interesa tu servicio de ${helper.service}.`;
     return `
-      <article class="card ${helper.highlighted ? "highlighted" : ""}">
+      <article id="perfil-${helper.id}" class="card ${helper.highlighted ? "highlighted" : ""}">
         <div class="card-title"><strong>🧰 ${escapeHtml(helper.name)}</strong></div>
         <div class="folio-line">Folio: <strong>${escapeHtml(ayudanteFolio(helper))}</strong></div>
         <span class="tag">${escapeHtml(helper.category || "Servicio")}</span>
@@ -541,11 +635,12 @@ function renderHelpers() {
         <p class="meta">📍 ${escapeHtml(locationText(helper))}</p>
         <p class="meta small-meta">Zona: ${escapeHtml(helper.location)}</p>
         <p class="meta">🕒 ${escapeHtml(helper.availability)}</p>
-        ${helper.description ? `<p class="description">${escapeHtml(helper.description)}</p>` : ""}
+        ${helper.description ? `<p class="description">${linkifyText(helper.description)}</p>` : ""}
         <p class="masked-contact">☎ Contacto: ${escapeHtml(maskPhone(helper.phone))}</p>
         <div class="privacy-note">El número está parcialmente oculto en la app. Al abrir WhatsApp, la conversación puede mostrar el número real.</div>
         <div class="card-actions">
           <a class="whatsapp" href="${whatsappLink(helper.phone, message)}" target="_blank" rel="noopener">Enviar WhatsApp</a>
+          <button class="share-button" type="button" onclick="sharePublication('perfil', '${helper.id}')">Compartir</button>
           <button class="request-edit" type="button" onclick="requestModification('ayudante', '${helper.id}')">Solicitar modificación</button>
         </div>
       </article>`;
@@ -561,7 +656,7 @@ function renderOfficeInfo() {
     <strong>Atención de Conecta Servicios</strong>
     <p class="muted">${escapeHtml(OFFICE_INFO.note)}</p>
     <a class="office-whatsapp" href="${whatsappLink(OFFICE_INFO.phone, message)}" target="_blank" rel="noopener">Enviar WhatsApp</a>
-    <p class="muted edit-hint">Versión 3.7.3: filtros flexibles, folios, solicitud de atendido verificada y edición desde administración.</p>`;
+    <p class="muted edit-hint">Versión 3.7.4: registro simplificado, enlaces clicables, compartir publicaciones y edición desde administración.</p>`;
 }
 
 function setupAdminAccess() {
@@ -757,7 +852,7 @@ function renderAdminPedidos() {
       <p class="meta small-meta">Zona: ${escapeHtml(row.ubicacion || "")}</p>
       <p class="meta">📅 ${formatDate(row.fecha)}</p>
       <p class="meta">☎ ${escapeHtml(row.contacto || "")}</p>
-      ${row.descripcion ? `<p class="description">${escapeHtml(row.descripcion)}</p>` : ""}
+      ${row.descripcion ? `<p class="description">${linkifyText(row.descripcion)}</p>` : ""}
       <div class="admin-card-actions">
         <button class="edit-button" onclick="editPedido('${row.id}')">Editar</button>
         <button onclick="updatePedidoEstado('${row.id}', 'activo')">Aprobar</button>
@@ -790,7 +885,7 @@ function renderAdminAyudantes() {
       <p class="meta">📍 ${escapeHtml([row.localidad, row.municipio, row.estado_nombre].filter(Boolean).join(", ") || row.zona || "")}</p>
       <p class="meta small-meta">Zona: ${escapeHtml(row.zona || "")}</p>
       <p class="meta">☎ ${escapeHtml(row.telefono || "")}</p>
-      ${row.descripcion ? `<p class="description">${escapeHtml(row.descripcion)}</p>` : ""}
+      ${row.descripcion ? `<p class="description">${linkifyText(row.descripcion)}</p>` : ""}
       <div class="admin-card-actions">
         <button class="edit-button" onclick="editAyudante('${row.id}')">Editar</button>
         <button onclick="updateAyudanteEstado('${row.id}', 'activo')">Aprobar</button>
@@ -1046,6 +1141,8 @@ window.addEventListener("beforeunload", event => {
 document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
   const adminMode = params.get("admin") === "1" || params.get("admin") === "true";
+  const sharedPedidoId = params.get("pedido");
+  const sharedPerfilId = params.get("perfil");
   const hashSection = normalizeSectionFromHash(location.hash);
   const initialSection = adminMode ? "admin" : (hashSection === "admin" ? "inicio" : hashSection || "inicio");
   adminRouteEnabled = adminMode;
@@ -1063,4 +1160,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupAdminAccess();
   showSection(initialSection, false);
   await loadRemoteData();
+
+  if (!adminMode && sharedPedidoId) handleSharedTarget("pedido", sharedPedidoId);
+  if (!adminMode && sharedPerfilId) handleSharedTarget("perfil", sharedPerfilId);
 });

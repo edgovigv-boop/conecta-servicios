@@ -466,3 +466,33 @@ button:disabled { opacity: 0.65; cursor: not-allowed; }
   background: #f8f7ff;
   color: var(--morado-oscuro);
 }
+
+/* v3.7.4: registro simple, compartir y enlaces clicables */
+.home-main-actions .main-action {
+  min-height: 132px;
+  text-align: center;
+}
+.home-main-actions .main-action span { margin-bottom: 12px; }
+.home-main-actions .main-action strong { font-size: 1.18rem; letter-spacing: 0.01em; }
+.muted-notice { opacity: 0.94; }
+.register-choice-grid { margin-top: 14px; }
+.inline-link {
+  color: var(--morado-oscuro);
+  font-weight: 900;
+  text-decoration: underline;
+  word-break: break-word;
+}
+.card-actions { flex-wrap: wrap; }
+.card-actions a, .card-actions button { min-width: calc(50% - 5px); }
+.card-actions .share-button {
+  background: var(--morado-suave);
+  color: var(--morado-oscuro);
+}
+.shared-highlight {
+  outline: 4px solid #f3d38b;
+  animation: sharedPulse 1s ease-in-out 0s 3;
+}
+@keyframes sharedPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.015); }
+}

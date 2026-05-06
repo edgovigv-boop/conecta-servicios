@@ -1,40 +1,30 @@
-# Conecta Servicios v3.7.3 — Edición administrativa
+# Conecta Servicios v3.7.4
 
-Versión de prueba pública municipal con Supabase, folios, filtros flexibles y edición desde administración.
+Versión de prueba pública con mejoras de tráfico y facilidad de uso.
 
-## Cambios principales
+## Incluye
 
-- Mantiene los filtros flexibles: Todo México, estado o municipio.
-- Mantiene folios visibles para pedidos y perfiles.
-- Mantiene solicitud de atendido verificada por últimos 4 dígitos.
-- Agrega botón **Solicitar modificación** para pedidos y perfiles públicos.
-- Agrega botón **Editar** en el panel administrador para pedidos.
-- Agrega botón **Editar** en el panel administrador para perfiles.
-- Permite corregir título, servicio, categoría, ubicación, teléfono, descripción y otros campos desde la app.
-- Mantiene los estados: revisión, activo, oculto y atendido.
-- No requiere SQL nuevo si ya aplicaste las versiones anteriores hasta v3.3.2/v3.7.2.
+- Registro inicial más simple: **REGISTRARME** y **VER RESULTADOS**.
+- Sección de registro unificada para publicar un pedido o registrar un servicio/negocio.
+- Enlaces clicables en descripciones: web, Facebook, Instagram, TikTok, Google Maps y URLs comunes.
+- Botón **Compartir** en pedidos y perfiles.
+- Enlaces compartibles por publicación usando `?pedido=` o `?perfil=`.
+- Filtros flexibles por Todo México, estado o municipio.
+- Folios visibles.
+- Solicitud de atendido verificada por últimos 4 dígitos.
+- Edición administrativa de pedidos y perfiles.
+- Contactos enmascarados.
+- Oficina por WhatsApp.
 
-## Publicación en Vercel
+## Publicación
 
-Sube a GitHub estos cuatro archivos en la raíz del repositorio:
+Reemplaza en GitHub estos cuatro archivos:
 
 - `index.html`
 - `styles.css`
 - `app.js`
 - `README.md`
 
-Mensaje sugerido de commit:
+Vercel desplegará automáticamente.
 
-`Actualizar a v3.7.3 edición administrativa`
-
-Vercel publicará automáticamente el cambio desde GitHub.
-
-## Administración
-
-Para entrar al panel usa:
-
-`https://conecta-servicios.vercel.app?admin=1`
-
-PIN temporal de piloto: `3145`
-
-> Nota: El PIN temporal sirve para piloto. Para una versión masiva se recomienda login real con Supabase Auth.
+No requiere SQL nuevo ni cambios en Supabase.
