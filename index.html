@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#6f42c1" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=3.7.2-folios-atendido" />
+  <link rel="stylesheet" href="styles.css?v=3.7.3-edicion-admin" />
 </head>
 <body>
   <div class="app-shell">
@@ -13,7 +13,7 @@
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
       <div class="title-wrap">
         <span id="mainTitle">Conecta Servicios</span>
-        <small id="subtitle">Prueba pública 3.7.2</small>
+        <small id="subtitle">Prueba pública 3.7.3</small>
       </div>
       <button class="help-button" aria-label="Oficina" onclick="showSection('oficina')">☎</button>
     </header>
@@ -386,7 +386,7 @@
 
       <section id="admin" class="section">
         <h2>Panel de administración</h2>
-        <p class="muted">Revisa pedidos y perfiles. En modo piloto, lo nuevo llega como “En revisión”. También puedes cerrar pedidos como “Atendido”.</p>
+        <p class="muted">Revisa pedidos y perfiles. Lo nuevo llega como “En revisión”. También puedes editar datos, aprobar, ocultar o cerrar pedidos como “Atendido”.</p>
 
         <div id="adminLogin" class="form-card">
           <label>PIN de administrador
@@ -399,7 +399,7 @@
         <div id="adminPanel" class="admin-panel hidden">
           <div class="notice-card">
             <strong>Control de piloto</strong>
-            <p>Los registros nuevos llegan en revisión. Usa Aprobar para mostrarlos, Atendido para cerrar pedidos resueltos u Ocultar si son falsos, duplicados o problemáticos.</p>
+            <p>Los registros nuevos llegan en revisión. Usa Editar para corregir datos, Aprobar para mostrarlos, Atendido para cerrar pedidos resueltos u Ocultar si son falsos, duplicados o problemáticos.</p>
           </div>
 
           <div class="admin-actions">
@@ -434,6 +434,6 @@
     <div id="toast" class="toast" role="status"></div>
   </div>
 
-  <script src="app.js?v=3.7.2-folios-atendido"></script>
+  <script src="app.js?v=3.7.3-edicion-admin"></script>
 </body>
 </html>

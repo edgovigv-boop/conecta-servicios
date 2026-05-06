@@ -451,6 +451,30 @@ function requestPedidoAtendido(jobId) {
   window.open(whatsappLink(OFFICE_INFO.phone, message), "_blank", "noopener");
 }
 
+function requestModification(kind, id) {
+  const isJob = kind === "pedido";
+  const item = isJob ? jobsCache.find(row => row.id === id) : helpersCache.find(row => row.id === id);
+  if (!item) {
+    showToast("No se encontró la publicación");
+    return;
+  }
+
+  const folio = isJob ? pedidoFolio(item) : ayudanteFolio(item);
+  const title = isJob ? item.title : item.name;
+  const typeLabel = isJob ? "pedido" : "perfil";
+  const entered = prompt(`Para solicitar modificación de este ${typeLabel}, escribe los últimos 4 dígitos del teléfono registrado.\n\nFolio: ${folio}`);
+  if (entered === null) return;
+
+  const normalized = String(entered || "").replace(/\D/g, "");
+  if (normalized !== lastFourPhone(item.phone)) {
+    alert("Los últimos 4 dígitos no coinciden con el teléfono registrado. Por seguridad, no se abrirá la solicitud.");
+    return;
+  }
+
+  const message = `Hola, quiero solicitar una modificación de mi ${typeLabel} en Conecta Servicios.\n\nFolio: ${folio}\nPublicación: ${title}\nUbicación: ${locationText(item)}\nContacto registrado: ${maskPhone(item.phone)}\nÚltimos 4 dígitos verificados: ${lastFourPhone(item.phone)}\n\nCambio solicitado:\n`;
+  window.open(whatsappLink(OFFICE_INFO.phone, message), "_blank", "noopener");
+}
+
 function renderJobs() {
   syncMunicipalityInput("job");
   const list = document.getElementById("jobsList");
@@ -485,6 +509,7 @@ function renderJobs() {
         <div class="card-actions">
           <a class="whatsapp" href="${whatsappLink(job.phone, message)}" target="_blank" rel="noopener">Enviar WhatsApp</a>
           <button class="request-done" type="button" onclick="requestPedidoAtendido('${job.id}')">Solicitar atendido</button>
+          <button class="request-edit" type="button" onclick="requestModification('pedido', '${job.id}')">Solicitar modificación</button>
         </div>
       </article>`;
   }).join("");
@@ -521,6 +546,7 @@ function renderHelpers() {
         <div class="privacy-note">El número está parcialmente oculto en la app. Al abrir WhatsApp, la conversación puede mostrar el número real.</div>
         <div class="card-actions">
           <a class="whatsapp" href="${whatsappLink(helper.phone, message)}" target="_blank" rel="noopener">Enviar WhatsApp</a>
+          <button class="request-edit" type="button" onclick="requestModification('ayudante', '${helper.id}')">Solicitar modificación</button>
         </div>
       </article>`;
   }).join("");
@@ -535,7 +561,7 @@ function renderOfficeInfo() {
     <strong>Atención de Conecta Servicios</strong>
     <p class="muted">${escapeHtml(OFFICE_INFO.note)}</p>
     <a class="office-whatsapp" href="${whatsappLink(OFFICE_INFO.phone, message)}" target="_blank" rel="noopener">Enviar WhatsApp</a>
-    <p class="muted edit-hint">Versión 3.7.2: filtros flexibles, folios visibles y solicitud de atendido verificada por últimos 4 dígitos.</p>`;
+    <p class="muted edit-hint">Versión 3.7.3: filtros flexibles, folios, solicitud de atendido verificada y edición desde administración.</p>`;
 }
 
 function setupAdminAccess() {
@@ -733,6 +759,7 @@ function renderAdminPedidos() {
       <p class="meta">☎ ${escapeHtml(row.contacto || "")}</p>
       ${row.descripcion ? `<p class="description">${escapeHtml(row.descripcion)}</p>` : ""}
       <div class="admin-card-actions">
+        <button class="edit-button" onclick="editPedido('${row.id}')">Editar</button>
         <button onclick="updatePedidoEstado('${row.id}', 'activo')">Aprobar</button>
         <button onclick="updatePedidoEstado('${row.id}', 'revision')">Revisión</button>
         <button class="done-button" onclick="updatePedidoEstado('${row.id}', 'atendido')">Atendido</button>
@@ -765,12 +792,125 @@ function renderAdminAyudantes() {
       <p class="meta">☎ ${escapeHtml(row.telefono || "")}</p>
       ${row.descripcion ? `<p class="description">${escapeHtml(row.descripcion)}</p>` : ""}
       <div class="admin-card-actions">
+        <button class="edit-button" onclick="editAyudante('${row.id}')">Editar</button>
         <button onclick="updateAyudanteEstado('${row.id}', 'activo')">Aprobar</button>
         <button onclick="updateAyudanteEstado('${row.id}', 'revision')">Revisión</button>
         <button class="danger-button" onclick="updateAyudanteEstado('${row.id}', 'oculto')">Ocultar</button>
       </div>
     </article>
   `).join("");
+}
+
+
+function promptRequired(label, currentValue) {
+  const value = prompt(label, currentValue || "");
+  if (value === null) return null;
+  return value.trim();
+}
+
+function promptOptional(label, currentValue) {
+  const value = prompt(label, currentValue || "");
+  if (value === null) return null;
+  return value.trim();
+}
+
+async function editPedido(id) {
+  if (!adminUnlocked) return;
+  const row = adminJobsCache.find(item => item.id === id);
+  if (!row) {
+    showToast("No se encontró el pedido");
+    return;
+  }
+
+  const folio = pedidoFolio(row);
+  const ok = confirm(`Editar pedido ${folio}.\n\nSe abrirán campos uno por uno. Si presionas Cancelar, no se guardará nada.`);
+  if (!ok) return;
+
+  const titulo = promptRequired("Título del pedido", row.titulo || "");
+  if (titulo === null || !titulo) return alert("El título no puede quedar vacío.");
+  const categoria = promptRequired("Categoría", row.categoria || "General");
+  if (categoria === null || !categoria) return alert("La categoría no puede quedar vacía.");
+  const estado_nombre = promptRequired("Estado", row.estado_nombre || DEFAULT_STATE);
+  if (estado_nombre === null || !estado_nombre) return alert("El estado no puede quedar vacío.");
+  const municipio = promptRequired("Municipio", row.municipio || DEFAULT_MUNICIPALITY);
+  if (municipio === null || !municipio) return alert("El municipio no puede quedar vacío.");
+  const localidad = promptRequired("Colonia o localidad", row.localidad || DEFAULT_LOCALITY);
+  if (localidad === null || !localidad) return alert("La localidad no puede quedar vacía.");
+  const ubicacion = promptRequired("Zona o referencia", row.ubicacion || "");
+  if (ubicacion === null || !ubicacion) return alert("La zona o referencia no puede quedar vacía.");
+  const fecha = promptOptional("Fecha y hora. Puedes dejar el valor actual o cambiarlo en formato del navegador.", row.fecha || "");
+  if (fecha === null) return;
+  const presupuestoText = promptRequired("Presupuesto sugerido", String(row.presupuesto || 0));
+  if (presupuestoText === null) return;
+  const presupuesto = Number(String(presupuestoText).replace(/[^0-9.]/g, ""));
+  if (Number.isNaN(presupuesto)) return alert("El presupuesto debe ser numérico.");
+  const contacto = promptRequired("Teléfono o WhatsApp", row.contacto || "");
+  if (contacto === null || !cleanPhone(contacto)) return alert("El teléfono no puede quedar vacío.");
+  const descripcion = promptOptional("Descripción", row.descripcion || "");
+  if (descripcion === null) return;
+
+  await updateRegistro("pedidos", id, {
+    titulo, categoria, estado_nombre, municipio, localidad, ubicacion, fecha, presupuesto, contacto, descripcion
+  });
+}
+
+async function editAyudante(id) {
+  if (!adminUnlocked) return;
+  const row = adminHelpersCache.find(item => item.id === id);
+  if (!row) {
+    showToast("No se encontró el perfil");
+    return;
+  }
+
+  const folio = ayudanteFolio(row);
+  const ok = confirm(`Editar perfil ${folio}.\n\nSe abrirán campos uno por uno. Si presionas Cancelar, no se guardará nada.`);
+  if (!ok) return;
+
+  const nombre = promptRequired("Nombre", row.nombre || "");
+  if (nombre === null || !nombre) return alert("El nombre no puede quedar vacío.");
+  const servicio = promptRequired("Servicio principal", row.servicio || "");
+  if (servicio === null || !servicio) return alert("El servicio no puede quedar vacío.");
+  const categoria = promptRequired("Categoría", row.categoria || "Servicio");
+  if (categoria === null || !categoria) return alert("La categoría no puede quedar vacía.");
+  const estado_nombre = promptRequired("Estado", row.estado_nombre || DEFAULT_STATE);
+  if (estado_nombre === null || !estado_nombre) return alert("El estado no puede quedar vacío.");
+  const municipio = promptRequired("Municipio", row.municipio || DEFAULT_MUNICIPALITY);
+  if (municipio === null || !municipio) return alert("El municipio no puede quedar vacío.");
+  const localidad = promptRequired("Colonia o localidad", row.localidad || DEFAULT_LOCALITY);
+  if (localidad === null || !localidad) return alert("La localidad no puede quedar vacía.");
+  const zona = promptRequired("Zona donde trabaja o referencia", row.zona || "");
+  if (zona === null || !zona) return alert("La zona no puede quedar vacía.");
+  const disponibilidad = promptRequired("Disponibilidad", row.disponibilidad || "");
+  if (disponibilidad === null || !disponibilidad) return alert("La disponibilidad no puede quedar vacía.");
+  const telefono = promptRequired("Teléfono o WhatsApp", row.telefono || "");
+  if (telefono === null || !cleanPhone(telefono)) return alert("El teléfono no puede quedar vacío.");
+  const descripcion = promptOptional("Descripción", row.descripcion || "");
+  if (descripcion === null) return;
+  const destacadoText = promptOptional("¿Perfil destacado? Escribe sí o no", row.destacado ? "sí" : "no");
+  if (destacadoText === null) return;
+  const destacado = ["si", "sí", "s", "yes", "true", "1"].includes(normalizeText(destacadoText));
+
+  await updateRegistro("ayudantes", id, {
+    nombre, servicio, categoria, estado_nombre, municipio, localidad, zona, disponibilidad, telefono, descripcion, destacado
+  });
+}
+
+async function updateRegistro(table, id, payload) {
+  if (!adminUnlocked) return;
+  const ok = confirm("¿Guardar los cambios de esta publicación?");
+  if (!ok) return;
+
+  try {
+    await supabaseRequest(`${table}?id=eq.${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload)
+    });
+    showToast("Cambios guardados");
+    await Promise.all([loadRemoteData(), loadAdminData()]);
+  } catch (error) {
+    console.error("Error guardando cambios", error);
+    alert("No se pudieron guardar los cambios. Revisa permisos de Supabase o conexión.");
+  }
 }
 
 async function updatePedidoEstado(id, estado) {

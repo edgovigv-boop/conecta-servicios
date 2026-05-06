@@ -454,3 +454,15 @@ button:disabled { opacity: 0.65; cursor: not-allowed; }
 .bottom-nav button {
   font-size: 0.72rem;
 }
+
+/* v3.7.3 edición administrativa */
+.card-actions .request-edit {
+  background: #f8f7ff;
+  color: var(--morado-oscuro);
+  border: 1px solid #e7ddff;
+}
+
+.admin-card-actions .edit-button {
+  background: #f8f7ff;
+  color: var(--morado-oscuro);
+}
