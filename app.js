@@ -18,6 +18,8 @@ let isLoading = false;
 // Acceso temporal para piloto. No es seguridad real: en la siguiente versión conviene usar Supabase Auth.
 const ADMIN_PIN = "3145";
 let adminRouteEnabled = false;
+let lastHomeBackPress = 0;
+let allowBrowserExit = false;
 
 const DEFAULT_STATE = "México";
 const DEFAULT_MUNICIPALITY = "Chapultepec";
@@ -124,6 +126,26 @@ function mapAyudanteFromDb(row) {
   };
 }
 
+function routeUrlForSection(id) {
+  const params = new URLSearchParams(window.location.search);
+  const adminMode = adminRouteEnabled || params.get("admin") === "1" || params.get("admin") === "true";
+  const base = adminMode ? `${location.pathname}?admin=1` : location.pathname;
+  return `${base}#${id}`;
+}
+
+function handleHomeBackAttempt() {
+  const now = Date.now();
+  if (now - lastHomeBackPress < 2200) {
+    allowBrowserExit = true;
+    history.back();
+    return;
+  }
+
+  lastHomeBackPress = now;
+  showToast("Presiona atrás otra vez para salir");
+  history.pushState({ section: "inicio", homeGuard: true }, "", routeUrlForSection("inicio"));
+}
+
 function showSection(id, pushToHistory = true) {
   if (id === "admin" && !adminRouteEnabled) {
     id = "inicio";
@@ -133,7 +155,7 @@ function showSection(id, pushToHistory = true) {
   if (!target) return;
 
   if (pushToHistory && id !== currentSection) {
-    history.pushState({ section: id }, "", `#${id}`);
+    history.pushState({ section: id }, "", routeUrlForSection(id));
   }
 
   currentSection = id;
@@ -161,7 +183,10 @@ function showSection(id, pushToHistory = true) {
 }
 
 function goBack() {
-  if (currentSection === "inicio") return;
+  if (currentSection === "inicio") {
+    handleHomeBackAttempt();
+    return;
+  }
   if (history.state && history.state.section) history.back();
   else showSection("inicio", false);
 }
@@ -201,6 +226,42 @@ Contacto: ${maskPhone(job.phone)}
 ID: ${job.id}
 
 Ya fue atendido y solicito que deje de aparecer públicamente.`;
+}
+
+function officeNewJobMessage(job) {
+  return `Nuevo pedido en revisión en Conecta Servicios:
+
+Pedido: ${job.title}
+Categoría: ${job.category}
+Ubicación: ${job.locality}, ${job.municipality}, ${job.state}
+Zona: ${job.location}
+Fecha: ${formatDate(job.date)}
+Presupuesto: $${Number(job.budget || 0).toLocaleString("es-MX")}
+Contacto completo: ${cleanPhone(job.phone)}
+ID: ${job.id}
+
+Favor de revisar y aprobar desde el panel administrador.`;
+}
+
+function officeNewHelperMessage(helper) {
+  return `Nuevo perfil en revisión en Conecta Servicios:
+
+Nombre: ${helper.name}
+Servicio: ${helper.service}
+Categoría: ${helper.category}
+Ubicación: ${helper.locality}, ${helper.municipality}, ${helper.state}
+Zona: ${helper.location}
+Disponibilidad: ${helper.availability}
+Contacto completo: ${cleanPhone(helper.phone)}
+ID: ${helper.id}
+
+Favor de revisar y aprobar desde el panel administrador.`;
+}
+
+function notifyOfficeByWhatsapp(kind, item) {
+  const message = kind === "pedido" ? officeNewJobMessage(item) : officeNewHelperMessage(item);
+  const link = whatsappLink(OFFICE_INFO.phone, message);
+  window.location.href = link;
 }
 
 function showToast(message) {
@@ -376,7 +437,7 @@ function renderOfficeInfo() {
     <strong>Atención de Conecta Servicios</strong>
     <p class="muted">${escapeHtml(OFFICE_INFO.note)}</p>
     <a class="office-whatsapp" href="${whatsappLink(OFFICE_INFO.phone, message)}" target="_blank" rel="noopener">Enviar WhatsApp</a>
-    <p class="muted edit-hint">Versión 3.4: piloto consolidado con filtros claros, contacto enmascarado, revisión previa y pedidos atendidos.</p>`;
+    <p class="muted edit-hint">Versión 3.5: ajustes de navegación, inicio más rápido y aviso por WhatsApp con filtros claros, contacto enmascarado, revisión previa y pedidos atendidos.</p>`;
 }
 
 function setupAdminAccess() {
@@ -648,9 +709,10 @@ function setupForms() {
       jobsCache.unshift(savedJob);
       form.reset();
       showToast("Pedido enviado a revisión");
-      alert("Tu pedido fue recibido. Aparecerá públicamente cuando la oficina lo apruebe.");
       showSection("ofertas");
       await loadRemoteData();
+      alert("Tu pedido fue recibido. Ahora se abrirá WhatsApp con un aviso listo para la oficina. Solo toca enviar para acelerar la revisión.");
+      notifyOfficeByWhatsapp("pedido", savedJob);
     } catch (error) {
       console.error("Error al publicar pedido", error);
       alert("No se pudo publicar el pedido. Revisa la conexión o las políticas de Supabase.");
@@ -685,9 +747,10 @@ function setupForms() {
       helpersCache.unshift(savedHelper);
       form.reset();
       showToast("Perfil enviado a revisión");
-      alert("Tu perfil fue recibido. Aparecerá públicamente cuando la oficina lo apruebe.");
       showSection("galeria");
       await loadRemoteData();
+      alert("Tu perfil fue recibido. Ahora se abrirá WhatsApp con un aviso listo para la oficina. Solo toca enviar para acelerar la revisión.");
+      notifyOfficeByWhatsapp("ayudante", savedHelper);
     } catch (error) {
       console.error("Error al registrar perfil", error);
       alert("No se pudo registrar el perfil. Revisa la conexión o las políticas de Supabase.");
@@ -698,7 +761,14 @@ function setupForms() {
 }
 
 window.addEventListener("popstate", event => {
+  if (allowBrowserExit) return;
   const section = event.state?.section || "inicio";
+
+  if (currentSection === "inicio" && section === "inicio") {
+    handleHomeBackAttempt();
+    return;
+  }
+
   showSection(section, false);
 });
 
@@ -707,7 +777,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   const adminMode = params.get("admin") === "1" || params.get("admin") === "true";
   const hashSection = location.hash ? location.hash.replace("#", "") : "inicio";
   const initialSection = adminMode ? "admin" : (hashSection === "admin" ? "inicio" : hashSection);
-  history.replaceState({ section: initialSection }, "", adminMode ? `${location.pathname}?admin=1#${initialSection}` : `#${initialSection}`);
+  adminRouteEnabled = adminMode;
+  history.replaceState({ section: initialSection }, "", routeUrlForSection(initialSection));
+  if (initialSection === "inicio") {
+    history.pushState({ section: "inicio", homeGuard: true }, "", routeUrlForSection("inicio"));
+  }
   populateStateSelects();
   setupForms();
   setupAdminAccess();

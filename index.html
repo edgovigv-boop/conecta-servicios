@@ -13,17 +13,17 @@
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
       <div class="title-wrap">
         <span id="mainTitle">Conecta Servicios</span>
-        <small id="subtitle">Versión piloto consolidada</small>
+        <small id="subtitle">Versión piloto 3.5</small>
       </div>
       <button class="help-button" aria-label="Oficina" onclick="showSection('oficina')">☎</button>
     </header>
 
     <main class="content">
       <section id="inicio" class="section active">
-        <div class="hero-card">
+        <div class="hero-card hero-compact">
           <div class="hero-badge">Modo piloto comunitario</div>
-          <h1>Encuentra ayuda y servicios por municipio.</h1>
-          <p>Conecta Servicios organiza pedidos y perfiles por estado, municipio y localidad. Las publicaciones nuevas pasan por revisión y los teléfonos se muestran parcialmente ocultos dentro de la app.</p>
+          <h1>¿Qué necesitas hoy?</h1>
+          <p class="hero-short">Elige una opción para empezar. Puedes buscar apoyo local o registrar un servicio por municipio.</p>
           <div class="hero-stats">
             <span><strong id="jobsCount">0</strong> pedidos</span>
             <span><strong id="helpersCount">0</strong> perfiles</span>
@@ -31,7 +31,7 @@
           <p class="sync-status" id="syncStatus">Conectando con la base de datos...</p>
         </div>
 
-        <div class="quick-actions">
+        <div class="quick-actions quick-actions-priority">
           <button class="action-card purple" onclick="showSection('ofertas')">
             <span>🔍</span>
             <strong>Necesito ayuda</strong>
@@ -42,6 +42,11 @@
             <strong>Quiero ayudar</strong>
             <small>Ver perfiles o registrarme</small>
           </button>
+        </div>
+
+        <div class="notice-card home-notice">
+          <strong>Información importante</strong>
+          <p>Las publicaciones nuevas pasan por revisión antes de aparecer. Los teléfonos se muestran parcialmente ocultos dentro de la app.</p>
         </div>
 
         <button class="btn-big btn-outline" onclick="showSection('oficina')">
@@ -386,6 +391,6 @@
     <div id="toast" class="toast" role="status"></div>
   </div>
 
-  <script src="app.js?v=3.4-final-piloto"></script>
+  <script src="app.js?v=3.5-ajustes-piloto"></script>
 </body>
 </html>

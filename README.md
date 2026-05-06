@@ -1,4 +1,4 @@
-# Conecta Servicios v3.4 - versión piloto consolidada
+# Conecta Servicios v3.5 - ajustes de piloto
 
 Esta versión reúne los cambios principales del piloto para reducir despliegues pequeños en Netlify.
 
@@ -31,3 +31,13 @@ https://tu-sitio.netlify.app?admin=1
 Luego entra con el PIN del piloto.
 
 > Nota: el PIN en frontend no es seguridad real. Para una versión formal conviene usar Supabase Auth.
+
+
+## Cambios v3.5
+
+- Al presionar atrás desde Inicio, la app muestra: “Presiona atrás otra vez para salir”.
+- La pantalla inicial muestra primero las acciones principales para reducir lectura inicial.
+- El aviso de piloto se reubicó debajo de los botones principales.
+- Al enviar un pedido o perfil, se abre WhatsApp con un mensaje listo para avisar a la oficina.
+
+Nota: WhatsApp no permite enviar mensajes automáticamente desde una web sin intervención del usuario. La app abre el chat con el texto preparado y la persona debe tocar Enviar.
