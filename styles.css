@@ -371,3 +371,66 @@ button:disabled { opacity: 0.65; cursor: not-allowed; }
   cursor: pointer;
   font-size: inherit;
 }
+
+/* v3.7 publicación pública */
+.featured-mini {
+  border-color: #f3d38b;
+  background: #fffdf4;
+}
+
+.plans-grid {
+  display: grid;
+  gap: 14px;
+  margin: 14px 0;
+}
+
+.plan-card {
+  background: white;
+  border: 1px solid var(--borde);
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 9px 26px rgba(31, 30, 36, 0.07);
+}
+
+.plan-card .plan-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: var(--morado-suave);
+  margin-bottom: 10px;
+  font-size: 1.35rem;
+}
+
+.plan-card strong {
+  display: block;
+  font-size: 1.08rem;
+  margin-bottom: 6px;
+}
+
+.plan-card p {
+  margin: 0 0 8px;
+  color: var(--texto-suave);
+}
+
+.plan-card small {
+  display: block;
+  color: var(--texto-suave);
+  margin-bottom: 12px;
+}
+
+.plan-card .whatsapp {
+  display: block;
+  background: #25d366;
+  color: white;
+  text-align: center;
+  border-radius: 14px;
+  padding: 12px;
+  text-decoration: none;
+  font-weight: 900;
+}
+
+.bottom-nav button {
+  font-size: 0.72rem;
+}

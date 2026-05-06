@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#6f42c1" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=3.7-publicacion" />
 </head>
 <body>
   <div class="app-shell">
@@ -13,7 +13,7 @@
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
       <div class="title-wrap">
         <span id="mainTitle">Conecta Servicios</span>
-        <small id="subtitle">Versión piloto 3.5</small>
+        <small id="subtitle">Prueba pública 3.7</small>
       </div>
       <button class="help-button" aria-label="Oficina" onclick="showSection('oficina')">☎</button>
     </header>
@@ -21,9 +21,9 @@
     <main class="content">
       <section id="inicio" class="section active">
         <div class="hero-card hero-compact">
-          <div class="hero-badge">Modo piloto comunitario</div>
+          <div class="hero-badge">Prueba pública municipal</div>
           <h1>¿Qué necesitas hoy?</h1>
-          <p class="hero-short">Elige una opción para empezar. Puedes buscar apoyo local o registrar un servicio por municipio.</p>
+          <p class="hero-short">Elige una opción para empezar. Publica pedidos, encuentra perfiles o registra un servicio por municipio.</p>
           <div class="hero-stats">
             <span><strong id="jobsCount">0</strong> pedidos</span>
             <span><strong id="helpersCount">0</strong> perfiles</span>
@@ -46,7 +46,7 @@
 
         <div class="notice-card home-notice">
           <strong>Información importante</strong>
-          <p>Las publicaciones nuevas pasan por revisión antes de aparecer. Los teléfonos se muestran parcialmente ocultos dentro de la app.</p>
+          <p>Las publicaciones nuevas pasan por revisión antes de aparecer. Los teléfonos se muestran parcialmente ocultos y la atención de oficina es por WhatsApp.</p>
         </div>
 
         <button class="btn-big btn-outline" onclick="showSection('oficina')">
@@ -64,6 +64,10 @@
             <strong>Reglas y seguridad</strong>
             <small>Antes de contactar</small>
           </button>
+          <button class="mini-card featured-mini" onclick="showSection('planes')">
+            <strong>Planes y destacados</strong>
+            <small>Solicitar por WhatsApp</small>
+          </button>
         </div>
       </section>
 
@@ -78,7 +82,7 @@
 
         <div class="notice-card">
           <strong>Antes de aceptar un pedido</strong>
-          <p>Confirma el lugar, horario, pago y condiciones por WhatsApp. Los teléfonos se muestran parcialmente ocultos en la app. Si ves algo extraño, repórtalo a la oficina. Si tu pedido ya fue atendido, usa “Ya se atendió”.</p>
+          <p>Confirma el lugar, horario, pago y condiciones por WhatsApp. Los teléfonos se muestran parcialmente ocultos en la app. Si ves algo extraño o un pedido ya fue atendido, repórtalo a la oficina por WhatsApp. El cierre de pedidos solo se confirma desde administración.</p>
         </div>
 
         <div class="filter-card">
@@ -166,7 +170,7 @@
             <span>Acepto el <button type="button" class="link-button" onclick="showSection('avisoPrivacidad')">Aviso de Privacidad</button> y los <button type="button" class="link-button" onclick="showSection('terminos')">Términos y Condiciones</button>.</span>
           </label>
 
-          <button class="btn-big btn-purple" type="submit">Enviar pedido a revisión ($25 simulado)</button>
+          <button class="btn-big btn-purple" type="submit">Enviar pedido a revisión</button>
         </form>
       </section>
 
@@ -264,14 +268,14 @@
             <span>Acepto el <button type="button" class="link-button" onclick="showSection('avisoPrivacidad')">Aviso de Privacidad</button> y los <button type="button" class="link-button" onclick="showSection('terminos')">Términos y Condiciones</button>.</span>
           </label>
 
-          <button class="btn-big btn-green" type="submit">Enviar perfil a revisión ($25 simulado)</button>
+          <button class="btn-big btn-green" type="submit">Enviar perfil a revisión</button>
         </form>
       </section>
 
       <section id="comoFunciona" class="section">
         <h2>¿Cómo funciona?</h2>
         <div class="step-card"><span>1</span><div><strong>Publica o busca</strong><p>Una persona publica lo que necesita o busca un perfil disponible por estado y municipio.</p></div></div>
-        <div class="step-card"><span>2</span><div><strong>La oficina revisa</strong><p>En modo piloto, los pedidos y perfiles nuevos se revisan antes de aparecer públicamente. Los pedidos atendidos se cierran desde administración para que dejen de mostrarse.</p></div></div>
+        <div class="step-card"><span>2</span><div><strong>La oficina revisa</strong><p>En prueba pública, los pedidos y perfiles nuevos se revisan antes de aparecer. Los pedidos atendidos se cierran desde administración para que dejen de mostrarse.</p></div></div>
         <div class="step-card"><span>3</span><div><strong>Contacta por WhatsApp</strong><p>La app muestra los números parcialmente ocultos, pero permite iniciar conversación por WhatsApp para acordar detalles.</p></div></div>
         <div class="step-card"><span>4</span><div><strong>Acuerden con claridad</strong><p>Precio, horario, materiales y pago se definen entre las personas involucradas.</p></div></div>
         <button class="btn-big btn-purple" onclick="showSection('publicar')">Publicar un pedido</button>
@@ -285,9 +289,45 @@
         <div class="rule-card"><strong>✅ Seguridad primero</strong><p>Verifica datos, acuerda lugares seguros, avisa a alguien de confianza y evita adelantos grandes. Los teléfonos se muestran parcialmente ocultos dentro de la app.</p></div>
         <div class="rule-card"><strong>✅ Respeto obligatorio</strong><p>La honestidad, puntualidad y buen trato son necesarios para participar.</p></div>
         <div class="rule-card danger"><strong>⚠️ Reportes</strong><p>Si una persona actúa de forma indebida, comunícate con la oficina para revisar el caso.</p></div>
-        <div class="rule-card"><strong>🛡️ Revisión en piloto</strong><p>Los nuevos pedidos y perfiles se revisan antes de mostrarse al público. Esto ayuda a reducir bromas, spam y datos incorrectos.</p></div>
+        <div class="rule-card"><strong>🛡️ Revisión en prueba pública</strong><p>Los nuevos pedidos y perfiles se revisan antes de mostrarse al público. Esto ayuda a reducir bromas, spam y datos incorrectos.</p></div>
         <button class="btn-big btn-outline" onclick="showSection('avisoPrivacidad')">Aviso de Privacidad</button>
         <button class="btn-big btn-outline" onclick="showSection('terminos')">Términos y Condiciones</button>
+      </section>
+
+      <section id="planes" class="section">
+        <h2>Planes y destacados</h2>
+        <p class="muted">Durante la prueba pública no hay pagos automáticos dentro de la app. Las solicitudes de destacados o apoyo de oficina se atienden por WhatsApp.</p>
+
+        <div class="plans-grid">
+          <article class="plan-card">
+            <span class="plan-icon">⭐</span>
+            <strong>Perfil destacado</strong>
+            <p>Aparece con mayor visibilidad en los perfiles disponibles de tu municipio.</p>
+            <small>Ideal para ayudantes, oficios y servicios locales.</small>
+            <a class="whatsapp" target="_blank" rel="noopener" href="" data-plan-link="perfil">Solicitar por WhatsApp</a>
+          </article>
+
+          <article class="plan-card">
+            <span class="plan-icon">📌</span>
+            <strong>Publicación destacada</strong>
+            <p>Da mayor visibilidad temporal a un pedido o anuncio de servicio.</p>
+            <small>Útil para trabajos urgentes o promociones locales.</small>
+            <a class="whatsapp" target="_blank" rel="noopener" href="" data-plan-link="publicacion">Solicitar por WhatsApp</a>
+          </article>
+
+          <article class="plan-card">
+            <span class="plan-icon">🏠</span>
+            <strong>Registro asistido</strong>
+            <p>La oficina ayuda a registrar o actualizar un pedido o perfil por WhatsApp.</p>
+            <small>Para personas que prefieren atención guiada.</small>
+            <a class="whatsapp" target="_blank" rel="noopener" href="" data-plan-link="registro">Solicitar por WhatsApp</a>
+          </article>
+        </div>
+
+        <div class="notice-card">
+          <strong>Pagos en etapa inicial</strong>
+          <p>Los pagos o aportaciones se coordinan fuera de la app durante esta prueba. Más adelante se podrá integrar Mercado Pago u otra pasarela formal.</p>
+        </div>
       </section>
 
 
@@ -339,6 +379,8 @@
 
         <div class="office-card" id="officeInfo"></div>
 
+        <button class="btn-big btn-outline" onclick="showSection('planes')">⭐ Ver planes y destacados</button>
+
         <button id="adminAccessButton" class="btn-big btn-admin hidden" onclick="showSection('admin')">🔐 Modo administrador</button>
       </section>
 
@@ -385,12 +427,13 @@
       <button onclick="showSection('inicio')">🏠<br />Inicio</button>
       <button onclick="showSection('ofertas')">🔍<br />Pedidos</button>
       <button onclick="showSection('galeria')">🧰<br />Perfiles</button>
+      <button onclick="showSection('planes')">⭐<br />Planes</button>
       <button onclick="showSection('oficina')">☎<br />Oficina</button>
     </nav>
 
     <div id="toast" class="toast" role="status"></div>
   </div>
 
-  <script src="app.js?v=3.5-ajustes-piloto"></script>
+  <script src="app.js?v=3.7-publicacion"></script>
 </body>
 </html>

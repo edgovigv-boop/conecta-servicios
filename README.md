@@ -1,43 +1,42 @@
-# Conecta Servicios v3.5 - ajustes de piloto
+# Conecta Servicios v3.7 - Publicación piloto pública
 
-Esta versión reúne los cambios principales del piloto para reducir despliegues pequeños en Netlify.
+Versión consolidada para publicar en prueba pública desde Vercel/GitHub.
 
-## Incluye
+## Archivos
 
-- Conexión a Supabase para pedidos y perfiles.
-- Publicaciones nuevas en revisión antes de mostrarse.
-- Panel administrador oculto con `?admin=1`.
-- Pedidos atendidos para cerrar solicitudes temporales sin borrarlas.
-- Contacto enmascarado tipo `xxxxxx3145`.
-- Oficina de registro únicamente por WhatsApp.
-- Filtros más claros por estado y municipio.
-- Texto visible de ubicación consultada: `Mostrando resultados para: Municipio, Estado`.
-- Aviso de privacidad y términos básicos para piloto.
+- `index.html`
+- `styles.css`
+- `app.js`
+- `README.md`
 
-## Importante
+## Cambios principales
 
-No necesitas correr SQL nuevo si ya aplicaste las versiones anteriores hasta v3.3.2.
+- Pantalla inicial más directa para usuarios.
+- Texto cambiado de piloto a prueba pública municipal.
+- Sección nueva: **Planes y destacados**.
+- Solicitud de perfil destacado, publicación destacada y registro asistido por WhatsApp.
+- Sin pagos automáticos dentro de la app.
+- Los pedidos y perfiles nuevos siguen entrando como `revision`.
+- Los teléfonos siguen enmascarados como `xxxxxx3145` en la vista pública.
+- El cierre `Atendido` se mantiene solo desde administración.
+- Admin oculto con `?admin=1`.
+- Cache actualizado con `app.js?v=3.7-publicacion` y `styles.css?v=3.7-publicacion`.
 
-Para Netlify, sube el ZIP completo o arrastra la carpeta completa del proyecto.
+## Publicar en Vercel
 
-## Acceso administrador
+Reemplaza en GitHub estos cuatro archivos en la raíz del repositorio:
 
-Abre tu sitio con:
+- `index.html`
+- `styles.css`
+- `app.js`
+- `README.md`
 
-```text
-https://tu-sitio.netlify.app?admin=1
-```
+Commit sugerido:
 
-Luego entra con el PIN del piloto.
+`Actualizar a v3.7 publicación piloto pública`
 
-> Nota: el PIN en frontend no es seguridad real. Para una versión formal conviene usar Supabase Auth.
+Vercel publicará automáticamente.
 
+## Supabase
 
-## Cambios v3.5
-
-- Al presionar atrás desde Inicio, la app muestra: “Presiona atrás otra vez para salir”.
-- La pantalla inicial muestra primero las acciones principales para reducir lectura inicial.
-- El aviso de piloto se reubicó debajo de los botones principales.
-- Al enviar un pedido o perfil, se abre WhatsApp con un mensaje listo para avisar a la oficina.
-
-Nota: WhatsApp no permite enviar mensajes automáticamente desde una web sin intervención del usuario. La app abre el chat con el texto preparado y la persona debe tocar Enviar.
+No requiere SQL nuevo si ya aplicaste las versiones anteriores hasta v3.3.2.

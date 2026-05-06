@@ -20,6 +20,7 @@ const ADMIN_PIN = "3145";
 let adminRouteEnabled = false;
 let lastHomeBackPress = 0;
 let allowBrowserExit = false;
+let homeExitGuardArmed = false;
 
 const DEFAULT_STATE = "México";
 const DEFAULT_MUNICIPALITY = "Chapultepec";
@@ -133,20 +134,35 @@ function routeUrlForSection(id) {
   return `${base}#${id}`;
 }
 
+function normalizeSectionFromHash(hashValue) {
+  const raw = String(hashValue || "").replace("#", "");
+  if (!raw || raw === "inicio-guard" || raw === "inicio-top") return "inicio";
+  return raw;
+}
+
+function pushExitGuard(section = currentSection || "inicio") {
+  // Estado extra para que el botón Atrás del celular no cierre la app al primer toque.
+  history.pushState({ section, appGuard: true, ts: Date.now() }, "", routeUrlForSection(section === "inicio" ? "inicio-guard" : section));
+  homeExitGuardArmed = section === "inicio";
+}
+
 function handleHomeBackAttempt() {
   const now = Date.now();
-  if (now - lastHomeBackPress < 2200) {
+  if (now - lastHomeBackPress < 2600) {
     allowBrowserExit = true;
-    history.back();
+    homeExitGuardArmed = false;
+    showToast("Saliendo de Conecta Servicios");
+    setTimeout(() => history.back(), 80);
     return;
   }
 
   lastHomeBackPress = now;
   showToast("Presiona atrás otra vez para salir");
-  history.pushState({ section: "inicio", homeGuard: true }, "", routeUrlForSection("inicio"));
+  pushExitGuard("inicio");
 }
 
 function showSection(id, pushToHistory = true) {
+  lastHomeBackPress = 0;
   if (id === "admin" && !adminRouteEnabled) {
     id = "inicio";
     showToast("Acceso de administración oculto");
@@ -172,6 +188,7 @@ function showSection(id, pushToHistory = true) {
     reglas: "Reglas y seguridad",
     avisoPrivacidad: "Aviso de Privacidad",
     terminos: "Términos y Condiciones",
+    planes: "Planes y destacados",
     oficina: "Oficina de registro",
     admin: "Administración"
   };
@@ -264,6 +281,36 @@ function notifyOfficeByWhatsapp(kind, item) {
   window.location.href = link;
 }
 
+function planWhatsappMessage(type) {
+  const messages = {
+    perfil: `Hola, quiero solicitar información para activar un perfil destacado en Conecta Servicios.
+
+Nombre:
+Municipio:
+Servicio:
+Teléfono:`,
+    publicacion: `Hola, quiero solicitar información para destacar una publicación en Conecta Servicios.
+
+Tipo de publicación:
+Municipio:
+Fecha aproximada:
+Teléfono:`,
+    registro: `Hola, quiero apoyo de la oficina para registrar o actualizar información en Conecta Servicios.
+
+Nombre:
+Municipio:
+Qué necesito:`
+  };
+  return messages[type] || "Hola, quiero información sobre planes y destacados de Conecta Servicios.";
+}
+
+function renderPlanLinks() {
+  document.querySelectorAll("[data-plan-link]").forEach(link => {
+    const type = link.getAttribute("data-plan-link");
+    link.href = whatsappLink(OFFICE_INFO.phone, planWhatsappMessage(type));
+  });
+}
+
 function showToast(message) {
   const toast = document.getElementById("toast");
   toast.textContent = message;
@@ -271,16 +318,6 @@ function showToast(message) {
   setTimeout(() => toast.classList.remove("show"), 2600);
 }
 
-function processPayment(amount, successMsg) {
-  const confirmPay = confirm(`¿Deseas realizar el pago simbólico de $${amount} pesos?\n\nEsta versión todavía usa pago simulado.`);
-  if (confirmPay) {
-    showToast("Pago simulado aprobado");
-    setTimeout(() => {
-      alert(successMsg);
-      showSection("inicio");
-    }, 650);
-  }
-}
 
 function normalizeText(value) {
   return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -388,7 +425,6 @@ function renderJobs() {
         <div class="privacy-note">El número está parcialmente oculto en la app. Al abrir WhatsApp, la conversación puede mostrar el número real.</div>
         <div class="card-actions">
           <a class="whatsapp" href="${whatsappLink(job.phone, message)}" target="_blank" rel="noopener">Enviar WhatsApp</a>
-          <a class="done" href="${whatsappLink(OFFICE_INFO.phone, attendedMessage(job))}" target="_blank" rel="noopener">Ya se atendió</a>
         </div>
       </article>`;
   }).join("");
@@ -437,7 +473,7 @@ function renderOfficeInfo() {
     <strong>Atención de Conecta Servicios</strong>
     <p class="muted">${escapeHtml(OFFICE_INFO.note)}</p>
     <a class="office-whatsapp" href="${whatsappLink(OFFICE_INFO.phone, message)}" target="_blank" rel="noopener">Enviar WhatsApp</a>
-    <p class="muted edit-hint">Versión 3.5: ajustes de navegación, inicio más rápido y aviso por WhatsApp con filtros claros, contacto enmascarado, revisión previa y pedidos atendidos.</p>`;
+    <p class="muted edit-hint">Versión 3.7: prueba pública, planes por WhatsApp, registros en revisión y acciones operativas solo en administración.</p>`;
 }
 
 function setupAdminAccess() {
@@ -453,6 +489,7 @@ function renderAll() {
   renderJobs();
   renderHelpers();
   renderOfficeInfo();
+  renderPlanLinks();
   updateLocationFilterSummary("job");
   updateLocationFilterSummary("helper");
 }
@@ -685,8 +722,8 @@ function setupForms() {
 
   document.getElementById("jobForm").addEventListener("submit", async event => {
     event.preventDefault();
-    const confirmPay = confirm("Publicar este pedido tiene un costo simbólico de $25 pesos.\n\nEsta versión usa pago simulado. ¿Continuar?");
-    if (!confirmPay) return;
+    const confirmSend = confirm("Tu pedido será enviado a revisión antes de aparecer públicamente.\n\n¿Deseas continuar?");
+    if (!confirmSend) return;
 
     const form = event.target;
     setSubmitState(form, true);
@@ -723,8 +760,8 @@ function setupForms() {
 
   document.getElementById("helperForm").addEventListener("submit", async event => {
     event.preventDefault();
-    const confirmPay = confirm("Registrar este perfil tiene un costo simbólico de $25 pesos.\n\nEsta versión usa pago simulado. ¿Continuar?");
-    if (!confirmPay) return;
+    const confirmSend = confirm("Tu perfil será enviado a revisión antes de aparecer públicamente.\n\n¿Deseas continuar?");
+    if (!confirmSend) return;
 
     const form = event.target;
     setSubmitState(form, true);
@@ -762,9 +799,9 @@ function setupForms() {
 
 window.addEventListener("popstate", event => {
   if (allowBrowserExit) return;
-  const section = event.state?.section || "inicio";
+  const section = event.state?.section || normalizeSectionFromHash(location.hash) || "inicio";
 
-  if (currentSection === "inicio" && section === "inicio") {
+  if (currentSection === "inicio" || section === "inicio") {
     handleHomeBackAttempt();
     return;
   }
@@ -772,16 +809,29 @@ window.addEventListener("popstate", event => {
   showSection(section, false);
 });
 
+window.addEventListener("beforeunload", event => {
+  if (allowBrowserExit) return;
+  if (currentSection === "inicio") {
+    event.preventDefault();
+    event.returnValue = "";
+  }
+});
+
 document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
   const adminMode = params.get("admin") === "1" || params.get("admin") === "true";
-  const hashSection = location.hash ? location.hash.replace("#", "") : "inicio";
-  const initialSection = adminMode ? "admin" : (hashSection === "admin" ? "inicio" : hashSection);
+  const hashSection = normalizeSectionFromHash(location.hash);
+  const initialSection = adminMode ? "admin" : (hashSection === "admin" ? "inicio" : hashSection || "inicio");
   adminRouteEnabled = adminMode;
-  history.replaceState({ section: initialSection }, "", routeUrlForSection(initialSection));
-  if (initialSection === "inicio") {
-    history.pushState({ section: "inicio", homeGuard: true }, "", routeUrlForSection("inicio"));
+
+  // Base + guard: el primer botón Atrás del celular muestra aviso; el segundo permite salir.
+  history.replaceState({ section: "inicio", homeBase: true }, "", routeUrlForSection("inicio"));
+  pushExitGuard("inicio");
+  if (initialSection !== "inicio") {
+    history.pushState({ section: initialSection, appGuard: true }, "", routeUrlForSection(initialSection));
+    homeExitGuardArmed = false;
   }
+
   populateStateSelects();
   setupForms();
   setupAdminAccess();
