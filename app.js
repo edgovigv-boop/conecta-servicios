@@ -219,6 +219,25 @@ function cleanPhone(phone) {
   return String(phone || "").replace(/\D/g, "");
 }
 
+function publicFolio(prefix, id) {
+  const raw = String(id || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+  const short = raw ? raw.slice(-6) : Math.random().toString(36).slice(2, 8).toUpperCase();
+  return `${prefix}-${short}`;
+}
+
+function pedidoFolio(jobOrRow) {
+  return publicFolio("PED", jobOrRow?.id);
+}
+
+function ayudanteFolio(helperOrRow) {
+  return publicFolio("AYU", helperOrRow?.id);
+}
+
+function lastFourPhone(phone) {
+  const cleaned = cleanPhone(phone);
+  return cleaned.slice(-4);
+}
+
 function whatsappLink(phone, message) {
   const cleaned = cleanPhone(phone);
   const withCountry = cleaned.length === 10 ? `52${cleaned}` : cleaned;
@@ -232,22 +251,10 @@ function maskPhone(phone) {
   return `xxxxxx${lastFour}`;
 }
 
-function attendedMessage(job) {
-  return `Hola, quiero marcar como atendido este pedido de Conecta Servicios:
-
-Pedido: ${job.title}
-Municipio: ${job.municipality}
-Localidad: ${job.locality}
-Zona: ${job.location}
-Contacto: ${maskPhone(job.phone)}
-ID: ${job.id}
-
-Ya fue atendido y solicito que deje de aparecer públicamente.`;
-}
-
 function officeNewJobMessage(job) {
   return `Nuevo pedido en revisión en Conecta Servicios:
 
+Folio: ${pedidoFolio(job)}
 Pedido: ${job.title}
 Categoría: ${job.category}
 Ubicación: ${job.locality}, ${job.municipality}, ${job.state}
@@ -255,7 +262,8 @@ Zona: ${job.location}
 Fecha: ${formatDate(job.date)}
 Presupuesto: $${Number(job.budget || 0).toLocaleString("es-MX")}
 Contacto completo: ${cleanPhone(job.phone)}
-ID: ${job.id}
+Últimos 4: ${lastFourPhone(job.phone)}
+ID interno: ${job.id}
 
 Favor de revisar y aprobar desde el panel administrador.`;
 }
@@ -263,6 +271,7 @@ Favor de revisar y aprobar desde el panel administrador.`;
 function officeNewHelperMessage(helper) {
   return `Nuevo perfil en revisión en Conecta Servicios:
 
+Folio: ${ayudanteFolio(helper)}
 Nombre: ${helper.name}
 Servicio: ${helper.service}
 Categoría: ${helper.category}
@@ -270,7 +279,8 @@ Ubicación: ${helper.locality}, ${helper.municipality}, ${helper.state}
 Zona: ${helper.location}
 Disponibilidad: ${helper.availability}
 Contacto completo: ${cleanPhone(helper.phone)}
-ID: ${helper.id}
+Últimos 4: ${lastFourPhone(helper.phone)}
+ID interno: ${helper.id}
 
 Favor de revisar y aprobar desde el panel administrador.`;
 }
@@ -350,17 +360,42 @@ function populateStateSelects() {
   document.querySelectorAll("select[data-state-select]").forEach(select => {
     const keepBlank = select.dataset.blank === "true";
     const current = select.value || select.dataset.default || DEFAULT_STATE;
-    select.innerHTML = `${keepBlank ? '<option value="">Todos los estados</option>' : ''}${STATES.map(state => `<option value="${escapeHtml(state)}">${escapeHtml(state)}</option>`).join("")}`;
-    select.value = STATES.includes(current) ? current : DEFAULT_STATE;
+    select.innerHTML = `${keepBlank ? '<option value="">Todo México</option>' : ''}${STATES.map(state => `<option value="${escapeHtml(state)}">${escapeHtml(state)}</option>`).join("")}`;
+
+    if (keepBlank && current === "") select.value = "";
+    else select.value = STATES.includes(current) ? current : DEFAULT_STATE;
   });
+
+  syncMunicipalityInput("job");
+  syncMunicipalityInput("helper");
+}
+
+function syncMunicipalityInput(prefix) {
+  const state = document.getElementById(`${prefix}StateFilter`);
+  const municipality = document.getElementById(`${prefix}MunicipalityFilter`);
+  if (!state || !municipality) return;
+
+  if (!state.value) {
+    municipality.value = "";
+    municipality.disabled = true;
+    municipality.placeholder = "Todos los municipios";
+  } else {
+    municipality.disabled = false;
+    municipality.placeholder = `Ej. ${state.value === DEFAULT_STATE ? DEFAULT_MUNICIPALITY : "Cuernavaca"}`;
+  }
+}
+
+function handleStateFilterChange(prefix) {
+  syncMunicipalityInput(prefix);
+  if (prefix === "job") renderJobs();
+  if (prefix === "helper") renderHelpers();
 }
 
 function getLocationFilterLabel(prefix) {
-  const selectedState = document.getElementById(`${prefix}StateFilter`)?.value || "Todos los estados";
-  const selectedMunicipality = document.getElementById(`${prefix}MunicipalityFilter`)?.value.trim() || "todos los municipios";
+  const selectedState = document.getElementById(`${prefix}StateFilter`)?.value || "";
+  const selectedMunicipality = document.getElementById(`${prefix}MunicipalityFilter`)?.value.trim() || "";
 
-  if (!selectedState && !selectedMunicipality) return "Mostrando resultados de todas las ubicaciones";
-  if (!selectedState) return `Mostrando resultados para: ${selectedMunicipality}`;
+  if (!selectedState) return "Mostrando resultados para: Todo México";
   if (!selectedMunicipality) return `Mostrando resultados para: ${selectedState}`;
   return `Mostrando resultados para: ${selectedMunicipality}, ${selectedState}`;
 }
@@ -378,6 +413,7 @@ function resetLocationFilters(prefix) {
   const municipality = document.getElementById(`${prefix}MunicipalityFilter`);
   if (state) state.value = DEFAULT_STATE;
   if (municipality) municipality.value = DEFAULT_MUNICIPALITY;
+  syncMunicipalityInput(prefix);
   if (prefix === "job") renderJobs();
   if (prefix === "helper") renderHelpers();
 }
@@ -394,7 +430,29 @@ function renderCounters() {
   document.getElementById("helpersCount").textContent = helpersCache.length;
 }
 
+function requestPedidoAtendido(jobId) {
+  const job = jobsCache.find(item => item.id === jobId);
+  if (!job) {
+    showToast("No se encontró el pedido");
+    return;
+  }
+
+  const folio = pedidoFolio(job);
+  const entered = prompt(`Para solicitar que la oficina marque este pedido como atendido, escribe los últimos 4 dígitos del teléfono con el que se publicó.\n\nFolio: ${folio}`);
+  if (entered === null) return;
+
+  const normalized = String(entered || "").replace(/\D/g, "");
+  if (normalized !== lastFourPhone(job.phone)) {
+    alert("Los últimos 4 dígitos no coinciden con el teléfono registrado en este pedido. Por seguridad, no se abrirá la solicitud.");
+    return;
+  }
+
+  const message = `Hola, quiero solicitar que revisen y marquen como atendido este pedido en Conecta Servicios.\n\nFolio: ${folio}\nPedido: ${job.title}\nUbicación: ${locationText(job)}\nContacto registrado: ${maskPhone(job.phone)}\nÚltimos 4 dígitos verificados: ${lastFourPhone(job.phone)}\n\nEntiendo que la oficina revisa y confirma el cambio desde administración.`;
+  window.open(whatsappLink(OFFICE_INFO.phone, message), "_blank", "noopener");
+}
+
 function renderJobs() {
+  syncMunicipalityInput("job");
   const list = document.getElementById("jobsList");
   if (!list) return;
   if (isLoading) return;
@@ -416,6 +474,7 @@ function renderJobs() {
           <strong>🔍 ${escapeHtml(job.title)}</strong>
           <span class="price-tag">$${Number(job.budget || 0).toLocaleString("es-MX")}</span>
         </div>
+        <div class="folio-line">Folio: <strong>${escapeHtml(pedidoFolio(job))}</strong></div>
         <span class="tag">${escapeHtml(job.category || "General")}</span>
         <p class="meta">📍 ${escapeHtml(locationText(job))}</p>
         <p class="meta small-meta">Zona: ${escapeHtml(job.location)}</p>
@@ -425,12 +484,14 @@ function renderJobs() {
         <div class="privacy-note">El número está parcialmente oculto en la app. Al abrir WhatsApp, la conversación puede mostrar el número real.</div>
         <div class="card-actions">
           <a class="whatsapp" href="${whatsappLink(job.phone, message)}" target="_blank" rel="noopener">Enviar WhatsApp</a>
+          <button class="request-done" type="button" onclick="requestPedidoAtendido('${job.id}')">Solicitar atendido</button>
         </div>
       </article>`;
   }).join("");
 }
 
 function renderHelpers() {
+  syncMunicipalityInput("helper");
   const list = document.getElementById("helpersList");
   if (!list) return;
   if (isLoading) return;
@@ -449,6 +510,7 @@ function renderHelpers() {
     return `
       <article class="card ${helper.highlighted ? "highlighted" : ""}">
         <div class="card-title"><strong>🧰 ${escapeHtml(helper.name)}</strong></div>
+        <div class="folio-line">Folio: <strong>${escapeHtml(ayudanteFolio(helper))}</strong></div>
         <span class="tag">${escapeHtml(helper.category || "Servicio")}</span>
         <p class="meta">🛠️ ${escapeHtml(helper.service)}</p>
         <p class="meta">📍 ${escapeHtml(locationText(helper))}</p>
@@ -473,7 +535,7 @@ function renderOfficeInfo() {
     <strong>Atención de Conecta Servicios</strong>
     <p class="muted">${escapeHtml(OFFICE_INFO.note)}</p>
     <a class="office-whatsapp" href="${whatsappLink(OFFICE_INFO.phone, message)}" target="_blank" rel="noopener">Enviar WhatsApp</a>
-    <p class="muted edit-hint">Versión 3.7: prueba pública, planes por WhatsApp, registros en revisión y acciones operativas solo en administración.</p>`;
+    <p class="muted edit-hint">Versión 3.7.2: filtros flexibles, folios visibles y solicitud de atendido verificada por últimos 4 dígitos.</p>`;
 }
 
 function setupAdminAccess() {
@@ -626,11 +688,33 @@ function renderAdminLists() {
   renderAdminAyudantes();
 }
 
+function adminPedidoMatchesSearch(row, search) {
+  const query = normalizeText(search);
+  if (!query) return true;
+  const searchable = [
+    row.titulo, row.categoria, row.ubicacion, row.estado_nombre, row.municipio, row.localidad,
+    row.fecha, row.presupuesto, row.descripcion, row.contacto, row.estado,
+    pedidoFolio(row), lastFourPhone(row.contacto)
+  ].join(" ");
+  return normalizeText(searchable).includes(query);
+}
+
+function adminAyudanteMatchesSearch(row, search) {
+  const query = normalizeText(search);
+  if (!query) return true;
+  const searchable = [
+    row.nombre, row.servicio, row.categoria, row.zona, row.estado_nombre, row.municipio, row.localidad,
+    row.disponibilidad, row.telefono, row.descripcion, row.estado,
+    ayudanteFolio(row), lastFourPhone(row.telefono)
+  ].join(" ");
+  return normalizeText(searchable).includes(query);
+}
+
 function renderAdminPedidos() {
   const list = document.getElementById("adminPedidos");
   if (!list) return;
   const search = document.getElementById("adminSearch")?.value || "";
-  const rows = adminJobsCache.filter(row => matchesSearch(row, search));
+  const rows = adminJobsCache.filter(row => adminPedidoMatchesSearch(row, search));
   if (!rows.length) {
     list.innerHTML = `<div class="list-empty"><strong>No hay pedidos para mostrar.</strong></div>`;
     return;
@@ -641,6 +725,7 @@ function renderAdminPedidos() {
         <strong>🔍 ${escapeHtml(row.titulo || "Pedido sin título")}</strong>
         ${renderStatusBadge(row.estado)}
       </div>
+      <div class="folio-line">Folio: <strong>${escapeHtml(pedidoFolio(row))}</strong> · Últimos 4: <strong>${escapeHtml(lastFourPhone(row.contacto))}</strong></div>
       <span class="tag">${escapeHtml(row.categoria || "General")}</span>
       <p class="meta">📍 ${escapeHtml([row.localidad, row.municipio, row.estado_nombre].filter(Boolean).join(", ") || row.ubicacion || "")}</p>
       <p class="meta small-meta">Zona: ${escapeHtml(row.ubicacion || "")}</p>
@@ -661,7 +746,7 @@ function renderAdminAyudantes() {
   const list = document.getElementById("adminAyudantes");
   if (!list) return;
   const search = document.getElementById("adminSearch")?.value || "";
-  const rows = adminHelpersCache.filter(row => matchesSearch(row, search));
+  const rows = adminHelpersCache.filter(row => adminAyudanteMatchesSearch(row, search));
   if (!rows.length) {
     list.innerHTML = `<div class="list-empty"><strong>No hay perfiles para mostrar.</strong></div>`;
     return;
@@ -672,6 +757,7 @@ function renderAdminAyudantes() {
         <strong>🧰 ${escapeHtml(row.nombre || "Perfil sin nombre")}</strong>
         ${renderStatusBadge(row.estado)}
       </div>
+      <div class="folio-line">Folio: <strong>${escapeHtml(ayudanteFolio(row))}</strong> · Últimos 4: <strong>${escapeHtml(lastFourPhone(row.telefono))}</strong></div>
       <span class="tag">${escapeHtml(row.categoria || "Servicio")}</span>
       <p class="meta">🛠️ ${escapeHtml(row.servicio || "")}</p>
       <p class="meta">📍 ${escapeHtml([row.localidad, row.municipio, row.estado_nombre].filter(Boolean).join(", ") || row.zona || "")}</p>

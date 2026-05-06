@@ -1,4 +1,4 @@
-# Conecta Servicios v3.7 - Publicación piloto pública
+# Conecta Servicios v3.7.2.1 - Filtros flexibles
 
 Versión consolidada para publicar en prueba pública desde Vercel/GitHub.
 
@@ -33,10 +33,28 @@ Reemplaza en GitHub estos cuatro archivos en la raíz del repositorio:
 
 Commit sugerido:
 
-`Actualizar a v3.7 publicación piloto pública`
+`Actualizar a v3.7.2.1 filtros flexibles`
 
 Vercel publicará automáticamente.
 
 ## Supabase
 
 No requiere SQL nuevo si ya aplicaste las versiones anteriores hasta v3.3.2.
+
+
+## Cambios v3.7.2.1
+
+- Al elegir “Todo México”, el municipio se limpia y queda deshabilitado.
+- El resumen muestra “Mostrando resultados para: Todo México”.
+- Los campos de municipio de filtros usan `autocomplete=off` para evitar sugerencias del administrador de contraseñas del navegador.
+- No requiere cambios en Supabase ni SQL nuevo.
+
+
+## v3.7.2
+
+- Folios visibles para pedidos y perfiles.
+- Solicitud de pedido atendido por WhatsApp con verificación de últimos 4 dígitos.
+- El usuario no cambia estados directamente.
+- Buscador admin por folio y últimos 4 dígitos.
+- Incluye filtros flexibles de v3.7.1.
+- No requiere SQL nuevo.
