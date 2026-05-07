@@ -1,50 +1,56 @@
 const SUPABASE_URL = "https://qfneazokicmyrtqvukqv.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmbmVhem9raWNteXJ0cXZ1a3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MzA0MzUsImV4cCI6MjA5MzUwNjQzNX0.60AKW1IttWSPbRJ8n7Ca9vP5it5-yLyxiXaxDKjd5r0";
 
-const OFFICE_INFO = {
-  phone: "7225703145",
-  note: "Atención solamente por WhatsApp para dudas, registros asistidos y seguimiento de publicaciones."
-};
-
-let currentSection = "inicio";
-let jobsCache = [];
-let helpersCache = [];
-let adminJobsCache = [];
-let adminHelpersCache = [];
-let adminUnlocked = false;
-let adminTab = "pedidos";
-let isLoading = false;
-
-// Acceso temporal para piloto. No es seguridad real: en la siguiente versión conviene usar Supabase Auth.
+const OFFICE_PHONE = "7225703145";
 const ADMIN_PIN = "3145";
-let adminRouteEnabled = false;
-let lastHomeBackPress = 0;
-let allowBrowserExit = false;
-let homeExitGuardArmed = false;
-
 const DEFAULT_STATE = "México";
 const DEFAULT_MUNICIPALITY = "Chapultepec";
 const DEFAULT_LOCALITY = "Chapultepec Centro";
-const STATES = [
-  "Aguascalientes", "Baja California", "Baja California Sur", "Campeche", "Chiapas",
-  "Chihuahua", "Ciudad de México", "Coahuila", "Colima", "Durango", "Guanajuato",
-  "Guerrero", "Hidalgo", "Jalisco", "México", "Michoacán", "Morelos", "Nayarit",
-  "Nuevo León", "Oaxaca", "Puebla", "Querétaro", "Quintana Roo", "San Luis Potosí",
-  "Sinaloa", "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala", "Veracruz", "Yucatán", "Zacatecas"
-];
+const STATES = ["Aguascalientes","Baja California","Baja California Sur","Campeche","Chiapas","Chihuahua","Ciudad de México","Coahuila","Colima","Durango","Guanajuato","Guerrero","Hidalgo","Jalisco","México","Michoacán","Morelos","Nayarit","Nuevo León","Oaxaca","Puebla","Querétaro","Quintana Roo","San Luis Potosí","Sinaloa","Sonora","Tabasco","Tamaulipas","Tlaxcala","Veracruz","Yucatán","Zacatecas"];
 
-function createId() {
-  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+let currentSection = "inicio";
+let publicationsCache = [];
+let adminCache = [];
+let adminUnlocked = false;
+let adminRouteEnabled = false;
+let lastHomeBackPress = 0;
+let isLoading = false;
+
+function cleanPhone(phone) { return String(phone || "").replace(/\D/g, ""); }
+function maskPhone(phone) {
+  const digits = cleanPhone(phone);
+  if (digits.length <= 4) return "xxxx";
+  return `${"x".repeat(Math.max(4, digits.length - 4))}${digits.slice(-4)}`;
 }
-
+function last4(phone) { return cleanPhone(phone).slice(-4); }
+function createId() { return crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`; }
+function folio(item) { return `PUB-${String(item.id || "00000").replace(/-/g, "").slice(0, 5).toUpperCase()}`; }
+function normalize(value) { return String(value || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+function money(value) { const n = Number(value || 0); return n > 0 ? `$${n.toLocaleString("es-MX")}` : "A tratar"; }
+function escapeHtml(text) {
+  return String(text || "").replace(/[&<>"]/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m]));
+}
+function linkify(text) {
+  const safe = escapeHtml(text || "");
+  const urlRegex = /(https?:\/\/[^\s<]+|www\.[^\s<]+|(?:facebook|fb|instagram|tiktok|waze)\.com\/[^\s<]+)/gi;
+  return safe.replace(urlRegex, match => {
+    const href = /^https?:\/\//i.test(match) ? match : `https://${match}`;
+    return `<a href="${href}" target="_blank" rel="noopener noreferrer">${match}</a>`;
+  }).replace(/\n/g, "<br>");
+}
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(() => toast.classList.remove("show"), 2600);
+}
 function setSyncStatus(message, type = "") {
-  const status = document.getElementById("syncStatus");
-  if (!status) return;
-  status.textContent = message;
-  status.className = `sync-status ${type}`.trim();
+  const el = document.getElementById("syncStatus");
+  if (!el) return;
+  el.textContent = message;
+  el.className = `sync-status ${type}`.trim();
 }
-
 async function supabaseRequest(path, options = {}) {
   const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     ...options,
@@ -56,1111 +62,364 @@ async function supabaseRequest(path, options = {}) {
       ...(options.headers || {})
     }
   });
-
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(errorText || `Error ${response.status}`);
   }
-
   if (response.status === 204) return null;
   const text = await response.text();
   return text ? JSON.parse(text) : null;
 }
-
-async function loadRemoteData() {
-  isLoading = true;
-  renderLoadingStates();
-  setSyncStatus("Conectando con la base de datos...");
-
-  try {
-    const [pedidos, ayudantes] = await Promise.all([
-      supabaseRequest("pedidos?select=*&estado=eq.activo&order=creado_en.desc"),
-      supabaseRequest("ayudantes?select=*&estado=eq.activo&order=creado_en.desc")
-    ]);
-
-    jobsCache = (pedidos || []).map(mapPedidoFromDb);
-    helpersCache = (ayudantes || []).map(mapAyudanteFromDb);
-    setSyncStatus("Datos en línea actualizados", "ok");
-    renderAll();
-  } catch (error) {
-    console.error("Error conectando con Supabase", error);
-    setSyncStatus("No se pudo conectar con la base de datos. Revisa Supabase o internet.", "error");
-    renderAll();
-    showToast("Error de conexión con Supabase");
-  } finally {
-    isLoading = false;
-  }
-}
-
-function mapPedidoFromDb(row) {
+function mapPublication(row) {
   return {
     id: row.id || createId(),
-    title: row.titulo || "Pedido sin título",
-    category: row.categoria || "General",
-    location: row.ubicacion || "Ubicación por confirmar",
-    state: row.estado_nombre || row.estado_ubicacion || row.estado_geo || DEFAULT_STATE,
-    municipality: row.municipio || DEFAULT_MUNICIPALITY,
-    locality: row.localidad || row.colonia || DEFAULT_LOCALITY,
-    date: row.fecha || "",
-    budget: Number(row.presupuesto || 0),
-    phone: row.contacto || "",
+    name: row.nombre_publico || "Sin nombre",
+    title: row.titulo || "Publicación sin título",
     description: row.descripcion || "",
-    createdAt: row.creado_en || ""
-  };
-}
-
-function mapAyudanteFromDb(row) {
-  return {
-    id: row.id || createId(),
-    name: row.nombre || "Perfil sin nombre",
-    service: row.servicio || "Servicio",
-    category: row.categoria || "Servicio",
-    location: row.zona || "Zona por confirmar",
-    state: row.estado_nombre || row.estado_ubicacion || row.estado_geo || DEFAULT_STATE,
+    category: row.categoria_principal || "General",
+    subcategory: row.subcategoria || "",
+    intent: row.intencion || "",
+    state: row.estado_nombre || DEFAULT_STATE,
     municipality: row.municipio || DEFAULT_MUNICIPALITY,
-    locality: row.localidad || row.colonia || DEFAULT_LOCALITY,
-    availability: row.disponibilidad || "Disponibilidad por confirmar",
+    locality: row.localidad || DEFAULT_LOCALITY,
+    reference: row.referencia || "",
     phone: row.telefono || "",
-    description: row.descripcion || "",
+    route: row.ruta || "",
+    departure: row.salida || "",
+    time: row.hora || "",
+    transport: row.medio || "",
+    budget: row.presupuesto || 0,
+    status: row.estado || "revision",
     highlighted: Boolean(row.destacado),
     createdAt: row.creado_en || ""
   };
 }
-
+async function loadRemoteData() {
+  isLoading = true;
+  setSyncStatus("Conectando con la base de datos...");
+  renderLoading();
+  try {
+    const rows = await supabaseRequest("publicaciones?select=*&estado=eq.activo&order=creado_en.desc");
+    publicationsCache = (rows || []).map(mapPublication);
+    setSyncStatus("Datos en línea actualizados", "ok");
+    renderAll();
+  } catch (error) {
+    console.error(error);
+    setSyncStatus("No se pudo conectar. Revisa si ya corriste el SQL de v3.8.", "error");
+    renderAll();
+  } finally {
+    isLoading = false;
+  }
+}
+async function loadAdminData() {
+  if (!adminUnlocked) return;
+  const list = document.getElementById("adminList");
+  if (list) list.innerHTML = `<div class="empty-state">Cargando administración...</div>`;
+  try {
+    const rows = await supabaseRequest("publicaciones?select=*&order=creado_en.desc");
+    adminCache = (rows || []).map(mapPublication);
+    renderAdminPublications();
+  } catch (error) {
+    console.error(error);
+    showToast("No se pudo cargar administración");
+  }
+}
+function populateStateSelects() {
+  document.querySelectorAll("[data-state-select]").forEach(select => {
+    const blank = select.dataset.blank === "true";
+    const def = select.dataset.default || DEFAULT_STATE;
+    select.innerHTML = "";
+    if (blank) select.append(new Option("Todos los estados", ""));
+    STATES.forEach(state => select.append(new Option(state, state)));
+    select.value = blank ? def : def;
+  });
+}
 function routeUrlForSection(id) {
-  const params = new URLSearchParams(window.location.search);
-  const adminMode = adminRouteEnabled || params.get("admin") === "1" || params.get("admin") === "true";
+  const params = new URLSearchParams(location.search);
+  const adminMode = adminRouteEnabled || params.get("admin") === "1";
   const base = adminMode ? `${location.pathname}?admin=1` : location.pathname;
   return `${base}#${id}`;
 }
-
-function normalizeSectionFromHash(hashValue) {
-  const raw = String(hashValue || "").replace("#", "");
-  if (!raw || raw === "inicio-guard" || raw === "inicio-top") return "inicio";
-  return raw;
-}
-
-function pushExitGuard(section = currentSection || "inicio") {
-  // Estado extra para que el botón Atrás del celular no cierre la app al primer toque.
-  history.pushState({ section, appGuard: true, ts: Date.now() }, "", routeUrlForSection(section === "inicio" ? "inicio-guard" : section));
-  homeExitGuardArmed = section === "inicio";
-}
-
-function handleHomeBackAttempt() {
-  const now = Date.now();
-  if (now - lastHomeBackPress < 2600) {
-    allowBrowserExit = true;
-    homeExitGuardArmed = false;
-    showToast("Saliendo de Conecta Servicios");
-    setTimeout(() => history.back(), 80);
-    return;
-  }
-
-  lastHomeBackPress = now;
-  showToast("Presiona atrás otra vez para salir");
-  pushExitGuard("inicio");
-}
-
-function showSection(id, pushToHistory = true) {
-  lastHomeBackPress = 0;
-  if (id === "admin" && !adminRouteEnabled) {
-    id = "inicio";
-    showToast("Acceso de administración oculto");
-  }
+function showSection(id, push = true) {
+  if (id === "admin" && !adminRouteEnabled) { showToast("Acceso de administración oculto"); id = "inicio"; }
   const target = document.getElementById(id);
   if (!target) return;
-
-  if (pushToHistory && id !== currentSection) {
-    history.pushState({ section: id }, "", routeUrlForSection(id));
-  }
-
+  if (push && id !== currentSection) history.pushState({ section: id }, "", routeUrlForSection(id));
   currentSection = id;
-  document.querySelectorAll(".section").forEach(section => section.classList.remove("active"));
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   target.classList.add("active");
-
-  const titles = {
-    inicio: "Conecta Servicios",
-    ofertas: "Pedidos publicados",
-    publicar: "Publicar pedido",
-    galeria: "Perfiles disponibles",
-    registro: "Registrarme",
-    registroAyudante: "Registrar ayudante",
-    comoFunciona: "Cómo funciona",
-    reglas: "Reglas y seguridad",
-    avisoPrivacidad: "Aviso de Privacidad",
-    terminos: "Términos y Condiciones",
-    planes: "Planes y destacados",
-    oficina: "Oficina de registro",
-    admin: "Administración"
-  };
-
+  const titles = { inicio:"Conecta Servicios", registro:"Registrarme", publicaciones:"Resultados", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos" };
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
   renderAll();
 }
-
 function goBack() {
   if (currentSection === "inicio") {
-    handleHomeBackAttempt();
+    const now = Date.now();
+    if (now - lastHomeBackPress < 2500) { history.back(); return; }
+    lastHomeBackPress = now;
+    showToast("Presiona atrás otra vez para salir");
+    history.pushState({ section: "inicio", guard: true }, "", routeUrlForSection("inicio"));
     return;
   }
-  if (history.state && history.state.section) history.back();
-  else showSection("inicio", false);
+  history.back();
 }
-
-function formatDate(value) {
-  if (!value) return "Fecha por confirmar";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Fecha por confirmar";
-  return new Intl.DateTimeFormat("es-MX", { dateStyle: "medium", timeStyle: "short" }).format(date);
+window.addEventListener("popstate", event => {
+  const id = (event.state && event.state.section) || String(location.hash || "#inicio").replace("#", "") || "inicio";
+  if (currentSection === "inicio" && id === "inicio") { goBack(); return; }
+  showSection(id, false);
+});
+function handleStateFilterChange() {
+  const state = document.getElementById("stateFilter").value;
+  const municipality = document.getElementById("municipalityFilter");
+  if (!state) { municipality.value = ""; municipality.disabled = true; }
+  else { municipality.disabled = false; if (!municipality.value) municipality.value = state === DEFAULT_STATE ? DEFAULT_MUNICIPALITY : ""; }
+  renderPublications();
 }
-
-function cleanPhone(phone) {
-  return String(phone || "").replace(/\D/g, "");
+function resetLocationFilters() {
+  document.getElementById("stateFilter").value = DEFAULT_STATE;
+  const municipality = document.getElementById("municipalityFilter");
+  municipality.disabled = false;
+  municipality.value = DEFAULT_MUNICIPALITY;
+  renderPublications();
 }
-
-function publicFolio(prefix, id) {
-  const raw = String(id || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
-  const short = raw ? raw.slice(-6) : Math.random().toString(36).slice(2, 8).toUpperCase();
-  return `${prefix}-${short}`;
+function applyCategoryAndShow(category) {
+  showSection("publicaciones");
+  setTimeout(() => { document.getElementById("categoryFilter").value = category; renderPublications(); }, 50);
 }
-
-function pedidoFolio(jobOrRow) {
-  return publicFolio("PED", jobOrRow?.id);
+function requestNearbyComingSoon() {
+  showToast("Próxima etapa: ubicación exacta y registros cercanos");
+  showSection("publicaciones");
 }
-
-function ayudanteFolio(helperOrRow) {
-  return publicFolio("AYU", helperOrRow?.id);
-}
-
-function lastFourPhone(phone) {
-  const cleaned = cleanPhone(phone);
-  return cleaned.slice(-4);
-}
-
-function whatsappLink(phone, message) {
-  const cleaned = cleanPhone(phone);
-  const withCountry = cleaned.length === 10 ? `52${cleaned}` : cleaned;
-  return `https://wa.me/${withCountry}?text=${encodeURIComponent(message)}`;
-}
-
-function maskPhone(phone) {
-  const cleaned = cleanPhone(phone);
-  if (!cleaned) return "xxxxxx----";
-  const lastFour = cleaned.slice(-4);
-  return `xxxxxx${lastFour}`;
-}
-
-function linkifyText(value) {
-  const text = String(value || "");
-  if (!text) return "";
-
-  const urlRegex = /(https?:\/\/[^\s<]+|www\.[^\s<]+|(?:facebook\.com|fb\.com|instagram\.com|tiktok\.com|maps\.app\.goo\.gl)\/[^\s<]+)/gi;
-  let output = "";
-  let lastIndex = 0;
-  let match;
-
-  while ((match = urlRegex.exec(text)) !== null) {
-    output += escapeHtml(text.slice(lastIndex, match.index));
-
-    let url = match[0];
-    let trailing = "";
-    while (/[.,;:!?)]$/.test(url)) {
-      trailing = url.slice(-1) + trailing;
-      url = url.slice(0, -1);
-    }
-
-    const href = /^https?:\/\//i.test(url) ? url : `https://${url}`;
-    output += `<a class="inline-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(url)}</a>${escapeHtml(trailing)}`;
-    lastIndex = match.index + match[0].length;
-  }
-
-  output += escapeHtml(text.slice(lastIndex));
-  return output.replace(/\n/g, "<br>");
-}
-
-function shareUrl(kind, id) {
-  const params = new URLSearchParams();
-  params.set(kind === "pedido" ? "pedido" : "perfil", id);
-  return `${location.origin}${location.pathname}?${params.toString()}`;
-}
-
-async function sharePublication(kind, id) {
-  const isJob = kind === "pedido";
-  const item = isJob ? jobsCache.find(row => row.id === id) : helpersCache.find(row => row.id === id);
-  if (!item) {
-    showToast("No se encontró la publicación");
-    return;
-  }
-
-  const title = isJob ? item.title : `${item.name} - ${item.service}`;
-  const folio = isJob ? pedidoFolio(item) : ayudanteFolio(item);
-  const url = shareUrl(kind, id);
-  const text = `${title}\nFolio: ${folio}\n${locationText(item)}\nConecta Servicios`;
-
-  try {
-    if (navigator.share) {
-      await navigator.share({ title: "Conecta Servicios", text, url });
-      return;
-    }
-    await navigator.clipboard.writeText(`${text}\n${url}`);
-    showToast("Enlace copiado para compartir");
-  } catch (error) {
-    console.warn("No se pudo compartir", error);
-    prompt("Copia este enlace para compartir la publicación:", url);
-  }
-}
-
-function handleSharedTarget(kind, id) {
-  if (!kind || !id) return;
-  const isJob = kind === "pedido";
-  const item = isJob ? jobsCache.find(row => row.id === id) : helpersCache.find(row => row.id === id);
-  const prefix = isJob ? "job" : "helper";
-  const section = isJob ? "ofertas" : "galeria";
-
-  showSection(section, false);
-  if (item) {
-    const state = document.getElementById(`${prefix}StateFilter`);
-    const municipality = document.getElementById(`${prefix}MunicipalityFilter`);
-    const search = document.getElementById(isJob ? "jobSearch" : "helperSearch");
-    if (state) state.value = item.state || DEFAULT_STATE;
-    syncMunicipalityInput(prefix);
-    if (municipality) municipality.value = item.municipality || "";
-    if (search) search.value = "";
-    if (isJob) renderJobs();
-    else renderHelpers();
-
-    setTimeout(() => {
-      const el = document.getElementById(`${kind}-${id}`);
-      if (el) {
-        el.classList.add("shared-highlight");
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
-        setTimeout(() => el.classList.remove("shared-highlight"), 3500);
-      }
-    }, 250);
-  } else {
-    showToast("La publicación no está activa o ya no está disponible");
-  }
-}
-
-function officeNewJobMessage(job) {
-  return `Nuevo pedido en revisión en Conecta Servicios:
-
-Folio: ${pedidoFolio(job)}
-Pedido: ${job.title}
-Categoría: ${job.category}
-Ubicación: ${job.locality}, ${job.municipality}, ${job.state}
-Zona: ${job.location}
-Fecha: ${formatDate(job.date)}
-Presupuesto: $${Number(job.budget || 0).toLocaleString("es-MX")}
-Contacto completo: ${cleanPhone(job.phone)}
-Últimos 4: ${lastFourPhone(job.phone)}
-ID interno: ${job.id}
-
-Favor de revisar y aprobar desde el panel administrador.`;
-}
-
-function officeNewHelperMessage(helper) {
-  return `Nuevo perfil en revisión en Conecta Servicios:
-
-Folio: ${ayudanteFolio(helper)}
-Nombre: ${helper.name}
-Servicio: ${helper.service}
-Categoría: ${helper.category}
-Ubicación: ${helper.locality}, ${helper.municipality}, ${helper.state}
-Zona: ${helper.location}
-Disponibilidad: ${helper.availability}
-Contacto completo: ${cleanPhone(helper.phone)}
-Últimos 4: ${lastFourPhone(helper.phone)}
-ID interno: ${helper.id}
-
-Favor de revisar y aprobar desde el panel administrador.`;
-}
-
-function notifyOfficeByWhatsapp(kind, item) {
-  const message = kind === "pedido" ? officeNewJobMessage(item) : officeNewHelperMessage(item);
-  const link = whatsappLink(OFFICE_INFO.phone, message);
-  window.location.href = link;
-}
-
-function planWhatsappMessage(type) {
-  const messages = {
-    perfil: `Hola, quiero solicitar información para activar un perfil destacado en Conecta Servicios.
-
-Nombre:
-Municipio:
-Servicio:
-Teléfono:`,
-    publicacion: `Hola, quiero solicitar información para destacar una publicación en Conecta Servicios.
-
-Tipo de publicación:
-Municipio:
-Fecha aproximada:
-Teléfono:`,
-    registro: `Hola, quiero apoyo de la oficina para registrar o actualizar información en Conecta Servicios.
-
-Nombre:
-Municipio:
-Qué necesito:`
-  };
-  return messages[type] || "Hola, quiero información sobre planes y destacados de Conecta Servicios.";
-}
-
-function renderPlanLinks() {
-  document.querySelectorAll("[data-plan-link]").forEach(link => {
-    const type = link.getAttribute("data-plan-link");
-    link.href = whatsappLink(OFFICE_INFO.phone, planWhatsappMessage(type));
+function filterPublications(list) {
+  const category = document.getElementById("categoryFilter")?.value || "";
+  const state = document.getElementById("stateFilter")?.value || "";
+  const municipality = document.getElementById("municipalityFilter")?.value || "";
+  const search = normalize(document.getElementById("mainSearch")?.value || "");
+  updateFilterSummary(state, municipality);
+  return list.filter(item => {
+    const matchesCategory = !category || item.category === category;
+    const matchesState = !state || normalize(item.state) === normalize(state);
+    const matchesMunicipality = !municipality || normalize(item.municipality).includes(normalize(municipality));
+    const haystack = normalize([folio(item), item.name, item.title, item.description, item.category, item.subcategory, item.state, item.municipality, item.locality, item.route, item.transport].join(" "));
+    return matchesCategory && matchesState && matchesMunicipality && (!search || haystack.includes(search));
   });
 }
-
-function showToast(message) {
-  const toast = document.getElementById("toast");
-  toast.textContent = message;
-  toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 2600);
+function updateFilterSummary(state, municipality) {
+  const el = document.getElementById("filterSummary");
+  if (!el) return;
+  if (!state) el.textContent = "Mostrando resultados para: Todo México";
+  else if (!municipality) el.textContent = `Mostrando resultados para: ${state}`;
+  else el.textContent = `Mostrando resultados para: ${municipality}, ${state}`;
 }
-
-
-function normalizeText(value) {
-  return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+function publicationCard(item) {
+  const icon = item.category === "Viajes compartidos" ? "🚘" : item.category === "Mensajería y envíos" ? "📦" : "📌";
+  const meta = [item.intent, item.municipality, item.state].filter(Boolean).join(" · ");
+  const extra = [item.route && `Ruta: ${escapeHtml(item.route)}`, item.time && `Hora: ${escapeHtml(item.time)}`, item.departure && `Salida: ${escapeHtml(item.departure)}`, item.transport && `Medio: ${escapeHtml(item.transport)}`].filter(Boolean).join("<br>");
+  return `<article class="card publication-card ${item.highlighted ? "highlighted" : ""}">
+    <div class="card-top">
+      <div class="pub-icon">${icon}</div>
+      <div><span class="folio">${folio(item)}</span><h3>${escapeHtml(item.title)}</h3><p class="muted small">${escapeHtml(meta)}</p></div>
+      <strong class="price-tag">${money(item.budget)}</strong>
+    </div>
+    <p><strong>Publicado por:</strong> ${escapeHtml(item.name)}</p>
+    <p class="description">${linkify(item.description)}</p>
+    ${extra ? `<div class="extra-info">${extra}</div>` : ""}
+    <div class="contact-row"><span>WhatsApp: <strong>${maskPhone(item.phone)}</strong></span><button class="btn-small btn-green" onclick="openWhatsApp('${cleanPhone(item.phone)}','${encodeURIComponent(`Hola, vi tu publicación ${folio(item)} en Conecta Servicios: ${item.title}`)}')">Contactar</button></div>
+    <div class="card-actions">
+      <button class="btn-small btn-outline" onclick="sharePublication('${item.id}')">Compartir</button>
+      <button class="btn-small btn-ghost" onclick="requestModification('${item.id}')">Solicitar modificación</button>
+      <button class="btn-small btn-ghost" onclick="requestAttended('${item.id}')">Solicitar atendido</button>
+    </div>
+  </article>`;
 }
-
-function matchesSearch(item, search) {
-  const query = normalizeText(search);
-  if (!query) return true;
-  return normalizeText(Object.values(item).join(" ")).includes(query);
-}
-
-function matchesLocation(item, prefix) {
-  const selectedState = document.getElementById(`${prefix}StateFilter`)?.value || "";
-  const selectedMunicipality = document.getElementById(`${prefix}MunicipalityFilter`)?.value || "";
-
-  const itemState = item.state || DEFAULT_STATE;
-  const itemMunicipality = item.municipality || DEFAULT_MUNICIPALITY;
-
-  const stateOk = !selectedState || normalizeText(itemState) === normalizeText(selectedState);
-  const municipalityOk = !selectedMunicipality || normalizeText(itemMunicipality).includes(normalizeText(selectedMunicipality));
-  return stateOk && municipalityOk;
-}
-
-function locationText(item) {
-  const parts = [item.locality, item.municipality, item.state].filter(Boolean);
-  return parts.length ? parts.join(", ") : item.location;
-}
-
-function populateStateSelects() {
-  document.querySelectorAll("select[data-state-select]").forEach(select => {
-    const keepBlank = select.dataset.blank === "true";
-    const current = select.value || select.dataset.default || DEFAULT_STATE;
-    select.innerHTML = `${keepBlank ? '<option value="">Todo México</option>' : ''}${STATES.map(state => `<option value="${escapeHtml(state)}">${escapeHtml(state)}</option>`).join("")}`;
-
-    if (keepBlank && current === "") select.value = "";
-    else select.value = STATES.includes(current) ? current : DEFAULT_STATE;
-  });
-
-  syncMunicipalityInput("job");
-  syncMunicipalityInput("helper");
-}
-
-function syncMunicipalityInput(prefix) {
-  const state = document.getElementById(`${prefix}StateFilter`);
-  const municipality = document.getElementById(`${prefix}MunicipalityFilter`);
-  if (!state || !municipality) return;
-
-  if (!state.value) {
-    municipality.value = "";
-    municipality.disabled = true;
-    municipality.placeholder = "Todos los municipios";
-  } else {
-    municipality.disabled = false;
-    municipality.placeholder = `Ej. ${state.value === DEFAULT_STATE ? DEFAULT_MUNICIPALITY : "Cuernavaca"}`;
-  }
-}
-
-function handleStateFilterChange(prefix) {
-  syncMunicipalityInput(prefix);
-  if (prefix === "job") renderJobs();
-  if (prefix === "helper") renderHelpers();
-}
-
-function getLocationFilterLabel(prefix) {
-  const selectedState = document.getElementById(`${prefix}StateFilter`)?.value || "";
-  const selectedMunicipality = document.getElementById(`${prefix}MunicipalityFilter`)?.value.trim() || "";
-
-  if (!selectedState) return "Mostrando resultados para: Todo México";
-  if (!selectedMunicipality) return `Mostrando resultados para: ${selectedState}`;
-  return `Mostrando resultados para: ${selectedMunicipality}, ${selectedState}`;
-}
-
-function updateLocationFilterSummary(prefix, count) {
-  const summary = document.getElementById(`${prefix}FilterSummary`);
-  if (!summary) return;
-  const label = getLocationFilterLabel(prefix);
-  const suffix = typeof count === "number" ? ` • ${count} resultado${count === 1 ? "" : "s"}` : "";
-  summary.textContent = `${label}${suffix}`;
-}
-
-function resetLocationFilters(prefix) {
-  const state = document.getElementById(`${prefix}StateFilter`);
-  const municipality = document.getElementById(`${prefix}MunicipalityFilter`);
-  if (state) state.value = DEFAULT_STATE;
-  if (municipality) municipality.value = DEFAULT_MUNICIPALITY;
-  syncMunicipalityInput(prefix);
-  if (prefix === "job") renderJobs();
-  if (prefix === "helper") renderHelpers();
-}
-
-function renderLoadingStates() {
-  const jobsList = document.getElementById("jobsList");
-  const helpersList = document.getElementById("helpersList");
-  if (jobsList) jobsList.innerHTML = `<div class="list-empty"><strong>Cargando pedidos...</strong><p>Consultando la base de datos en línea.</p></div>`;
-  if (helpersList) helpersList.innerHTML = `<div class="list-empty"><strong>Cargando perfiles...</strong><p>Consultando la base de datos en línea.</p></div>`;
-}
-
-function renderCounters() {
-  document.getElementById("jobsCount").textContent = jobsCache.length;
-  document.getElementById("helpersCount").textContent = helpersCache.length;
-}
-
-function requestPedidoAtendido(jobId) {
-  const job = jobsCache.find(item => item.id === jobId);
-  if (!job) {
-    showToast("No se encontró el pedido");
-    return;
-  }
-
-  const folio = pedidoFolio(job);
-  const entered = prompt(`Para solicitar que la oficina marque este pedido como atendido, escribe los últimos 4 dígitos del teléfono con el que se publicó.\n\nFolio: ${folio}`);
-  if (entered === null) return;
-
-  const normalized = String(entered || "").replace(/\D/g, "");
-  if (normalized !== lastFourPhone(job.phone)) {
-    alert("Los últimos 4 dígitos no coinciden con el teléfono registrado en este pedido. Por seguridad, no se abrirá la solicitud.");
-    return;
-  }
-
-  const message = `Hola, quiero solicitar que revisen y marquen como atendido este pedido en Conecta Servicios.\n\nFolio: ${folio}\nPedido: ${job.title}\nUbicación: ${locationText(job)}\nContacto registrado: ${maskPhone(job.phone)}\nÚltimos 4 dígitos verificados: ${lastFourPhone(job.phone)}\n\nEntiendo que la oficina revisa y confirma el cambio desde administración.`;
-  window.open(whatsappLink(OFFICE_INFO.phone, message), "_blank", "noopener");
-}
-
-function requestModification(kind, id) {
-  const isJob = kind === "pedido";
-  const item = isJob ? jobsCache.find(row => row.id === id) : helpersCache.find(row => row.id === id);
-  if (!item) {
-    showToast("No se encontró la publicación");
-    return;
-  }
-
-  const folio = isJob ? pedidoFolio(item) : ayudanteFolio(item);
-  const title = isJob ? item.title : item.name;
-  const typeLabel = isJob ? "pedido" : "perfil";
-  const entered = prompt(`Para solicitar modificación de este ${typeLabel}, escribe los últimos 4 dígitos del teléfono registrado.\n\nFolio: ${folio}`);
-  if (entered === null) return;
-
-  const normalized = String(entered || "").replace(/\D/g, "");
-  if (normalized !== lastFourPhone(item.phone)) {
-    alert("Los últimos 4 dígitos no coinciden con el teléfono registrado. Por seguridad, no se abrirá la solicitud.");
-    return;
-  }
-
-  const message = `Hola, quiero solicitar una modificación de mi ${typeLabel} en Conecta Servicios.\n\nFolio: ${folio}\nPublicación: ${title}\nUbicación: ${locationText(item)}\nContacto registrado: ${maskPhone(item.phone)}\nÚltimos 4 dígitos verificados: ${lastFourPhone(item.phone)}\n\nCambio solicitado:\n`;
-  window.open(whatsappLink(OFFICE_INFO.phone, message), "_blank", "noopener");
-}
-
-function renderJobs() {
-  syncMunicipalityInput("job");
-  const list = document.getElementById("jobsList");
+function renderPublications() {
+  const list = document.getElementById("publicationsList");
   if (!list) return;
-  if (isLoading) return;
-
-  const search = document.getElementById("jobSearch")?.value || "";
-  const jobs = jobsCache.filter(job => matchesSearch(job, search) && matchesLocation(job, "job"));
-  updateLocationFilterSummary("job", jobs.length);
-
-  if (!jobs.length) {
-    list.innerHTML = `<div class="list-empty"><strong>No hay pedidos publicados todavía.</strong><p>Publica el primer pedido o prueba con otra búsqueda.</p></div>`;
-    return;
-  }
-
-  list.innerHTML = jobs.map(job => {
-    const message = `Hola, vi tu pedido en Conecta Servicios: "${job.title}". Me interesa ayudarte. ¿Me compartes más detalles?`;
-    return `
-      <article id="pedido-${job.id}" class="card">
-        <div class="card-title">
-          <strong>🔍 ${escapeHtml(job.title)}</strong>
-          <span class="price-tag">$${Number(job.budget || 0).toLocaleString("es-MX")}</span>
-        </div>
-        <div class="folio-line">Folio: <strong>${escapeHtml(pedidoFolio(job))}</strong></div>
-        <span class="tag">${escapeHtml(job.category || "General")}</span>
-        <p class="meta">📍 ${escapeHtml(locationText(job))}</p>
-        <p class="meta small-meta">Zona: ${escapeHtml(job.location)}</p>
-        <p class="meta">📅 ${formatDate(job.date)}</p>
-        ${job.description ? `<p class="description">${linkifyText(job.description)}</p>` : ""}
-        <p class="masked-contact">☎ Contacto: ${escapeHtml(maskPhone(job.phone))}</p>
-        <div class="privacy-note">El número está parcialmente oculto en la app. Al abrir WhatsApp, la conversación puede mostrar el número real.</div>
-        <div class="card-actions">
-          <a class="whatsapp" href="${whatsappLink(job.phone, message)}" target="_blank" rel="noopener">Enviar WhatsApp</a>
-          <button class="share-button" type="button" onclick="sharePublication('pedido', '${job.id}')">Compartir</button>
-          <button class="request-done" type="button" onclick="requestPedidoAtendido('${job.id}')">Solicitar atendido</button>
-          <button class="request-edit" type="button" onclick="requestModification('pedido', '${job.id}')">Solicitar modificación</button>
-        </div>
-      </article>`;
-  }).join("");
+  if (isLoading) { renderLoading(); return; }
+  const filtered = filterPublications(publicationsCache);
+  list.innerHTML = filtered.length ? filtered.map(publicationCard).join("") : `<div class="empty-state">No hay registros con esos filtros. Prueba otro municipio o categoría.</div>`;
+  document.getElementById("publicationsCount").textContent = publicationsCache.length;
 }
-
-function renderHelpers() {
-  syncMunicipalityInput("helper");
-  const list = document.getElementById("helpersList");
-  if (!list) return;
-  if (isLoading) return;
-
-  const search = document.getElementById("helperSearch")?.value || "";
-  const helpers = helpersCache.filter(helper => matchesSearch(helper, search) && matchesLocation(helper, "helper"));
-  updateLocationFilterSummary("helper", helpers.length);
-
-  if (!helpers.length) {
-    list.innerHTML = `<div class="list-empty"><strong>No hay perfiles publicados todavía.</strong><p>Registra el primer perfil o prueba con otra búsqueda.</p></div>`;
-    return;
-  }
-
-  list.innerHTML = helpers.map(helper => {
-    const message = `Hola ${helper.name}, vi tu perfil en Conecta Servicios. Me interesa tu servicio de ${helper.service}.`;
-    return `
-      <article id="perfil-${helper.id}" class="card ${helper.highlighted ? "highlighted" : ""}">
-        <div class="card-title"><strong>🧰 ${escapeHtml(helper.name)}</strong></div>
-        <div class="folio-line">Folio: <strong>${escapeHtml(ayudanteFolio(helper))}</strong></div>
-        <span class="tag">${escapeHtml(helper.category || "Servicio")}</span>
-        <p class="meta">🛠️ ${escapeHtml(helper.service)}</p>
-        <p class="meta">📍 ${escapeHtml(locationText(helper))}</p>
-        <p class="meta small-meta">Zona: ${escapeHtml(helper.location)}</p>
-        <p class="meta">🕒 ${escapeHtml(helper.availability)}</p>
-        ${helper.description ? `<p class="description">${linkifyText(helper.description)}</p>` : ""}
-        <p class="masked-contact">☎ Contacto: ${escapeHtml(maskPhone(helper.phone))}</p>
-        <div class="privacy-note">El número está parcialmente oculto en la app. Al abrir WhatsApp, la conversación puede mostrar el número real.</div>
-        <div class="card-actions">
-          <a class="whatsapp" href="${whatsappLink(helper.phone, message)}" target="_blank" rel="noopener">Enviar WhatsApp</a>
-          <button class="share-button" type="button" onclick="sharePublication('perfil', '${helper.id}')">Compartir</button>
-          <button class="request-edit" type="button" onclick="requestModification('ayudante', '${helper.id}')">Solicitar modificación</button>
-        </div>
-      </article>`;
-  }).join("");
+function renderLoading() {
+  const list = document.getElementById("publicationsList");
+  if (list) list.innerHTML = `<div class="empty-state">Cargando registros...</div>`;
 }
-
-function renderOfficeInfo() {
-  const officeInfo = document.getElementById("officeInfo");
-  if (!officeInfo) return;
-  const message = "Hola, quiero atención de Conecta Servicios por WhatsApp.";
-
-  officeInfo.innerHTML = `
-    <strong>Atención de Conecta Servicios</strong>
-    <p class="muted">${escapeHtml(OFFICE_INFO.note)}</p>
-    <a class="office-whatsapp" href="${whatsappLink(OFFICE_INFO.phone, message)}" target="_blank" rel="noopener">Enviar WhatsApp</a>
-    <p class="muted edit-hint">Versión 3.7.4: registro simplificado, enlaces clicables, compartir publicaciones y edición desde administración.</p>`;
+function renderAll() { renderPublications(); updateHomeCounts(); }
+function updateHomeCounts() { const count = document.getElementById("publicationsCount"); if (count) count.textContent = publicationsCache.length; }
+function toggleCategoryFields() {
+  const category = document.getElementById("pubCategory").value;
+  document.getElementById("rideFields").classList.toggle("hidden", category !== "Viajes compartidos");
+  document.getElementById("deliveryFields").classList.toggle("hidden", category !== "Mensajería y envíos");
 }
-
-function setupAdminAccess() {
-  const adminButton = document.getElementById("adminAccessButton");
-  const params = new URLSearchParams(window.location.search);
-  adminRouteEnabled = params.get("admin") === "1" || params.get("admin") === "true";
-  if (adminButton) adminButton.classList.toggle("hidden", !adminRouteEnabled);
-}
-
-
-function renderAll() {
-  renderCounters();
-  renderJobs();
-  renderHelpers();
-  renderOfficeInfo();
-  renderPlanLinks();
-  updateLocationFilterSummary("job");
-  updateLocationFilterSummary("helper");
-}
-
-function escapeHtml(value) {
-  return String(value || "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-async function createPedido(newJob) {
-  const payload = {
-    titulo: newJob.title,
-    categoria: newJob.category,
-    ubicacion: newJob.location,
-    estado_nombre: newJob.state,
-    municipio: newJob.municipality,
-    localidad: newJob.locality,
-    fecha: newJob.date,
-    presupuesto: newJob.budget,
-    descripcion: newJob.description,
-    contacto: newJob.phone,
+function formPayload() {
+  return {
+    nombre_publico: document.getElementById("pubName").value.trim(),
+    titulo: document.getElementById("pubTitle").value.trim(),
+    descripcion: document.getElementById("pubDescription").value.trim(),
+    categoria_principal: document.getElementById("pubCategory").value,
+    intencion: document.getElementById("pubIntent").value,
+    estado_nombre: document.getElementById("pubState").value,
+    municipio: document.getElementById("pubMunicipality").value.trim(),
+    localidad: document.getElementById("pubLocality").value.trim(),
+    telefono: cleanPhone(document.getElementById("pubPhone").value),
+    ruta: document.getElementById("pubRoute").value.trim(),
+    salida: document.getElementById("pubDeparture").value.trim(),
+    hora: document.getElementById("pubTime").value.trim(),
+    medio: document.getElementById("pubTransport").value,
+    presupuesto: Number(document.getElementById("pubBudget").value || 0),
     estado: "revision"
   };
-
-  const inserted = await supabaseRequest("pedidos", {
-    method: "POST",
-    body: JSON.stringify(payload)
-  });
-
-  return mapPedidoFromDb(inserted?.[0] || payload);
 }
-
-async function createAyudante(newHelper) {
-  const payload = {
-    nombre: newHelper.name,
-    servicio: newHelper.service,
-    categoria: newHelper.category,
-    zona: newHelper.location,
-    estado_nombre: newHelper.state,
-    municipio: newHelper.municipality,
-    localidad: newHelper.locality,
-    disponibilidad: newHelper.availability,
-    telefono: newHelper.phone,
-    descripcion: newHelper.description,
-    destacado: false,
-    estado: "revision"
-  };
-
-  const inserted = await supabaseRequest("ayudantes", {
-    method: "POST",
-    body: JSON.stringify(payload)
-  });
-
-  return mapAyudanteFromDb(inserted?.[0] || payload);
-}
-
-function setSubmitState(form, isSubmitting) {
-  const button = form.querySelector('button[type="submit"]');
-  if (!button) return;
-  button.disabled = isSubmitting;
-  button.textContent = isSubmitting ? "Guardando..." : button.dataset.originalText;
-}
-
-
-function estadoLabel(estado) {
-  const value = estado || "activo";
-  const labels = { activo: "Aprobado", oculto: "Oculto", revision: "En revisión", atendido: "Atendido" };
-  return labels[value] || value;
-}
-
-function renderStatusBadge(estado) {
-  const value = estado || "activo";
-  return `<span class="status-badge ${escapeHtml(value)}">${escapeHtml(estadoLabel(value))}</span>`;
-}
-
-async function loadAdminData() {
-  if (!adminUnlocked) return;
-  const pedidosBox = document.getElementById("adminPedidos");
-  const ayudantesBox = document.getElementById("adminAyudantes");
-  if (pedidosBox) pedidosBox.innerHTML = `<div class="list-empty"><strong>Cargando pedidos...</strong></div>`;
-  if (ayudantesBox) ayudantesBox.innerHTML = `<div class="list-empty"><strong>Cargando perfiles...</strong></div>`;
-
+async function submitPublication(event) {
+  event.preventDefault();
+  const payload = formPayload();
+  if (payload.telefono.length < 10) { showToast("Revisa el teléfono"); return; }
   try {
-    const [pedidos, ayudantes] = await Promise.all([
-      supabaseRequest("pedidos?select=*&order=creado_en.desc"),
-      supabaseRequest("ayudantes?select=*&order=creado_en.desc")
-    ]);
-    adminJobsCache = pedidos || [];
-    adminHelpersCache = ayudantes || [];
-    renderAdminLists();
-    showToast("Administración actualizada");
+    const [created] = await supabaseRequest("publicaciones", { method: "POST", body: JSON.stringify(payload) });
+    const item = mapPublication(created || { ...payload, id: createId() });
+    document.getElementById("publicationForm").reset();
+    populateStateSelects();
+    document.getElementById("pubMunicipality").value = DEFAULT_MUNICIPALITY;
+    document.getElementById("pubLocality").value = DEFAULT_LOCALITY;
+    toggleCategoryFields();
+    showToast("Registro enviado a revisión");
+    openOfficeWhatsApp(`Nuevo registro en revisión\n\nFolio: ${folio(item)}\nNombre: ${item.name}\nTítulo: ${item.title}\nCategoría: ${item.category}\nMunicipio: ${item.municipality}, ${item.state}\nTeléfono: ${maskPhone(item.phone)} / últimos 4: ${last4(item.phone)}`);
+    showSection("inicio");
+    loadRemoteData();
   } catch (error) {
-    console.error("Error cargando administración", error);
-    alert("No se pudo cargar el panel. Revisa que hayas corrido el SQL de v3.2 en Supabase.");
+    console.error(error);
+    showToast("No se pudo guardar. Revisa Supabase o internet.");
   }
 }
-
+function openWhatsApp(phone, encodedMessage) {
+  const digits = cleanPhone(phone);
+  if (!digits) { showToast("Teléfono no disponible"); return; }
+  window.open(`https://wa.me/52${digits}?text=${encodedMessage}`, "_blank");
+}
+function openOfficeWhatsApp(message) { openWhatsApp(OFFICE_PHONE, encodeURIComponent(message)); }
+function shareUrlFor(item) { return `${location.origin}${location.pathname}?pub=${encodeURIComponent(item.id)}`; }
+async function sharePublication(id) {
+  const item = publicationsCache.find(p => p.id === id) || adminCache.find(p => p.id === id);
+  if (!item) return;
+  const data = { title: item.title, text: `${item.title} - ${item.category} en Conecta Servicios`, url: shareUrlFor(item) };
+  if (navigator.share) await navigator.share(data).catch(() => null);
+  else { await navigator.clipboard.writeText(data.url); showToast("Enlace copiado"); }
+}
+function requestModification(id) {
+  const item = publicationsCache.find(p => p.id === id);
+  if (!item) return;
+  const input = prompt(`Para solicitar modificación de ${folio(item)}, escribe los últimos 4 dígitos del teléfono registrado:`);
+  if (input === null) return;
+  if (String(input).trim() !== last4(item.phone)) { showToast("Los últimos 4 dígitos no coinciden"); return; }
+  openOfficeWhatsApp(`Hola, quiero solicitar modificación de mi publicación.\n\nFolio: ${folio(item)}\nTítulo: ${item.title}\nMunicipio: ${item.municipality}, ${item.state}\nTeléfono: ${maskPhone(item.phone)}\n\nCambio solicitado:`);
+}
+function requestAttended(id) {
+  const item = publicationsCache.find(p => p.id === id);
+  if (!item) return;
+  const input = prompt(`Para solicitar marcar como atendido ${folio(item)}, escribe los últimos 4 dígitos del teléfono registrado:`);
+  if (input === null) return;
+  if (String(input).trim() !== last4(item.phone)) { showToast("Los últimos 4 dígitos no coinciden"); return; }
+  openOfficeWhatsApp(`Hola, quiero reportar como atendida esta publicación.\n\nFolio: ${folio(item)}\nTítulo: ${item.title}\nMunicipio: ${item.municipality}, ${item.state}\nTeléfono: ${maskPhone(item.phone)}\n\nPor favor revisen y cambien el estatus a atendido.`);
+}
 function unlockAdmin() {
-  const input = document.getElementById("adminPinInput");
-  const pin = input?.value.trim();
-  if (pin !== ADMIN_PIN) {
-    showToast("PIN incorrecto");
-    return;
-  }
+  const value = document.getElementById("adminPin").value;
+  if (value !== ADMIN_PIN) { showToast("PIN incorrecto"); return; }
   adminUnlocked = true;
-  document.getElementById("adminLogin")?.classList.add("hidden");
-  document.getElementById("adminPanel")?.classList.remove("hidden");
+  showSection("admin");
   loadAdminData();
 }
-
-function lockAdmin() {
-  adminUnlocked = false;
-  document.getElementById("adminPinInput").value = "";
-  document.getElementById("adminLogin")?.classList.remove("hidden");
-  document.getElementById("adminPanel")?.classList.add("hidden");
-  showToast("Admin cerrado");
+function adminCard(item) {
+  return `<article class="card admin-card">
+    <div class="card-top"><div><span class="folio">${folio(item)}</span><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.name)} · ${escapeHtml(item.category)} · ${escapeHtml(item.municipality)}, ${escapeHtml(item.state)}</p></div><span class="status ${item.status}">${item.status}</span></div>
+    <p>${escapeHtml(item.description).slice(0, 180)}</p>
+    <p><strong>Teléfono:</strong> ${escapeHtml(cleanPhone(item.phone))} · últimos 4: ${last4(item.phone)}</p>
+    <div class="admin-actions">
+      <button class="btn-small btn-green" onclick="setPublicationStatus('${item.id}','activo')">Activo</button>
+      <button class="btn-small btn-outline" onclick="setPublicationStatus('${item.id}','revision')">Revisión</button>
+      <button class="btn-small btn-ghost" onclick="setPublicationStatus('${item.id}','oculto')">Oculto</button>
+      <button class="btn-small btn-purple" onclick="setPublicationStatus('${item.id}','atendido')">Atendido</button>
+      <button class="btn-small btn-outline" onclick="openEditDialog('${item.id}')">Editar</button>
+    </div>
+  </article>`;
 }
-
-function setAdminTab(tab) {
-  adminTab = tab;
-  document.getElementById("adminTabPedidos")?.classList.toggle("active", tab === "pedidos");
-  document.getElementById("adminTabAyudantes")?.classList.toggle("active", tab === "ayudantes");
-  document.getElementById("adminPedidos")?.classList.toggle("hidden", tab !== "pedidos");
-  document.getElementById("adminAyudantes")?.classList.toggle("hidden", tab !== "ayudantes");
-}
-
-function renderAdminLists() {
-  if (!adminUnlocked) return;
-  renderAdminPedidos();
-  renderAdminAyudantes();
-}
-
-function adminPedidoMatchesSearch(row, search) {
-  const query = normalizeText(search);
-  if (!query) return true;
-  const searchable = [
-    row.titulo, row.categoria, row.ubicacion, row.estado_nombre, row.municipio, row.localidad,
-    row.fecha, row.presupuesto, row.descripcion, row.contacto, row.estado,
-    pedidoFolio(row), lastFourPhone(row.contacto)
-  ].join(" ");
-  return normalizeText(searchable).includes(query);
-}
-
-function adminAyudanteMatchesSearch(row, search) {
-  const query = normalizeText(search);
-  if (!query) return true;
-  const searchable = [
-    row.nombre, row.servicio, row.categoria, row.zona, row.estado_nombre, row.municipio, row.localidad,
-    row.disponibilidad, row.telefono, row.descripcion, row.estado,
-    ayudanteFolio(row), lastFourPhone(row.telefono)
-  ].join(" ");
-  return normalizeText(searchable).includes(query);
-}
-
-function renderAdminPedidos() {
-  const list = document.getElementById("adminPedidos");
+function renderAdminPublications() {
+  const list = document.getElementById("adminList");
   if (!list) return;
-  const search = document.getElementById("adminSearch")?.value || "";
-  const rows = adminJobsCache.filter(row => adminPedidoMatchesSearch(row, search));
-  if (!rows.length) {
-    list.innerHTML = `<div class="list-empty"><strong>No hay pedidos para mostrar.</strong></div>`;
-    return;
-  }
-  list.innerHTML = rows.map(row => `
-    <article class="card admin-card">
-      <div class="card-title">
-        <strong>🔍 ${escapeHtml(row.titulo || "Pedido sin título")}</strong>
-        ${renderStatusBadge(row.estado)}
-      </div>
-      <div class="folio-line">Folio: <strong>${escapeHtml(pedidoFolio(row))}</strong> · Últimos 4: <strong>${escapeHtml(lastFourPhone(row.contacto))}</strong></div>
-      <span class="tag">${escapeHtml(row.categoria || "General")}</span>
-      <p class="meta">📍 ${escapeHtml([row.localidad, row.municipio, row.estado_nombre].filter(Boolean).join(", ") || row.ubicacion || "")}</p>
-      <p class="meta small-meta">Zona: ${escapeHtml(row.ubicacion || "")}</p>
-      <p class="meta">📅 ${formatDate(row.fecha)}</p>
-      <p class="meta">☎ ${escapeHtml(row.contacto || "")}</p>
-      ${row.descripcion ? `<p class="description">${linkifyText(row.descripcion)}</p>` : ""}
-      <div class="admin-card-actions">
-        <button class="edit-button" onclick="editPedido('${row.id}')">Editar</button>
-        <button onclick="updatePedidoEstado('${row.id}', 'activo')">Aprobar</button>
-        <button onclick="updatePedidoEstado('${row.id}', 'revision')">Revisión</button>
-        <button class="done-button" onclick="updatePedidoEstado('${row.id}', 'atendido')">Atendido</button>
-        <button class="danger-button" onclick="updatePedidoEstado('${row.id}', 'oculto')">Ocultar</button>
-      </div>
-    </article>
-  `).join("");
+  const search = normalize(document.getElementById("adminSearch")?.value || "");
+  const filtered = adminCache.filter(item => !search || normalize([folio(item), item.id, item.name, item.title, item.phone, last4(item.phone), item.category, item.municipality, item.state, item.status].join(" ")).includes(search));
+  list.innerHTML = filtered.length ? filtered.map(adminCard).join("") : `<div class="empty-state">Sin resultados en administración.</div>`;
 }
-
-function renderAdminAyudantes() {
-  const list = document.getElementById("adminAyudantes");
-  if (!list) return;
-  const search = document.getElementById("adminSearch")?.value || "";
-  const rows = adminHelpersCache.filter(row => adminAyudanteMatchesSearch(row, search));
-  if (!rows.length) {
-    list.innerHTML = `<div class="list-empty"><strong>No hay perfiles para mostrar.</strong></div>`;
-    return;
-  }
-  list.innerHTML = rows.map(row => `
-    <article class="card admin-card">
-      <div class="card-title">
-        <strong>🧰 ${escapeHtml(row.nombre || "Perfil sin nombre")}</strong>
-        ${renderStatusBadge(row.estado)}
-      </div>
-      <div class="folio-line">Folio: <strong>${escapeHtml(ayudanteFolio(row))}</strong> · Últimos 4: <strong>${escapeHtml(lastFourPhone(row.telefono))}</strong></div>
-      <span class="tag">${escapeHtml(row.categoria || "Servicio")}</span>
-      <p class="meta">🛠️ ${escapeHtml(row.servicio || "")}</p>
-      <p class="meta">📍 ${escapeHtml([row.localidad, row.municipio, row.estado_nombre].filter(Boolean).join(", ") || row.zona || "")}</p>
-      <p class="meta small-meta">Zona: ${escapeHtml(row.zona || "")}</p>
-      <p class="meta">☎ ${escapeHtml(row.telefono || "")}</p>
-      ${row.descripcion ? `<p class="description">${linkifyText(row.descripcion)}</p>` : ""}
-      <div class="admin-card-actions">
-        <button class="edit-button" onclick="editAyudante('${row.id}')">Editar</button>
-        <button onclick="updateAyudanteEstado('${row.id}', 'activo')">Aprobar</button>
-        <button onclick="updateAyudanteEstado('${row.id}', 'revision')">Revisión</button>
-        <button class="danger-button" onclick="updateAyudanteEstado('${row.id}', 'oculto')">Ocultar</button>
-      </div>
-    </article>
-  `).join("");
-}
-
-
-function promptRequired(label, currentValue) {
-  const value = prompt(label, currentValue || "");
-  if (value === null) return null;
-  return value.trim();
-}
-
-function promptOptional(label, currentValue) {
-  const value = prompt(label, currentValue || "");
-  if (value === null) return null;
-  return value.trim();
-}
-
-async function editPedido(id) {
-  if (!adminUnlocked) return;
-  const row = adminJobsCache.find(item => item.id === id);
-  if (!row) {
-    showToast("No se encontró el pedido");
-    return;
-  }
-
-  const folio = pedidoFolio(row);
-  const ok = confirm(`Editar pedido ${folio}.\n\nSe abrirán campos uno por uno. Si presionas Cancelar, no se guardará nada.`);
-  if (!ok) return;
-
-  const titulo = promptRequired("Título del pedido", row.titulo || "");
-  if (titulo === null || !titulo) return alert("El título no puede quedar vacío.");
-  const categoria = promptRequired("Categoría", row.categoria || "General");
-  if (categoria === null || !categoria) return alert("La categoría no puede quedar vacía.");
-  const estado_nombre = promptRequired("Estado", row.estado_nombre || DEFAULT_STATE);
-  if (estado_nombre === null || !estado_nombre) return alert("El estado no puede quedar vacío.");
-  const municipio = promptRequired("Municipio", row.municipio || DEFAULT_MUNICIPALITY);
-  if (municipio === null || !municipio) return alert("El municipio no puede quedar vacío.");
-  const localidad = promptRequired("Colonia o localidad", row.localidad || DEFAULT_LOCALITY);
-  if (localidad === null || !localidad) return alert("La localidad no puede quedar vacía.");
-  const ubicacion = promptRequired("Zona o referencia", row.ubicacion || "");
-  if (ubicacion === null || !ubicacion) return alert("La zona o referencia no puede quedar vacía.");
-  const fecha = promptOptional("Fecha y hora. Puedes dejar el valor actual o cambiarlo en formato del navegador.", row.fecha || "");
-  if (fecha === null) return;
-  const presupuestoText = promptRequired("Presupuesto sugerido", String(row.presupuesto || 0));
-  if (presupuestoText === null) return;
-  const presupuesto = Number(String(presupuestoText).replace(/[^0-9.]/g, ""));
-  if (Number.isNaN(presupuesto)) return alert("El presupuesto debe ser numérico.");
-  const contacto = promptRequired("Teléfono o WhatsApp", row.contacto || "");
-  if (contacto === null || !cleanPhone(contacto)) return alert("El teléfono no puede quedar vacío.");
-  const descripcion = promptOptional("Descripción", row.descripcion || "");
-  if (descripcion === null) return;
-
-  await updateRegistro("pedidos", id, {
-    titulo, categoria, estado_nombre, municipio, localidad, ubicacion, fecha, presupuesto, contacto, descripcion
-  });
-}
-
-async function editAyudante(id) {
-  if (!adminUnlocked) return;
-  const row = adminHelpersCache.find(item => item.id === id);
-  if (!row) {
-    showToast("No se encontró el perfil");
-    return;
-  }
-
-  const folio = ayudanteFolio(row);
-  const ok = confirm(`Editar perfil ${folio}.\n\nSe abrirán campos uno por uno. Si presionas Cancelar, no se guardará nada.`);
-  if (!ok) return;
-
-  const nombre = promptRequired("Nombre", row.nombre || "");
-  if (nombre === null || !nombre) return alert("El nombre no puede quedar vacío.");
-  const servicio = promptRequired("Servicio principal", row.servicio || "");
-  if (servicio === null || !servicio) return alert("El servicio no puede quedar vacío.");
-  const categoria = promptRequired("Categoría", row.categoria || "Servicio");
-  if (categoria === null || !categoria) return alert("La categoría no puede quedar vacía.");
-  const estado_nombre = promptRequired("Estado", row.estado_nombre || DEFAULT_STATE);
-  if (estado_nombre === null || !estado_nombre) return alert("El estado no puede quedar vacío.");
-  const municipio = promptRequired("Municipio", row.municipio || DEFAULT_MUNICIPALITY);
-  if (municipio === null || !municipio) return alert("El municipio no puede quedar vacío.");
-  const localidad = promptRequired("Colonia o localidad", row.localidad || DEFAULT_LOCALITY);
-  if (localidad === null || !localidad) return alert("La localidad no puede quedar vacía.");
-  const zona = promptRequired("Zona donde trabaja o referencia", row.zona || "");
-  if (zona === null || !zona) return alert("La zona no puede quedar vacía.");
-  const disponibilidad = promptRequired("Disponibilidad", row.disponibilidad || "");
-  if (disponibilidad === null || !disponibilidad) return alert("La disponibilidad no puede quedar vacía.");
-  const telefono = promptRequired("Teléfono o WhatsApp", row.telefono || "");
-  if (telefono === null || !cleanPhone(telefono)) return alert("El teléfono no puede quedar vacío.");
-  const descripcion = promptOptional("Descripción", row.descripcion || "");
-  if (descripcion === null) return;
-  const destacadoText = promptOptional("¿Perfil destacado? Escribe sí o no", row.destacado ? "sí" : "no");
-  if (destacadoText === null) return;
-  const destacado = ["si", "sí", "s", "yes", "true", "1"].includes(normalizeText(destacadoText));
-
-  await updateRegistro("ayudantes", id, {
-    nombre, servicio, categoria, estado_nombre, municipio, localidad, zona, disponibilidad, telefono, descripcion, destacado
-  });
-}
-
-async function updateRegistro(table, id, payload) {
-  if (!adminUnlocked) return;
-  const ok = confirm("¿Guardar los cambios de esta publicación?");
-  if (!ok) return;
-
+async function setPublicationStatus(id, status) {
   try {
-    await supabaseRequest(`${table}?id=eq.${encodeURIComponent(id)}`, {
-      method: "PATCH",
-      body: JSON.stringify(payload)
-    });
-    showToast("Cambios guardados");
-    await Promise.all([loadRemoteData(), loadAdminData()]);
-  } catch (error) {
-    console.error("Error guardando cambios", error);
-    alert("No se pudieron guardar los cambios. Revisa permisos de Supabase o conexión.");
-  }
+    await supabaseRequest(`publicaciones?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ estado: status }) });
+    showToast(`Estado cambiado a ${status}`);
+    await loadAdminData();
+    await loadRemoteData();
+  } catch (error) { console.error(error); showToast("No se pudo cambiar estado"); }
 }
-
-async function updatePedidoEstado(id, estado) {
-  await updateEstado("pedidos", id, estado);
+function openEditDialog(id) {
+  const item = adminCache.find(p => p.id === id);
+  if (!item) return;
+  document.getElementById("editId").value = item.id;
+  document.getElementById("editName").value = item.name;
+  document.getElementById("editTitle").value = item.title;
+  document.getElementById("editCategory").value = item.category;
+  document.getElementById("editIntent").value = item.intent || "Busco / Necesito";
+  document.getElementById("editStateName").value = item.state;
+  document.getElementById("editMunicipality").value = item.municipality;
+  document.getElementById("editLocality").value = item.locality;
+  document.getElementById("editPhone").value = cleanPhone(item.phone);
+  document.getElementById("editRoute").value = item.route || item.transport || "";
+  document.getElementById("editStatus").value = item.status;
+  document.getElementById("editDescription").value = item.description;
+  document.getElementById("editDialog").showModal();
 }
-
-async function updateAyudanteEstado(id, estado) {
-  await updateEstado("ayudantes", id, estado);
-}
-
-async function updateEstado(table, id, estado) {
-  if (!adminUnlocked) return;
-  const label = estadoLabel(estado).toLowerCase();
-  const ok = confirm(`¿Cambiar este registro a "${label}"?`);
-  if (!ok) return;
-
+function closeEditDialog() { document.getElementById("editDialog").close(); }
+async function saveEdit(event) {
+  event.preventDefault();
+  const id = document.getElementById("editId").value;
+  const payload = {
+    nombre_publico: document.getElementById("editName").value.trim(),
+    titulo: document.getElementById("editTitle").value.trim(),
+    categoria_principal: document.getElementById("editCategory").value,
+    intencion: document.getElementById("editIntent").value,
+    estado_nombre: document.getElementById("editStateName").value.trim(),
+    municipio: document.getElementById("editMunicipality").value.trim(),
+    localidad: document.getElementById("editLocality").value.trim(),
+    telefono: cleanPhone(document.getElementById("editPhone").value),
+    ruta: document.getElementById("editRoute").value.trim(),
+    estado: document.getElementById("editStatus").value,
+    descripcion: document.getElementById("editDescription").value.trim()
+  };
   try {
-    await supabaseRequest(`${table}?id=eq.${encodeURIComponent(id)}`, {
-      method: "PATCH",
-      body: JSON.stringify({ estado })
-    });
-    showToast(estado === "activo" ? "Registro aprobado" : "Estado actualizado");
-    await Promise.all([loadRemoteData(), loadAdminData()]);
-  } catch (error) {
-    console.error("Error actualizando estado", error);
-    alert("No se pudo actualizar. Revisa que hayas corrido el SQL de permisos de v3.2 en Supabase.");
-  }
+    await supabaseRequest(`publicaciones?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(payload) });
+    closeEditDialog();
+    showToast("Publicación actualizada");
+    await loadAdminData();
+    await loadRemoteData();
+  } catch (error) { console.error(error); showToast("No se pudo guardar edición"); }
 }
-
-function setupForms() {
-  const jobButton = document.querySelector('#jobForm button[type="submit"]');
-  const helperButton = document.querySelector('#helperForm button[type="submit"]');
-  if (jobButton) jobButton.dataset.originalText = jobButton.textContent;
-  if (helperButton) helperButton.dataset.originalText = helperButton.textContent;
-
-  document.getElementById("jobForm").addEventListener("submit", async event => {
-    event.preventDefault();
-    const confirmSend = confirm("Tu pedido será enviado a revisión antes de aparecer públicamente.\n\n¿Deseas continuar?");
-    if (!confirmSend) return;
-
-    const form = event.target;
-    setSubmitState(form, true);
-
-    const newJob = {
-      title: document.getElementById("jobTitle").value.trim(),
-      category: document.getElementById("jobCategory").value,
-      state: document.getElementById("jobState").value || DEFAULT_STATE,
-      municipality: document.getElementById("jobMunicipality").value.trim() || DEFAULT_MUNICIPALITY,
-      locality: document.getElementById("jobLocality").value.trim() || DEFAULT_LOCALITY,
-      location: document.getElementById("jobLocation").value.trim(),
-      date: document.getElementById("jobDate").value,
-      budget: Number(document.getElementById("jobBudget").value),
-      phone: document.getElementById("jobPhone").value.trim(),
-      description: document.getElementById("jobDescription").value.trim()
-    };
-
-    try {
-      const savedJob = await createPedido(newJob);
-      jobsCache.unshift(savedJob);
-      form.reset();
-      showToast("Pedido enviado a revisión");
-      showSection("ofertas");
-      await loadRemoteData();
-      alert("Tu pedido fue recibido. Ahora se abrirá WhatsApp con un aviso listo para la oficina. Solo toca enviar para acelerar la revisión.");
-      notifyOfficeByWhatsapp("pedido", savedJob);
-    } catch (error) {
-      console.error("Error al publicar pedido", error);
-      alert("No se pudo publicar el pedido. Revisa la conexión o las políticas de Supabase.");
-    } finally {
-      setSubmitState(form, false);
-    }
-  });
-
-  document.getElementById("helperForm").addEventListener("submit", async event => {
-    event.preventDefault();
-    const confirmSend = confirm("Tu perfil será enviado a revisión antes de aparecer públicamente.\n\n¿Deseas continuar?");
-    if (!confirmSend) return;
-
-    const form = event.target;
-    setSubmitState(form, true);
-
-    const newHelper = {
-      name: document.getElementById("helperName").value.trim(),
-      service: document.getElementById("helperService").value.trim(),
-      category: document.getElementById("helperCategory").value,
-      state: document.getElementById("helperState").value || DEFAULT_STATE,
-      municipality: document.getElementById("helperMunicipality").value.trim() || DEFAULT_MUNICIPALITY,
-      locality: document.getElementById("helperLocality").value.trim() || DEFAULT_LOCALITY,
-      location: document.getElementById("helperLocation").value.trim(),
-      availability: document.getElementById("helperAvailability").value.trim(),
-      phone: document.getElementById("helperPhone").value.trim(),
-      description: document.getElementById("helperDescription").value.trim()
-    };
-
-    try {
-      const savedHelper = await createAyudante(newHelper);
-      helpersCache.unshift(savedHelper);
-      form.reset();
-      showToast("Perfil enviado a revisión");
-      showSection("galeria");
-      await loadRemoteData();
-      alert("Tu perfil fue recibido. Ahora se abrirá WhatsApp con un aviso listo para la oficina. Solo toca enviar para acelerar la revisión.");
-      notifyOfficeByWhatsapp("ayudante", savedHelper);
-    } catch (error) {
-      console.error("Error al registrar perfil", error);
-      alert("No se pudo registrar el perfil. Revisa la conexión o las políticas de Supabase.");
-    } finally {
-      setSubmitState(form, false);
-    }
-  });
+function maybeOpenSharedPublication() {
+  const params = new URLSearchParams(location.search);
+  const id = params.get("pub");
+  if (!id) return;
+  showSection("publicaciones", false);
+  setTimeout(() => {
+    const card = [...document.querySelectorAll(".publication-card")].find(c => c.textContent.includes(id.slice(0,5).toUpperCase()));
+    if (card) card.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, 800);
 }
-
-window.addEventListener("popstate", event => {
-  if (allowBrowserExit) return;
-  const section = event.state?.section || normalizeSectionFromHash(location.hash) || "inicio";
-
-  if (currentSection === "inicio" || section === "inicio") {
-    handleHomeBackAttempt();
-    return;
-  }
-
-  showSection(section, false);
-});
-
-window.addEventListener("beforeunload", event => {
-  if (allowBrowserExit) return;
-  if (currentSection === "inicio") {
-    event.preventDefault();
-    event.returnValue = "";
-  }
-});
-
-document.addEventListener("DOMContentLoaded", async () => {
-  const params = new URLSearchParams(window.location.search);
-  const adminMode = params.get("admin") === "1" || params.get("admin") === "true";
-  const sharedPedidoId = params.get("pedido");
-  const sharedPerfilId = params.get("perfil");
-  const hashSection = normalizeSectionFromHash(location.hash);
-  const initialSection = adminMode ? "admin" : (hashSection === "admin" ? "inicio" : hashSection || "inicio");
-  adminRouteEnabled = adminMode;
-
-  // Base + guard: el primer botón Atrás del celular muestra aviso; el segundo permite salir.
-  history.replaceState({ section: "inicio", homeBase: true }, "", routeUrlForSection("inicio"));
-  pushExitGuard("inicio");
-  if (initialSection !== "inicio") {
-    history.pushState({ section: initialSection, appGuard: true }, "", routeUrlForSection(initialSection));
-    homeExitGuardArmed = false;
-  }
-
+function init() {
+  const params = new URLSearchParams(location.search);
+  adminRouteEnabled = params.get("admin") === "1" || params.get("admin") === "true";
+  document.getElementById("adminEntry").classList.toggle("hidden", !adminRouteEnabled);
   populateStateSelects();
-  setupForms();
-  setupAdminAccess();
-  showSection(initialSection, false);
-  await loadRemoteData();
-
-  if (!adminMode && sharedPedidoId) handleSharedTarget("pedido", sharedPedidoId);
-  if (!adminMode && sharedPerfilId) handleSharedTarget("perfil", sharedPerfilId);
-});
+  document.getElementById("publicationForm").addEventListener("submit", submitPublication);
+  document.getElementById("editForm").addEventListener("submit", saveEdit);
+  history.replaceState({ section: "inicio" }, "", routeUrlForSection("inicio"));
+  toggleCategoryFields();
+  loadRemoteData().then(maybeOpenSharedPublication);
+}
+document.addEventListener("DOMContentLoaded", init);

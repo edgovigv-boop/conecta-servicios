@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#6f42c1" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=3.7.4-compartir-enlaces-registro" />
+  <link rel="stylesheet" href="styles.css?v=3.8-estructura-simple" />
 </head>
 <body>
   <div class="app-shell">
@@ -13,450 +13,300 @@
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
       <div class="title-wrap">
         <span id="mainTitle">Conecta Servicios</span>
-        <small id="subtitle">Prueba pública 3.7.4</small>
+        <small id="subtitle">Estructura simple 3.8</small>
       </div>
       <button class="help-button" aria-label="Oficina" onclick="showSection('oficina')">☎</button>
     </header>
 
     <main class="content">
       <section id="inicio" class="section active">
-        <div class="hero-card hero-compact">
-          <div class="hero-badge">Prueba pública municipal</div>
+        <div class="hero-card">
+          <span class="hero-badge">Prueba pública municipal</span>
           <h1>¿Qué vamos a hacer hoy?</h1>
-          <p class="hero-short">Regístrate para publicar algo o revisa los resultados disponibles por municipio.</p>
+          <p>Publica lo que necesitas, lo que ofreces o revisa registros de tu zona.</p>
           <div class="hero-stats">
-            <span><strong id="jobsCount">0</strong> pedidos</span>
-            <span><strong id="helpersCount">0</strong> perfiles</span>
+            <span><strong id="publicationsCount">0</strong> registros</span>
+            <span><strong id="reviewCount">0</strong> en revisión</span>
           </div>
           <p class="sync-status" id="syncStatus">Conectando con la base de datos...</p>
         </div>
 
-        <div class="quick-actions quick-actions-priority home-main-actions">
-          <button class="action-card purple main-action" onclick="showSection('registro')">
+        <div class="home-actions">
+          <button class="action-card purple" onclick="showSection('registro')">
             <span>📝</span>
             <strong>REGISTRARME</strong>
-            <small>Publicar pedido o registrar servicio</small>
+            <small>Publicar necesidad, servicio, viaje o envío</small>
           </button>
-          <button class="action-card green main-action" onclick="showSection('ofertas')">
+          <button class="action-card green" onclick="showSection('publicaciones')">
             <span>🔎</span>
             <strong>VER RESULTADOS</strong>
-            <small>Explorar pedidos y perfiles disponibles</small>
+            <small>Buscar registros de tu zona</small>
           </button>
         </div>
 
-        <div class="notice-card home-notice muted-notice">
-          <strong>Información importante</strong>
-          <p>Las publicaciones pasan por revisión antes de aparecer. Los teléfonos se muestran parcialmente ocultos y la atención de oficina es por WhatsApp.</p>
+        <div class="category-grid">
+          <button class="category-card ride" onclick="applyCategoryAndShow('Viajes compartidos')">
+            <span>🚘</span>
+            <strong>Viajes compartidos</strong>
+            <small>Rutas, salidas, horarios y espacios disponibles.</small>
+          </button>
+          <button class="category-card delivery" onclick="applyCategoryAndShow('Mensajería y envíos')">
+            <span>📦</span>
+            <strong>Mensajería y envíos</strong>
+            <small>A pie, bici, moto, auto, camioneta o mudanza.</small>
+          </button>
         </div>
 
-        <button class="btn-big btn-outline" onclick="showSection('oficina')">
-          <span class="icon">🏠</span>
-          Oficina de registro
-          <small>Atención por WhatsApp</small>
+        <button class="nearby-card" onclick="requestNearbyComingSoon()">
+          <span>📍</span>
+          <div><strong>Registros cerca de mí</strong><small>Próxima mejora: ordenar por ubicación exacta.</small></div>
+          <b>›</b>
         </button>
 
-        <div class="info-grid">
-          <button class="mini-card" onclick="showSection('comoFunciona')">
-            <strong>¿Cómo funciona?</strong>
-            <small>3 pasos simples</small>
-          </button>
-          <button class="mini-card" onclick="showSection('reglas')">
-            <strong>Reglas y seguridad</strong>
-            <small>Antes de contactar</small>
-          </button>
-          <button class="mini-card featured-mini" onclick="showSection('planes')">
-            <strong>Planes y destacados</strong>
-            <small>Solicitar por WhatsApp</small>
-          </button>
+        <div class="trust-strip">
+          <span>🔒 Contactos parciales</span>
+          <span>✅ Revisión previa</span>
+          <span>💬 WhatsApp</span>
+        </div>
+
+        <div class="notice-card slim">
+          <strong>Sin divisiones complicadas</strong>
+          <p>Todo convive en un solo espacio. El texto de cada publicación deja claro si alguien busca ayuda, ofrece servicio, comparte viaje o hace envíos.</p>
         </div>
       </section>
 
       <section id="registro" class="section">
         <h2>Registrarme</h2>
-        <p class="muted">Elige qué quieres publicar. El formulario sigue siendo sencillo y la oficina revisará el registro antes de mostrarlo públicamente.</p>
+        <p class="muted">Escribe cómo quieres aparecer y qué quieres publicar. La oficina revisará el registro antes de mostrarlo públicamente.</p>
 
-        <div class="quick-actions register-choice-grid">
-          <button class="action-card purple" onclick="showSection('publicar')">
-            <span>🙋</span>
-            <strong>Necesito ayuda</strong>
-            <small>Publicar un pedido como limpieza, mensajería, carpintería o apoyo general.</small>
-          </button>
-          <button class="action-card green" onclick="showSection('registroAyudante')">
-            <span>🧰</span>
-            <strong>Ofrezco un servicio</strong>
-            <small>Registrar oficio, negocio, emprendimiento o disponibilidad para ayudar.</small>
-          </button>
-        </div>
-
-        <div class="notice-card">
-          <strong>Registro simple</strong>
-          <p>Escribe un título claro y una descripción completa. Puedes incluir enlaces de Facebook, TikTok, Instagram, Google Maps o páginas web en la descripción.</p>
-        </div>
-      </section>
-
-      <section id="ofertas" class="section">
-        <div class="section-header">
-          <div>
-            <h2>Pedidos publicados</h2>
-            <p>Personas que buscan apoyo local. Solo aparecen pedidos aprobados por la oficina.</p>
-          </div>
-          <button class="btn-small btn-purple" onclick="showSection('publicar')">+ Publicar</button>
-        </div>
-
-        <div class="notice-card">
-          <strong>Antes de aceptar un pedido</strong>
-          <p>Confirma el lugar, horario, pago y condiciones por WhatsApp. Los teléfonos se muestran parcialmente ocultos en la app. Si ves algo extraño o un pedido ya fue atendido, usa el folio del pedido para solicitar seguimiento por WhatsApp. El cierre de pedidos solo se confirma desde administración.</p>
-        </div>
-
-        <div class="filter-card">
-          <div class="filter-title">Filtrar por ubicación</div>
-          <label>Estado
-            <select id="jobStateFilter" data-state-select data-blank="true" data-default="México" autocomplete="off" onchange="handleStateFilterChange('job')"></select>
-          </label>
-          <label>Municipio
-            <input id="jobMunicipalityFilter" type="text" value="Chapultepec" placeholder="Ej. Chapultepec" autocomplete="off" autocapitalize="words" spellcheck="false" inputmode="text" data-no-password="true" oninput="renderJobs()" />
-          </label>
-          <button class="btn-small btn-outline" onclick="renderJobs()">Ver resultados</button>
-          <button class="btn-small btn-ghost" onclick="resetLocationFilters('job')">Restablecer Chapultepec</button>
-          <p id="jobFilterSummary" class="filter-summary">Mostrando resultados para: Chapultepec, México</p>
-        </div>
-
-        <label class="search-box">
-          Buscar pedido
-          <input id="jobSearch" type="search" placeholder="Ej. limpieza, pintura, Chapultepec" oninput="renderJobs()" />
-        </label>
-
-        <div id="jobsList" class="list"></div>
-      </section>
-
-      <section id="publicar" class="section">
-        <h2>Publicar pedido</h2>
-        <p class="muted">Describe lo que necesitas. Tu pedido quedará en revisión y aparecerá públicamente cuando la oficina lo apruebe.</p>
-
-        <form id="jobForm" class="form-card">
-          <label>¿Qué necesitas?
-            <input id="jobTitle" type="text" placeholder="Ej. Busco carpintero, lavado de auto, limpieza" required />
+        <form id="publicationForm" class="form-card">
+          <label>¿Cómo quieres aparecer?
+            <input id="pubName" type="text" placeholder="Tu nombre, negocio o alias" required />
           </label>
 
-          <label>Categoría
-            <select id="jobCategory" required>
-              <option value="">Selecciona una categoría</option>
-              <option>Limpieza</option>
-              <option>Construcción / Reparaciones</option>
-              <option>Jardinería</option>
-              <option>Cuidado de personas</option>
-              <option>Clases / Asesorías</option>
-              <option>Mandados / Apoyo general</option>
-              <option>Otro</option>
+          <label>Título de tu publicación
+            <input id="pubTitle" type="text" placeholder="Ej. Busco carpintero / Ofrezco taquería / Viajo a Cuernavaca" required />
+          </label>
+
+          <label>Categoría principal
+            <select id="pubCategory" required onchange="toggleCategoryFields()">
+              <option value="General">General / Servicios locales</option>
+              <option value="Viajes compartidos">🚘 Viajes compartidos</option>
+              <option value="Mensajería y envíos">📦 Mensajería y envíos</option>
+            </select>
+          </label>
+
+          <label>¿Qué estás publicando?
+            <select id="pubIntent" required>
+              <option>Busco / Necesito</option>
+              <option>Ofrezco / Tengo disponible</option>
+              <option>Información o acuerdo local</option>
             </select>
           </label>
 
           <div class="form-grid">
             <label>Estado
-              <select id="jobState" data-state-select data-default="México" required></select>
+              <select id="pubState" data-state-select data-default="México" required></select>
             </label>
-
             <label>Municipio
-              <input id="jobMunicipality" type="text" value="Chapultepec" placeholder="Ej. Chapultepec" required />
+              <input id="pubMunicipality" type="text" value="Chapultepec" placeholder="Ej. Chapultepec" required />
             </label>
           </div>
 
           <label>Colonia o localidad
-            <input id="jobLocality" type="text" value="Chapultepec Centro" placeholder="Ej. El Ameyal, Centro, Santa Ana" required />
-          </label>
-
-          <label>Zona o referencia
-            <input id="jobLocation" type="text" placeholder="Ej. Cerca de la primaria, calle principal" required />
-          </label>
-
-          <label>Fecha y hora
-            <input id="jobDate" type="datetime-local" required />
-          </label>
-
-          <label>Presupuesto sugerido
-            <input id="jobBudget" type="number" min="0" placeholder="Ej. 350" required />
+            <input id="pubLocality" type="text" value="Chapultepec Centro" placeholder="Ej. El Ameyal, Centro, Cuernavaca" required />
           </label>
 
           <label>Teléfono o WhatsApp
-            <input id="jobPhone" type="tel" inputmode="numeric" placeholder="Ej. 7225703145" required />
-            <small class="field-help">Tu número se mostrará como xxxxxx3145. Al abrir WhatsApp, la otra persona podrá contactarte por esa vía.</small>
+            <input id="pubPhone" type="tel" inputmode="numeric" placeholder="Ej. 7225703145" required />
+            <small class="field-help">Se mostrará como xxxxxx3145. Al abrir WhatsApp, la otra persona podrá contactarte por esa vía.</small>
           </label>
 
-          <label>Detalles adicionales
-            <textarea id="jobDescription" rows="4" placeholder="Describe el trabajo, materiales, referencias, etc."></textarea>
-          </label>
-
-          <div class="notice-card pilot-notice"><strong>Revisión previa y contacto protegido</strong><p>Tu pedido no aparecerá de inmediato. La oficina lo revisará para evitar bromas, spam o datos incorrectos. Tu teléfono se mostrará parcialmente oculto en la publicación.</p></div>
-
-          <label class="checkbox-line">
-            <input id="jobPrivacyAccept" type="checkbox" required />
-            <span>Acepto el <button type="button" class="link-button" onclick="showSection('avisoPrivacidad')">Aviso de Privacidad</button> y los <button type="button" class="link-button" onclick="showSection('terminos')">Términos y Condiciones</button>.</span>
-          </label>
-
-          <button class="btn-big btn-purple" type="submit">Enviar pedido a revisión</button>
-        </form>
-      </section>
-
-      <section id="galeria" class="section">
-        <div class="section-header">
-          <div>
-            <h2>Personas listas para ayudar</h2>
-            <p>Perfiles aprobados para contacto por WhatsApp con teléfono parcialmente oculto.</p>
-          </div>
-          <button class="btn-small btn-green" onclick="showSection('registroAyudante')">+ Registrarme</button>
-        </div>
-
-        <div class="filter-card">
-          <div class="filter-title">Filtrar por ubicación</div>
-          <label>Estado
-            <select id="helperStateFilter" data-state-select data-blank="true" data-default="México" autocomplete="off" onchange="handleStateFilterChange('helper')"></select>
-          </label>
-          <label>Municipio
-            <input id="helperMunicipalityFilter" type="text" value="Chapultepec" placeholder="Ej. Chapultepec" autocomplete="off" autocapitalize="words" spellcheck="false" inputmode="text" data-no-password="true" oninput="renderHelpers()" />
-          </label>
-          <button class="btn-small btn-outline" onclick="renderHelpers()">Ver resultados</button>
-          <button class="btn-small btn-ghost" onclick="resetLocationFilters('helper')">Restablecer Chapultepec</button>
-          <p id="helperFilterSummary" class="filter-summary">Mostrando resultados para: Chapultepec, México</p>
-        </div>
-
-        <label class="search-box">
-          Buscar perfil
-          <input id="helperSearch" type="search" placeholder="Ej. plomería, clases, zona centro" oninput="renderHelpers()" />
-        </label>
-
-        <div id="helpersList" class="list"></div>
-      </section>
-
-      <section id="registroAyudante" class="section">
-        <h2>Registrar ayudante</h2>
-        <p class="muted">Crea un perfil básico en línea. Tu registro quedará en revisión y aparecerá cuando la oficina lo apruebe.</p>
-
-        <form id="helperForm" class="form-card">
-          <label>Nombre
-            <input id="helperName" type="text" placeholder="Ej. Don Pedro" required />
-          </label>
-
-          <label>Servicio principal
-            <input id="helperService" type="text" placeholder="Ej. Taquería, carpintería, limpieza, plomería" required />
-          </label>
-
-          <label>Categoría
-            <select id="helperCategory" required>
-              <option value="">Selecciona una categoría</option>
-              <option>Limpieza</option>
-              <option>Construcción / Reparaciones</option>
-              <option>Jardinería</option>
-              <option>Cuidado de personas</option>
-              <option>Clases / Asesorías</option>
-              <option>Mandados / Apoyo general</option>
-              <option>Otro</option>
-            </select>
-          </label>
-
-          <div class="form-grid">
-            <label>Estado
-              <select id="helperState" data-state-select data-default="México" required></select>
+          <div id="rideFields" class="conditional-card hidden">
+            <h3>Datos del viaje compartido</h3>
+            <label>Ruta o destino
+              <input id="pubRoute" type="text" placeholder="Ej. Chapultepec → Cuernavaca / link de Waze" />
             </label>
+            <div class="form-grid">
+              <label>Hora de salida
+                <input id="pubTime" type="text" placeholder="Ej. 7:00 am / lunes a viernes" />
+              </label>
+              <label>Lugar de salida
+                <input id="pubDeparture" type="text" placeholder="Ej. Centro de Chapultepec" />
+              </label>
+            </div>
+          </div>
 
-            <label>Municipio
-              <input id="helperMunicipality" type="text" value="Chapultepec" placeholder="Ej. Chapultepec" required />
+          <div id="deliveryFields" class="conditional-card hidden">
+            <h3>Datos de mensajería o envío</h3>
+            <label>Medio disponible o requerido
+              <select id="pubTransport">
+                <option value="">Selecciona si aplica</option>
+                <option>A pie</option>
+                <option>Bicicleta</option>
+                <option>Moto</option>
+                <option>Auto</option>
+                <option>Camioneta</option>
+                <option>Mudanza / Carga</option>
+              </select>
             </label>
           </div>
 
-          <label>Colonia o localidad
-            <input id="helperLocality" type="text" value="Chapultepec Centro" placeholder="Ej. El Ameyal, Centro, Santa Ana" required />
-          </label>
-
-          <label>Zona donde trabajas o referencia
-            <input id="helperLocation" type="text" placeholder="Ej. Chapultepec Centro y alrededores" required />
-          </label>
-
-          <label>Disponibilidad
-            <input id="helperAvailability" type="text" placeholder="Ej. Fines de semana" required />
-          </label>
-
-          <label>Teléfono o WhatsApp
-            <input id="helperPhone" type="tel" inputmode="numeric" placeholder="Ej. 7225703145" required />
-            <small class="field-help">Tu número se mostrará como xxxxxx3145. Al abrir WhatsApp, la otra persona podrá contactarte por esa vía.</small>
+          <label>Pago, costo o presupuesto sugerido
+            <input id="pubBudget" type="number" min="0" placeholder="Opcional. Ej. 100" />
           </label>
 
           <label>Descripción
-            <textarea id="helperDescription" rows="4" placeholder="Cuenta tu experiencia, horarios, condiciones, etc."></textarea>
+            <textarea id="pubDescription" rows="5" placeholder="Escribe de forma natural. Ej. Busco que me ayuden con... / Ofrezco servicio de... Puedes pegar links de Facebook, TikTok, Instagram, Waze o Google Maps." required></textarea>
           </label>
 
-          <div class="notice-card pilot-notice"><strong>Revisión previa y contacto protegido</strong><p>Tu perfil no aparecerá de inmediato. La oficina revisará que la información sea clara y segura. Tu teléfono se mostrará parcialmente oculto en la publicación.</p></div>
+          <div class="notice-card pilot-notice">
+            <strong>Revisión previa</strong>
+            <p>Tu publicación no aparece de inmediato. La oficina la revisa para evitar spam, bromas o datos incorrectos.</p>
+          </div>
 
           <label class="checkbox-line">
-            <input id="helperPrivacyAccept" type="checkbox" required />
+            <input id="pubPrivacyAccept" type="checkbox" required />
             <span>Acepto el <button type="button" class="link-button" onclick="showSection('avisoPrivacidad')">Aviso de Privacidad</button> y los <button type="button" class="link-button" onclick="showSection('terminos')">Términos y Condiciones</button>.</span>
           </label>
 
-          <button class="btn-big btn-green" type="submit">Enviar perfil a revisión</button>
+          <button class="btn-big btn-purple" type="submit">Enviar registro a revisión</button>
         </form>
       </section>
 
-      <section id="comoFunciona" class="section">
-        <h2>¿Cómo funciona?</h2>
-        <div class="step-card"><span>1</span><div><strong>Publica o busca</strong><p>Una persona publica lo que necesita o busca un perfil disponible por estado y municipio.</p></div></div>
-        <div class="step-card"><span>2</span><div><strong>La oficina revisa</strong><p>En prueba pública, los pedidos y perfiles nuevos se revisan antes de aparecer. Cada publicación tiene folio para seguimiento, y los pedidos atendidos se cierran desde administración.</p></div></div>
-        <div class="step-card"><span>3</span><div><strong>Contacta por WhatsApp</strong><p>La app muestra los números parcialmente ocultos, pero permite iniciar conversación por WhatsApp para acordar detalles.</p></div></div>
-        <div class="step-card"><span>4</span><div><strong>Acuerden con claridad</strong><p>Precio, horario, materiales y pago se definen entre las personas involucradas.</p></div></div>
-        <button class="btn-big btn-purple" onclick="showSection('registro')">Registrarme</button>
-        <button class="btn-big btn-green" onclick="showSection('ofertas')">Ver resultados</button>
-      </section>
-
-      <section id="reglas" class="section">
-        <h2>Reglas y seguridad</h2>
-        <div class="rule-card"><strong>✅ Somos un puente</strong><p>No somos jefes ni empleadores. Solo ayudamos a conectar personas.</p></div>
-        <div class="rule-card"><strong>✅ Trato directo</strong><p>Los acuerdos de precio, horario, materiales y forma de pago son entre solicitante y ayudante.</p></div>
-        <div class="rule-card"><strong>✅ Seguridad primero</strong><p>Verifica datos, acuerda lugares seguros, avisa a alguien de confianza y evita adelantos grandes. Los teléfonos se muestran parcialmente ocultos dentro de la app.</p></div>
-        <div class="rule-card"><strong>✅ Respeto obligatorio</strong><p>La honestidad, puntualidad y buen trato son necesarios para participar.</p></div>
-        <div class="rule-card danger"><strong>⚠️ Reportes</strong><p>Si una persona actúa de forma indebida, comunícate con la oficina para revisar el caso.</p></div>
-        <div class="rule-card"><strong>🛡️ Revisión en prueba pública</strong><p>Los nuevos pedidos y perfiles se revisan antes de mostrarse al público. Esto ayuda a reducir bromas, spam y datos incorrectos.</p></div>
-        <button class="btn-big btn-outline" onclick="showSection('avisoPrivacidad')">Aviso de Privacidad</button>
-        <button class="btn-big btn-outline" onclick="showSection('terminos')">Términos y Condiciones</button>
-      </section>
-
-      <section id="planes" class="section">
-        <h2>Planes y destacados</h2>
-        <p class="muted">Durante la prueba pública no hay pagos automáticos dentro de la app. Las solicitudes de destacados o apoyo de oficina se atienden por WhatsApp.</p>
-
-        <div class="plans-grid">
-          <article class="plan-card">
-            <span class="plan-icon">⭐</span>
-            <strong>Perfil destacado</strong>
-            <p>Aparece con mayor visibilidad en los perfiles disponibles de tu municipio.</p>
-            <small>Ideal para ayudantes, oficios y servicios locales.</small>
-            <a class="whatsapp" target="_blank" rel="noopener" href="" data-plan-link="perfil">Solicitar por WhatsApp</a>
-          </article>
-
-          <article class="plan-card">
-            <span class="plan-icon">📌</span>
-            <strong>Publicación destacada</strong>
-            <p>Da mayor visibilidad temporal a un pedido o anuncio de servicio.</p>
-            <small>Útil para trabajos urgentes o promociones locales.</small>
-            <a class="whatsapp" target="_blank" rel="noopener" href="" data-plan-link="publicacion">Solicitar por WhatsApp</a>
-          </article>
-
-          <article class="plan-card">
-            <span class="plan-icon">🏠</span>
-            <strong>Registro asistido</strong>
-            <p>La oficina ayuda a registrar o actualizar un pedido o perfil por WhatsApp.</p>
-            <small>Para personas que prefieren atención guiada.</small>
-            <a class="whatsapp" target="_blank" rel="noopener" href="" data-plan-link="registro">Solicitar por WhatsApp</a>
-          </article>
+      <section id="publicaciones" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Resultados</h2>
+            <p>Todo en un solo espacio: servicios, necesidades, viajes y envíos.</p>
+          </div>
+          <button class="btn-small btn-purple" onclick="showSection('registro')">+ Registrarme</button>
         </div>
 
-        <div class="notice-card">
-          <strong>Pagos en etapa inicial</strong>
-          <p>Los pagos o aportaciones se coordinan fuera de la app durante esta prueba. Más adelante se podrá integrar Mercado Pago u otra pasarela formal.</p>
+        <div class="filter-card">
+          <div class="filter-title">Filtrar por ubicación y categoría</div>
+          <label>Categoría
+            <select id="categoryFilter" onchange="renderPublications()">
+              <option value="">Todas las categorías</option>
+              <option>Viajes compartidos</option>
+              <option>Mensajería y envíos</option>
+              <option>General</option>
+            </select>
+          </label>
+          <label>Estado
+            <select id="stateFilter" data-state-select data-blank="true" data-default="México" autocomplete="off" onchange="handleStateFilterChange()"></select>
+          </label>
+          <label>Municipio
+            <input id="municipalityFilter" type="text" value="Chapultepec" placeholder="Ej. Chapultepec" autocomplete="off" autocapitalize="words" spellcheck="false" inputmode="text" oninput="renderPublications()" />
+          </label>
+          <div class="filter-actions">
+            <button class="btn-small btn-outline" onclick="renderPublications()">Ver resultados</button>
+            <button class="btn-small btn-ghost" onclick="resetLocationFilters()">Restablecer Chapultepec</button>
+          </div>
+          <p id="filterSummary" class="filter-summary">Mostrando resultados para: Chapultepec, México</p>
         </div>
-      </section>
 
+        <label class="search-box">
+          Buscar
+          <input id="mainSearch" type="search" placeholder="Ej. taquería, busco carpintero, viaje, moto" oninput="renderPublications()" />
+        </label>
 
-      <section id="avisoPrivacidad" class="section">
-        <h2>Aviso de Privacidad</h2>
-        <div class="rule-card">
-          <strong>Responsable</strong>
-          <p>Conecta Servicios, en etapa piloto, usa la información que proporcionas para revisar publicaciones, mostrar pedidos o perfiles aprobados y facilitar el contacto por WhatsApp.</p>
-        </div>
-        <div class="rule-card">
-          <strong>Datos que se solicitan</strong>
-          <p>Nombre o referencia, teléfono o WhatsApp, estado, municipio, localidad, zona, descripción del pedido o servicio y datos necesarios para publicar.</p>
-        </div>
-        <div class="rule-card">
-          <strong>Uso de teléfono</strong>
-          <p>El teléfono se muestra parcialmente oculto dentro de la app, por ejemplo xxxxxx3145. El botón de WhatsApp puede abrir una conversación directa y WhatsApp puede mostrar el número real al iniciar el chat.</p>
-        </div>
-        <div class="rule-card">
-          <strong>Derechos y cambios</strong>
-          <p>Puedes solicitar corrección, ocultamiento o cierre de una publicación por WhatsApp con la oficina. Este aviso es una base para piloto y deberá revisarse formalmente antes de operar a gran escala.</p>
-        </div>
-        <button class="btn-big btn-purple" onclick="showSection('oficina')">Contactar oficina por WhatsApp</button>
-      </section>
-
-      <section id="terminos" class="section">
-        <h2>Términos y Condiciones</h2>
-        <div class="rule-card">
-          <strong>Conecta Servicios es un puente</strong>
-          <p>La app facilita que personas encuentren pedidos o servicios. No somos empleadores, contratistas ni responsables directos de los acuerdos entre usuarios.</p>
-        </div>
-        <div class="rule-card">
-          <strong>Acuerdos entre usuarios</strong>
-          <p>Precio, horario, materiales, traslado, condiciones y forma de pago se acuerdan directamente entre las personas involucradas.</p>
-        </div>
-        <div class="rule-card">
-          <strong>Uso responsable</strong>
-          <p>No se permiten bromas, spam, información falsa, lenguaje ofensivo ni publicaciones que pongan en riesgo a otras personas. La oficina puede ocultar registros problemáticos.</p>
-        </div>
-        <div class="rule-card">
-          <strong>Seguridad</strong>
-          <p>Antes de aceptar un servicio o pedido, verifica la información, comparte tu ubicación con alguien de confianza y evita anticipos grandes sin acuerdo claro.</p>
-        </div>
-        <button class="btn-big btn-purple" onclick="showSection('inicio')">Entendido</button>
+        <div id="publicationsList" class="list"></div>
       </section>
 
       <section id="oficina" class="section">
         <h2>Oficina de registro</h2>
-        <p>Para dudas, registros asistidos o seguimiento de publicaciones, la atención será únicamente por WhatsApp.</p>
-
-        <div class="office-card" id="officeInfo"></div>
-
-        <button class="btn-big btn-outline" onclick="showSection('planes')">⭐ Ver planes y destacados</button>
-
-        <button id="adminAccessButton" class="btn-big btn-admin hidden" onclick="showSection('admin')">🔐 Modo administrador</button>
+        <div class="office-card">
+          <p>Atención solamente por WhatsApp para dudas, registros asistidos, modificaciones y seguimiento de publicaciones.</p>
+          <button class="btn-big btn-green" onclick="openOfficeWhatsApp('Hola, necesito atención de la oficina de Conecta Servicios.')">💬 Escribir por WhatsApp</button>
+        </div>
+        <div class="info-grid">
+          <button class="mini-card" onclick="showSection('comoFunciona')"><strong>¿Cómo funciona?</strong><small>Explicación corta</small></button>
+          <button class="mini-card" onclick="showSection('reglas')"><strong>Reglas y seguridad</strong><small>Antes de contactar</small></button>
+          <button class="mini-card" onclick="showSection('planes')"><strong>Planes y destacados</strong><small>Solicitar por WhatsApp</small></button>
+        </div>
+        <div id="adminEntry" class="admin-entry hidden">
+          <hr />
+          <h3>Modo administrador</h3>
+          <input id="adminPin" type="password" placeholder="PIN de administrador" />
+          <button class="btn-big btn-purple" onclick="unlockAdmin()">Entrar</button>
+        </div>
       </section>
 
       <section id="admin" class="section">
-        <h2>Panel de administración</h2>
-        <p class="muted">Revisa pedidos y perfiles. Lo nuevo llega como “En revisión”. También puedes editar datos, aprobar, ocultar o cerrar pedidos como “Atendido”.</p>
-
-        <div id="adminLogin" class="form-card">
-          <label>PIN de administrador
-            <input id="adminPinInput" type="password" inputmode="numeric" placeholder="Ingresa el PIN" />
-          </label>
-          <button class="btn-big btn-purple" onclick="unlockAdmin()">Entrar</button>
-          <p class="muted">Acceso interno para la persona encargada del piloto.</p>
+        <div class="section-header">
+          <div>
+            <h2>Administración</h2>
+            <p>Revisa, aprueba, oculta, marca atendido o edita publicaciones.</p>
+          </div>
+          <button class="btn-small btn-outline" onclick="loadAdminData()">Actualizar</button>
         </div>
+        <label class="search-box">Buscar en admin
+          <input id="adminSearch" type="search" placeholder="Folio, teléfono, título, nombre, municipio" oninput="renderAdminPublications()" />
+        </label>
+        <div id="adminList" class="list"></div>
+      </section>
 
-        <div id="adminPanel" class="admin-panel hidden">
-          <div class="notice-card">
-            <strong>Control de piloto</strong>
-            <p>Los registros nuevos llegan en revisión. Usa Editar para corregir datos, Aprobar para mostrarlos, Atendido para cerrar pedidos resueltos u Ocultar si son falsos, duplicados o problemáticos.</p>
-          </div>
+      <section id="comoFunciona" class="section info-section">
+        <h2>¿Cómo funciona?</h2>
+        <div class="step-card"><strong>1. Regístrate</strong><p>Escribe cómo quieres aparecer, qué necesitas u ofreces y tu zona.</p></div>
+        <div class="step-card"><strong>2. Revisión</strong><p>La oficina revisa que la publicación sea clara y segura.</p></div>
+        <div class="step-card"><strong>3. Contacto directo</strong><p>Las personas se comunican por WhatsApp y acuerdan condiciones directamente.</p></div>
+      </section>
 
-          <div class="admin-actions">
-            <button class="btn-small btn-purple" onclick="loadAdminData()">Actualizar listas</button>
-            <button class="btn-small btn-outline" onclick="lockAdmin()">Cerrar admin</button>
-          </div>
+      <section id="reglas" class="section info-section">
+        <h2>Reglas y seguridad</h2>
+        <div class="notice-card"><strong>Conecta Servicios es un puente</strong><p>No somos empleadores ni intermediarios de pago. Los acuerdos son directos entre las personas.</p></div>
+        <p>Confirma lugar, horario, costo y condiciones antes de aceptar. Si algo parece extraño, repórtalo a la oficina por WhatsApp.</p>
+      </section>
 
-          <label class="search-box">
-            Buscar en administración
-            <input id="adminSearch" type="search" placeholder="Folio, nombre, pedido, teléfono, últimos 4 dígitos, estado, municipio o zona" oninput="renderAdminLists()" />
-          </label>
+      <section id="planes" class="section info-section">
+        <h2>Planes y destacados</h2>
+        <p class="muted">Por ahora los pagos son manuales por WhatsApp. No hay cobro automático dentro de la app.</p>
+        <div class="plan-card"><strong>⭐ Publicación destacada</strong><p>Mayor visibilidad en tu municipio.</p><button class="btn-small btn-green" onclick="openOfficeWhatsApp('Hola, quiero solicitar una publicación destacada en Conecta Servicios.')">Solicitar</button></div>
+        <div class="plan-card"><strong>🧾 Registro asistido</strong><p>La oficina te ayuda a crear o corregir tu publicación.</p><button class="btn-small btn-green" onclick="openOfficeWhatsApp('Hola, quiero solicitar registro asistido en Conecta Servicios.')">Solicitar</button></div>
+      </section>
 
-          <div class="admin-tabs">
-            <button id="adminTabPedidos" class="active" onclick="setAdminTab('pedidos')">Pedidos</button>
-            <button id="adminTabAyudantes" onclick="setAdminTab('ayudantes')">Perfiles</button>
-          </div>
+      <section id="avisoPrivacidad" class="section info-section">
+        <h2>Aviso de Privacidad</h2>
+        <p>Conecta Servicios recopila nombre público, teléfono, ubicación general y descripción de la publicación para mostrar registros locales y facilitar contacto por WhatsApp. El teléfono se muestra parcialmente oculto dentro de la app.</p>
+        <p>Este aviso es una base para prueba pública. Antes de operación masiva conviene revisión legal formal.</p>
+      </section>
 
-          <div id="adminPedidos" class="list"></div>
-          <div id="adminAyudantes" class="list hidden"></div>
-        </div>
+      <section id="terminos" class="section info-section">
+        <h2>Términos y Condiciones</h2>
+        <p>La aplicación conecta personas de forma local. Cada usuario es responsable de verificar condiciones, pagos, horarios y seguridad antes de realizar cualquier acuerdo.</p>
       </section>
     </main>
 
     <nav class="bottom-nav">
-      <button onclick="showSection('inicio')">🏠<br />Inicio</button>
-      <button onclick="showSection('ofertas')">🔍<br />Pedidos</button>
-      <button onclick="showSection('galeria')">🧰<br />Perfiles</button>
-      <button onclick="showSection('planes')">⭐<br />Planes</button>
-      <button onclick="showSection('oficina')">☎<br />Oficina</button>
+      <button onclick="showSection('inicio')">🏠<span>Inicio</span></button>
+      <button onclick="showSection('publicaciones')">🔎<span>Resultados</span></button>
+      <button onclick="showSection('registro')">📝<span>Registrarme</span></button>
+      <button onclick="showSection('oficina')">🏢<span>Oficina</span></button>
     </nav>
-
-    <div id="toast" class="toast" role="status"></div>
   </div>
 
-  <script src="app.js?v=3.7.3-edicion-admin"></script>
+  <div id="toast" class="toast"></div>
+
+  <dialog id="editDialog" class="edit-dialog">
+    <form id="editForm" method="dialog" class="form-card dialog-form">
+      <h2>Editar publicación</h2>
+      <input type="hidden" id="editId" />
+      <label>Nombre público<input id="editName" type="text" required /></label>
+      <label>Título<input id="editTitle" type="text" required /></label>
+      <label>Categoría<select id="editCategory"><option>General</option><option>Viajes compartidos</option><option>Mensajería y envíos</option></select></label>
+      <label>Intención<select id="editIntent"><option>Busco / Necesito</option><option>Ofrezco / Tengo disponible</option><option>Información o acuerdo local</option></select></label>
+      <div class="form-grid"><label>Estado<input id="editStateName" type="text" /></label><label>Municipio<input id="editMunicipality" type="text" /></label></div>
+      <label>Localidad<input id="editLocality" type="text" /></label>
+      <label>Teléfono<input id="editPhone" type="tel" /></label>
+      <label>Ruta / detalle extra<input id="editRoute" type="text" /></label>
+      <label>Estado de publicación<select id="editStatus"><option value="revision">revision</option><option value="activo">activo</option><option value="oculto">oculto</option><option value="atendido">atendido</option></select></label>
+      <label>Descripción<textarea id="editDescription" rows="4"></textarea></label>
+      <div class="dialog-actions"><button type="button" class="btn-small btn-ghost" onclick="closeEditDialog()">Cancelar</button><button type="submit" class="btn-small btn-purple">Guardar cambios</button></div>
+    </form>
+  </dialog>
+
+  <script src="app.js?v=3.8-estructura-simple"></script>
 </body>
 </html>

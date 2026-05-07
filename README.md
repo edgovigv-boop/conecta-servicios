@@ -1,30 +1,37 @@
-# Conecta Servicios v3.7.4
+# Conecta Servicios v3.8 - estructura simple
 
-Versión de prueba pública con mejoras de tráfico y facilidad de uso.
+Esta versión cambia la estructura de la app para eliminar la separación pública entre pedidos y perfiles.
 
-## Incluye
+## Cambios principales
 
-- Registro inicial más simple: **REGISTRARME** y **VER RESULTADOS**.
-- Sección de registro unificada para publicar un pedido o registrar un servicio/negocio.
-- Enlaces clicables en descripciones: web, Facebook, Instagram, TikTok, Google Maps y URLs comunes.
-- Botón **Compartir** en pedidos y perfiles.
-- Enlaces compartibles por publicación usando `?pedido=` o `?perfil=`.
-- Filtros flexibles por Todo México, estado o municipio.
-- Folios visibles.
-- Solicitud de atendido verificada por últimos 4 dígitos.
-- Edición administrativa de pedidos y perfiles.
-- Contactos enmascarados.
-- Oficina por WhatsApp.
+- Un solo proceso de registro: **REGISTRARME**.
+- Un solo espacio público: **Resultados**.
+- Todo convive como publicación: servicios, necesidades, viajes y envíos.
+- Categorías visibles:
+  - 🚘 Viajes compartidos
+  - 📦 Mensajería y envíos
+  - General / Servicios locales
+- Enlaces clicables en descripciones.
+- Botón compartir.
+- Folios tipo `PUB-123AB`.
+- Solicitud de modificación y atendido verificada por últimos 4 dígitos.
+- Panel admin unificado para editar, aprobar, ocultar o marcar atendido.
+
+## Importante
+
+Esta versión requiere correr el archivo SQL:
+
+`supabase-v3.8-estructura-simple.sql`
+
+Ese SQL crea una nueva tabla llamada `publicaciones` y migra los pedidos y ayudantes anteriores a la nueva estructura unificada.
 
 ## Publicación
 
-Reemplaza en GitHub estos cuatro archivos:
+Después de correr el SQL, sube a GitHub:
 
-- `index.html`
-- `styles.css`
-- `app.js`
-- `README.md`
+- index.html
+- styles.css
+- app.js
+- README.md
 
-Vercel desplegará automáticamente.
-
-No requiere SQL nuevo ni cambios en Supabase.
+Vercel publicará automáticamente.
