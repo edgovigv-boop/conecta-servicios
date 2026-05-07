@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#6f42c1" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=3.8-estructura-simple" />
+  <link rel="stylesheet" href="styles.css?v=3.8.1-home-limpio" />
 </head>
 <body>
   <div class="app-shell">
@@ -13,34 +13,30 @@
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
       <div class="title-wrap">
         <span id="mainTitle">Conecta Servicios</span>
-        <small id="subtitle">Estructura simple 3.8</small>
+        <small id="subtitle">Publicaciones locales</small>
       </div>
       <button class="help-button" aria-label="Oficina" onclick="showSection('oficina')">☎</button>
     </header>
 
     <main class="content">
       <section id="inicio" class="section active">
-        <div class="hero-card">
-          <span class="hero-badge">Prueba pública municipal</span>
+        <div class="hero-card home-hero-clean">
           <h1>¿Qué vamos a hacer hoy?</h1>
-          <p>Publica lo que necesitas, lo que ofreces o revisa registros de tu zona.</p>
-          <div class="hero-stats">
+          <p>Publica lo que necesitas, lo que ofreces o revisa, explora publicaciones de tu zona</p>
+          <div class="hero-stats single-stat">
             <span><strong id="publicationsCount">0</strong> registros</span>
-            <span><strong id="reviewCount">0</strong> en revisión</span>
           </div>
-          <p class="sync-status" id="syncStatus">Conectando con la base de datos...</p>
+          <p class="sync-status visually-hidden" id="syncStatus" aria-live="polite">Conectando con la base de datos...</p>
         </div>
 
         <div class="home-actions">
-          <button class="action-card purple" onclick="showSection('registro')">
-            <span>📝</span>
-            <strong>REGISTRARME</strong>
-            <small>Publicar necesidad, servicio, viaje o envío</small>
+          <button class="action-card purple wave-action" onclick="showSection('registro')">
+            <span class="action-icon plus-icon">+</span>
+            <strong>PUBLICA</strong>
           </button>
           <button class="action-card green" onclick="showSection('publicaciones')">
-            <span>🔎</span>
-            <strong>VER RESULTADOS</strong>
-            <small>Buscar registros de tu zona</small>
+            <span class="action-icon">🔎</span>
+            <strong>PUBLICACIONES</strong>
           </button>
         </div>
 
@@ -76,7 +72,7 @@
       </section>
 
       <section id="registro" class="section">
-        <h2>Registrarme</h2>
+        <h2>Publica</h2>
         <p class="muted">Escribe cómo quieres aparecer y qué quieres publicar. La oficina revisará el registro antes de mostrarlo públicamente.</p>
 
         <form id="publicationForm" class="form-card">
@@ -177,10 +173,10 @@
       <section id="publicaciones" class="section">
         <div class="section-header">
           <div>
-            <h2>Resultados</h2>
+            <h2>Publicaciones</h2>
             <p>Todo en un solo espacio: servicios, necesidades, viajes y envíos.</p>
           </div>
-          <button class="btn-small btn-purple" onclick="showSection('registro')">+ Registrarme</button>
+          <button class="btn-small btn-purple" onclick="showSection('registro')">+ Publica</button>
         </div>
 
         <div class="filter-card">
@@ -281,8 +277,8 @@
 
     <nav class="bottom-nav">
       <button onclick="showSection('inicio')">🏠<span>Inicio</span></button>
-      <button onclick="showSection('publicaciones')">🔎<span>Resultados</span></button>
-      <button onclick="showSection('registro')">📝<span>Registrarme</span></button>
+      <button onclick="showSection('publicaciones')">🔎<span>Publicaciones</span></button>
+      <button onclick="showSection('registro')">➕<span>Publica</span></button>
       <button onclick="showSection('oficina')">🏢<span>Oficina</span></button>
     </nav>
   </div>
@@ -307,6 +303,6 @@
     </form>
   </dialog>
 
-  <script src="app.js?v=3.8-estructura-simple"></script>
+  <script src="app.js?v=3.8.1-home-limpio"></script>
 </body>
 </html>

@@ -35,3 +35,12 @@ Después de correr el SQL, sube a GitHub:
 - README.md
 
 Vercel publicará automáticamente.
+
+
+## v3.8.1
+
+- Pantalla principal más limpia.
+- Se quitó la etiqueta de prueba pública municipal, el contador de revisión y el mensaje visible de sincronización.
+- Botones principales renombrados a PUBLICA y PUBLICACIONES.
+- Navegación inferior ajustada a Publicaciones / Publica.
+- Botón morado con símbolo + y efecto visual suave.
