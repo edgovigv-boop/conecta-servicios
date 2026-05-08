@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#6f42c1" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=3.8.1-home-limpio" />
+  <link rel="stylesheet" href="styles.css?v=3.8.2-home-publica-redondo" />
 </head>
 <body>
   <div class="app-shell">
@@ -29,40 +29,29 @@
           <p class="sync-status visually-hidden" id="syncStatus" aria-live="polite">Conectando con la base de datos...</p>
         </div>
 
-        <div class="home-actions">
-          <button class="action-card purple wave-action" onclick="showSection('registro')">
-            <span class="action-icon plus-icon">+</span>
+        <div class="home-main-action">
+          <button class="publica-circle wave-action" onclick="showSection('registro')" aria-label="Publica">
+            <span class="circle-plus">+</span>
             <strong>PUBLICA</strong>
           </button>
-          <button class="action-card green" onclick="showSection('publicaciones')">
-            <span class="action-icon">🔎</span>
-            <strong>PUBLICACIONES</strong>
-          </button>
         </div>
 
-        <div class="category-grid">
-          <button class="category-card ride" onclick="applyCategoryAndShow('Viajes compartidos')">
-            <span>🚘</span>
-            <strong>Viajes compartidos</strong>
-            <small>Rutas, salidas, horarios y espacios disponibles.</small>
+        <div class="home-shortcuts">
+          <button class="shortcut-card nearby" onclick="requestNearbyComingSoon()">
+            <span>📍</span>
+            <strong>Publicaciones cerca de mí</strong>
+            <b>›</b>
           </button>
-          <button class="category-card delivery" onclick="applyCategoryAndShow('Mensajería y envíos')">
+          <button class="shortcut-card delivery" onclick="applyCategoryAndShow('Mensajería y envíos')">
             <span>📦</span>
             <strong>Mensajería y envíos</strong>
-            <small>A pie, bici, moto, auto, camioneta o mudanza.</small>
+            <b>›</b>
           </button>
-        </div>
-
-        <button class="nearby-card" onclick="requestNearbyComingSoon()">
-          <span>📍</span>
-          <div><strong>Registros cerca de mí</strong><small>Próxima mejora: ordenar por ubicación exacta.</small></div>
-          <b>›</b>
-        </button>
-
-        <div class="trust-strip">
-          <span>🔒 Contactos parciales</span>
-          <span>✅ Revisión previa</span>
-          <span>💬 WhatsApp</span>
+          <button class="shortcut-card ride" onclick="applyCategoryAndShow('Viajes compartidos')">
+            <span>🚘</span>
+            <strong>Viajes compartidos</strong>
+            <b>›</b>
+          </button>
         </div>
 
         <div class="notice-card slim">
@@ -303,6 +292,6 @@
     </form>
   </dialog>
 
-  <script src="app.js?v=3.8.1-home-limpio"></script>
+  <script src="app.js?v=3.8.2-home-publica-redondo"></script>
 </body>
 </html>

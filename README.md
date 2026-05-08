@@ -37,10 +37,19 @@ Después de correr el SQL, sube a GitHub:
 Vercel publicará automáticamente.
 
 
-## v3.8.1
+## v3.8.2
 
 - Pantalla principal más limpia.
 - Se quitó la etiqueta de prueba pública municipal, el contador de revisión y el mensaje visible de sincronización.
 - Botones principales renombrados a PUBLICA y PUBLICACIONES.
 - Navegación inferior ajustada a Publicaciones / Publica.
 - Botón morado con símbolo + y efecto visual suave.
+
+
+## v3.8.2
+
+- Home simplificada con botón central redondo PUBLICA.
+- Se elimina el botón verde de publicaciones en la portada.
+- Accesos directos: Publicaciones cerca de mí, Mensajería y envíos, Viajes compartidos.
+- Se elimina la franja de contactos parciales/revisión/WhatsApp.
+- Se conserva el mensaje final “Sin divisiones complicadas”.
