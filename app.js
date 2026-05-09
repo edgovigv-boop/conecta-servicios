@@ -530,6 +530,46 @@ function maybeOpenSharedPublication() {
     if (card) { card.classList.add("open"); card.scrollIntoView({ behavior: "smooth", block: "center" }); }
   }, 900);
 }
+
+function initMobileFormComfort() {
+  const appShell = document.querySelector(".app-shell");
+  const form = document.getElementById("publicationForm");
+  if (!form || !appShell) return;
+
+  const setKeyboardMode = active => document.body.classList.toggle("keyboard-open", Boolean(active));
+  const controls = form.querySelectorAll("input, textarea, select");
+
+  controls.forEach(control => {
+    control.setAttribute("autocomplete", control.getAttribute("autocomplete") || "off");
+    control.addEventListener("focus", () => {
+      setKeyboardMode(true);
+      setTimeout(() => {
+        control.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 260);
+    });
+    control.addEventListener("blur", () => {
+      setTimeout(() => {
+        if (!form.contains(document.activeElement) || !["INPUT","TEXTAREA","SELECT"].includes(document.activeElement.tagName)) {
+          setKeyboardMode(false);
+        }
+      }, 120);
+    });
+  });
+
+  if (window.visualViewport) {
+    const viewportHandler = () => {
+      const keyboardLikelyOpen = window.visualViewport.height < window.innerHeight * 0.78 && currentSection === "registro";
+      setKeyboardMode(keyboardLikelyOpen);
+      const active = document.activeElement;
+      if (keyboardLikelyOpen && form.contains(active)) {
+        setTimeout(() => active.scrollIntoView({ behavior: "smooth", block: "center" }), 80);
+      }
+    };
+    window.visualViewport.addEventListener("resize", viewportHandler);
+    window.visualViewport.addEventListener("scroll", viewportHandler);
+  }
+}
+
 function init() {
   const params = new URLSearchParams(location.search);
   adminRouteEnabled = params.get("admin") === "1" || params.get("admin") === "true";
@@ -540,6 +580,7 @@ function init() {
   history.replaceState({ section: "inicio" }, "", routeUrlForSection("inicio"));
   updateWizard();
   updateCategoryDetails();
+  initMobileFormComfort();
   loadRemoteData().then(maybeOpenSharedPublication);
 }
 document.addEventListener("DOMContentLoaded", init);
