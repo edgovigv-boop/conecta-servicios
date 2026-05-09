@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#6f42c1" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=3.8.2-home-publica-redondo" />
+  <link rel="stylesheet" href="styles.css?v=3.9-publicacion-guiada-moderna" />
 </head>
 <body>
   <div class="app-shell">
@@ -20,142 +20,167 @@
 
     <main class="content">
       <section id="inicio" class="section active">
-        <div class="hero-card home-hero-clean">
+        <div class="hero-modern">
+          <div class="hero-badge">Red local en movimiento</div>
           <h1>¿Qué vamos a hacer hoy?</h1>
-          <p>Publica lo que necesitas, lo que ofreces o revisa, explora publicaciones de tu zona</p>
-          <div class="hero-stats single-stat">
-            <span><strong id="publicationsCount">0</strong> registros</span>
-          </div>
+          <p>Publica lo que necesitas, lo que ofreces o explora publicaciones de tu zona.</p>
+          <div class="hero-stat-pill"><strong id="publicationsCount">0</strong> registros activos</div>
           <p class="sync-status visually-hidden" id="syncStatus" aria-live="polite">Conectando con la base de datos...</p>
         </div>
 
         <div class="home-main-action">
-          <button class="publica-circle wave-action" onclick="showSection('registro')" aria-label="Publica">
+          <button class="publica-circle wave-action" onclick="startWizard()" aria-label="Publica">
             <span class="circle-plus">+</span>
             <strong>PUBLICA</strong>
           </button>
         </div>
 
-        <div class="home-shortcuts">
+        <div class="home-shortcuts modern-shortcuts">
           <button class="shortcut-card nearby" onclick="requestNearbyComingSoon()">
-            <span>📍</span>
-            <strong>Publicaciones cerca de mí</strong>
-            <b>›</b>
+            <span>📍</span><strong>Publicaciones cerca de mí</strong><b>›</b>
           </button>
           <button class="shortcut-card delivery" onclick="applyCategoryAndShow('Mensajería y envíos')">
-            <span>📦</span>
-            <strong>Mensajería y envíos</strong>
-            <b>›</b>
+            <span>📦</span><strong>Mensajería y envíos</strong><b>›</b>
           </button>
           <button class="shortcut-card ride" onclick="applyCategoryAndShow('Viajes compartidos')">
-            <span>🚘</span>
-            <strong>Viajes compartidos</strong>
-            <b>›</b>
+            <span>🚘</span><strong>Viajes compartidos</strong><b>›</b>
           </button>
         </div>
 
-        <div class="notice-card slim">
+        <div class="notice-card slim modern-note">
           <strong>Sin divisiones complicadas</strong>
           <p>Todo convive en un solo espacio. El texto de cada publicación deja claro si alguien busca ayuda, ofrece servicio, comparte viaje o hace envíos.</p>
         </div>
       </section>
 
       <section id="registro" class="section">
-        <h2>Publica</h2>
-        <p class="muted">Escribe cómo quieres aparecer y qué quieres publicar. La oficina revisará el registro antes de mostrarlo públicamente.</p>
+        <div class="section-header compact">
+          <div>
+            <h2>Publica paso a paso</h2>
+            <p>Te guiamos con preguntas cortas para que publicar no sea pesado.</p>
+          </div>
+        </div>
 
-        <form id="publicationForm" class="form-card">
-          <label>¿Cómo quieres aparecer?
-            <input id="pubName" type="text" placeholder="Tu nombre, negocio o alias" required />
-          </label>
+        <form id="publicationForm" class="wizard-card">
+          <div class="wizard-progress">
+            <div><strong id="wizardStepLabel">Paso 1 de 7</strong><span id="wizardStepTitle">¿Qué quieres publicar?</span></div>
+            <div class="progress-track"><span id="wizardProgressBar"></span></div>
+          </div>
 
-          <label>Título de tu publicación
-            <input id="pubTitle" type="text" placeholder="Ej. Busco carpintero / Ofrezco taquería / Viajo a Cuernavaca" required />
-          </label>
+          <div class="wizard-step active" data-step="1">
+            <h3>¿Qué quieres publicar?</h3>
+            <p class="muted">Elige una opción. Después podrás explicarlo con tus palabras.</p>
+            <div class="choice-grid">
+              <button type="button" class="choice-card" data-category="General" data-intent="Ofrezco / Tengo disponible" onclick="selectPublishType(this)"><span>🛠</span><strong>Ofrezco servicio o negocio</strong><small>Oficios, comida, negocio local, apoyo, clases.</small></button>
+              <button type="button" class="choice-card" data-category="General" data-intent="Busco / Necesito" onclick="selectPublishType(this)"><span>🔎</span><strong>Busco ayuda o necesito algo</strong><small>Reparaciones, limpieza, apoyo, presupuesto.</small></button>
+              <button type="button" class="choice-card" data-category="Viajes compartidos" data-intent="Ofrezco / Tengo disponible" onclick="selectPublishType(this)"><span>🚘</span><strong>Viaje compartido</strong><small>Ruta, horario, salida y espacios.</small></button>
+              <button type="button" class="choice-card" data-category="Mensajería y envíos" data-intent="Ofrezco / Tengo disponible" onclick="selectPublishType(this)"><span>📦</span><strong>Mensajería o envío</strong><small>A pie, bici, moto, auto o camioneta.</small></button>
+            </div>
+            <input type="hidden" id="pubCategory" />
+            <input type="hidden" id="pubIntent" />
+          </div>
 
-          <label>Categoría principal
-            <select id="pubCategory" required onchange="toggleCategoryFields()">
-              <option value="General">General / Servicios locales</option>
-              <option value="Viajes compartidos">🚘 Viajes compartidos</option>
-              <option value="Mensajería y envíos">📦 Mensajería y envíos</option>
-            </select>
-          </label>
-
-          <label>¿Qué estás publicando?
-            <select id="pubIntent" required>
-              <option>Busco / Necesito</option>
-              <option>Ofrezco / Tengo disponible</option>
-              <option>Información o acuerdo local</option>
-            </select>
-          </label>
-
-          <div class="form-grid">
-            <label>Estado
-              <select id="pubState" data-state-select data-default="México" required></select>
-            </label>
-            <label>Municipio
-              <input id="pubMunicipality" type="text" value="Chapultepec" placeholder="Ej. Chapultepec" required />
+          <div class="wizard-step" data-step="2">
+            <h3>¿Cómo quieres aparecer?</h3>
+            <label>Nombre, negocio o referencia
+              <input id="pubName" type="text" placeholder="Ej. Don Pedro Carpintería / Taquería El Centro / María mandados" />
             </label>
           </div>
 
-          <label>Colonia o localidad
-            <input id="pubLocality" type="text" value="Chapultepec Centro" placeholder="Ej. El Ameyal, Centro, Cuernavaca" required />
-          </label>
-
-          <label>Teléfono o WhatsApp
-            <input id="pubPhone" type="tel" inputmode="numeric" placeholder="Ej. 7225703145" required />
-            <small class="field-help">Se mostrará como xxxxxx3145. Al abrir WhatsApp, la otra persona podrá contactarte por esa vía.</small>
-          </label>
-
-          <div id="rideFields" class="conditional-card hidden">
-            <h3>Datos del viaje compartido</h3>
-            <label>Ruta o destino
-              <input id="pubRoute" type="text" placeholder="Ej. Chapultepec → Cuernavaca / link de Waze" />
-            </label>
+          <div class="wizard-step" data-step="3">
+            <h3>¿Dónde aplica?</h3>
             <div class="form-grid">
-              <label>Hora de salida
-                <input id="pubTime" type="text" placeholder="Ej. 7:00 am / lunes a viernes" />
+              <label>Estado
+                <select id="pubState" data-state-select data-default="México"></select>
               </label>
-              <label>Lugar de salida
-                <input id="pubDeparture" type="text" placeholder="Ej. Centro de Chapultepec" />
+              <label>Municipio
+                <input id="pubMunicipality" type="text" value="Chapultepec" placeholder="Ej. Chapultepec" />
+              </label>
+            </div>
+            <label>Colonia o localidad
+              <input id="pubLocality" type="text" value="Chapultepec Centro" placeholder="Ej. El Ameyal, Centro, Cuernavaca" />
+            </label>
+          </div>
+
+          <div class="wizard-step" data-step="4">
+            <h3>Título de tu publicación</h3>
+            <p class="muted" id="titleHint">Ej. Ofrezco servicio de jardinería / Busco carpintero.</p>
+            <label>Título
+              <input id="pubTitle" type="text" placeholder="Escríbelo claro y corto" />
+            </label>
+          </div>
+
+          <div class="wizard-step" data-step="5">
+            <h3>Detalles</h3>
+            <div id="generalDetails" class="dynamic-detail">
+              <label>Descripción
+                <textarea id="pubDescription" rows="5" placeholder="Cuéntalo de forma natural. Puedes pegar links de Facebook, TikTok, Instagram, Waze o Google Maps."></textarea>
+              </label>
+              <label>Pago, costo o presupuesto sugerido
+                <input id="pubBudget" type="number" min="0" placeholder="Opcional. Ej. 100" />
+              </label>
+            </div>
+            <div id="rideDetails" class="dynamic-detail hidden">
+              <label>Descripción del viaje
+                <textarea id="pubDescriptionRide" rows="4" placeholder="Ej. Viajo de Chapultepec a Toluca de lunes a viernes. Comparto espacio si vas por la ruta." ></textarea>
+              </label>
+              <label>Ruta o destino
+                <input id="pubRoute" type="text" placeholder="Ej. Chapultepec → Toluca / link de Waze" />
+              </label>
+              <div class="form-grid">
+                <label>Hora / días
+                  <input id="pubTime" type="text" placeholder="Ej. 7:00 am / lunes a viernes" />
+                </label>
+                <label>Lugar de salida
+                  <input id="pubDeparture" type="text" placeholder="Ej. Centro de Chapultepec" />
+                </label>
+              </div>
+              <label>Cooperación o costo sugerido
+                <input id="pubBudgetRide" type="number" min="0" placeholder="Opcional" />
+              </label>
+            </div>
+            <div id="deliveryDetails" class="dynamic-detail hidden">
+              <label>Descripción del servicio o necesidad
+                <textarea id="pubDescriptionDelivery" rows="4" placeholder="Ej. Hago entregas locales en moto / Busco quien lleve documentos." ></textarea>
+              </label>
+              <label>Medio disponible o requerido
+                <select id="pubTransport">
+                  <option value="">Selecciona si aplica</option>
+                  <option>A pie</option><option>Bicicleta</option><option>Moto</option><option>Auto</option><option>Camioneta</option><option>Mudanza / Carga</option>
+                </select>
+              </label>
+              <label>Costo o presupuesto sugerido
+                <input id="pubBudgetDelivery" type="number" min="0" placeholder="Opcional" />
               </label>
             </div>
           </div>
 
-          <div id="deliveryFields" class="conditional-card hidden">
-            <h3>Datos de mensajería o envío</h3>
-            <label>Medio disponible o requerido
-              <select id="pubTransport">
-                <option value="">Selecciona si aplica</option>
-                <option>A pie</option>
-                <option>Bicicleta</option>
-                <option>Moto</option>
-                <option>Auto</option>
-                <option>Camioneta</option>
-                <option>Mudanza / Carga</option>
-              </select>
+          <div class="wizard-step" data-step="6">
+            <h3>Contacto</h3>
+            <label>WhatsApp
+              <input id="pubPhone" type="tel" inputmode="numeric" placeholder="Ej. 7225703145" />
+              <small class="field-help">Tu número se mostrará parcialmente oculto como xxxxxx3145.</small>
+            </label>
+            <label class="checkbox-line">
+              <input id="pubPrivacyAccept" type="checkbox" />
+              <span>Acepto el <button type="button" class="link-button" onclick="showSection('avisoPrivacidad')">Aviso de Privacidad</button> y los <button type="button" class="link-button" onclick="showSection('terminos')">Términos y Condiciones</button>.</span>
             </label>
           </div>
 
-          <label>Pago, costo o presupuesto sugerido
-            <input id="pubBudget" type="number" min="0" placeholder="Opcional. Ej. 100" />
-          </label>
-
-          <label>Descripción
-            <textarea id="pubDescription" rows="5" placeholder="Escribe de forma natural. Ej. Busco que me ayuden con... / Ofrezco servicio de... Puedes pegar links de Facebook, TikTok, Instagram, Waze o Google Maps." required></textarea>
-          </label>
-
-          <div class="notice-card pilot-notice">
-            <strong>Revisión previa</strong>
-            <p>Tu publicación no aparece de inmediato. La oficina la revisa para evitar spam, bromas o datos incorrectos.</p>
+          <div class="wizard-step" data-step="7">
+            <h3>Revisa antes de publicar</h3>
+            <div id="publicationPreview" class="preview-card"></div>
+            <div class="notice-card auto-note">
+              <strong>Publicación automática con cuidado</strong>
+              <p>Si tu registro está completo y claro, se activará de inmediato. Si detectamos algo incompleto o dudoso, quedará en revisión.</p>
+            </div>
           </div>
 
-          <label class="checkbox-line">
-            <input id="pubPrivacyAccept" type="checkbox" required />
-            <span>Acepto el <button type="button" class="link-button" onclick="showSection('avisoPrivacidad')">Aviso de Privacidad</button> y los <button type="button" class="link-button" onclick="showSection('terminos')">Términos y Condiciones</button>.</span>
-          </label>
-
-          <button class="btn-big btn-purple" type="submit">Enviar registro a revisión</button>
+          <div class="wizard-actions">
+            <button type="button" class="btn-small btn-ghost" id="wizardBackBtn" onclick="prevWizardStep()">Atrás</button>
+            <button type="button" class="btn-small btn-purple" id="wizardNextBtn" onclick="nextWizardStep()">Continuar</button>
+            <button type="submit" class="btn-small btn-green hidden" id="wizardSubmitBtn">Publicar</button>
+          </div>
         </form>
       </section>
 
@@ -163,27 +188,28 @@
         <div class="section-header">
           <div>
             <h2>Publicaciones</h2>
-            <p>Todo en un solo espacio: servicios, necesidades, viajes y envíos.</p>
+            <p>Lista compacta para explorar rápido. Toca una publicación para ver detalles.</p>
           </div>
-          <button class="btn-small btn-purple" onclick="showSection('registro')">+ Publica</button>
+          <button class="btn-small btn-purple" onclick="startWizard()">+ Publica</button>
         </div>
 
-        <div class="filter-card">
-          <div class="filter-title">Filtrar por ubicación y categoría</div>
-          <label>Categoría
-            <select id="categoryFilter" onchange="renderPublications()">
-              <option value="">Todas las categorías</option>
-              <option>Viajes compartidos</option>
-              <option>Mensajería y envíos</option>
-              <option>General</option>
-            </select>
-          </label>
-          <label>Estado
-            <select id="stateFilter" data-state-select data-blank="true" data-default="México" autocomplete="off" onchange="handleStateFilterChange()"></select>
-          </label>
-          <label>Municipio
-            <input id="municipalityFilter" type="text" value="Chapultepec" placeholder="Ej. Chapultepec" autocomplete="off" autocapitalize="words" spellcheck="false" inputmode="text" oninput="renderPublications()" />
-          </label>
+        <div class="filter-card modern-filter">
+          <div class="filter-title">Filtrar</div>
+          <div class="chip-row" aria-label="Categorías rápidas">
+            <button type="button" class="filter-chip active" data-filter-category="" onclick="setCategoryChip(this)">Todo</button>
+            <button type="button" class="filter-chip" data-filter-category="General" onclick="setCategoryChip(this)">Servicios</button>
+            <button type="button" class="filter-chip" data-filter-category="Mensajería y envíos" onclick="setCategoryChip(this)">Envíos</button>
+            <button type="button" class="filter-chip" data-filter-category="Viajes compartidos" onclick="setCategoryChip(this)">Viajes</button>
+          </div>
+          <select id="categoryFilter" class="hidden" onchange="renderPublications()"><option value="">Todas las categorías</option><option>Viajes compartidos</option><option>Mensajería y envíos</option><option>General</option></select>
+          <div class="form-grid">
+            <label>Estado
+              <select id="stateFilter" data-state-select data-blank="true" data-default="México" autocomplete="off" onchange="handleStateFilterChange()"></select>
+            </label>
+            <label>Municipio
+              <input id="municipalityFilter" type="text" value="Chapultepec" placeholder="Ej. Chapultepec" autocomplete="off" autocapitalize="words" spellcheck="false" inputmode="text" oninput="renderPublications()" />
+            </label>
+          </div>
           <div class="filter-actions">
             <button class="btn-small btn-outline" onclick="renderPublications()">Ver resultados</button>
             <button class="btn-small btn-ghost" onclick="resetLocationFilters()">Restablecer Chapultepec</button>
@@ -193,10 +219,10 @@
 
         <label class="search-box">
           Buscar
-          <input id="mainSearch" type="search" placeholder="Ej. taquería, busco carpintero, viaje, moto" oninput="renderPublications()" />
+          <input id="mainSearch" type="search" placeholder="Ej. taquería, carpintero, viaje, moto" oninput="renderPublications()" />
         </label>
 
-        <div id="publicationsList" class="list"></div>
+        <div id="publicationsList" class="compact-list"></div>
       </section>
 
       <section id="oficina" class="section">
@@ -222,10 +248,11 @@
         <div class="section-header">
           <div>
             <h2>Administración</h2>
-            <p>Revisa, aprueba, oculta, marca atendido o edita publicaciones.</p>
+            <p>Controla publicaciones, estados, edición y revisión.</p>
           </div>
           <button class="btn-small btn-outline" onclick="loadAdminData()">Actualizar</button>
         </div>
+        <div class="admin-summary" id="adminSummary"></div>
         <label class="search-box">Buscar en admin
           <input id="adminSearch" type="search" placeholder="Folio, teléfono, título, nombre, municipio" oninput="renderAdminPublications()" />
         </label>
@@ -234,8 +261,8 @@
 
       <section id="comoFunciona" class="section info-section">
         <h2>¿Cómo funciona?</h2>
-        <div class="step-card"><strong>1. Regístrate</strong><p>Escribe cómo quieres aparecer, qué necesitas u ofreces y tu zona.</p></div>
-        <div class="step-card"><strong>2. Revisión</strong><p>La oficina revisa que la publicación sea clara y segura.</p></div>
+        <div class="step-card"><strong>1. Publica paso a paso</strong><p>La app te guía con preguntas cortas.</p></div>
+        <div class="step-card"><strong>2. Activación automática o revisión</strong><p>Si está claro y completo, aparece de inmediato. Si algo es dudoso, queda en revisión.</p></div>
         <div class="step-card"><strong>3. Contacto directo</strong><p>Las personas se comunican por WhatsApp y acuerdan condiciones directamente.</p></div>
       </section>
 
@@ -267,7 +294,7 @@
     <nav class="bottom-nav">
       <button onclick="showSection('inicio')">🏠<span>Inicio</span></button>
       <button onclick="showSection('publicaciones')">🔎<span>Publicaciones</span></button>
-      <button onclick="showSection('registro')">➕<span>Publica</span></button>
+      <button onclick="startWizard()">➕<span>Publica</span></button>
       <button onclick="showSection('oficina')">🏢<span>Oficina</span></button>
     </nav>
   </div>
@@ -278,8 +305,8 @@
     <form id="editForm" method="dialog" class="form-card dialog-form">
       <h2>Editar publicación</h2>
       <input type="hidden" id="editId" />
-      <label>Nombre público<input id="editName" type="text" required /></label>
-      <label>Título<input id="editTitle" type="text" required /></label>
+      <label>Nombre público<input id="editName" type="text" /></label>
+      <label>Título<input id="editTitle" type="text" /></label>
       <label>Categoría<select id="editCategory"><option>General</option><option>Viajes compartidos</option><option>Mensajería y envíos</option></select></label>
       <label>Intención<select id="editIntent"><option>Busco / Necesito</option><option>Ofrezco / Tengo disponible</option><option>Información o acuerdo local</option></select></label>
       <div class="form-grid"><label>Estado<input id="editStateName" type="text" /></label><label>Municipio<input id="editMunicipality" type="text" /></label></div>
@@ -292,6 +319,6 @@
     </form>
   </dialog>
 
-  <script src="app.js?v=3.8.2-home-publica-redondo"></script>
+  <script src="app.js?v=3.9-publicacion-guiada-moderna"></script>
 </body>
 </html>

@@ -1,55 +1,45 @@
-# Conecta Servicios v3.8 - estructura simple
+# Conecta Servicios v3.9 — publicación guiada + diseño moderno
 
-Esta versión cambia la estructura de la app para eliminar la separación pública entre pedidos y perfiles.
+Esta versión mejora la experiencia para usuarios y reduce la operación manual.
 
 ## Cambios principales
 
-- Un solo proceso de registro: **REGISTRARME**.
-- Un solo espacio público: **Resultados**.
-- Todo convive como publicación: servicios, necesidades, viajes y envíos.
-- Categorías visibles:
-  - 🚘 Viajes compartidos
-  - 📦 Mensajería y envíos
-  - General / Servicios locales
-- Enlaces clicables en descripciones.
-- Botón compartir.
-- Folios tipo `PUB-123AB`.
-- Solicitud de modificación y atendido verificada por últimos 4 dígitos.
-- Panel admin unificado para editar, aprobar, ocultar o marcar atendido.
+- Pantalla principal con estilo más moderno.
+- Registro tipo encuesta, paso por paso.
+- Publicación automática con reglas básicas.
+- Si el contenido se ve incompleto o dudoso, queda en revisión.
+- Vista compacta de publicaciones: primero se ven títulos y datos rápidos.
+- Al tocar una publicación se despliega el detalle completo.
+- Tarjetas, botones y filtros con diseño más moderno.
+- Panel admin con resumen de activas, revisión, ocultas y atendidas.
+- Mantiene folios, WhatsApp, compartir, enlaces clicables y edición admin.
 
-## Importante
+## Publicación automática
 
-Esta versión requiere correr el archivo SQL:
+La app intenta activar automáticamente una publicación si tiene:
 
-`supabase-v3.8-estructura-simple.sql`
+- Título claro.
+- Descripción suficiente.
+- WhatsApp válido.
+- Estado y municipio.
+- Sin palabras bloqueadas básicas.
+- Sin señales simples de spam o duplicado.
 
-Ese SQL crea una nueva tabla llamada `publicaciones` y migra los pedidos y ayudantes anteriores a la nueva estructura unificada.
+Si algo no cumple, queda en `revision` para que el administrador la revise.
 
-## Publicación
+## Archivos para GitHub/Vercel
 
-Después de correr el SQL, sube a GitHub:
+Reemplaza en GitHub estos archivos:
 
-- index.html
-- styles.css
-- app.js
-- README.md
+- `index.html`
+- `styles.css`
+- `app.js`
+- `README.md`
 
-Vercel publicará automáticamente.
+Mensaje sugerido de commit:
 
+`Actualizar a v3.9 publicación guiada moderna`
 
-## v3.8.2
+## Supabase
 
-- Pantalla principal más limpia.
-- Se quitó la etiqueta de prueba pública municipal, el contador de revisión y el mensaje visible de sincronización.
-- Botones principales renombrados a PUBLICA y PUBLICACIONES.
-- Navegación inferior ajustada a Publicaciones / Publica.
-- Botón morado con símbolo + y efecto visual suave.
-
-
-## v3.8.2
-
-- Home simplificada con botón central redondo PUBLICA.
-- Se elimina el botón verde de publicaciones en la portada.
-- Accesos directos: Publicaciones cerca de mí, Mensajería y envíos, Viajes compartidos.
-- Se elimina la franja de contactos parciales/revisión/WhatsApp.
-- Se conserva el mensaje final “Sin divisiones complicadas”.
+No requiere SQL nuevo si ya estás usando la tabla `publicaciones` de la v3.8.

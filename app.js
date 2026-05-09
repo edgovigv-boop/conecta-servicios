@@ -7,6 +7,7 @@ const DEFAULT_STATE = "México";
 const DEFAULT_MUNICIPALITY = "Chapultepec";
 const DEFAULT_LOCALITY = "Chapultepec Centro";
 const STATES = ["Aguascalientes","Baja California","Baja California Sur","Campeche","Chiapas","Chihuahua","Ciudad de México","Coahuila","Colima","Durango","Guanajuato","Guerrero","Hidalgo","Jalisco","México","Michoacán","Morelos","Nayarit","Nuevo León","Oaxaca","Puebla","Querétaro","Quintana Roo","San Luis Potosí","Sinaloa","Sonora","Tabasco","Tamaulipas","Tlaxcala","Veracruz","Yucatán","Zacatecas"];
+const BLOCKED_WORDS = ["droga","armas","arma","sexo","sexual","escort","fraude","estafa","robo","robado","ilegal","marihuana","cocaína","cocaina"];
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -15,6 +16,8 @@ let adminUnlocked = false;
 let adminRouteEnabled = false;
 let lastHomeBackPress = 0;
 let isLoading = false;
+let wizardStep = 1;
+const TOTAL_STEPS = 7;
 
 function cleanPhone(phone) { return String(phone || "").replace(/\D/g, ""); }
 function maskPhone(phone) {
@@ -27,9 +30,7 @@ function createId() { return crypto?.randomUUID ? crypto.randomUUID() : `${Date.
 function folio(item) { return `PUB-${String(item.id || "00000").replace(/-/g, "").slice(0, 5).toUpperCase()}`; }
 function normalize(value) { return String(value || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
 function money(value) { const n = Number(value || 0); return n > 0 ? `$${n.toLocaleString("es-MX")}` : "A tratar"; }
-function escapeHtml(text) {
-  return String(text || "").replace(/[&<>"]/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m]));
-}
+function escapeHtml(text) { return String(text || "").replace(/[&<>"]/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m])); }
 function linkify(text) {
   const safe = escapeHtml(text || "");
   const urlRegex = /(https?:\/\/[^\s<]+|www\.[^\s<]+|(?:facebook|fb|instagram|tiktok|waze)\.com\/[^\s<]+)/gi;
@@ -43,7 +44,7 @@ function showToast(message) {
   toast.textContent = message;
   toast.classList.add("show");
   clearTimeout(showToast.timer);
-  showToast.timer = setTimeout(() => toast.classList.remove("show"), 2600);
+  showToast.timer = setTimeout(() => toast.classList.remove("show"), 2800);
 }
 function setSyncStatus(message, type = "") {
   const el = document.getElementById("syncStatus");
@@ -105,11 +106,9 @@ async function loadRemoteData() {
     renderAll();
   } catch (error) {
     console.error(error);
-    setSyncStatus("No se pudo conectar. Revisa si ya corriste el SQL de v3.8.", "error");
+    setSyncStatus("No se pudo conectar. Revisa internet o Supabase.", "error");
     renderAll();
-  } finally {
-    isLoading = false;
-  }
+  } finally { isLoading = false; }
 }
 async function loadAdminData() {
   if (!adminUnlocked) return;
@@ -119,10 +118,7 @@ async function loadAdminData() {
     const rows = await supabaseRequest("publicaciones?select=*&order=creado_en.desc");
     adminCache = (rows || []).map(mapPublication);
     renderAdminPublications();
-  } catch (error) {
-    console.error(error);
-    showToast("No se pudo cargar administración");
-  }
+  } catch (error) { console.error(error); showToast("No se pudo cargar administración"); }
 }
 function populateStateSelects() {
   document.querySelectorAll("[data-state-select]").forEach(select => {
@@ -170,6 +166,151 @@ window.addEventListener("popstate", event => {
   if (currentSection === "inicio" && id === "inicio") { goBack(); return; }
   showSection(id, false);
 });
+
+function startWizard() { showSection("registro"); wizardStep = 1; updateWizard(); }
+function selectPublishType(button) {
+  document.querySelectorAll(".choice-card").forEach(b => b.classList.remove("selected"));
+  button.classList.add("selected");
+  document.getElementById("pubCategory").value = button.dataset.category || "General";
+  document.getElementById("pubIntent").value = button.dataset.intent || "Ofrezco / Tengo disponible";
+  updateCategoryDetails();
+}
+function updateCategoryDetails() {
+  const category = document.getElementById("pubCategory").value || "General";
+  const titleHint = document.getElementById("titleHint");
+  document.getElementById("generalDetails").classList.toggle("hidden", category !== "General");
+  document.getElementById("rideDetails").classList.toggle("hidden", category !== "Viajes compartidos");
+  document.getElementById("deliveryDetails").classList.toggle("hidden", category !== "Mensajería y envíos");
+  if (titleHint) {
+    if (category === "Viajes compartidos") titleHint.textContent = "Ej. Viajo de Chapultepec a Toluca de lunes a viernes";
+    else if (category === "Mensajería y envíos") titleHint.textContent = "Ej. Hago entregas locales en moto / Busco envío de documentos";
+    else titleHint.textContent = "Ej. Ofrezco servicio de jardinería / Busco carpintero.";
+  }
+}
+function validateWizardStep(step) {
+  if (step === 1 && !document.getElementById("pubCategory").value) { showToast("Elige qué quieres publicar"); return false; }
+  const fieldsByStep = { 2:["pubName"], 3:["pubState","pubMunicipality","pubLocality"], 4:["pubTitle"], 6:["pubPhone","pubPrivacyAccept"] };
+  const fields = fieldsByStep[step] || [];
+  for (const id of fields) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    if (el.type === "checkbox" && !el.checked) { showToast("Acepta privacidad y términos"); return false; }
+    if (!String(el.value || "").trim()) { el.focus(); showToast("Completa este dato"); return false; }
+  }
+  if (step === 5) {
+    const desc = currentDescriptionValue();
+    if (!desc || desc.trim().length < 10) { showToast("Agrega una descripción más clara"); return false; }
+  }
+  if (step === 6 && cleanPhone(document.getElementById("pubPhone").value).length < 10) { showToast("Revisa el WhatsApp"); return false; }
+  return true;
+}
+function nextWizardStep() {
+  if (!validateWizardStep(wizardStep)) return;
+  if (wizardStep < TOTAL_STEPS) wizardStep += 1;
+  if (wizardStep === 7) renderPublicationPreview();
+  updateWizard();
+}
+function prevWizardStep() { if (wizardStep > 1) wizardStep -= 1; updateWizard(); }
+function updateWizard() {
+  document.querySelectorAll(".wizard-step").forEach(step => step.classList.toggle("active", Number(step.dataset.step) === wizardStep));
+  document.getElementById("wizardStepLabel").textContent = `Paso ${wizardStep} de ${TOTAL_STEPS}`;
+  const titles = ["","¿Qué quieres publicar?","¿Cómo quieres aparecer?","¿Dónde aplica?","Título","Detalles","Contacto","Revisar y publicar"];
+  document.getElementById("wizardStepTitle").textContent = titles[wizardStep] || "Publica";
+  document.getElementById("wizardProgressBar").style.width = `${(wizardStep / TOTAL_STEPS) * 100}%`;
+  document.getElementById("wizardBackBtn").style.visibility = wizardStep === 1 ? "hidden" : "visible";
+  document.getElementById("wizardNextBtn").classList.toggle("hidden", wizardStep === TOTAL_STEPS);
+  document.getElementById("wizardSubmitBtn").classList.toggle("hidden", wizardStep !== TOTAL_STEPS);
+}
+function currentDescriptionValue() {
+  const category = document.getElementById("pubCategory").value || "General";
+  if (category === "Viajes compartidos") return document.getElementById("pubDescriptionRide").value.trim();
+  if (category === "Mensajería y envíos") return document.getElementById("pubDescriptionDelivery").value.trim();
+  return document.getElementById("pubDescription").value.trim();
+}
+function currentBudgetValue() {
+  const category = document.getElementById("pubCategory").value || "General";
+  if (category === "Viajes compartidos") return document.getElementById("pubBudgetRide").value;
+  if (category === "Mensajería y envíos") return document.getElementById("pubBudgetDelivery").value;
+  return document.getElementById("pubBudget").value;
+}
+function evaluatePublication(payload) {
+  const text = normalize([payload.nombre_publico, payload.titulo, payload.descripcion, payload.municipio, payload.localidad].join(" "));
+  const reasons = [];
+  if (String(payload.titulo || "").trim().length < 8) reasons.push("título muy corto");
+  if (String(payload.descripcion || "").trim().length < 20) reasons.push("descripción muy corta");
+  if (cleanPhone(payload.telefono).length < 10) reasons.push("teléfono incompleto");
+  if (!payload.estado_nombre || !payload.municipio) reasons.push("ubicación incompleta");
+  if (BLOCKED_WORDS.some(w => text.includes(normalize(w)))) reasons.push("palabra sensible");
+  const uppercaseRatio = payload.descripcion ? (payload.descripcion.replace(/[^A-ZÁÉÍÓÚÑ]/g, "").length / Math.max(payload.descripcion.replace(/[^a-zA-ZÁÉÍÓÚÑáéíóúñ]/g, "").length, 1)) : 0;
+  if (uppercaseRatio > .72 && payload.descripcion.length > 25) reasons.push("demasiadas mayúsculas");
+  const duplicate = publicationsCache.some(p => normalize(p.title) === normalize(payload.titulo) && last4(p.phone) === last4(payload.telefono));
+  if (duplicate) reasons.push("posible duplicado");
+  return { status: reasons.length ? "revision" : "activo", reasons };
+}
+function formPayload() {
+  const category = document.getElementById("pubCategory").value || "General";
+  const payload = {
+    nombre_publico: document.getElementById("pubName").value.trim(),
+    titulo: document.getElementById("pubTitle").value.trim(),
+    descripcion: currentDescriptionValue(),
+    categoria_principal: category,
+    intencion: document.getElementById("pubIntent").value || "Ofrezco / Tengo disponible",
+    estado_nombre: document.getElementById("pubState").value,
+    municipio: document.getElementById("pubMunicipality").value.trim(),
+    localidad: document.getElementById("pubLocality").value.trim(),
+    telefono: cleanPhone(document.getElementById("pubPhone").value),
+    ruta: document.getElementById("pubRoute")?.value.trim() || "",
+    salida: document.getElementById("pubDeparture")?.value.trim() || "",
+    hora: document.getElementById("pubTime")?.value.trim() || "",
+    medio: document.getElementById("pubTransport")?.value || "",
+    presupuesto: Number(currentBudgetValue() || 0)
+  };
+  const evaluation = evaluatePublication(payload);
+  payload.estado = evaluation.status;
+  payload.referencia = evaluation.reasons.length ? `Revisión automática: ${evaluation.reasons.join(", ")}` : "Activación automática v3.9";
+  return payload;
+}
+function renderPublicationPreview() {
+  const preview = document.getElementById("publicationPreview");
+  const payload = formPayload();
+  const evaluation = evaluatePublication(payload);
+  const icon = categoryIcon(payload.categoria_principal);
+  preview.innerHTML = `<h4>${icon} ${escapeHtml(payload.titulo || "Publicación")}</h4>
+    <p><strong>Aparecerás como:</strong> ${escapeHtml(payload.nombre_publico || "")}</p>
+    <p><strong>Zona:</strong> ${escapeHtml(payload.municipio || "")}, ${escapeHtml(payload.estado_nombre || "")}</p>
+    <p><strong>WhatsApp:</strong> ${maskPhone(payload.telefono)}</p>
+    <p>${escapeHtml(payload.descripcion || "").slice(0, 180)}</p>
+    <p class="muted"><strong>Resultado esperado:</strong> ${evaluation.status === "activo" ? "se activará automáticamente" : `quedará en revisión (${evaluation.reasons.join(", ")})`}</p>`;
+}
+async function submitPublication(event) {
+  event.preventDefault();
+  if (!validateWizardStep(7)) return;
+  const payload = formPayload();
+  try {
+    const [created] = await supabaseRequest("publicaciones", { method: "POST", body: JSON.stringify(payload) });
+    const item = mapPublication(created || { ...payload, id: createId() });
+    const active = payload.estado === "activo";
+    showToast(active ? "Publicación activa" : "Publicación enviada a revisión");
+    if (!active) {
+      openOfficeWhatsApp(`Nuevo registro en revisión\n\nFolio: ${folio(item)}\nNombre: ${item.name}\nTítulo: ${item.title}\nCategoría: ${item.category}\nMunicipio: ${item.municipality}, ${item.state}\nTeléfono: ${maskPhone(item.phone)} / últimos 4: ${last4(item.phone)}\nMotivo: ${payload.referencia}`);
+    }
+    resetWizardForm();
+    showSection(active ? "publicaciones" : "inicio");
+    loadRemoteData();
+  } catch (error) { console.error(error); showToast("No se pudo guardar. Revisa Supabase o internet."); }
+}
+function resetWizardForm() {
+  document.getElementById("publicationForm").reset();
+  document.querySelectorAll(".choice-card").forEach(b => b.classList.remove("selected"));
+  populateStateSelects();
+  document.getElementById("pubMunicipality").value = DEFAULT_MUNICIPALITY;
+  document.getElementById("pubLocality").value = DEFAULT_LOCALITY;
+  document.getElementById("pubCategory").value = "";
+  document.getElementById("pubIntent").value = "";
+  wizardStep = 1;
+  updateCategoryDetails();
+  updateWizard();
+}
 function handleStateFilterChange() {
   const state = document.getElementById("stateFilter").value;
   const municipality = document.getElementById("municipalityFilter");
@@ -184,14 +325,21 @@ function resetLocationFilters() {
   municipality.value = DEFAULT_MUNICIPALITY;
   renderPublications();
 }
+function setCategoryChip(button) {
+  document.querySelectorAll(".filter-chip").forEach(b => b.classList.remove("active"));
+  button.classList.add("active");
+  document.getElementById("categoryFilter").value = button.dataset.filterCategory || "";
+  renderPublications();
+}
 function applyCategoryAndShow(category) {
   showSection("publicaciones");
-  setTimeout(() => { document.getElementById("categoryFilter").value = category; renderPublications(); }, 50);
+  setTimeout(() => {
+    document.getElementById("categoryFilter").value = category;
+    document.querySelectorAll(".filter-chip").forEach(b => b.classList.toggle("active", b.dataset.filterCategory === category));
+    renderPublications();
+  }, 50);
 }
-function requestNearbyComingSoon() {
-  showToast("Próxima etapa: ubicación exacta y registros cercanos");
-  showSection("publicaciones");
-}
+function requestNearbyComingSoon() { showToast("Próxima etapa: ubicación exacta y publicaciones cercanas"); showSection("publicaciones"); }
 function filterPublications(list) {
   const category = document.getElementById("categoryFilter")?.value || "";
   const state = document.getElementById("stateFilter")?.value || "";
@@ -213,86 +361,48 @@ function updateFilterSummary(state, municipality) {
   else if (!municipality) el.textContent = `Mostrando resultados para: ${state}`;
   else el.textContent = `Mostrando resultados para: ${municipality}, ${state}`;
 }
-function publicationCard(item) {
-  const icon = item.category === "Viajes compartidos" ? "🚘" : item.category === "Mensajería y envíos" ? "📦" : "📌";
-  const meta = [item.intent, item.municipality, item.state].filter(Boolean).join(" · ");
-  const extra = [item.route && `Ruta: ${escapeHtml(item.route)}`, item.time && `Hora: ${escapeHtml(item.time)}`, item.departure && `Salida: ${escapeHtml(item.departure)}`, item.transport && `Medio: ${escapeHtml(item.transport)}`].filter(Boolean).join("<br>");
-  return `<article class="card publication-card ${item.highlighted ? "highlighted" : ""}">
-    <div class="card-top">
-      <div class="pub-icon">${icon}</div>
-      <div><span class="folio">${folio(item)}</span><h3>${escapeHtml(item.title)}</h3><p class="muted small">${escapeHtml(meta)}</p></div>
-      <strong class="price-tag">${money(item.budget)}</strong>
-    </div>
-    <p><strong>Publicado por:</strong> ${escapeHtml(item.name)}</p>
-    <p class="description">${linkify(item.description)}</p>
-    ${extra ? `<div class="extra-info">${extra}</div>` : ""}
-    <div class="contact-row"><span>WhatsApp: <strong>${maskPhone(item.phone)}</strong></span><button class="btn-small btn-green" onclick="openWhatsApp('${cleanPhone(item.phone)}','${encodeURIComponent(`Hola, vi tu publicación ${folio(item)} en Conecta Servicios: ${item.title}`)}')">Contactar</button></div>
-    <div class="card-actions">
-      <button class="btn-small btn-outline" onclick="sharePublication('${item.id}')">Compartir</button>
-      <button class="btn-small btn-ghost" onclick="requestModification('${item.id}')">Solicitar modificación</button>
-      <button class="btn-small btn-ghost" onclick="requestAttended('${item.id}')">Solicitar atendido</button>
+function categoryIcon(category) { return category === "Viajes compartidos" ? "🚘" : category === "Mensajería y envíos" ? "📦" : "📌"; }
+function compactPublicationCard(item) {
+  const icon = categoryIcon(item.category);
+  const meta = [item.municipality, item.state, folio(item)].filter(Boolean).join(" · ");
+  const extra = [item.route && `<strong>Ruta:</strong> ${escapeHtml(item.route)}`, item.time && `<strong>Horario:</strong> ${escapeHtml(item.time)}`, item.departure && `<strong>Salida:</strong> ${escapeHtml(item.departure)}`, item.transport && `<strong>Medio:</strong> ${escapeHtml(item.transport)}`].filter(Boolean).join("<br>");
+  return `<article class="compact-publication" id="pub-${item.id}">
+    <button class="compact-summary" type="button" onclick="togglePublicationDetail('${item.id}')">
+      <span class="compact-icon">${icon}</span>
+      <span><span class="compact-title">${escapeHtml(item.title)}</span><span class="compact-meta">${escapeHtml(meta)} · ${maskPhone(item.phone)}</span></span>
+      <span class="compact-chevron">›</span>
+    </button>
+    <div class="compact-detail">
+      <span class="category-badge">${icon} ${escapeHtml(item.category)}</span>
+      <p><strong>Publicado por:</strong> ${escapeHtml(item.name)}</p>
+      <p class="description">${linkify(item.description)}</p>
+      ${extra ? `<div class="extra-info">${extra}</div>` : ""}
+      <p><strong>Contacto:</strong> ${maskPhone(item.phone)} · <strong>Costo:</strong> ${money(item.budget)}</p>
+      <div class="detail-actions">
+        <button class="btn-small btn-green" onclick="openWhatsApp('${cleanPhone(item.phone)}','${encodeURIComponent(`Hola, vi tu publicación ${folio(item)} en Conecta Servicios: ${item.title}`)}')">WhatsApp</button>
+        <button class="btn-small btn-outline" onclick="sharePublication('${item.id}')">Compartir</button>
+        <button class="btn-small btn-ghost" onclick="requestModification('${item.id}')">Solicitar modificación</button>
+        <button class="btn-small btn-ghost" onclick="requestAttended('${item.id}')">Solicitar atendido</button>
+      </div>
     </div>
   </article>`;
+}
+function togglePublicationDetail(id) {
+  const card = document.getElementById(`pub-${id}`);
+  if (card) card.classList.toggle("open");
 }
 function renderPublications() {
   const list = document.getElementById("publicationsList");
   if (!list) return;
   if (isLoading) { renderLoading(); return; }
   const filtered = filterPublications(publicationsCache);
-  list.innerHTML = filtered.length ? filtered.map(publicationCard).join("") : `<div class="empty-state">No hay registros con esos filtros. Prueba otro municipio o categoría.</div>`;
-  document.getElementById("publicationsCount").textContent = publicationsCache.length;
+  list.innerHTML = filtered.length ? filtered.map(compactPublicationCard).join("") : `<div class="empty-state">No hay registros con esos filtros. Prueba otro municipio o categoría.</div>`;
+  const count = document.getElementById("publicationsCount");
+  if (count) count.textContent = publicationsCache.length;
 }
-function renderLoading() {
-  const list = document.getElementById("publicationsList");
-  if (list) list.innerHTML = `<div class="empty-state">Cargando registros...</div>`;
-}
-function renderAll() { renderPublications(); updateHomeCounts(); }
+function renderLoading() { const list = document.getElementById("publicationsList"); if (list) list.innerHTML = `<div class="empty-state">Cargando registros...</div>`; }
+function renderAll() { renderPublications(); updateHomeCounts(); if (adminUnlocked) renderAdminPublications(); }
 function updateHomeCounts() { const count = document.getElementById("publicationsCount"); if (count) count.textContent = publicationsCache.length; }
-function toggleCategoryFields() {
-  const category = document.getElementById("pubCategory").value;
-  document.getElementById("rideFields").classList.toggle("hidden", category !== "Viajes compartidos");
-  document.getElementById("deliveryFields").classList.toggle("hidden", category !== "Mensajería y envíos");
-}
-function formPayload() {
-  return {
-    nombre_publico: document.getElementById("pubName").value.trim(),
-    titulo: document.getElementById("pubTitle").value.trim(),
-    descripcion: document.getElementById("pubDescription").value.trim(),
-    categoria_principal: document.getElementById("pubCategory").value,
-    intencion: document.getElementById("pubIntent").value,
-    estado_nombre: document.getElementById("pubState").value,
-    municipio: document.getElementById("pubMunicipality").value.trim(),
-    localidad: document.getElementById("pubLocality").value.trim(),
-    telefono: cleanPhone(document.getElementById("pubPhone").value),
-    ruta: document.getElementById("pubRoute").value.trim(),
-    salida: document.getElementById("pubDeparture").value.trim(),
-    hora: document.getElementById("pubTime").value.trim(),
-    medio: document.getElementById("pubTransport").value,
-    presupuesto: Number(document.getElementById("pubBudget").value || 0),
-    estado: "revision"
-  };
-}
-async function submitPublication(event) {
-  event.preventDefault();
-  const payload = formPayload();
-  if (payload.telefono.length < 10) { showToast("Revisa el teléfono"); return; }
-  try {
-    const [created] = await supabaseRequest("publicaciones", { method: "POST", body: JSON.stringify(payload) });
-    const item = mapPublication(created || { ...payload, id: createId() });
-    document.getElementById("publicationForm").reset();
-    populateStateSelects();
-    document.getElementById("pubMunicipality").value = DEFAULT_MUNICIPALITY;
-    document.getElementById("pubLocality").value = DEFAULT_LOCALITY;
-    toggleCategoryFields();
-    showToast("Registro enviado a revisión");
-    openOfficeWhatsApp(`Nuevo registro en revisión\n\nFolio: ${folio(item)}\nNombre: ${item.name}\nTítulo: ${item.title}\nCategoría: ${item.category}\nMunicipio: ${item.municipality}, ${item.state}\nTeléfono: ${maskPhone(item.phone)} / últimos 4: ${last4(item.phone)}`);
-    showSection("inicio");
-    loadRemoteData();
-  } catch (error) {
-    console.error(error);
-    showToast("No se pudo guardar. Revisa Supabase o internet.");
-  }
-}
 function openWhatsApp(phone, encodedMessage) {
   const digits = cleanPhone(phone);
   if (!digits) { showToast("Teléfono no disponible"); return; }
@@ -344,9 +454,18 @@ function adminCard(item) {
     </div>
   </article>`;
 }
+function renderAdminSummary(list) {
+  const el = document.getElementById("adminSummary");
+  if (!el) return;
+  const counts = list.reduce((acc, item) => { acc[item.status] = (acc[item.status] || 0) + 1; return acc; }, {});
+  el.innerHTML = [
+    ["activo", "Activas"], ["revision", "En revisión"], ["oculto", "Ocultas"], ["atendido", "Atendidas"]
+  ].map(([key,label]) => `<div class="admin-stat"><strong>${counts[key] || 0}</strong><span>${label}</span></div>`).join("");
+}
 function renderAdminPublications() {
   const list = document.getElementById("adminList");
   if (!list) return;
+  renderAdminSummary(adminCache);
   const search = normalize(document.getElementById("adminSearch")?.value || "");
   const filtered = adminCache.filter(item => !search || normalize([folio(item), item.id, item.name, item.title, item.phone, last4(item.phone), item.category, item.municipality, item.state, item.status].join(" ")).includes(search));
   list.innerHTML = filtered.length ? filtered.map(adminCard).join("") : `<div class="empty-state">Sin resultados en administración.</div>`;
@@ -407,9 +526,9 @@ function maybeOpenSharedPublication() {
   if (!id) return;
   showSection("publicaciones", false);
   setTimeout(() => {
-    const card = [...document.querySelectorAll(".publication-card")].find(c => c.textContent.includes(id.slice(0,5).toUpperCase()));
-    if (card) card.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, 800);
+    const card = document.getElementById(`pub-${id}`);
+    if (card) { card.classList.add("open"); card.scrollIntoView({ behavior: "smooth", block: "center" }); }
+  }, 900);
 }
 function init() {
   const params = new URLSearchParams(location.search);
@@ -419,7 +538,8 @@ function init() {
   document.getElementById("publicationForm").addEventListener("submit", submitPublication);
   document.getElementById("editForm").addEventListener("submit", saveEdit);
   history.replaceState({ section: "inicio" }, "", routeUrlForSection("inicio"));
-  toggleCategoryFields();
+  updateWizard();
+  updateCategoryDetails();
   loadRemoteData().then(maybeOpenSharedPublication);
 }
 document.addEventListener("DOMContentLoaded", init);
