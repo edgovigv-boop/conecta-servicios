@@ -8,6 +8,8 @@ const DEFAULT_MUNICIPALITY = "Chapultepec";
 const DEFAULT_LOCALITY = "Chapultepec Centro";
 const STATES = ["Aguascalientes","Baja California","Baja California Sur","Campeche","Chiapas","Chihuahua","Ciudad de México","Coahuila","Colima","Durango","Guanajuato","Guerrero","Hidalgo","Jalisco","México","Michoacán","Morelos","Nayarit","Nuevo León","Oaxaca","Puebla","Querétaro","Quintana Roo","San Luis Potosí","Sinaloa","Sonora","Tabasco","Tamaulipas","Tlaxcala","Veracruz","Yucatán","Zacatecas"];
 const BLOCKED_WORDS = ["droga","armas","arma","sexo","sexual","escort","fraude","estafa","robo","robado","ilegal","marihuana","cocaína","cocaina"];
+const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v393";
+const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v393";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -95,14 +97,19 @@ function mapPublication(row) {
     createdAt: row.creado_en || ""
   };
 }
-async function loadRemoteData() {
-  isLoading = true;
-  setSyncStatus("Conectando con la base de datos...");
-  renderLoading();
+async function loadRemoteData(options = {}) {
+  const silent = Boolean(options.silent);
+  if (!silent) {
+    isLoading = true;
+    setSyncStatus("Conectando con la base de datos...");
+    renderLoading();
+  }
   try {
     const rows = await supabaseRequest("publicaciones?select=*&estado=eq.activo&order=creado_en.desc");
-    publicationsCache = (rows || []).map(mapPublication);
-    setSyncStatus("Datos en línea actualizados", "ok");
+    const mapped = (rows || []).map(mapPublication);
+    handleNotificationCheck(mapped);
+    publicationsCache = mapped;
+    setSyncStatus("", "ok");
     renderAll();
   } catch (error) {
     console.error(error);
@@ -144,7 +151,7 @@ function showSection(id, push = true) {
   currentSection = id;
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   target.classList.add("active");
-  const titles = { inicio:"Conecta Servicios", registro:"Publica", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos" };
+  const titles = { inicio:"Conecta Servicios", registro:"Publica", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", enlaceExterno:"Enlace externo" };
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
@@ -361,11 +368,12 @@ function updateFilterSummary(state, municipality) {
   else if (!municipality) el.textContent = `Mostrando resultados para: ${state}`;
   else el.textContent = `Mostrando resultados para: ${municipality}, ${state}`;
 }
-function categoryIcon(category) { return category === "Viajes compartidos" ? "🚘" : category === "Mensajería y envíos" ? "📦" : "📌"; }
+function categoryIcon(category) { return category === "Viajes compartidos" ? "🚘" : category === "Mensajería y envíos" ? "📦" : category === "Redes sociales" ? "🔗" : "📌"; }
 function compactPublicationCard(item) {
   const icon = categoryIcon(item.category);
   const meta = [item.municipality, item.state, folio(item)].filter(Boolean).join(" · ");
-  const extra = [item.route && `<strong>Ruta:</strong> ${escapeHtml(item.route)}`, item.time && `<strong>Horario:</strong> ${escapeHtml(item.time)}`, item.departure && `<strong>Salida:</strong> ${escapeHtml(item.departure)}`, item.transport && `<strong>Medio:</strong> ${escapeHtml(item.transport)}`].filter(Boolean).join("<br>");
+  const originalLink = item.category === "Redes sociales" && item.route ? `<a class="original-link" href="${escapeHtml(/^https?:\/\//i.test(item.route) ? item.route : `https://${item.route}`)}" target="_blank" rel="noopener noreferrer">Ver publicación original</a>` : "";
+  const extra = [originalLink, item.category !== "Redes sociales" && item.route && `<strong>Ruta:</strong> ${escapeHtml(item.route)}`, item.time && `<strong>Horario:</strong> ${escapeHtml(item.time)}`, item.departure && `<strong>Salida:</strong> ${escapeHtml(item.departure)}`, item.transport && `<strong>Medio:</strong> ${escapeHtml(item.transport)}`].filter(Boolean).join("<br>");
   return `<article class="compact-publication" id="pub-${item.id}">
     <button class="compact-summary" type="button" onclick="togglePublicationDetail('${item.id}')">
       <span class="compact-icon">${icon}</span>
@@ -379,7 +387,7 @@ function compactPublicationCard(item) {
       ${extra ? `<div class="extra-info">${extra}</div>` : ""}
       <p><strong>Contacto:</strong> ${maskPhone(item.phone)} · <strong>Costo:</strong> ${money(item.budget)}</p>
       <div class="detail-actions">
-        <button class="btn-small btn-green" onclick="openWhatsApp('${cleanPhone(item.phone)}','${encodeURIComponent(`Hola, vi tu publicación ${folio(item)} en Conecta Servicios: ${item.title}`)}')">WhatsApp</button>
+        ${cleanPhone(item.phone) ? `<button class="btn-small btn-green" onclick="openWhatsApp('${cleanPhone(item.phone)}','${encodeURIComponent(`Hola, vi tu publicación ${folio(item)} en Conecta Servicios: ${item.title}`)}')">WhatsApp</button>` : ""}
         <button class="btn-small btn-outline" onclick="sharePublication('${item.id}')">Compartir</button>
         <button class="btn-small btn-ghost" onclick="requestModification('${item.id}')">Solicitar modificación</button>
         <button class="btn-small btn-ghost" onclick="requestAttended('${item.id}')">Solicitar atendido</button>
@@ -531,6 +539,122 @@ function maybeOpenSharedPublication() {
   }, 900);
 }
 
+
+function notificationPermissionLabel() {
+  if (!("Notification" in window)) return "Tu navegador no soporta notificaciones web";
+  if (Notification.permission === "granted") return "Activadas en este dispositivo";
+  if (Notification.permission === "denied") return "Bloqueadas por el navegador";
+  return "Pendientes de activar";
+}
+function defaultNotificationPreferences() {
+  return { enabled: false, categories: ["General","Mensajería y envíos","Viajes compartidos","Redes sociales"], state: DEFAULT_STATE, municipality: DEFAULT_MUNICIPALITY, from: "07:00", to: "22:00" };
+}
+function getNotificationPreferences() {
+  try { return { ...defaultNotificationPreferences(), ...(JSON.parse(localStorage.getItem(NOTIFICATION_PREFS_KEY) || "{}")) }; }
+  catch { return defaultNotificationPreferences(); }
+}
+function renderNotificationSettings() {
+  const prefs = getNotificationPreferences();
+  document.querySelectorAll('input[name="notifCategory"]').forEach(input => input.checked = prefs.categories.includes(input.value));
+  const state = document.getElementById("notifState");
+  const municipality = document.getElementById("notifMunicipality");
+  const from = document.getElementById("notifFrom");
+  const to = document.getElementById("notifTo");
+  if (state) state.value = prefs.state || "";
+  if (municipality) municipality.value = prefs.municipality || "";
+  if (from) from.value = prefs.from || "07:00";
+  if (to) to.value = prefs.to || "22:00";
+  const status = document.getElementById("notificationStatus");
+  if (status) status.textContent = `Estado: ${notificationPermissionLabel()}`;
+}
+async function enableNotifications() {
+  if (!("Notification" in window)) { showToast("Este navegador no soporta notificaciones"); return; }
+  const permission = await Notification.requestPermission();
+  const prefs = getNotificationPreferences();
+  prefs.enabled = permission === "granted";
+  localStorage.setItem(NOTIFICATION_PREFS_KEY, JSON.stringify(prefs));
+  renderNotificationSettings();
+  showToast(permission === "granted" ? "Notificaciones activadas" : "No se activaron las notificaciones");
+}
+function saveNotificationPreferences() {
+  const categories = Array.from(document.querySelectorAll('input[name="notifCategory"]:checked')).map(i => i.value);
+  const prefs = {
+    ...getNotificationPreferences(),
+    categories: categories.length ? categories : ["General"],
+    state: document.getElementById("notifState")?.value || "",
+    municipality: document.getElementById("notifMunicipality")?.value.trim() || "",
+    from: document.getElementById("notifFrom")?.value || "07:00",
+    to: document.getElementById("notifTo")?.value || "22:00"
+  };
+  localStorage.setItem(NOTIFICATION_PREFS_KEY, JSON.stringify(prefs));
+  renderNotificationSettings();
+  showToast("Preferencias guardadas");
+}
+function withinNotificationHours(prefs) {
+  const now = new Date();
+  const current = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+  const from = prefs.from || "00:00";
+  const to = prefs.to || "23:59";
+  if (from <= to) return current >= from && current <= to;
+  return current >= from || current <= to;
+}
+function itemMatchesNotificationPreferences(item, prefs) {
+  if (!prefs.enabled || !("Notification" in window) || Notification.permission !== "granted") return false;
+  if (!withinNotificationHours(prefs)) return false;
+  if (prefs.categories?.length && !prefs.categories.includes(item.category)) return false;
+  if (prefs.state && normalize(item.state) !== normalize(prefs.state)) return false;
+  if (prefs.municipality && !normalize(item.municipality).includes(normalize(prefs.municipality))) return false;
+  return true;
+}
+function handleNotificationCheck(mappedItems) {
+  const ids = mappedItems.map(item => item.id);
+  let seen = [];
+  try { seen = JSON.parse(localStorage.getItem(NOTIFICATION_SEEN_KEY) || "[]"); } catch { seen = []; }
+  if (!seen.length) { localStorage.setItem(NOTIFICATION_SEEN_KEY, JSON.stringify(ids)); return; }
+  const prefs = getNotificationPreferences();
+  const newItems = mappedItems.filter(item => !seen.includes(item.id) && itemMatchesNotificationPreferences(item, prefs));
+  newItems.slice(0, 3).forEach(item => {
+    try { new Notification("Nueva publicación en Conecta Servicios", { body: `${item.title} · ${item.municipality}, ${item.state}`, tag: item.id }); }
+    catch { showToast(`Nueva publicación: ${item.title}`); }
+  });
+  localStorage.setItem(NOTIFICATION_SEEN_KEY, JSON.stringify(Array.from(new Set([...ids, ...seen])).slice(0, 300)));
+}
+async function submitExternalLink(event) {
+  event.preventDefault();
+  if (!adminUnlocked) { showToast("Solo administración puede agregar enlaces externos"); return; }
+  const url = document.getElementById("externalUrl").value.trim();
+  const title = document.getElementById("externalTitle").value.trim();
+  const summary = document.getElementById("externalSummary").value.trim();
+  if (!title || summary.length < 15 || !url) { showToast("Completa título, resumen y enlace"); return; }
+  const payload = {
+    nombre_publico: "Enlace externo",
+    titulo: title,
+    descripcion: `${summary}\n\nAviso: esta información está publicada originalmente en redes sociales. Conecta Servicios solo muestra un resumen y dirige al enlace original.`,
+    categoria_principal: "Redes sociales",
+    intencion: "Enlace externo de interés local",
+    estado_nombre: document.getElementById("externalState").value,
+    municipio: document.getElementById("externalMunicipality").value.trim(),
+    localidad: document.getElementById("externalLocality").value.trim(),
+    telefono: "",
+    ruta: url,
+    salida: "",
+    hora: "",
+    medio: "",
+    presupuesto: 0,
+    estado: "activo",
+    referencia: "Enlace externo agregado por administración"
+  };
+  try {
+    await supabaseRequest("publicaciones", { method: "POST", body: JSON.stringify(payload) });
+    document.getElementById("externalLinkForm").reset();
+    document.getElementById("externalMunicipality").value = DEFAULT_MUNICIPALITY;
+    document.getElementById("externalLocality").value = DEFAULT_LOCALITY;
+    showToast("Enlace externo publicado");
+    await loadRemoteData();
+    showSection("publicaciones");
+  } catch (error) { console.error(error); showToast("No se pudo guardar el enlace"); }
+}
+
 function initMobileFormComfort() {
   const appShell = document.querySelector(".app-shell");
   const form = document.getElementById("publicationForm");
@@ -577,10 +701,13 @@ function init() {
   populateStateSelects();
   document.getElementById("publicationForm").addEventListener("submit", submitPublication);
   document.getElementById("editForm").addEventListener("submit", saveEdit);
+  document.getElementById("externalLinkForm")?.addEventListener("submit", submitExternalLink);
   history.replaceState({ section: "inicio" }, "", routeUrlForSection("inicio"));
   updateWizard();
   updateCategoryDetails();
   initMobileFormComfort();
+  renderNotificationSettings();
   loadRemoteData().then(maybeOpenSharedPublication);
+  setInterval(() => loadRemoteData({ silent: true }), 60000);
 }
 document.addEventListener("DOMContentLoaded", init);

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#6f42c1" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=3.9.2-home-identidad-visual" />
+  <link rel="stylesheet" href="styles.css?v=3.9.3-redes-notificaciones-formulario" />
 </head>
 <body>
   <div class="app-shell">
@@ -202,8 +202,9 @@
             <button type="button" class="filter-chip" data-filter-category="General" onclick="setCategoryChip(this)">Servicios</button>
             <button type="button" class="filter-chip" data-filter-category="Mensajería y envíos" onclick="setCategoryChip(this)">Envíos</button>
             <button type="button" class="filter-chip" data-filter-category="Viajes compartidos" onclick="setCategoryChip(this)">Viajes</button>
+            <button type="button" class="filter-chip" data-filter-category="Redes sociales" onclick="setCategoryChip(this)">Redes</button>
           </div>
-          <select id="categoryFilter" class="hidden" onchange="renderPublications()"><option value="">Todas las categorías</option><option>Viajes compartidos</option><option>Mensajería y envíos</option><option>General</option></select>
+          <select id="categoryFilter" class="hidden" onchange="renderPublications()"><option value="">Todas las categorías</option><option>Viajes compartidos</option><option>Mensajería y envíos</option><option>General</option><option>Redes sociales</option></select>
           <div class="form-grid">
             <label>Estado
               <select id="stateFilter" data-state-select data-blank="true" data-default="México" autocomplete="off" onchange="handleStateFilterChange()"></select>
@@ -237,6 +238,7 @@
           <button class="mini-card" onclick="showSection('comoFunciona')"><strong>¿Cómo funciona?</strong><small>Explicación corta</small></button>
           <button class="mini-card" onclick="showSection('reglas')"><strong>Reglas y seguridad</strong><small>Antes de contactar</small></button>
           <button class="mini-card" onclick="showSection('planes')"><strong>Planes y destacados</strong><small>Solicitar por WhatsApp</small></button>
+          <button class="mini-card" onclick="showSection('notificaciones')"><strong>Notificaciones</strong><small>Elige avisos útiles</small></button>
         </div>
         <div id="adminEntry" class="admin-entry hidden">
           <hr />
@@ -252,7 +254,7 @@
             <h2>Administración</h2>
             <p>Controla publicaciones, estados, edición y revisión.</p>
           </div>
-          <button class="btn-small btn-outline" onclick="loadAdminData()">Actualizar</button>
+          <div class="admin-top-actions"><button class="btn-small btn-outline" onclick="loadAdminData()">Actualizar</button><button class="btn-small btn-purple" onclick="showSection('enlaceExterno')">+ Enlace externo</button></div>
         </div>
         <div class="admin-summary" id="adminSummary"></div>
         <label class="search-box">Buscar en admin
@@ -265,7 +267,8 @@
         <h2>¿Cómo funciona?</h2>
         <div class="step-card"><strong>1. Publica paso a paso</strong><p>La app te guía con preguntas cortas.</p></div>
         <div class="step-card"><strong>2. Activación automática o revisión</strong><p>Si está claro y completo, aparece de inmediato. Si algo es dudoso, queda en revisión.</p></div>
-        <div class="step-card"><strong>3. Contacto directo</strong><p>Las personas se comunican por WhatsApp y acuerdan condiciones directamente.</p></div>
+        <div class="step-card"><strong>3. Notificaciones útiles</strong><p>Las personas pueden activar avisos por categoría, zona y horario.</p></div>
+        <div class="step-card"><strong>4. Contacto directo</strong><p>Las personas se comunican por WhatsApp y acuerdan condiciones directamente.</p></div>
       </section>
 
       <section id="reglas" class="section info-section">
@@ -279,6 +282,79 @@
         <p class="muted">Por ahora los pagos son manuales por WhatsApp. No hay cobro automático dentro de la app.</p>
         <div class="plan-card"><strong>⭐ Publicación destacada</strong><p>Mayor visibilidad en tu municipio.</p><button class="btn-small btn-green" onclick="openOfficeWhatsApp('Hola, quiero solicitar una publicación destacada en Conecta Servicios.')">Solicitar</button></div>
         <div class="plan-card"><strong>🧾 Registro asistido</strong><p>La oficina te ayuda a crear o corregir tu publicación.</p><button class="btn-small btn-green" onclick="openOfficeWhatsApp('Hola, quiero solicitar registro asistido en Conecta Servicios.')">Solicitar</button></div>
+      </section>
+
+
+      <section id="notificaciones" class="section info-section">
+        <h2>Notificaciones</h2>
+        <div class="notice-card">
+          <strong>Avisos útiles, sin saturarte</strong>
+          <p>Elige qué tipo de publicaciones quieres recibir en este dispositivo. Cuando la app esté abierta o en segundo plano compatible, te avisará de registros nuevos que coincidan con tus preferencias.</p>
+        </div>
+        <div class="form-card notification-card">
+          <button class="btn-big btn-purple" type="button" onclick="enableNotifications()">🔔 Activar notificaciones</button>
+          <p id="notificationStatus" class="filter-summary">Estado: pendiente de activar</p>
+          <label>Categorías que me interesan
+            <div class="checkbox-stack">
+              <label><input type="checkbox" name="notifCategory" value="General" checked /> Servicios / general</label>
+              <label><input type="checkbox" name="notifCategory" value="Mensajería y envíos" checked /> Mensajería y envíos</label>
+              <label><input type="checkbox" name="notifCategory" value="Viajes compartidos" checked /> Viajes compartidos</label>
+              <label><input type="checkbox" name="notifCategory" value="Redes sociales" checked /> Enlaces de redes sociales</label>
+            </div>
+          </label>
+          <div class="form-grid">
+            <label>Estado
+              <select id="notifState" data-state-select data-blank="true" data-default="México"></select>
+            </label>
+            <label>Municipio
+              <input id="notifMunicipality" type="text" value="Chapultepec" placeholder="Déjalo vacío para todo el estado" />
+            </label>
+          </div>
+          <div class="form-grid">
+            <label>No avisar antes de
+              <input id="notifFrom" type="time" value="07:00" />
+            </label>
+            <label>No avisar después de
+              <input id="notifTo" type="time" value="22:00" />
+            </label>
+          </div>
+          <button class="btn-big btn-green" type="button" onclick="saveNotificationPreferences()">Guardar preferencias</button>
+          <p class="small muted">Nota: las notificaciones web dependen del permiso del navegador. Para avisos totalmente automáticos aun con la app cerrada, más adelante conviene integrar un servicio formal de push.</p>
+        </div>
+      </section>
+
+      <section id="enlaceExterno" class="section info-section">
+        <h2>Agregar enlace externo</h2>
+        <div class="notice-card">
+          <strong>Uso responsable de redes sociales</strong>
+          <p>No copiamos publicaciones ajenas. Solo escribimos un aviso breve y enlazamos al contenido original para respetar privacidad, autoría y contexto.</p>
+        </div>
+        <form id="externalLinkForm" class="form-card">
+          <label>Título del aviso
+            <input id="externalTitle" type="text" placeholder="Ej. Solicitan mensajero para entrega local" />
+          </label>
+          <label>Resumen breve
+            <textarea id="externalSummary" rows="5" placeholder="Explica de qué trata sin copiar datos personales ni texto completo de la publicación original."></textarea>
+          </label>
+          <label>Enlace original
+            <input id="externalUrl" type="url" placeholder="https://facebook.com/..." />
+          </label>
+          <div class="form-grid">
+            <label>Estado
+              <select id="externalState" data-state-select data-default="México"></select>
+            </label>
+            <label>Municipio
+              <input id="externalMunicipality" type="text" value="Chapultepec" />
+            </label>
+          </div>
+          <label>Localidad o zona
+            <input id="externalLocality" type="text" value="Chapultepec Centro" />
+          </label>
+          <div class="dialog-actions">
+            <button type="button" class="btn-small btn-ghost" onclick="showSection('admin')">Cancelar</button>
+            <button type="submit" class="btn-small btn-purple">Publicar enlace</button>
+          </div>
+        </form>
       </section>
 
       <section id="avisoPrivacidad" class="section info-section">
@@ -321,6 +397,6 @@
     </form>
   </dialog>
 
-  <script src="app.js?v=3.9.1-formulario-movil-profesional"></script>
+  <script src="app.js?v=3.9.3-redes-notificaciones-formulario"></script>
 </body>
 </html>
