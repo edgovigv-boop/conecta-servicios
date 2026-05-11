@@ -1,4 +1,4 @@
-# Conecta Servicios v4.0.2 — cercanía precisa, publicación asistida y enlaces externos
+# Conecta Servicios v4.0.3 — cercanía precisa, publicación asistida y enlaces externos
 
 © 2026 Conecta Servicios. Todos los derechos reservados.
 
@@ -21,3 +21,12 @@ Subir a GitHub/Vercel:
 - assets/brand-hero.webp
 
 No requiere SQL nuevo si ya se aplicó el SQL de v4.0.
+
+
+## v4.0.3 — cercanía inteligente
+
+- Corrige la vista “Publicaciones cerca de mí” para no ocultar registros locales antiguos sin coordenadas.
+- Muestra primero publicaciones con GPS dentro del radio elegido.
+- Agrega como respaldo publicaciones del mismo municipio que aún no tienen latitud/longitud.
+- Evita mezclar otros estados o municipios salvo que realmente estén dentro del radio GPS.
+- No requiere SQL nuevo si ya se aplicó la v4.0.

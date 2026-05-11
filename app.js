@@ -25,8 +25,8 @@ const DEFAULT_MUNICIPALITY = "Chapultepec";
 const DEFAULT_LOCALITY = "Chapultepec Centro";
 const STATES = ["Aguascalientes","Baja California","Baja California Sur","Campeche","Chiapas","Chihuahua","Ciudad de México","Coahuila","Colima","Durango","Guanajuato","Guerrero","Hidalgo","Jalisco","México","Michoacán","Morelos","Nayarit","Nuevo León","Oaxaca","Puebla","Querétaro","Quintana Roo","San Luis Potosí","Sinaloa","Sonora","Tabasco","Tamaulipas","Tlaxcala","Veracruz","Yucatán","Zacatecas"];
 const BLOCKED_WORDS = ["droga","armas","arma","sexo","sexual","escort","fraude","estafa","robo","robado","ilegal","marihuana","cocaína","cocaina"];
-const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v401";
-const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v401";
+const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v403";
+const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v403";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -38,6 +38,8 @@ let isLoading = false;
 let wizardStep = 1;
 let userLocation = null;
 let nearbyMode = false;
+let nearbyFallbackState = DEFAULT_STATE;
+let nearbyFallbackMunicipality = DEFAULT_MUNICIPALITY;
 const TOTAL_STEPS = 7;
 
 function cleanPhone(phone) { return String(phone || "").replace(/\D/g, ""); }
@@ -386,7 +388,7 @@ function formPayload() {
   };
   const evaluation = evaluatePublication(payload);
   payload.estado = evaluation.status;
-  payload.referencia = evaluation.reasons.length ? `Revisión automática: ${evaluation.reasons.join(", ")}` : "Activación automática v4.0.2";
+  payload.referencia = evaluation.reasons.length ? `Revisión automática: ${evaluation.reasons.join(", ")}` : "Activación automática v4.0.3";
   return payload;
 }
 function renderPublicationPreview() {
@@ -469,12 +471,19 @@ async function requestNearbyPublications() {
   showSection("publicaciones");
   showToast("Solicitando ubicación aproximada...");
   try {
+    const stateEl = document.getElementById("stateFilter");
+    const munEl = document.getElementById("municipalityFilter");
+    // Guardamos el municipio visible como respaldo inteligente para publicaciones antiguas sin coordenadas.
+    nearbyFallbackState = stateEl?.value || DEFAULT_STATE;
+    nearbyFallbackMunicipality = munEl?.value || (nearbyFallbackState === DEFAULT_STATE ? DEFAULT_MUNICIPALITY : "");
+
     const pos = await getBrowserPosition();
     userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
     nearbyMode = true;
-    document.getElementById("stateFilter").value = "";
-    const municipality = document.getElementById("municipalityFilter");
-    if (municipality) { municipality.value = ""; municipality.disabled = true; }
+
+    // Dejamos visible el municipio de respaldo, pero la búsqueda GPS no depende de este texto.
+    if (stateEl) stateEl.value = nearbyFallbackState;
+    if (munEl) { munEl.value = nearbyFallbackMunicipality; munEl.disabled = false; }
     const controls = document.getElementById("nearbyControls");
     if (controls) controls.classList.remove("hidden");
     showToast("Mostrando publicaciones cercanas");
@@ -505,6 +514,8 @@ async function capturePublicationLocation() {
 }
 function clearNearbyMode() {
   nearbyMode = false;
+  nearbyFallbackState = DEFAULT_STATE;
+  nearbyFallbackMunicipality = DEFAULT_MUNICIPALITY;
   const summary = document.getElementById("nearbySummary");
   if (summary) summary.classList.add("hidden");
   const controls = document.getElementById("nearbyControls");
@@ -523,27 +534,44 @@ function filterPublications(list) {
   updateFilterSummary(state, municipality);
   const nearbySummary = document.getElementById("nearbySummary");
   if (nearbySummary) nearbySummary.classList.toggle("hidden", !nearbyMode || !userLocation);
-  const filtered = list.filter(item => {
+
+  const baseFiltered = list.filter(item => {
     const matchesCategory = !category || item.category === category;
-    const matchesState = nearbyMode ? true : (!state || normalize(item.state) === normalize(state));
-    const matchesMunicipality = nearbyMode ? true : (!municipality || normalize(item.municipality).includes(normalize(municipality)));
     const haystack = normalize([folio(item), item.name, item.title, item.description, item.category, item.subcategory, item.state, item.municipality, item.locality, item.route, item.transport].join(" "));
-    return matchesCategory && matchesState && matchesMunicipality && (!search || haystack.includes(search));
+    return matchesCategory && (!search || haystack.includes(search));
   });
+
   if (nearbyMode && userLocation) {
     const radiusKm = getNearbyRadiusKm();
-    return filtered
+    const gpsMatches = baseFiltered
       .filter(item => hasCoordinates(item))
-      .map(item => ({ ...item, distanceKm: haversineKm(userLocation.lat, userLocation.lng, Number(item.lat), Number(item.lng)) }))
+      .map(item => ({ ...item, distanceKm: haversineKm(userLocation.lat, userLocation.lng, Number(item.lat), Number(item.lng)), matchType: "gps" }))
       .filter(item => Number.isFinite(item.distanceKm) && item.distanceKm <= radiusKm)
       .sort((a, b) => a.distanceKm - b.distanceKm);
+
+    // Respaldo inteligente: publicaciones locales antiguas sin coordenadas.
+    // Así no desaparecen registros reales del mismo municipio, pero tampoco se mezcla otro estado por error.
+    const fallbackState = nearbyFallbackState || state || DEFAULT_STATE;
+    const fallbackMunicipality = nearbyFallbackMunicipality || municipality || (fallbackState === DEFAULT_STATE ? DEFAULT_MUNICIPALITY : "");
+    const localFallback = baseFiltered
+      .filter(item => !hasCoordinates(item))
+      .filter(item => !fallbackState || normalize(item.state) === normalize(fallbackState))
+      .filter(item => !fallbackMunicipality || normalize(item.municipality).includes(normalize(fallbackMunicipality)))
+      .map(item => ({ ...item, matchType: "municipio" }));
+
+    return [...gpsMatches, ...localFallback];
   }
-  return filtered;
+
+  return baseFiltered.filter(item => {
+    const matchesState = !state || normalize(item.state) === normalize(state);
+    const matchesMunicipality = !municipality || normalize(item.municipality).includes(normalize(municipality));
+    return matchesState && matchesMunicipality;
+  });
 }
 function updateFilterSummary(state, municipality) {
   const el = document.getElementById("filterSummary");
   if (!el) return;
-  if (nearbyMode && userLocation) { el.textContent = `Mostrando publicaciones cercanas a tu ubicación aproximada (radio: ${getNearbyRadiusKm()} km)`; return; }
+  if (nearbyMode && userLocation) { el.textContent = `Mostrando cercanas por GPS y registros de ${nearbyFallbackMunicipality || "tu municipio"} sin ubicación exacta (radio: ${getNearbyRadiusKm()} km)`; return; }
   if (!state) el.textContent = "Mostrando resultados para: Todo México";
   else if (!municipality) el.textContent = `Mostrando resultados para: ${state}`;
   else el.textContent = `Mostrando resultados para: ${municipality}, ${state}`;
@@ -551,7 +579,7 @@ function updateFilterSummary(state, municipality) {
 function categoryIcon(category) { return category === "Viajes compartidos" ? "🚘" : category === "Mensajería y envíos" ? "📦" : category === "Redes sociales" ? "🔗" : "📌"; }
 function compactPublicationCard(item) {
   const icon = categoryIcon(item.category);
-  const distanceText = nearbyMode && userLocation && Number.isFinite(item.distanceKm) ? ` · 📍 ${distanceLabel(item.distanceKm)}` : "";
+  const distanceText = nearbyMode && userLocation && Number.isFinite(item.distanceKm) ? ` · 📍 ${distanceLabel(item.distanceKm)}` : (nearbyMode && item.matchType === "municipio" ? " · 📍 mismo municipio" : "");
   const meta = [item.municipality, item.state, folio(item)].filter(Boolean).join(" · ") + distanceText;
   const originalLink = item.category === "Redes sociales" && item.route ? `<a class="original-link" href="${escapeHtml(/^https?:\/\//i.test(item.route) ? item.route : `https://${item.route}`)}" target="_blank" rel="noopener noreferrer">Ver publicación original</a>` : "";
   const extra = [originalLink, item.category !== "Redes sociales" && item.route && `<strong>Ruta:</strong> ${escapeHtml(item.route)}`, item.time && `<strong>Horario:</strong> ${escapeHtml(item.time)}`, item.departure && `<strong>Salida:</strong> ${escapeHtml(item.departure)}`, item.transport && `<strong>Medio:</strong> ${escapeHtml(item.transport)}`].filter(Boolean).join("<br>");
@@ -566,7 +594,7 @@ function compactPublicationCard(item) {
       <p><strong>Publicado por:</strong> ${escapeHtml(item.name)}</p>
       <p class="description">${linkify(item.description)}</p>
       ${extra ? `<div class="extra-info">${extra}</div>` : ""}
-      ${nearbyMode && userLocation && Number.isFinite(item.distanceKm) ? `<p><strong>Cercanía:</strong> ${distanceLabel(item.distanceKm)}. Ubicación aproximada.</p>` : ""}
+      ${nearbyMode && userLocation && Number.isFinite(item.distanceKm) ? `<p><strong>Cercanía:</strong> ${distanceLabel(item.distanceKm)}. Ubicación aproximada.</p>` : (nearbyMode && item.matchType === "municipio" ? `<p><strong>Cercanía:</strong> coincide con tu municipio. Esta publicación aún no tiene ubicación GPS.</p>` : "")}
       <p><strong>Contacto:</strong> ${maskPhone(item.phone)} · <strong>Costo:</strong> ${money(item.budget)}</p>
       <div class="detail-actions">
         ${cleanPhone(item.phone) ? `<button class="btn-small btn-green" onclick="openWhatsApp('${cleanPhone(item.phone)}','${encodeURIComponent(`Hola, vi tu publicación ${folio(item)} en Conecta Servicios: ${item.title}`)}')">WhatsApp</button>` : ""}
@@ -587,7 +615,7 @@ function renderPublications() {
   if (isLoading) { renderLoading(); return; }
   const filtered = filterPublications(publicationsCache);
   const emptyMessage = nearbyMode
-    ? `No encontramos publicaciones cercanas dentro de ${getNearbyRadiusKm()} km. Puedes aumentar el radio o explorar por municipio.`
+    ? `No encontramos publicaciones cercanas dentro de ${getNearbyRadiusKm()} km ni registros del municipio seleccionado. Puedes aumentar el radio o cambiar el municipio.`
     : "No hay registros con esos filtros. Prueba otro municipio o categoría.";
   list.innerHTML = filtered.length ? filtered.map(compactPublicationCard).join("") : `<div class="empty-state">${emptyMessage}</div>`;
   const count = document.getElementById("publicationsCount");
