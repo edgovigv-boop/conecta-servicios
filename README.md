@@ -1,26 +1,34 @@
-# Conecta Servicios v3.9.3
+# Conecta Servicios v4.0 — ubicación cercana segura
 
-Versión con ajustes de operación y experiencia:
+© 2026 Conecta Servicios. Todos los derechos reservados.
 
-- Integración responsable con redes sociales mediante enlaces externos curados por administración.
-- No copia contenido ajeno: solo muestra un resumen breve y enlaza a la publicación original.
-- Sección de notificaciones para elegir categorías, zona y horario.
-- Notificaciones web en este dispositivo cuando la app está abierta o compatible en segundo plano.
-- Corrección del formulario de publicación: se quita la franja blanca grande de acciones y se dejan solo los botones.
-- Mantiene la estructura unificada de publicaciones, folios, enlaces clicables, WhatsApp y administración.
+Este proyecto, su código fuente, diseño, textos, estructura funcional, documentación, interfaz y elementos originales son propiedad exclusiva de su titular.
 
-## Importante sobre notificaciones
+Queda prohibida la copia, reproducción, distribución, modificación, explotación comercial, cesión o uso no autorizado, total o parcial, por cualquier medio.
 
-Esta versión usa notificaciones web del navegador. Para notificaciones push totalmente automáticas aun con la app cerrada, se recomienda una etapa posterior con backend/Edge Functions y servicio push.
+El acceso a este repositorio, archivos o despliegue no concede licencia de uso. Todo uso requiere autorización expresa y por escrito del titular.
+
+## Cambios de esta versión
+
+- El botón **Publicaciones cerca de mí** ahora solicita ubicación aproximada del dispositivo.
+- La app ordena publicaciones por distancia aproximada cuando existen coordenadas.
+- Las publicaciones nuevas pueden guardar ubicación aproximada de forma opcional.
+- La ubicación exacta del usuario no se muestra públicamente.
+- Las publicaciones sin coordenadas siguen apareciendo, pero después de las que sí tienen distancia calculable.
+- Se conserva el diseño moderno, publicación guiada, folios, enlaces clicables, compartir, edición admin y protección legal básica.
+
+## Privacidad
+
+La ubicación es opcional. Se usa solo para mostrar y ordenar publicaciones cercanas. No se publica la ubicación exacta del usuario ni se rastrea en segundo plano.
 
 ## Publicación
 
-Subir a GitHub:
-
-- index.html
-- styles.css
-- app.js
-- README.md
-- assets/brand-hero.webp
-
-No requiere SQL nuevo.
+1. Ejecuta primero `supabase-v4.0-ubicacion-cercana.sql` en Supabase.
+2. Después sube a GitHub:
+   - index.html
+   - styles.css
+   - app.js
+   - README.md
+   - LICENSE
+   - assets/brand-hero.webp
+3. Vercel desplegará automáticamente.

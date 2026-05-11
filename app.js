@@ -1,3 +1,20 @@
+// ------------------------------------------------------------------
+// PROPIEDAD EXCLUSIVA - DERECHOS RESERVADOS © 2026
+// Proyecto: Conecta Servicios
+// Titular del proyecto: Conecta Servicios
+//
+// Este código fuente, diseño, textos, estructura funcional,
+// documentación, interfaz y elementos originales del proyecto
+// son propiedad exclusiva de su titular.
+//
+// Queda prohibida su copia, reproducción, distribución,
+// modificación, explotación comercial, cesión o uso no autorizado,
+// total o parcial, por cualquier medio.
+//
+// El acceso a este archivo no concede licencia de uso.
+// Todo uso requiere autorización expresa y por escrito del titular.
+// ------------------------------------------------------------------
+
 const SUPABASE_URL = "https://qfneazokicmyrtqvukqv.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmbmVhem9raWNteXJ0cXZ1a3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MzA0MzUsImV4cCI6MjA5MzUwNjQzNX0.60AKW1IttWSPbRJ8n7Ca9vP5it5-yLyxiXaxDKjd5r0";
 
@@ -8,8 +25,8 @@ const DEFAULT_MUNICIPALITY = "Chapultepec";
 const DEFAULT_LOCALITY = "Chapultepec Centro";
 const STATES = ["Aguascalientes","Baja California","Baja California Sur","Campeche","Chiapas","Chihuahua","Ciudad de México","Coahuila","Colima","Durango","Guanajuato","Guerrero","Hidalgo","Jalisco","México","Michoacán","Morelos","Nayarit","Nuevo León","Oaxaca","Puebla","Querétaro","Quintana Roo","San Luis Potosí","Sinaloa","Sonora","Tabasco","Tamaulipas","Tlaxcala","Veracruz","Yucatán","Zacatecas"];
 const BLOCKED_WORDS = ["droga","armas","arma","sexo","sexual","escort","fraude","estafa","robo","robado","ilegal","marihuana","cocaína","cocaina"];
-const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v393";
-const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v393";
+const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v400";
+const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v400";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -19,6 +36,8 @@ let adminRouteEnabled = false;
 let lastHomeBackPress = 0;
 let isLoading = false;
 let wizardStep = 1;
+let userLocation = null;
+let nearbyMode = false;
 const TOTAL_STEPS = 7;
 
 function cleanPhone(phone) { return String(phone || "").replace(/\D/g, ""); }
@@ -32,6 +51,33 @@ function createId() { return crypto?.randomUUID ? crypto.randomUUID() : `${Date.
 function folio(item) { return `PUB-${String(item.id || "00000").replace(/-/g, "").slice(0, 5).toUpperCase()}`; }
 function normalize(value) { return String(value || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
 function money(value) { const n = Number(value || 0); return n > 0 ? `$${n.toLocaleString("es-MX")}` : "A tratar"; }
+function toNumberOrNull(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+function hasCoordinates(item) {
+  return Number.isFinite(Number(item.lat)) && Number.isFinite(Number(item.lng));
+}
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const toRad = deg => deg * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function distanceLabel(km) {
+  if (!Number.isFinite(km)) return "";
+  if (km < 1) return `Aprox. ${Math.round(km * 1000)} m de ti`;
+  return `Aprox. ${km.toFixed(km < 10 ? 1 : 0)} km de ti`;
+}
+function getBrowserPosition() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) { reject(new Error("Tu navegador no permite ubicación.")); return; }
+    navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: false, timeout: 12000, maximumAge: 180000 });
+  });
+}
+
 function escapeHtml(text) { return String(text || "").replace(/[&<>"]/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m])); }
 function linkify(text) {
   const safe = escapeHtml(text || "");
@@ -94,6 +140,10 @@ function mapPublication(row) {
     budget: row.presupuesto || 0,
     status: row.estado || "revision",
     highlighted: Boolean(row.destacado),
+    lat: toNumberOrNull(row.latitud),
+    lng: toNumberOrNull(row.longitud),
+    approximateLocation: row.ubicacion_aproximada !== false,
+    serviceRadiusKm: Number(row.radio_servicio_km || 10),
     createdAt: row.creado_en || ""
   };
 }
@@ -270,7 +320,11 @@ function formPayload() {
     salida: document.getElementById("pubDeparture")?.value.trim() || "",
     hora: document.getElementById("pubTime")?.value.trim() || "",
     medio: document.getElementById("pubTransport")?.value || "",
-    presupuesto: Number(currentBudgetValue() || 0)
+    presupuesto: Number(currentBudgetValue() || 0),
+    latitud: toNumberOrNull(document.getElementById("pubLat")?.value),
+    longitud: toNumberOrNull(document.getElementById("pubLng")?.value),
+    ubicacion_aproximada: Boolean(document.getElementById("pubLat")?.value && document.getElementById("pubLng")?.value),
+    radio_servicio_km: 10
   };
   const evaluation = evaluatePublication(payload);
   payload.estado = evaluation.status;
@@ -285,6 +339,7 @@ function renderPublicationPreview() {
   preview.innerHTML = `<h4>${icon} ${escapeHtml(payload.titulo || "Publicación")}</h4>
     <p><strong>Aparecerás como:</strong> ${escapeHtml(payload.nombre_publico || "")}</p>
     <p><strong>Zona:</strong> ${escapeHtml(payload.municipio || "")}, ${escapeHtml(payload.estado_nombre || "")}</p>
+    ${payload.latitud && payload.longitud ? `<p><strong>Cercanía:</strong> se usará ubicación aproximada para ordenar resultados.</p>` : ""}
     <p><strong>WhatsApp:</strong> ${maskPhone(payload.telefono)}</p>
     <p>${escapeHtml(payload.descripcion || "").slice(0, 180)}</p>
     <p class="muted"><strong>Resultado esperado:</strong> ${evaluation.status === "activo" ? "se activará automáticamente" : `quedará en revisión (${evaluation.reasons.join(", ")})`}</p>`;
@@ -314,11 +369,16 @@ function resetWizardForm() {
   document.getElementById("pubLocality").value = DEFAULT_LOCALITY;
   document.getElementById("pubCategory").value = "";
   document.getElementById("pubIntent").value = "";
+  document.getElementById("pubLat").value = "";
+  document.getElementById("pubLng").value = "";
+  const locStatus = document.getElementById("pubLocationStatus");
+  if (locStatus) locStatus.textContent = "Puedes publicar sin activar ubicación.";
   wizardStep = 1;
   updateCategoryDetails();
   updateWizard();
 }
 function handleStateFilterChange() {
+  clearNearbyMode();
   const state = document.getElementById("stateFilter").value;
   const municipality = document.getElementById("municipalityFilter");
   if (!state) { municipality.value = ""; municipality.disabled = true; }
@@ -326,6 +386,7 @@ function handleStateFilterChange() {
   renderPublications();
 }
 function resetLocationFilters() {
+  clearNearbyMode();
   document.getElementById("stateFilter").value = DEFAULT_STATE;
   const municipality = document.getElementById("municipalityFilter");
   municipality.disabled = false;
@@ -346,24 +407,71 @@ function applyCategoryAndShow(category) {
     renderPublications();
   }, 50);
 }
-function requestNearbyComingSoon() { showToast("Próxima etapa: ubicación exacta y publicaciones cercanas"); showSection("publicaciones"); }
+async function requestNearbyPublications() {
+  showSection("publicaciones");
+  showToast("Solicitando ubicación aproximada...");
+  try {
+    const pos = await getBrowserPosition();
+    userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
+    nearbyMode = true;
+    document.getElementById("stateFilter").value = "";
+    const municipality = document.getElementById("municipalityFilter");
+    if (municipality) { municipality.value = ""; municipality.disabled = true; }
+    showToast("Mostrando publicaciones cercanas");
+    renderPublications();
+  } catch (error) {
+    console.error(error);
+    nearbyMode = false;
+    showToast("No se pudo usar tu ubicación. Puedes buscar por municipio.");
+    renderPublications();
+  }
+}
+async function capturePublicationLocation() {
+  const status = document.getElementById("pubLocationStatus");
+  if (status) status.textContent = "Solicitando permiso de ubicación...";
+  try {
+    const pos = await getBrowserPosition();
+    document.getElementById("pubLat").value = String(pos.coords.latitude);
+    document.getElementById("pubLng").value = String(pos.coords.longitude);
+    if (status) status.textContent = "Ubicación aproximada agregada. No se mostrará tu ubicación exacta.";
+    showToast("Ubicación aproximada agregada");
+  } catch (error) {
+    console.error(error);
+    if (status) status.textContent = "No se activó ubicación. Puedes continuar manualmente.";
+    showToast("No se pudo obtener ubicación");
+  }
+}
+function clearNearbyMode() {
+  nearbyMode = false;
+  const summary = document.getElementById("nearbySummary");
+  if (summary) summary.classList.add("hidden");
+}
+
 function filterPublications(list) {
   const category = document.getElementById("categoryFilter")?.value || "";
   const state = document.getElementById("stateFilter")?.value || "";
   const municipality = document.getElementById("municipalityFilter")?.value || "";
   const search = normalize(document.getElementById("mainSearch")?.value || "");
   updateFilterSummary(state, municipality);
-  return list.filter(item => {
+  const nearbySummary = document.getElementById("nearbySummary");
+  if (nearbySummary) nearbySummary.classList.toggle("hidden", !nearbyMode || !userLocation);
+  const filtered = list.filter(item => {
     const matchesCategory = !category || item.category === category;
-    const matchesState = !state || normalize(item.state) === normalize(state);
-    const matchesMunicipality = !municipality || normalize(item.municipality).includes(normalize(municipality));
+    const matchesState = nearbyMode ? true : (!state || normalize(item.state) === normalize(state));
+    const matchesMunicipality = nearbyMode ? true : (!municipality || normalize(item.municipality).includes(normalize(municipality)));
     const haystack = normalize([folio(item), item.name, item.title, item.description, item.category, item.subcategory, item.state, item.municipality, item.locality, item.route, item.transport].join(" "));
     return matchesCategory && matchesState && matchesMunicipality && (!search || haystack.includes(search));
   });
+  if (nearbyMode && userLocation) {
+    return filtered.map(item => ({ ...item, distanceKm: hasCoordinates(item) ? haversineKm(userLocation.lat, userLocation.lng, Number(item.lat), Number(item.lng)) : Infinity }))
+      .sort((a, b) => a.distanceKm - b.distanceKm);
+  }
+  return filtered;
 }
 function updateFilterSummary(state, municipality) {
   const el = document.getElementById("filterSummary");
   if (!el) return;
+  if (nearbyMode && userLocation) { el.textContent = "Mostrando publicaciones cercanas a tu ubicación aproximada"; return; }
   if (!state) el.textContent = "Mostrando resultados para: Todo México";
   else if (!municipality) el.textContent = `Mostrando resultados para: ${state}`;
   else el.textContent = `Mostrando resultados para: ${municipality}, ${state}`;
@@ -371,7 +479,8 @@ function updateFilterSummary(state, municipality) {
 function categoryIcon(category) { return category === "Viajes compartidos" ? "🚘" : category === "Mensajería y envíos" ? "📦" : category === "Redes sociales" ? "🔗" : "📌"; }
 function compactPublicationCard(item) {
   const icon = categoryIcon(item.category);
-  const meta = [item.municipality, item.state, folio(item)].filter(Boolean).join(" · ");
+  const distanceText = nearbyMode && userLocation && Number.isFinite(item.distanceKm) ? ` · 📍 ${distanceLabel(item.distanceKm)}` : "";
+  const meta = [item.municipality, item.state, folio(item)].filter(Boolean).join(" · ") + distanceText;
   const originalLink = item.category === "Redes sociales" && item.route ? `<a class="original-link" href="${escapeHtml(/^https?:\/\//i.test(item.route) ? item.route : `https://${item.route}`)}" target="_blank" rel="noopener noreferrer">Ver publicación original</a>` : "";
   const extra = [originalLink, item.category !== "Redes sociales" && item.route && `<strong>Ruta:</strong> ${escapeHtml(item.route)}`, item.time && `<strong>Horario:</strong> ${escapeHtml(item.time)}`, item.departure && `<strong>Salida:</strong> ${escapeHtml(item.departure)}`, item.transport && `<strong>Medio:</strong> ${escapeHtml(item.transport)}`].filter(Boolean).join("<br>");
   return `<article class="compact-publication" id="pub-${item.id}">
@@ -385,6 +494,7 @@ function compactPublicationCard(item) {
       <p><strong>Publicado por:</strong> ${escapeHtml(item.name)}</p>
       <p class="description">${linkify(item.description)}</p>
       ${extra ? `<div class="extra-info">${extra}</div>` : ""}
+      ${nearbyMode && userLocation && Number.isFinite(item.distanceKm) ? `<p><strong>Cercanía:</strong> ${distanceLabel(item.distanceKm)}. Ubicación aproximada.</p>` : ""}
       <p><strong>Contacto:</strong> ${maskPhone(item.phone)} · <strong>Costo:</strong> ${money(item.budget)}</p>
       <div class="detail-actions">
         ${cleanPhone(item.phone) ? `<button class="btn-small btn-green" onclick="openWhatsApp('${cleanPhone(item.phone)}','${encodeURIComponent(`Hola, vi tu publicación ${folio(item)} en Conecta Servicios: ${item.title}`)}')">WhatsApp</button>` : ""}
