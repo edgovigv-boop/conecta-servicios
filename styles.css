@@ -624,7 +624,7 @@ body {
 }
 .bottom-nav + .legal-footer { padding-bottom: 10px; }
 
-/* v4.0 ubicación cercana segura */
+/* v4.0.1 cercanía precisa */
 .location-consent-card {
   margin-top: 14px;
   padding: 14px;
@@ -658,3 +658,63 @@ body {
   color: #18713a;
   font-weight: 700;
 }
+
+/* v4.0.1 - controles de cercanía precisa */
+.nearby-controls{margin:10px 0 0;padding:12px;border-radius:16px;background:#f1fbf3;border:1px solid #ccefd3}
+.nearby-controls label{margin:0!important;color:#18713a;font-weight:800}
+.nearby-controls select{margin-top:7px;width:100%;padding:12px;border:1px solid #bfe8c7;border-radius:14px;background:#fff;font:inherit}
+
+
+/* ===== v4.0.2 asistente de descripción y enlaces externos visibles ===== */
+.description-helper {
+  background: linear-gradient(135deg, #fbf8ff, #f4fff7);
+  border: 1px solid rgba(111,66,193,.13);
+  border-radius: 18px;
+  padding: 12px;
+  margin: 8px 0 14px;
+  box-shadow: 0 8px 20px rgba(30,30,60,.05);
+}
+.description-helper strong {
+  color: var(--morado);
+  display: block;
+  margin-bottom: 4px;
+}
+.description-helper p {
+  margin: 0 0 10px;
+  font-size: .9rem;
+  color: #64606c;
+}
+.helper-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.helper-actions button {
+  border: 1px solid rgba(111,66,193,.18);
+  background: white;
+  color: var(--morado);
+  border-radius: 999px;
+  padding: 9px 11px;
+  font-size: .86rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 5px 14px rgba(30,30,60,.04);
+}
+.helper-actions button:first-child {
+  background: var(--morado);
+  color: white;
+  border-color: var(--morado);
+}
+.original-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: #f0fff4;
+  color: #187a33;
+  text-decoration: none;
+  font-weight: 800;
+  margin: 6px 0;
+}
+.original-link::before { content: "🔗"; }

@@ -25,8 +25,8 @@ const DEFAULT_MUNICIPALITY = "Chapultepec";
 const DEFAULT_LOCALITY = "Chapultepec Centro";
 const STATES = ["Aguascalientes","Baja California","Baja California Sur","Campeche","Chiapas","Chihuahua","Ciudad de México","Coahuila","Colima","Durango","Guanajuato","Guerrero","Hidalgo","Jalisco","México","Michoacán","Morelos","Nayarit","Nuevo León","Oaxaca","Puebla","Querétaro","Quintana Roo","San Luis Potosí","Sinaloa","Sonora","Tabasco","Tamaulipas","Tlaxcala","Veracruz","Yucatán","Zacatecas"];
 const BLOCKED_WORDS = ["droga","armas","arma","sexo","sexual","escort","fraude","estafa","robo","robado","ilegal","marihuana","cocaína","cocaina"];
-const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v400";
-const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v400";
+const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v401";
+const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v401";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -284,6 +284,64 @@ function currentDescriptionValue() {
   if (category === "Mensajería y envíos") return document.getElementById("pubDescriptionDelivery").value.trim();
   return document.getElementById("pubDescription").value.trim();
 }
+
+function activeDescriptionElement() {
+  const category = document.getElementById("pubCategory").value || "General";
+  if (category === "Viajes compartidos") return document.getElementById("pubDescriptionRide");
+  if (category === "Mensajería y envíos") return document.getElementById("pubDescriptionDelivery");
+  return document.getElementById("pubDescription");
+}
+function buildSuggestedDescription() {
+  const category = document.getElementById("pubCategory").value || "General";
+  const intent = document.getElementById("pubIntent").value || "";
+  const title = document.getElementById("pubTitle").value.trim() || "esta publicación";
+  const name = document.getElementById("pubName").value.trim() || "la persona que publica";
+  const municipality = document.getElementById("pubMunicipality").value.trim() || DEFAULT_MUNICIPALITY;
+  const locality = document.getElementById("pubLocality").value.trim();
+  const zone = [locality, municipality].filter(Boolean).join(", ");
+  const route = document.getElementById("pubRoute")?.value.trim();
+  const time = document.getElementById("pubTime")?.value.trim();
+  const departure = document.getElementById("pubDeparture")?.value.trim();
+  const transport = document.getElementById("pubTransport")?.value;
+  const budget = currentBudgetValue();
+  if (category === "Viajes compartidos") {
+    return `${name} publica: ${title}. Ruta o destino: ${route || "por confirmar"}. Salida: ${departure || "por coordinar"}. Horario: ${time || "por acordar"}. La idea es compartir el viaje de forma directa y respetuosa con personas que vayan por la misma ruta.${budget ? ` Cooperación sugerida: $${budget}.` : ""}`;
+  }
+  if (category === "Mensajería y envíos") {
+    return `${name} publica: ${title}. Servicio o necesidad relacionada con mensajería y envíos en ${zone || municipality}. Medio: ${transport || "por coordinar"}. Puede servir para mandados, documentos, entregas o traslados locales según acuerdo directo.${budget ? ` Costo o presupuesto sugerido: $${budget}.` : ""}`;
+  }
+  if (normalize(intent).includes("busco") || normalize(title).includes("busco") || normalize(title).includes("necesito")) {
+    return `${name} necesita apoyo con: ${title}. La solicitud aplica en ${zone || municipality}. Se busca una persona disponible, responsable y con trato directo para acordar detalles por WhatsApp.${budget ? ` Presupuesto sugerido: $${budget}.` : ""}`;
+  }
+  return `${name} ofrece: ${title}. Disponible en ${zone || municipality}. Se puede coordinar por WhatsApp para revisar detalles, horarios y condiciones del servicio de forma directa.${budget ? ` Costo o referencia: $${budget}.` : ""}`;
+}
+function assistDescription(mode) {
+  const el = activeDescriptionElement();
+  if (!el) return;
+  const current = el.value.trim();
+  let next = current;
+  if (mode === "draft" || !current) {
+    next = buildSuggestedDescription();
+  } else if (mode === "clear") {
+    next = current
+      .replace(/\s+/g, " ")
+      .replace(/\bq\b/gi, "que")
+      .replace(/\bxq\b/gi, "porque")
+      .trim();
+    next = `Publicación clara: ${next}`.replace(/Publicación clara: Publicación clara:/g, "Publicación clara:");
+  } else if (mode === "friendly") {
+    next = `${current}\n\nPuedes escribir por WhatsApp para coordinar detalles con respeto, claridad y trato directo.`;
+  } else if (mode === "short") {
+    const sentences = current.split(/(?<=[.!?])\s+/).filter(Boolean);
+    next = (sentences.slice(0, 2).join(" ") || current.slice(0, 180)).trim();
+  } else if (mode === "details") {
+    next = `${current}\n\nDetalles útiles: zona, horario disponible, condiciones, presupuesto aproximado si aplica y cualquier enlace de referencia como Facebook, Instagram, Waze o ubicación.`;
+  }
+  el.value = next.trim();
+  el.focus();
+  el.dispatchEvent(new Event("input", { bubbles: true }));
+  showToast("Descripción actualizada. Puedes editarla antes de publicar.");
+}
 function currentBudgetValue() {
   const category = document.getElementById("pubCategory").value || "General";
   if (category === "Viajes compartidos") return document.getElementById("pubBudgetRide").value;
@@ -328,7 +386,7 @@ function formPayload() {
   };
   const evaluation = evaluatePublication(payload);
   payload.estado = evaluation.status;
-  payload.referencia = evaluation.reasons.length ? `Revisión automática: ${evaluation.reasons.join(", ")}` : "Activación automática v3.9";
+  payload.referencia = evaluation.reasons.length ? `Revisión automática: ${evaluation.reasons.join(", ")}` : "Activación automática v4.0.2";
   return payload;
 }
 function renderPublicationPreview() {
@@ -417,11 +475,15 @@ async function requestNearbyPublications() {
     document.getElementById("stateFilter").value = "";
     const municipality = document.getElementById("municipalityFilter");
     if (municipality) { municipality.value = ""; municipality.disabled = true; }
+    const controls = document.getElementById("nearbyControls");
+    if (controls) controls.classList.remove("hidden");
     showToast("Mostrando publicaciones cercanas");
     renderPublications();
   } catch (error) {
     console.error(error);
     nearbyMode = false;
+    const controls = document.getElementById("nearbyControls");
+    if (controls) controls.classList.add("hidden");
     showToast("No se pudo usar tu ubicación. Puedes buscar por municipio.");
     renderPublications();
   }
@@ -445,6 +507,12 @@ function clearNearbyMode() {
   nearbyMode = false;
   const summary = document.getElementById("nearbySummary");
   if (summary) summary.classList.add("hidden");
+  const controls = document.getElementById("nearbyControls");
+  if (controls) controls.classList.add("hidden");
+}
+function getNearbyRadiusKm() {
+  const radius = Number(document.getElementById("nearbyRadius")?.value || 25);
+  return Number.isFinite(radius) && radius > 0 ? radius : 25;
 }
 
 function filterPublications(list) {
@@ -463,7 +531,11 @@ function filterPublications(list) {
     return matchesCategory && matchesState && matchesMunicipality && (!search || haystack.includes(search));
   });
   if (nearbyMode && userLocation) {
-    return filtered.map(item => ({ ...item, distanceKm: hasCoordinates(item) ? haversineKm(userLocation.lat, userLocation.lng, Number(item.lat), Number(item.lng)) : Infinity }))
+    const radiusKm = getNearbyRadiusKm();
+    return filtered
+      .filter(item => hasCoordinates(item))
+      .map(item => ({ ...item, distanceKm: haversineKm(userLocation.lat, userLocation.lng, Number(item.lat), Number(item.lng)) }))
+      .filter(item => Number.isFinite(item.distanceKm) && item.distanceKm <= radiusKm)
       .sort((a, b) => a.distanceKm - b.distanceKm);
   }
   return filtered;
@@ -471,7 +543,7 @@ function filterPublications(list) {
 function updateFilterSummary(state, municipality) {
   const el = document.getElementById("filterSummary");
   if (!el) return;
-  if (nearbyMode && userLocation) { el.textContent = "Mostrando publicaciones cercanas a tu ubicación aproximada"; return; }
+  if (nearbyMode && userLocation) { el.textContent = `Mostrando publicaciones cercanas a tu ubicación aproximada (radio: ${getNearbyRadiusKm()} km)`; return; }
   if (!state) el.textContent = "Mostrando resultados para: Todo México";
   else if (!municipality) el.textContent = `Mostrando resultados para: ${state}`;
   else el.textContent = `Mostrando resultados para: ${municipality}, ${state}`;
@@ -514,7 +586,10 @@ function renderPublications() {
   if (!list) return;
   if (isLoading) { renderLoading(); return; }
   const filtered = filterPublications(publicationsCache);
-  list.innerHTML = filtered.length ? filtered.map(compactPublicationCard).join("") : `<div class="empty-state">No hay registros con esos filtros. Prueba otro municipio o categoría.</div>`;
+  const emptyMessage = nearbyMode
+    ? `No encontramos publicaciones cercanas dentro de ${getNearbyRadiusKm()} km. Puedes aumentar el radio o explorar por municipio.`
+    : "No hay registros con esos filtros. Prueba otro municipio o categoría.";
+  list.innerHTML = filtered.length ? filtered.map(compactPublicationCard).join("") : `<div class="empty-state">${emptyMessage}</div>`;
   const count = document.getElementById("publicationsCount");
   if (count) count.textContent = publicationsCache.length;
 }

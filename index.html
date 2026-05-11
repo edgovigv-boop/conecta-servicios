@@ -20,7 +20,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#6f42c1" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=4.0-ubicacion-cercana" />
+  <link rel="stylesheet" href="styles.css?v=4.0.1-cercania-precisa" />
 </head>
 <body>
   <div class="app-shell">
@@ -141,6 +141,17 @@ Todo uso requiere autorización expresa y por escrito del titular.
               <label>Descripción
                 <textarea id="pubDescription" rows="5" placeholder="Cuéntalo de forma natural. Puedes pegar links de Facebook, TikTok, Instagram, Waze o Google Maps."></textarea>
               </label>
+              <div class="description-helper" aria-label="Asistente de descripción">
+                <strong>✨ Asistente de descripción</strong>
+                <p>Usa estas ayudas para redactar mejor. Puedes editar el texto antes de publicar.</p>
+                <div class="helper-actions">
+                  <button type="button" onclick="assistDescription('draft')">Ayúdame a redactar</button>
+                  <button type="button" onclick="assistDescription('clear')">Más claro</button>
+                  <button type="button" onclick="assistDescription('friendly')">Más amable</button>
+                  <button type="button" onclick="assistDescription('short')">Más corto</button>
+                  <button type="button" onclick="assistDescription('details')">Agregar detalles útiles</button>
+                </div>
+              </div>
               <label>Pago, costo o presupuesto sugerido
                 <input id="pubBudget" type="number" min="0" placeholder="Opcional. Ej. 100" />
               </label>
@@ -149,6 +160,17 @@ Todo uso requiere autorización expresa y por escrito del titular.
               <label>Descripción del viaje
                 <textarea id="pubDescriptionRide" rows="4" placeholder="Ej. Viajo de Chapultepec a Toluca de lunes a viernes. Comparto espacio si vas por la ruta." ></textarea>
               </label>
+              <div class="description-helper" aria-label="Asistente de descripción para viaje">
+                <strong>✨ Asistente de descripción</strong>
+                <p>Te ayuda a explicar ruta, horario y condiciones de forma clara.</p>
+                <div class="helper-actions">
+                  <button type="button" onclick="assistDescription('draft')">Ayúdame a redactar</button>
+                  <button type="button" onclick="assistDescription('clear')">Más claro</button>
+                  <button type="button" onclick="assistDescription('friendly')">Más amable</button>
+                  <button type="button" onclick="assistDescription('short')">Más corto</button>
+                  <button type="button" onclick="assistDescription('details')">Agregar detalles útiles</button>
+                </div>
+              </div>
               <label>Ruta o destino
                 <input id="pubRoute" type="text" placeholder="Ej. Chapultepec → Toluca / link de Waze" />
               </label>
@@ -168,6 +190,17 @@ Todo uso requiere autorización expresa y por escrito del titular.
               <label>Descripción del servicio o necesidad
                 <textarea id="pubDescriptionDelivery" rows="4" placeholder="Ej. Hago entregas locales en moto / Busco quien lleve documentos." ></textarea>
               </label>
+              <div class="description-helper" aria-label="Asistente de descripción para envíos">
+                <strong>✨ Asistente de descripción</strong>
+                <p>Te ayuda a explicar qué transportas, zona y horario sin hacerlo largo.</p>
+                <div class="helper-actions">
+                  <button type="button" onclick="assistDescription('draft')">Ayúdame a redactar</button>
+                  <button type="button" onclick="assistDescription('clear')">Más claro</button>
+                  <button type="button" onclick="assistDescription('friendly')">Más amable</button>
+                  <button type="button" onclick="assistDescription('short')">Más corto</button>
+                  <button type="button" onclick="assistDescription('details')">Agregar detalles útiles</button>
+                </div>
+              </div>
               <label>Medio disponible o requerido
                 <select id="pubTransport">
                   <option value="">Selecciona si aplica</option>
@@ -240,8 +273,18 @@ Todo uso requiere autorización expresa y por escrito del titular.
             <button class="btn-small btn-outline" onclick="renderPublications()">Ver resultados</button>
             <button class="btn-small btn-ghost" onclick="resetLocationFilters()">Restablecer Chapultepec</button>
           </div>
+          <div id="nearbyControls" class="nearby-controls hidden">
+            <label>Radio de búsqueda
+              <select id="nearbyRadius" onchange="renderPublications()">
+                <option value="10">10 km</option>
+                <option value="25" selected>25 km</option>
+                <option value="50">50 km</option>
+                <option value="100">100 km</option>
+              </select>
+            </label>
+          </div>
           <p id="filterSummary" class="filter-summary">Mostrando resultados para: Chapultepec, México</p>
-          <p id="nearbySummary" class="nearby-summary hidden">📍 Modo cercanía activo. Ordenando publicaciones por distancia aproximada.</p>
+          <p id="nearbySummary" class="nearby-summary hidden">📍 Modo cercanía activo. Solo se muestran publicaciones con ubicación aproximada dentro del radio elegido.</p>
         </div>
 
         <label class="search-box">
@@ -348,10 +391,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
       </section>
 
       <section id="enlaceExterno" class="section info-section">
-        <h2>Agregar enlace externo</h2>
+        <h2>Agregar enlace externo de redes</h2>
         <div class="notice-card">
           <strong>Uso responsable de redes sociales</strong>
-          <p>No copiamos publicaciones ajenas. Solo escribimos un aviso breve y enlazamos al contenido original para respetar privacidad, autoría y contexto.</p>
+          <p>No copiamos publicaciones ajenas. Solo escribimos un aviso breve y enlazamos al contenido original para respetar privacidad, autoría y contexto. Aparecerá como “Redes sociales” y tendrá botón para abrir el enlace original.</p>
         </div>
         <form id="externalLinkForm" class="form-card">
           <label>Título del aviso
@@ -426,6 +469,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=3.9.4-proteccion-legal-basica"></script>
+  <script src="app.js?v=4.0.2-cercania-asistente-redes"></script>
 </body>
 </html>
