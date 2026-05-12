@@ -27,6 +27,7 @@ const STATES = ["Aguascalientes","Baja California","Baja California Sur","Campec
 const BLOCKED_WORDS = ["droga","armas","arma","sexo","sexual","escort","fraude","estafa","robo","robado","ilegal","marihuana","cocaína","cocaina"];
 const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v41";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
+const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -40,6 +41,8 @@ let userLocation = null;
 let nearbyMode = false;
 let nearbyFallbackState = DEFAULT_STATE;
 let nearbyFallbackMunicipality = DEFAULT_MUNICIPALITY;
+let pendingSharedPublicationId = null;
+let analyticsCache = [];
 const TOTAL_STEPS = 7;
 
 function cleanPhone(phone) { return String(phone || "").replace(/\D/g, ""); }
@@ -121,6 +124,38 @@ async function supabaseRequest(path, options = {}) {
   const text = await response.text();
   return text ? JSON.parse(text) : null;
 }
+
+function getAnalyticsSessionId() {
+  let id = localStorage.getItem(ANALYTICS_SESSION_KEY);
+  if (!id) {
+    id = createId();
+    localStorage.setItem(ANALYTICS_SESSION_KEY, id);
+  }
+  return id;
+}
+function deviceKind() {
+  const ua = navigator.userAgent || "";
+  return /Mobi|Android|iPhone|iPad/i.test(ua) ? "móvil" : "escritorio";
+}
+function analyticsPayload(eventName, item = null, details = {}) {
+  return {
+    evento: eventName,
+    publicacion_id: item?.id ? String(item.id) : null,
+    folio: item ? folio(item) : null,
+    categoria: item?.category || details.categoria || null,
+    municipio: item?.municipality || details.municipio || null,
+    estado_nombre: item?.state || details.estado_nombre || null,
+    session_id: getAnalyticsSessionId(),
+    dispositivo: deviceKind(),
+    detalle: details && Object.keys(details).length ? details : null,
+    pagina: location.pathname + location.search + location.hash
+  };
+}
+function trackEvent(eventName, item = null, details = {}) {
+  supabaseRequest("eventos_analytics", { method: "POST", body: JSON.stringify(analyticsPayload(eventName, item, details)) })
+    .catch(error => console.debug("Analítica no disponible:", error.message));
+}
+
 function mapPublication(row) {
   return {
     id: row.id || createId(),
@@ -203,11 +238,13 @@ function showSection(id, push = true) {
   currentSection = id;
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   target.classList.add("active");
-  const titles = { inicio:"Conecta Servicios", registro:"Publica", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende" };
+  const titles = { inicio:"Conecta Servicios", registro:"Publica", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica" };
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
   renderAll();
+  trackEvent("vista_seccion", null, { seccion: id });
+  if (id === "analitica" && adminUnlocked) loadAnalyticsData();
 }
 function goBack() {
   if (currentSection === "inicio") {
@@ -226,7 +263,7 @@ window.addEventListener("popstate", event => {
   showSection(id, false);
 });
 
-function startWizard() { showSection("registro"); wizardStep = 1; updateWizard(); }
+function startWizard() { trackEvent("click_publica"); showSection("registro"); wizardStep = 1; updateWizard(); }
 function selectPublishType(button) {
   document.querySelectorAll(".choice-card").forEach(b => b.classList.remove("selected"));
   button.classList.add("selected");
@@ -412,6 +449,7 @@ async function submitPublication(event) {
     const [created] = await supabaseRequest("publicaciones", { method: "POST", body: JSON.stringify(payload) });
     const item = mapPublication(created || { ...payload, id: createId() });
     const active = payload.estado === "activo";
+    trackEvent("publicacion_creada", item, { estado_resultado: active ? "activo" : "revision" });
     showToast(active ? "Publicación activa" : "Publicación enviada a revisión");
     if (!active) {
       openOfficeWhatsApp(`Nuevo registro en revisión\n\nFolio: ${folio(item)}\nNombre: ${item.name}\nTítulo: ${item.title}\nCategoría: ${item.category}\nMunicipio: ${item.municipality}, ${item.state}\nTeléfono: ${maskPhone(item.phone)} / últimos 4: ${last4(item.phone)}\nMotivo: ${payload.referencia}`);
@@ -468,6 +506,7 @@ function applyCategoryAndShow(category) {
   }, 50);
 }
 async function requestNearbyPublications() {
+  trackEvent("click_publicaciones_cerca");
   showSection("publicaciones");
   showToast("Solicitando ubicación aproximada...");
   try {
@@ -479,6 +518,7 @@ async function requestNearbyPublications() {
 
     const pos = await getBrowserPosition();
     userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
+    trackEvent("permiso_ubicacion_aceptado", null, { precision_m: Math.round(pos.coords.accuracy || 0) });
     nearbyMode = true;
 
     // Dejamos visible el municipio de respaldo, pero la búsqueda GPS no depende de este texto.
@@ -491,6 +531,7 @@ async function requestNearbyPublications() {
   } catch (error) {
     console.error(error);
     nearbyMode = false;
+    trackEvent("permiso_ubicacion_rechazado");
     const controls = document.getElementById("nearbyControls");
     if (controls) controls.classList.add("hidden");
     showToast("No se pudo usar tu ubicación. Puedes buscar por municipio.");
@@ -581,7 +622,8 @@ function compactPublicationCard(item) {
   const icon = categoryIcon(item.category);
   const distanceText = nearbyMode && userLocation && Number.isFinite(item.distanceKm) ? ` · 📍 ${distanceLabel(item.distanceKm)}` : (nearbyMode && item.matchType === "municipio" ? " · 📍 mismo municipio" : "");
   const meta = [item.municipality, item.state, folio(item)].filter(Boolean).join(" · ") + distanceText;
-  const originalLink = item.category === "Redes sociales" && item.route ? `<a class="original-link" href="${escapeHtml(/^https?:\/\//i.test(item.route) ? item.route : `https://${item.route}`)}" target="_blank" rel="noopener noreferrer">Ver publicación original</a>` : "";
+  const originalUrl = item.category === "Redes sociales" && item.route ? (/^https?:\/\//i.test(item.route) ? item.route : `https://${item.route}`) : "";
+  const originalLink = originalUrl ? `<button class="link-button original-link" type="button" onclick="openOriginalLink('${item.id}')">Ver publicación original</button>` : "";
   const extra = [originalLink, item.category !== "Redes sociales" && item.route && `<strong>Ruta:</strong> ${escapeHtml(item.route)}`, item.time && `<strong>Horario:</strong> ${escapeHtml(item.time)}`, item.departure && `<strong>Salida:</strong> ${escapeHtml(item.departure)}`, item.transport && `<strong>Medio:</strong> ${escapeHtml(item.transport)}`].filter(Boolean).join("<br>");
   return `<article class="compact-publication" id="pub-${item.id}">
     <button class="compact-summary" type="button" onclick="togglePublicationDetail('${item.id}')">
@@ -597,7 +639,7 @@ function compactPublicationCard(item) {
       ${nearbyMode && userLocation && Number.isFinite(item.distanceKm) ? `<p><strong>Cercanía:</strong> ${distanceLabel(item.distanceKm)}. Ubicación aproximada.</p>` : (nearbyMode && item.matchType === "municipio" ? `<p><strong>Cercanía:</strong> coincide con tu municipio. Esta publicación aún no tiene ubicación GPS.</p>` : "")}
       <p><strong>Contacto:</strong> ${maskPhone(item.phone)} · <strong>Costo:</strong> ${money(item.budget)}</p>
       <div class="detail-actions">
-        ${cleanPhone(item.phone) ? `<button class="btn-small btn-green" onclick="openWhatsApp('${cleanPhone(item.phone)}','${encodeURIComponent(`Hola, vi tu publicación ${folio(item)} en Conecta Servicios: ${item.title}`)}')">WhatsApp</button>` : ""}
+        ${cleanPhone(item.phone) ? `<button class="btn-small btn-green" onclick="contactPublication('${item.id}')">WhatsApp</button>` : ""}
         <button class="btn-small btn-outline" onclick="sharePublication('${item.id}')">Compartir</button>
         <button class="btn-small btn-ghost" onclick="requestModification('${item.id}')">Solicitar modificación</button>
         <button class="btn-small btn-ghost" onclick="requestAttended('${item.id}')">Solicitar atendido</button>
@@ -607,7 +649,13 @@ function compactPublicationCard(item) {
 }
 function togglePublicationDetail(id) {
   const card = document.getElementById(`pub-${id}`);
-  if (card) card.classList.toggle("open");
+  if (!card) return;
+  const willOpen = !card.classList.contains("open");
+  card.classList.toggle("open");
+  if (willOpen) {
+    const item = publicationsCache.find(p => p.id === id);
+    if (item) trackEvent("publicacion_abierta", item, { origen: "lista" });
+  }
 }
 function renderPublications() {
   const list = document.getElementById("publicationsList");
@@ -624,6 +672,19 @@ function renderPublications() {
 function renderLoading() { const list = document.getElementById("publicationsList"); if (list) list.innerHTML = `<div class="empty-state">Cargando registros...</div>`; }
 function renderAll() { renderPublications(); updateHomeCounts(); if (adminUnlocked) renderAdminPublications(); }
 function updateHomeCounts() { const count = document.getElementById("publicationsCount"); if (count) count.textContent = publicationsCache.length; }
+function contactPublication(id) {
+  const item = publicationsCache.find(p => p.id === id) || adminCache.find(p => p.id === id);
+  if (!item) return;
+  trackEvent("click_whatsapp", item);
+  openWhatsApp(cleanPhone(item.phone), encodeURIComponent(`Hola, vi tu publicación ${folio(item)} en Conecta Servicios: ${item.title}`));
+}
+function openOriginalLink(id) {
+  const item = publicationsCache.find(p => p.id === id) || adminCache.find(p => p.id === id);
+  if (!item || !item.route) return;
+  trackEvent("click_ver_original_redes", item);
+  const url = /^https?:\/\//i.test(item.route) ? item.route : `https://${item.route}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
 function openWhatsApp(phone, encodedMessage) {
   const digits = cleanPhone(phone);
   if (!digits) { showToast("Teléfono no disponible"); return; }
@@ -634,7 +695,12 @@ function shareUrlFor(item) { return `${location.origin}${location.pathname}?pub=
 async function sharePublication(id) {
   const item = publicationsCache.find(p => p.id === id) || adminCache.find(p => p.id === id);
   if (!item) return;
-  const data = { title: item.title, text: `${item.title} - ${item.category} en Conecta Servicios`, url: shareUrlFor(item) };
+  trackEvent("click_compartir", item);
+  const data = { title: item.title, text: `Mira esta publicación en Conecta Servicios:
+
+${item.title}
+${item.municipality}, ${item.state}
+`, url: shareUrlFor(item) };
   if (navigator.share) await navigator.share(data).catch(() => null);
   else { await navigator.clipboard.writeText(data.url); showToast("Enlace copiado"); }
 }
@@ -741,15 +807,40 @@ async function saveEdit(event) {
     await loadRemoteData();
   } catch (error) { console.error(error); showToast("No se pudo guardar edición"); }
 }
-function maybeOpenSharedPublication() {
-  const params = new URLSearchParams(location.search);
-  const id = params.get("pub");
+function openSharedPublicationById(id) {
   if (!id) return;
+  const item = publicationsCache.find(p => String(p.id) === String(id));
   showSection("publicaciones", false);
+  if (!item) {
+    renderPublications();
+    showToast("No encontramos esa publicación activa. Puede estar en revisión u oculta.");
+    trackEvent("enlace_directo_no_encontrado", null, { publicacion_id: String(id) });
+    return;
+  }
+  nearbyMode = false;
+  const category = document.getElementById("categoryFilter");
+  const state = document.getElementById("stateFilter");
+  const municipality = document.getElementById("municipalityFilter");
+  const search = document.getElementById("mainSearch");
+  if (category) category.value = "";
+  if (state) state.value = item.state || DEFAULT_STATE;
+  if (municipality) { municipality.disabled = false; municipality.value = item.municipality || ""; }
+  if (search) search.value = "";
+  document.querySelectorAll(".filter-chip").forEach(b => b.classList.toggle("active", !b.dataset.filterCategory));
+  renderPublications();
   setTimeout(() => {
     const card = document.getElementById(`pub-${id}`);
-    if (card) { card.classList.add("open"); card.scrollIntoView({ behavior: "smooth", block: "center" }); }
-  }, 900);
+    if (card) {
+      card.classList.add("open");
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+      trackEvent("publicacion_abierta", item, { origen: "enlace_directo" });
+      showToast("Abriendo publicación compartida");
+    }
+  }, 250);
+}
+function maybeOpenSharedPublication() {
+  const id = pendingSharedPublicationId || new URLSearchParams(location.search).get("pub");
+  if (id) openSharedPublicationById(id);
 }
 
 
@@ -898,6 +989,71 @@ function startLearningPublication(routeName) {
   showToast(`Ruta seleccionada: ${routeName}. Completa tus datos para publicar.`);
 }
 
+
+async function loadAnalyticsData() {
+  const panel = document.getElementById("analyticsPanel");
+  if (panel) panel.innerHTML = `<div class="empty-state">Cargando analítica...</div>`;
+  try {
+    const rows = await supabaseRequest("eventos_analytics?select=*&order=creado_en.desc&limit=1000");
+    analyticsCache = rows || [];
+    renderAnalytics();
+  } catch (error) {
+    console.error(error);
+    if (panel) panel.innerHTML = `<div class="empty-state">No se pudo cargar la analítica. Revisa que ejecutaste el SQL de v4.2 en Supabase.</div>`;
+  }
+}
+function countEvents(rows, name) { return rows.filter(r => r.evento === name).length; }
+function uniqueSessions(rows) { return new Set(rows.map(r => r.session_id).filter(Boolean)).size; }
+function renderMetric(label, value) { return `<div class="metric-card"><strong>${value}</strong><span>${label}</span></div>`; }
+function topPublications(rows) {
+  const map = new Map();
+  rows.filter(r => r.publicacion_id).forEach(r => {
+    const key = r.publicacion_id;
+    const current = map.get(key) || { id: key, folio: r.folio || "", categoria: r.categoria || "", municipio: r.municipio || "", vistas: 0, whatsapp: 0, compartidos: 0 };
+    if (r.evento === "publicacion_abierta") current.vistas += 1;
+    if (r.evento === "click_whatsapp") current.whatsapp += 1;
+    if (r.evento === "click_compartir") current.compartidos += 1;
+    map.set(key, current);
+  });
+  return [...map.values()].sort((a,b) => (b.vistas + b.whatsapp*2 + b.compartidos) - (a.vistas + a.whatsapp*2 + a.compartidos)).slice(0, 8);
+}
+function renderAnalytics() {
+  const panel = document.getElementById("analyticsPanel");
+  if (!panel) return;
+  const now = Date.now();
+  const startToday = new Date(); startToday.setHours(0,0,0,0);
+  const rowsToday = analyticsCache.filter(r => new Date(r.creado_en).getTime() >= startToday.getTime());
+  const rows7 = analyticsCache.filter(r => new Date(r.creado_en).getTime() >= now - 7*24*60*60*1000);
+  const top = topPublications(rows7);
+  panel.innerHTML = `
+    <div class="analytics-block">
+      <h3>Hoy</h3>
+      <div class="metrics-grid">
+        ${renderMetric("visitantes aproximados", uniqueSessions(rowsToday))}
+        ${renderMetric("clics en PUBLICA", countEvents(rowsToday, "click_publica"))}
+        ${renderMetric("publicaciones abiertas", countEvents(rowsToday, "publicacion_abierta"))}
+        ${renderMetric("clics a WhatsApp", countEvents(rowsToday, "click_whatsapp"))}
+        ${renderMetric("compartidos", countEvents(rowsToday, "click_compartir"))}
+        ${renderMetric("cerca de mí", countEvents(rowsToday, "click_publicaciones_cerca"))}
+      </div>
+    </div>
+    <div class="analytics-block">
+      <h3>Últimos 7 días</h3>
+      <div class="metrics-grid">
+        ${renderMetric("visitantes aproximados", uniqueSessions(rows7))}
+        ${renderMetric("publicaciones creadas", countEvents(rows7, "publicacion_creada"))}
+        ${renderMetric("publicaciones abiertas", countEvents(rows7, "publicacion_abierta"))}
+        ${renderMetric("clics a WhatsApp", countEvents(rows7, "click_whatsapp"))}
+        ${renderMetric("compartidos", countEvents(rows7, "click_compartir"))}
+        ${renderMetric("Aprende y emprende", rows7.filter(r => r.evento === "vista_seccion" && r.detalle?.seccion === "aprende").length)}</div>
+    </div>
+    <div class="analytics-block">
+      <h3>Publicaciones con más interés</h3>
+      ${top.length ? top.map(item => `<div class="analytics-row"><strong>${escapeHtml(item.folio || item.id)}</strong><span>${escapeHtml(item.categoria)} · ${escapeHtml(item.municipio)}</span><small>${item.vistas} vistas · ${item.whatsapp} WhatsApp · ${item.compartidos} compartidos</small></div>`).join("") : `<div class="empty-state">Todavía no hay suficientes eventos registrados.</div>`}
+    </div>
+    <p class="small muted">La analítica es anónima y aproximada. No guarda nombres, teléfonos ni ubicación exacta de visitantes.</p>`;
+}
+
 function showLearningGuide(type) {
   const guide = document.getElementById("learningGuide");
   if (!guide) return;
@@ -961,6 +1117,7 @@ function initMobileFormComfort() {
 
 function init() {
   const params = new URLSearchParams(location.search);
+  pendingSharedPublicationId = params.get("pub") || params.get("publicacion");
   adminRouteEnabled = params.get("admin") === "1" || params.get("admin") === "true";
   document.getElementById("adminEntry").classList.toggle("hidden", !adminRouteEnabled);
   populateStateSelects();
@@ -972,6 +1129,7 @@ function init() {
   updateCategoryDetails();
   initMobileFormComfort();
   renderNotificationSettings();
+  trackEvent("visita_home");
   loadRemoteData().then(maybeOpenSharedPublication);
   setInterval(() => loadRemoteData({ silent: true }), 60000);
 }

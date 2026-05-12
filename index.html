@@ -322,13 +322,28 @@ Todo uso requiere autorización expresa y por escrito del titular.
             <h2>Administración</h2>
             <p>Controla publicaciones, estados, edición y revisión.</p>
           </div>
-          <div class="admin-top-actions"><button class="btn-small btn-outline" onclick="loadAdminData()">Actualizar</button><button class="btn-small btn-purple" onclick="showSection('enlaceExterno')">+ Enlace externo</button></div>
+          <div class="admin-top-actions"><button class="btn-small btn-outline" onclick="loadAdminData()">Actualizar</button><button class="btn-small btn-outline" onclick="showSection('analitica')">📊 Analítica</button><button class="btn-small btn-purple" onclick="showSection('enlaceExterno')">+ Enlace externo</button></div>
         </div>
         <div class="admin-summary" id="adminSummary"></div>
         <label class="search-box">Buscar en admin
           <input id="adminSearch" type="search" placeholder="Folio, teléfono, título, nombre, municipio" oninput="renderAdminPublications()" />
         </label>
         <div id="adminList" class="list"></div>
+      </section>
+
+      <section id="analitica" class="section info-section">
+        <div class="section-header">
+          <div>
+            <h2>Analítica</h2>
+            <p>Datos anónimos para saber si la promoción genera tráfico e interés real.</p>
+          </div>
+          <button class="btn-small btn-outline" onclick="loadAnalyticsData()">Actualizar</button>
+        </div>
+        <div class="notice-card">
+          <strong>Qué se mide</strong>
+          <p>Visitas, clics en PUBLICA, publicaciones abiertas, WhatsApp, compartidos, uso de “cerca de mí” y entradas a Aprende y emprende. No se guardan nombres, teléfonos ni ubicación exacta de visitantes.</p>
+        </div>
+        <div id="analyticsPanel"></div>
       </section>
 
       <section id="comoFunciona" class="section info-section">

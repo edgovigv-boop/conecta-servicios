@@ -1,61 +1,57 @@
-# Conecta Servicios v4.1.1 — ruta de tiendas y negocios locales
+# Conecta Servicios v4.2 — Analítica y enlaces directos
 
 © 2026 Conecta Servicios. Todos los derechos reservados.
 
-Esta versión consolida:
+Esta versión mantiene la base de v4.1.1 e incorpora mejoras clave para promoción y medición.
 
-- Corrección de **Publicaciones cerca de mí**: solo muestra publicaciones con coordenadas dentro del radio elegido.
-- Radio de búsqueda: 10 km, 25 km, 50 km y 100 km.
-- Asistente de descripción sin IA externa: ayuda a redactar, aclarar, resumir o agregar detalles.
-- Enlaces externos visibles para referencias de Facebook/Instagram/redes, sin copiar contenido ajeno.
-- Mantiene ubicación aproximada segura, publicación guiada, diseño moderno, folios, edición admin y protección legal básica.
+## Cambios principales
 
-## Publicación
+- Analítica básica dentro de Supabase.
+- Nueva sección de administración: **Analítica**.
+- Conteo de visitas aproximadas, clics en PUBLICA, publicaciones abiertas, clics a WhatsApp, compartidos y uso de “Publicaciones cerca de mí”.
+- Ranking de publicaciones con más interés.
+- Enlaces directos corregidos para compartir publicaciones por WhatsApp.
+- Al abrir un enlace compartido, la app lleva directo al detalle de la publicación.
+- Si la publicación no está activa o no existe, se muestra un aviso claro.
+- Se registra analítica anónima sin guardar nombres, teléfonos ni ubicación exacta de visitantes.
 
-Subir a GitHub/Vercel:
+## SQL requerido
 
-- index.html
-- styles.css
-- app.js
-- README.md
-- assets/brand-hero.webp
+Antes de subir esta versión a GitHub/Vercel, ejecuta en Supabase:
 
-No requiere SQL nuevo si ya se aplicó el SQL de v4.0.
+```sql
+supabase-v4.2-analitica-enlaces-directos.sql
+```
 
+Este SQL crea la tabla:
 
-## v4.1 — Aprende y emprende
+```text
+eventos_analytics
+```
 
-- Corrige la vista “Publicaciones cerca de mí” para no ocultar registros locales antiguos sin coordenadas.
-- Muestra primero publicaciones con GPS dentro del radio elegido.
-- Agrega como respaldo publicaciones del mismo municipio que aún no tienen latitud/longitud.
-- Evita mezclar otros estados o municipios salvo que realmente estén dentro del radio GPS.
-- No requiere SQL nuevo si ya se aplicó la v4.0.
+## Archivos a subir a GitHub
 
+```text
+index.html
+styles.css
+app.js
+README.md
+assets/brand-hero.webp
+supabase-v4.2-analitica-enlaces-directos.sql
+```
 
-## v4.1 — Aprende y emprende
+El archivo SQL no es necesario para Vercel, pero conviene conservarlo en GitHub como respaldo del proyecto.
 
-Esta versión agrega una sección inicial para ayudar a las personas a convertir habilidades en oportunidades económicas dentro de Conecta Servicios.
+## Mensaje de commit sugerido
 
-Incluye:
+```text
+Actualizar a v4.2 analítica y enlaces directos
+```
 
-- Nueva sección **Aprende y emprende**.
-- 4 rutas principales: Alimentos y ventas, Mensajería y entregas, Limpieza, Reparaciones del hogar.
-- Rutas secundarias: Plomería, Electricidad, Jardinería, Emprender con poco dinero, Cómo publicar mejor, Atención al cliente.
-- Botones para publicar desde cada ruta.
-- Conserva ubicación cercana inteligente, publicaciones compactas, asistente de descripción, enlaces externos, administración y aviso legal.
+## Nota de privacidad
 
-No requiere SQL nuevo si ya está aplicada la estructura de `publicaciones` y el SQL de ubicación de v4.0.
+La analítica es aproximada y anónima. No guarda nombres, teléfonos ni ubicación exacta de visitantes. Mide acciones generales para entender si la promoción genera tráfico e interés real.
 
+## Propiedad
 
-## v4.1.1 — Tiendas y negocios locales
-
-Esta versión agrega una quinta ruta principal dentro de **Aprende y emprende**:
-
-- **Tiendas y negocios locales**.
-- Enfocada en tienditas, panaderías, papelerías, estéticas, ferreterías, tortillerías, negocios de comida y negocios desde casa.
-- Explica qué datos conviene publicar: productos, zona, horario, WhatsApp, enlaces o ubicación.
-- Incluye la idea de resolver entregas a domicilio conectando con mensajeros locales dentro de Conecta Servicios.
-- Agrega botón **Publicar mi negocio**.
-- Agrega botón **Buscar mensajeros locales** para ir directo a publicaciones de mensajería y envíos.
-
-No requiere SQL nuevo.
+Este proyecto, su código fuente, diseño, textos, estructura funcional, documentación e interfaz son propiedad de Conecta Servicios. Queda prohibida la copia, reproducción, distribución, modificación, explotación comercial o uso no autorizado, total o parcial, por cualquier medio.

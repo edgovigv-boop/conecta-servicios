@@ -750,3 +750,66 @@ body {
 .learning-card.business-route .route-icon{background:#eaf8ee}
 .route-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .route-actions .btn-small{margin-top:0}
+
+/* v4.2 Analítica y enlaces directos */
+.link-button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--purple);
+  font-weight: 800;
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+}
+.analytics-block {
+  background: #fff;
+  border: 1px solid rgba(93, 54, 184, .12);
+  border-radius: 24px;
+  padding: 16px;
+  margin: 14px 0;
+  box-shadow: 0 12px 26px rgba(46, 24, 96, .08);
+}
+.analytics-block h3 { margin: 0 0 12px; color: var(--ink); }
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.metric-card {
+  border-radius: 18px;
+  padding: 14px;
+  background: linear-gradient(135deg, rgba(108,70,214,.10), rgba(41,158,55,.10));
+  border: 1px solid rgba(93, 54, 184, .10);
+}
+.metric-card strong {
+  display: block;
+  font-size: 1.55rem;
+  color: var(--purple);
+  line-height: 1;
+}
+.metric-card span {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: .88rem;
+}
+.analytics-row {
+  display: grid;
+  gap: 3px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(46, 24, 96, .08);
+}
+.analytics-row:last-child { border-bottom: 0; }
+.analytics-row strong { color: var(--purple); }
+.analytics-row span { color: var(--ink); font-size: .92rem; }
+.analytics-row small { color: var(--muted); }
+.shared-open-note {
+  background: rgba(108,70,214,.10);
+  border: 1px solid rgba(108,70,214,.18);
+  color: var(--purple);
+  border-radius: 16px;
+  padding: 10px 12px;
+  margin: 10px 0;
+  font-weight: 700;
+}
