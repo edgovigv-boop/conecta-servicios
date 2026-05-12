@@ -20,7 +20,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#6f42c1" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=4.1.1-negocios-locales" />
+  <link rel="stylesheet" href="styles.css?v=4.3-oportunidades" />
 </head>
 <body>
   <div class="app-shell">
@@ -61,6 +61,9 @@ Todo uso requiere autorización expresa y por escrito del titular.
           </button>
           <button class="shortcut-card ride" onclick="applyCategoryAndShow('Viajes compartidos')">
             <span>🚘</span><strong>Viajes compartidos</strong><b>›</b>
+          </button>
+          <button class="shortcut-card opportunities" onclick="showSection('oportunidades')">
+            <span>🎯</span><strong>Oportunidades para ti</strong><b>›</b>
           </button>
         </div>
 
@@ -306,6 +309,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <button class="mini-card" onclick="showSection('reglas')"><strong>Reglas y seguridad</strong><small>Antes de contactar</small></button>
           <button class="mini-card" onclick="showSection('planes')"><strong>Planes y destacados</strong><small>Solicitar por WhatsApp</small></button>
           <button class="mini-card" onclick="showSection('notificaciones')"><strong>Notificaciones</strong><small>Elige avisos útiles</small></button>
+          <button class="mini-card" onclick="showSection('oportunidades')"><strong>Oportunidades para ti</strong><small>Publicaciones perfiladas</small></button>
           <button class="mini-card" onclick="showSection('aprende')"><strong>Aprende y emprende</strong><small>Rutas para generar ingresos</small></button>
         </div>
         <div id="adminEntry" class="admin-entry hidden">
@@ -440,6 +444,53 @@ Todo uso requiere autorización expresa y por escrito del titular.
         </form>
       </section>
 
+
+      <section id="oportunidades" class="section info-section opportunities-section">
+        <div class="opportunities-hero">
+          <span class="learn-badge">Avisos inteligentes locales</span>
+          <h2>Oportunidades para ti</h2>
+          <p>Elige qué te interesa y la app te mostrará publicaciones relacionadas con tu zona, sin mensajes masivos ni compartir tu ubicación exacta.</p>
+        </div>
+
+        <div class="notice-card slim">
+          <strong>Primera etapa segura</strong>
+          <p>Por ahora las oportunidades se muestran dentro de la app. Más adelante podremos avanzar a notificaciones o WhatsApp automático solo con consentimiento claro.</p>
+        </div>
+
+        <div class="form-card opportunity-settings">
+          <h3>Configura tus intereses</h3>
+          <p class="muted">Marca las categorías que quieres ver primero.</p>
+          <div class="checkbox-stack opportunity-checks">
+            <label><input type="checkbox" name="oppCategory" value="Mensajería y envíos" checked /> 📦 Mensajería, envíos y mandados</label>
+            <label><input type="checkbox" name="oppCategory" value="Viajes compartidos" checked /> 🚘 Viajes compartidos</label>
+            <label><input type="checkbox" name="oppCategory" value="General" checked /> 🛠 Servicios, oficios y ayuda local</label>
+            <label><input type="checkbox" name="oppKeyword" value="trabajo empleo vacante busco trabajo" /> 💼 Trabajo y oportunidades de empleo</label>
+            <label><input type="checkbox" name="oppKeyword" value="tienda negocio panadería papelería estética ferretería tortillería" /> 🏪 Tiendas y negocios locales</label>
+            <label><input type="checkbox" name="oppCategory" value="Redes sociales" /> 🔗 Enlaces vistos en redes</label>
+          </div>
+          <div class="form-grid">
+            <label>Estado
+              <select id="oppState" data-state-select data-blank="true" data-default="México"></select>
+            </label>
+            <label>Municipio o zona
+              <input id="oppMunicipality" type="text" value="Chapultepec" placeholder="Ej. Chapultepec o vacío para todo el estado" />
+            </label>
+          </div>
+          <div class="dialog-actions">
+            <button class="btn-small btn-purple" type="button" onclick="saveOpportunityPreferences()">Guardar intereses</button>
+            <button class="btn-small btn-green" type="button" onclick="renderOpportunities(true)">Ver oportunidades</button>
+          </div>
+        </div>
+
+        <div class="opportunity-results-header">
+          <div>
+            <h3>Coincidencias recomendadas</h3>
+            <p id="opportunitySummary" class="filter-summary">Configura tus intereses para ver publicaciones relacionadas.</p>
+          </div>
+          <button class="btn-small btn-outline" onclick="renderOpportunities(true)">Actualizar</button>
+        </div>
+        <div id="opportunitiesList" class="compact-list opportunities-list"></div>
+      </section>
 
       <section id="aprende" class="section info-section learn-section">
         <div class="learn-hero">
@@ -576,8 +627,8 @@ Todo uso requiere autorización expresa y por escrito del titular.
       <button onclick="showSection('inicio')">🏠<span>Inicio</span></button>
       <button onclick="showSection('publicaciones')">🔎<span>Publicaciones</span></button>
       <button onclick="startWizard()">➕<span>Publica</span></button>
+      <button onclick="showSection('oportunidades')">🎯<span>Oportunidades</span></button>
       <button onclick="showSection('aprende')">📚<span>Aprende</span></button>
-      <button onclick="showSection('oficina')">🏢<span>Oficina</span></button>
     </nav>
   </div>
 
@@ -601,6 +652,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.1.1-negocios-locales"></script>
+  <script src="app.js?v=4.3-oportunidades"></script>
 </body>
 </html>

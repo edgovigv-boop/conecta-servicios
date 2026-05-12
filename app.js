@@ -28,6 +28,7 @@ const BLOCKED_WORDS = ["droga","armas","arma","sexo","sexual","escort","fraude",
 const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v41";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
+const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -238,13 +239,14 @@ function showSection(id, push = true) {
   currentSection = id;
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   target.classList.add("active");
-  const titles = { inicio:"Conecta Servicios", registro:"Publica", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica" };
+  const titles = { inicio:"Conecta Servicios", registro:"Publica", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades" };
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
   renderAll();
   trackEvent("vista_seccion", null, { seccion: id });
   if (id === "analitica" && adminUnlocked) loadAnalyticsData();
+  if (id === "oportunidades") renderOpportunities(false);
 }
 function goBack() {
   if (currentSection === "inicio") {
@@ -670,7 +672,7 @@ function renderPublications() {
   if (count) count.textContent = publicationsCache.length;
 }
 function renderLoading() { const list = document.getElementById("publicationsList"); if (list) list.innerHTML = `<div class="empty-state">Cargando registros...</div>`; }
-function renderAll() { renderPublications(); updateHomeCounts(); if (adminUnlocked) renderAdminPublications(); }
+function renderAll() { renderPublications(); updateHomeCounts(); renderOpportunities(false); if (adminUnlocked) renderAdminPublications(); }
 function updateHomeCounts() { const count = document.getElementById("publicationsCount"); if (count) count.textContent = publicationsCache.length; }
 function contactPublication(id) {
   const item = publicationsCache.find(p => p.id === id) || adminCache.find(p => p.id === id);
@@ -990,6 +992,123 @@ function startLearningPublication(routeName) {
 }
 
 
+
+function defaultOpportunityPreferences() {
+  return {
+    categories: ["Mensajería y envíos", "Viajes compartidos", "General"],
+    keywords: [],
+    state: DEFAULT_STATE,
+    municipality: DEFAULT_MUNICIPALITY
+  };
+}
+function getOpportunityPreferences() {
+  try { return { ...defaultOpportunityPreferences(), ...(JSON.parse(localStorage.getItem(OPPORTUNITY_PREFS_KEY) || "{}")) }; }
+  catch { return defaultOpportunityPreferences(); }
+}
+function renderOpportunitySettings() {
+  const prefs = getOpportunityPreferences();
+  document.querySelectorAll('input[name="oppCategory"]').forEach(input => input.checked = prefs.categories.includes(input.value));
+  document.querySelectorAll('input[name="oppKeyword"]').forEach(input => input.checked = (prefs.keywords || []).includes(input.value));
+  const state = document.getElementById("oppState");
+  const municipality = document.getElementById("oppMunicipality");
+  if (state) state.value = prefs.state || "";
+  if (municipality) municipality.value = prefs.municipality || "";
+}
+function saveOpportunityPreferences() {
+  const categories = Array.from(document.querySelectorAll('input[name="oppCategory"]:checked')).map(i => i.value);
+  const keywords = Array.from(document.querySelectorAll('input[name="oppKeyword"]:checked')).map(i => i.value);
+  const prefs = {
+    categories: categories.length ? categories : ["General"],
+    keywords,
+    state: document.getElementById("oppState")?.value || "",
+    municipality: document.getElementById("oppMunicipality")?.value.trim() || ""
+  };
+  localStorage.setItem(OPPORTUNITY_PREFS_KEY, JSON.stringify(prefs));
+  trackEvent("guardar_oportunidades", null, { categorias: prefs.categories, municipio: prefs.municipality, estado_nombre: prefs.state });
+  renderOpportunities(true);
+  showToast("Intereses guardados");
+}
+function opportunityScore(item, prefs) {
+  let score = 0;
+  const haystack = normalize([item.title, item.description, item.category, item.subcategory, item.intent, item.municipality, item.locality, item.route, item.transport].join(" "));
+  const categoryMatch = (prefs.categories || []).includes(item.category);
+  if (categoryMatch) score += 6;
+  for (const group of (prefs.keywords || [])) {
+    const words = group.split(/\s+/).map(normalize).filter(Boolean);
+    if (words.some(w => haystack.includes(w))) score += 5;
+  }
+  if (prefs.state && normalize(item.state) === normalize(prefs.state)) score += 2;
+  if (prefs.municipality && normalize(item.municipality).includes(normalize(prefs.municipality))) score += 4;
+  if (normalize(item.intent).includes("busco") || normalize(item.intent).includes("necesito")) score += 1;
+  if (!categoryMatch && !(prefs.keywords || []).length) score = 0;
+  return score;
+}
+function opportunityReason(item, prefs) {
+  const reasons = [];
+  if ((prefs.categories || []).includes(item.category)) reasons.push(item.category);
+  if (prefs.municipality && normalize(item.municipality).includes(normalize(prefs.municipality))) reasons.push("tu municipio");
+  if (prefs.state && normalize(item.state) === normalize(prefs.state) && !reasons.includes("tu municipio")) reasons.push(item.state);
+  if (!reasons.length) reasons.push("interés relacionado");
+  return reasons.join(" · ");
+}
+function opportunityCard(item, reason) {
+  const icon = categoryIcon(item.category);
+  const meta = [item.municipality, item.state, folio(item)].filter(Boolean).join(" · ");
+  return `<article class="compact-publication opportunity-card" id="opp-${item.id}">
+    <button class="compact-summary" type="button" onclick="toggleOpportunityDetail('${item.id}')">
+      <span class="compact-icon">${icon}</span>
+      <span><span class="compact-title">${escapeHtml(item.title)}</span><span class="compact-meta">${escapeHtml(meta)} · ${maskPhone(item.phone)} · 🎯 ${escapeHtml(reason)}</span></span>
+      <span class="compact-chevron">›</span>
+    </button>
+    <div class="compact-detail">
+      <span class="category-badge">🎯 Oportunidad recomendada</span>
+      <span class="category-badge">${icon} ${escapeHtml(item.category)}</span>
+      <p><strong>Por qué aparece:</strong> coincide con ${escapeHtml(reason)}.</p>
+      <p><strong>Publicado por:</strong> ${escapeHtml(item.name)}</p>
+      <p class="description">${linkify(item.description)}</p>
+      <p><strong>Contacto:</strong> ${maskPhone(item.phone)} · <strong>Costo:</strong> ${money(item.budget)}</p>
+      <div class="detail-actions">
+        ${cleanPhone(item.phone) ? `<button class="btn-small btn-green" onclick="contactPublication('${item.id}')">WhatsApp</button>` : ""}
+        <button class="btn-small btn-outline" onclick="sharePublication('${item.id}')">Compartir</button>
+        <button class="btn-small btn-ghost" onclick="showSection('publicaciones')">Ver más publicaciones</button>
+      </div>
+    </div>
+  </article>`;
+}
+function toggleOpportunityDetail(id) {
+  const card = document.getElementById(`opp-${id}`);
+  if (!card) return;
+  const willOpen = !card.classList.contains("open");
+  card.classList.toggle("open");
+  if (willOpen) {
+    const item = publicationsCache.find(p => p.id === id);
+    if (item) trackEvent("oportunidad_abierta", item, { origen: "oportunidades" });
+  }
+}
+function renderOpportunities(scrollToList = false) {
+  const list = document.getElementById("opportunitiesList");
+  const summary = document.getElementById("opportunitySummary");
+  if (!list) return;
+  const prefs = getOpportunityPreferences();
+  renderOpportunitySettings();
+  const ranked = publicationsCache
+    .map(item => ({ item, score: opportunityScore(item, prefs) }))
+    .filter(row => row.score > 0)
+    .sort((a,b) => b.score - a.score || String(b.item.createdAt).localeCompare(String(a.item.createdAt)))
+    .slice(0, 20);
+  if (summary) {
+    const place = prefs.municipality ? `${prefs.municipality}, ${prefs.state || ""}` : (prefs.state || "Todo México");
+    summary.textContent = ranked.length ? `Encontramos ${ranked.length} oportunidades relacionadas con tus intereses en ${place}.` : `Aún no encontramos coincidencias con tus intereses en ${place}. Prueba ampliar municipio o categorías.`;
+  }
+  list.innerHTML = ranked.length
+    ? ranked.map(row => opportunityCard(row.item, opportunityReason(row.item, prefs))).join("")
+    : `<div class="empty-state">Todavía no hay oportunidades con esos intereses. Puedes revisar Publicaciones o cambiar tus preferencias.</div>`;
+  if (scrollToList) {
+    trackEvent("click_oportunidades", null, { municipio: prefs.municipality, estado_nombre: prefs.state });
+    list.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
 async function loadAnalyticsData() {
   const panel = document.getElementById("analyticsPanel");
   if (panel) panel.innerHTML = `<div class="empty-state">Cargando analítica...</div>`;
@@ -1045,7 +1164,8 @@ function renderAnalytics() {
         ${renderMetric("publicaciones abiertas", countEvents(rows7, "publicacion_abierta"))}
         ${renderMetric("clics a WhatsApp", countEvents(rows7, "click_whatsapp"))}
         ${renderMetric("compartidos", countEvents(rows7, "click_compartir"))}
-        ${renderMetric("Aprende y emprende", rows7.filter(r => r.evento === "vista_seccion" && r.detalle?.seccion === "aprende").length)}</div>
+        ${renderMetric("Aprende y emprende", rows7.filter(r => r.evento === "vista_seccion" && r.detalle?.seccion === "aprende").length)}
+        ${renderMetric("Oportunidades", rows7.filter(r => r.evento === "vista_seccion" && r.detalle?.seccion === "oportunidades").length + countEvents(rows7, "click_oportunidades"))}</div>
     </div>
     <div class="analytics-block">
       <h3>Publicaciones con más interés</h3>
@@ -1129,6 +1249,7 @@ function init() {
   updateCategoryDetails();
   initMobileFormComfort();
   renderNotificationSettings();
+  renderOpportunitySettings();
   trackEvent("visita_home");
   loadRemoteData().then(maybeOpenSharedPublication);
   setInterval(() => loadRemoteData({ silent: true }), 60000);

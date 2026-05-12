@@ -1,4 +1,4 @@
-# Conecta Servicios v4.2 — Analítica y enlaces directos
+# Conecta Servicios v4.3 — Analítica y enlaces directos
 
 © 2026 Conecta Servicios. Todos los derechos reservados.
 
@@ -55,3 +55,19 @@ La analítica es aproximada y anónima. No guarda nombres, teléfonos ni ubicaci
 ## Propiedad
 
 Este proyecto, su código fuente, diseño, textos, estructura funcional, documentación e interfaz son propiedad de Conecta Servicios. Queda prohibida la copia, reproducción, distribución, modificación, explotación comercial o uso no autorizado, total o parcial, por cualquier medio.
+
+
+## v4.3 — Oportunidades para ti
+
+Esta versión agrega una sección de oportunidades inteligentes locales dentro de la app.
+
+Incluye:
+
+- Nueva sección **Oportunidades para ti**.
+- Preferencias locales por categoría, estado y municipio.
+- Coincidencias recomendadas con publicaciones activas.
+- Resultados explicados con el motivo de coincidencia.
+- Analítica de uso de la sección.
+- Sin WhatsApp automático todavía; se mantiene como primera etapa segura y con consentimiento.
+
+No requiere SQL nuevo si ya se ejecutó el SQL de v4.2 para analítica.
