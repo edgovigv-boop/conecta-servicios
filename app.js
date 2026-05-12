@@ -887,6 +887,7 @@ function startLearningPublication(routeName) {
   const title = document.getElementById("pubTitle");
   if (title && !title.value) {
     if (normalized.includes("alimentos")) title.value = "Ofrezco alimentos o ventas locales";
+    else if (normalized.includes("tienda") || normalized.includes("negocio")) title.value = "Publico mi tienda o negocio local";
     else if (normalized.includes("limpieza")) title.value = "Ofrezco servicio de limpieza";
     else if (normalized.includes("reparaciones")) title.value = "Ofrezco reparaciones del hogar";
     else if (normalized.includes("plomeria")) title.value = "Ofrezco plomería básica";

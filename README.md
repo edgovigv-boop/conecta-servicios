@@ -1,4 +1,4 @@
-# Conecta Servicios v4.1 — cercanía precisa, publicación asistida y enlaces externos
+# Conecta Servicios v4.1.1 — ruta de tiendas y negocios locales
 
 © 2026 Conecta Servicios. Todos los derechos reservados.
 
@@ -45,3 +45,17 @@ Incluye:
 - Conserva ubicación cercana inteligente, publicaciones compactas, asistente de descripción, enlaces externos, administración y aviso legal.
 
 No requiere SQL nuevo si ya está aplicada la estructura de `publicaciones` y el SQL de ubicación de v4.0.
+
+
+## v4.1.1 — Tiendas y negocios locales
+
+Esta versión agrega una quinta ruta principal dentro de **Aprende y emprende**:
+
+- **Tiendas y negocios locales**.
+- Enfocada en tienditas, panaderías, papelerías, estéticas, ferreterías, tortillerías, negocios de comida y negocios desde casa.
+- Explica qué datos conviene publicar: productos, zona, horario, WhatsApp, enlaces o ubicación.
+- Incluye la idea de resolver entregas a domicilio conectando con mensajeros locales dentro de Conecta Servicios.
+- Agrega botón **Publicar mi negocio**.
+- Agrega botón **Buscar mensajeros locales** para ir directo a publicaciones de mensajería y envíos.
+
+No requiere SQL nuevo.

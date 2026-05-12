@@ -744,3 +744,9 @@ body {
 .learn-callout{background:#eaf8ed;border:1px solid #ccefd3;color:#0b6f25;border-radius:22px;padding:16px;margin-bottom:16px}
 .learn-callout p{margin:6px 0 0}.learning-grid{display:grid;gap:14px;margin:12px 0 18px}.learning-card{background:#fff;border:1px solid var(--line);border-radius:24px;padding:16px;display:grid;grid-template-columns:auto 1fr;gap:14px;box-shadow:0 8px 24px #59338a10}.learning-card.featured{border-left:6px solid var(--morado)}.learning-card:nth-child(even){border-left-color:var(--verde)}.route-icon{width:52px;height:52px;border-radius:18px;display:grid;place-items:center;background:#f3edff;font-size:1.8rem}.learning-card small{color:var(--morado);font-weight:900;text-transform:uppercase;letter-spacing:.04em}.learning-card h4{margin:4px 0 6px;font-size:1.15rem;color:var(--morado-oscuro)}.learning-card p{margin:0 0 8px;color:#574a67;line-height:1.4}.learning-card ul{margin:8px 0 12px;padding-left:18px;color:#4c4655}.secondary-routes{display:grid;gap:10px;margin:12px 0 16px}.secondary-routes button{border:1px solid var(--line);background:#fff;border-radius:18px;padding:14px;text-align:left;font-weight:850;color:var(--texto);box-shadow:0 6px 18px #59338a0e}.learning-guide{scroll-margin:90px}.future-box{border-style:dashed;background:#fffaf0}.bottom-nav button{font-size:1.05rem}.bottom-nav span{font-size:.66rem}
 @media(max-width:360px){.bottom-nav span{font-size:.6rem}.learning-card{grid-template-columns:1fr}.route-icon{width:48px;height:48px}}
+
+/* v4.1.1 - Ruta de tiendas y negocios locales */
+.learning-card.business-route{border-left-color:var(--verde);background:linear-gradient(135deg,#ffffff 0%,#f7fff9 100%)}
+.learning-card.business-route .route-icon{background:#eaf8ee}
+.route-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.route-actions .btn-small{margin-top:0}
