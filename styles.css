@@ -848,3 +848,34 @@ body {
   .opportunity-results-header { flex-direction: column; }
   .opportunity-results-header .btn-small { width: 100%; }
 }
+
+/* v4.4 - App instalable / PWA */
+.install-card {
+  margin: 16px 0 12px;
+  padding: 16px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(111,66,193,.10), rgba(40,167,69,.10));
+  border: 1px solid rgba(111,66,193,.12);
+  box-shadow: 0 10px 30px rgba(35, 20, 70, .08);
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+}
+.install-card strong { color: var(--morado, #6f42c1); font-size: 1rem; }
+.install-card p { margin: 4px 0 0; color: #5f6470; font-size: .88rem; line-height: 1.35; }
+.install-card.installed { background: rgba(40,167,69,.10); }
+.install-card.installed strong { color: var(--verde, #28a745); }
+.install-help-card {
+  padding: 16px;
+  margin: 12px 0;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid rgba(111,66,193,.12);
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+}
+.install-help-card strong { color: var(--morado, #6f42c1); }
+@media (max-width: 390px) {
+  .install-card { grid-template-columns: 1fr; }
+  .install-card .btn-small { width: 100%; }
+}

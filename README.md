@@ -1,73 +1,46 @@
-# Conecta Servicios v4.3 — Analítica y enlaces directos
+# Conecta Servicios — v4.4 App instalable
 
 © 2026 Conecta Servicios. Todos los derechos reservados.
 
-Esta versión mantiene la base de v4.1.1 e incorpora mejoras clave para promoción y medición.
+Esta versión convierte Conecta Servicios en una aplicación web instalable tipo PWA.
 
 ## Cambios principales
 
-- Analítica básica dentro de Supabase.
-- Nueva sección de administración: **Analítica**.
-- Conteo de visitas aproximadas, clics en PUBLICA, publicaciones abiertas, clics a WhatsApp, compartidos y uso de “Publicaciones cerca de mí”.
-- Ranking de publicaciones con más interés.
-- Enlaces directos corregidos para compartir publicaciones por WhatsApp.
-- Al abrir un enlace compartido, la app lleva directo al detalle de la publicación.
-- Si la publicación no está activa o no existe, se muestra un aviso claro.
-- Se registra analítica anónima sin guardar nombres, teléfonos ni ubicación exacta de visitantes.
+- Configuración PWA con `manifest.json`.
+- Service Worker básico para instalación y carga de archivos principales.
+- Íconos de app para Android, iPhone y navegadores compatibles.
+- Botón “Instalar app” en la pantalla principal.
+- Sección de ayuda para instalar en Android y iPhone.
+- Modo pantalla completa cuando se abre desde el ícono instalado.
+- Mantiene Supabase, publicaciones, analítica, oportunidades, cercanía inteligente y Aprende y emprende.
 
-## SQL requerido
+## Archivos nuevos/importantes
 
-Antes de subir esta versión a GitHub/Vercel, ejecuta en Supabase:
+- `manifest.json`
+- `service-worker.js`
+- `assets/icon-192.png`
+- `assets/icon-512.png`
+- `assets/maskable-512.png`
+- `assets/apple-touch-icon.png`
+- `assets/brand-hero.webp`
 
-```sql
-supabase-v4.2-analitica-enlaces-directos.sql
-```
+## Para publicar en GitHub/Vercel
 
-Este SQL crea la tabla:
+Subir/reemplazar:
 
-```text
-eventos_analytics
-```
+- `index.html`
+- `styles.css`
+- `app.js`
+- `README.md`
+- `LICENSE`
+- `manifest.json`
+- `service-worker.js`
+- carpeta `assets`
 
-## Archivos a subir a GitHub
+Mensaje sugerido de commit:
 
-```text
-index.html
-styles.css
-app.js
-README.md
-assets/brand-hero.webp
-supabase-v4.2-analitica-enlaces-directos.sql
-```
+`Actualizar a v4.4 app instalable`
 
-El archivo SQL no es necesario para Vercel, pero conviene conservarlo en GitHub como respaldo del proyecto.
+## Nota
 
-## Mensaje de commit sugerido
-
-```text
-Actualizar a v4.2 analítica y enlaces directos
-```
-
-## Nota de privacidad
-
-La analítica es aproximada y anónima. No guarda nombres, teléfonos ni ubicación exacta de visitantes. Mide acciones generales para entender si la promoción genera tráfico e interés real.
-
-## Propiedad
-
-Este proyecto, su código fuente, diseño, textos, estructura funcional, documentación e interfaz son propiedad de Conecta Servicios. Queda prohibida la copia, reproducción, distribución, modificación, explotación comercial o uso no autorizado, total o parcial, por cualquier medio.
-
-
-## v4.3 — Oportunidades para ti
-
-Esta versión agrega una sección de oportunidades inteligentes locales dentro de la app.
-
-Incluye:
-
-- Nueva sección **Oportunidades para ti**.
-- Preferencias locales por categoría, estado y municipio.
-- Coincidencias recomendadas con publicaciones activas.
-- Resultados explicados con el motivo de coincidencia.
-- Analítica de uso de la sección.
-- Sin WhatsApp automático todavía; se mantiene como primera etapa segura y con consentimiento.
-
-No requiere SQL nuevo si ya se ejecutó el SQL de v4.2 para analítica.
+No requiere SQL nuevo si ya se aplicaron las migraciones anteriores de Supabase.

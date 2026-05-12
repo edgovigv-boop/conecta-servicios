@@ -29,6 +29,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v41";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
+const PWA_VERSION = "v4.4-app-instalable";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -44,6 +45,7 @@ let nearbyFallbackState = DEFAULT_STATE;
 let nearbyFallbackMunicipality = DEFAULT_MUNICIPALITY;
 let pendingSharedPublicationId = null;
 let analyticsCache = [];
+let deferredInstallPrompt = null;
 const TOTAL_STEPS = 7;
 
 function cleanPhone(phone) { return String(phone || "").replace(/\D/g, ""); }
@@ -1196,6 +1198,61 @@ function showLearningGuide(type) {
   guide.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
+
+function isStandaloneMode() {
+  return window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator.standalone === true;
+}
+function updateInstallCard() {
+  const card = document.getElementById("installCard");
+  const button = document.getElementById("installAppButton");
+  if (!card) return;
+  const installed = isStandaloneMode();
+  card.classList.toggle("installed", installed);
+  if (installed) {
+    card.querySelector("p").textContent = "Ya estás usando Conecta Servicios como app instalada.";
+    if (button) button.textContent = "Instalada";
+    if (button) button.disabled = true;
+  } else if (button && !deferredInstallPrompt) {
+    button.textContent = "Instalar app";
+  }
+}
+async function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+  try {
+    await navigator.serviceWorker.register("service-worker.js");
+  } catch (error) {
+    console.warn("No se pudo registrar el service worker", error);
+  }
+}
+async function installApp() {
+  trackEvent("click_instalar_app");
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    const choice = await deferredInstallPrompt.userChoice.catch(() => null);
+    deferredInstallPrompt = null;
+    updateInstallCard();
+    if (choice?.outcome === "accepted") showToast("Instalación iniciada. Revisa tu pantalla de inicio.");
+    else showToast("Puedes instalarla después desde el menú del navegador.");
+    return;
+  }
+  showInstallHelp();
+}
+function showInstallHelp() {
+  showSection("instalarApp");
+  showToast("Te mostramos cómo instalarla en tu celular.");
+}
+window.addEventListener("beforeinstallprompt", event => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  updateInstallCard();
+});
+window.addEventListener("appinstalled", () => {
+  trackEvent("app_instalada");
+  deferredInstallPrompt = null;
+  updateInstallCard();
+  showToast("Conecta Servicios quedó instalada.");
+});
+
 function initMobileFormComfort() {
   const appShell = document.querySelector(".app-shell");
   const form = document.getElementById("publicationForm");
@@ -1248,6 +1305,8 @@ function init() {
   updateWizard();
   updateCategoryDetails();
   initMobileFormComfort();
+  registerServiceWorker();
+  updateInstallCard();
   renderNotificationSettings();
   renderOpportunitySettings();
   trackEvent("visita_home");
