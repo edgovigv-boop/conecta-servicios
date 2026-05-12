@@ -1,4 +1,4 @@
-# Conecta Servicios v4.0.3 — cercanía precisa, publicación asistida y enlaces externos
+# Conecta Servicios v4.1 — cercanía precisa, publicación asistida y enlaces externos
 
 © 2026 Conecta Servicios. Todos los derechos reservados.
 
@@ -23,10 +23,25 @@ Subir a GitHub/Vercel:
 No requiere SQL nuevo si ya se aplicó el SQL de v4.0.
 
 
-## v4.0.3 — cercanía inteligente
+## v4.1 — Aprende y emprende
 
 - Corrige la vista “Publicaciones cerca de mí” para no ocultar registros locales antiguos sin coordenadas.
 - Muestra primero publicaciones con GPS dentro del radio elegido.
 - Agrega como respaldo publicaciones del mismo municipio que aún no tienen latitud/longitud.
 - Evita mezclar otros estados o municipios salvo que realmente estén dentro del radio GPS.
 - No requiere SQL nuevo si ya se aplicó la v4.0.
+
+
+## v4.1 — Aprende y emprende
+
+Esta versión agrega una sección inicial para ayudar a las personas a convertir habilidades en oportunidades económicas dentro de Conecta Servicios.
+
+Incluye:
+
+- Nueva sección **Aprende y emprende**.
+- 4 rutas principales: Alimentos y ventas, Mensajería y entregas, Limpieza, Reparaciones del hogar.
+- Rutas secundarias: Plomería, Electricidad, Jardinería, Emprender con poco dinero, Cómo publicar mejor, Atención al cliente.
+- Botones para publicar desde cada ruta.
+- Conserva ubicación cercana inteligente, publicaciones compactas, asistente de descripción, enlaces externos, administración y aviso legal.
+
+No requiere SQL nuevo si ya está aplicada la estructura de `publicaciones` y el SQL de ubicación de v4.0.

@@ -20,7 +20,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#6f42c1" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=4.0.1-cercania-precisa" />
+  <link rel="stylesheet" href="styles.css?v=4.1-aprende-emprende" />
 </head>
 <body>
   <div class="app-shell">
@@ -306,6 +306,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <button class="mini-card" onclick="showSection('reglas')"><strong>Reglas y seguridad</strong><small>Antes de contactar</small></button>
           <button class="mini-card" onclick="showSection('planes')"><strong>Planes y destacados</strong><small>Solicitar por WhatsApp</small></button>
           <button class="mini-card" onclick="showSection('notificaciones')"><strong>Notificaciones</strong><small>Elige avisos útiles</small></button>
+          <button class="mini-card" onclick="showSection('aprende')"><strong>Aprende y emprende</strong><small>Rutas para generar ingresos</small></button>
         </div>
         <div id="adminEntry" class="admin-entry hidden">
           <hr />
@@ -424,6 +425,103 @@ Todo uso requiere autorización expresa y por escrito del titular.
         </form>
       </section>
 
+
+      <section id="aprende" class="section info-section learn-section">
+        <div class="learn-hero">
+          <span class="learn-badge">Nueva sección</span>
+          <h2>Aprende y emprende</h2>
+          <p>Rutas prácticas para mejorar habilidades, ofrecer servicios y publicar mejor dentro de Conecta Servicios.</p>
+        </div>
+
+        <div class="learn-callout">
+          <strong>Idea central</strong>
+          <p>Aprende una habilidad, organiza tu servicio, publícalo y conecta con personas de tu zona.</p>
+        </div>
+
+        <h3>Rutas principales para generar ingresos</h3>
+        <div class="learning-grid primary-routes">
+          <article class="learning-card featured">
+            <span class="route-icon">🍲</span>
+            <div>
+              <small>Ruta 1</small>
+              <h4>Alimentos y ventas</h4>
+              <p>Comida casera, pan, postres, antojitos, pedidos por encargo y ventas locales.</p>
+              <ul>
+                <li>Qué puedes ofrecer</li>
+                <li>Cómo presentar tu producto</li>
+                <li>Cómo publicar y recibir pedidos</li>
+              </ul>
+              <button class="btn-small btn-purple" onclick="startLearningPublication('Alimentos y ventas')">Publicar algo de alimentos</button>
+            </div>
+          </article>
+
+          <article class="learning-card featured">
+            <span class="route-icon">📦</span>
+            <div>
+              <small>Ruta 2</small>
+              <h4>Mensajería y entregas</h4>
+              <p>Mandados, documentos, compras, comida, paquetes y traslados locales.</p>
+              <ul>
+                <li>Medio: a pie, bici, moto, auto o camioneta</li>
+                <li>Zonas y horarios</li>
+                <li>Cómo acordar costos y entregas</li>
+              </ul>
+              <button class="btn-small btn-green" onclick="startLearningPublication('Mensajería y envíos')">Publicar servicio de entregas</button>
+            </div>
+          </article>
+
+          <article class="learning-card featured">
+            <span class="route-icon">🧹</span>
+            <div>
+              <small>Ruta 3</small>
+              <h4>Limpieza de casas o negocios</h4>
+              <p>Limpieza de hogares, locales, patios, terrenos y apoyo posterior a eventos.</p>
+              <ul>
+                <li>Qué tipo de limpieza ofreces</li>
+                <li>Qué materiales necesitas</li>
+                <li>Cómo publicar zonas y horarios</li>
+              </ul>
+              <button class="btn-small btn-purple" onclick="startLearningPublication('Limpieza de casas o negocios')">Publicar servicio de limpieza</button>
+            </div>
+          </article>
+
+          <article class="learning-card featured">
+            <span class="route-icon">🛠</span>
+            <div>
+              <small>Ruta 4</small>
+              <h4>Reparaciones del hogar</h4>
+              <p>Arreglos sencillos, pintura, puertas, muebles, mantenimiento y apoyo general.</p>
+              <ul>
+                <li>Describe qué sabes hacer</li>
+                <li>Define trabajos pequeños o por cotización</li>
+                <li>Publica ejemplos claros de servicio</li>
+              </ul>
+              <button class="btn-small btn-green" onclick="startLearningPublication('Reparaciones del hogar')">Publicar reparación o mantenimiento</button>
+            </div>
+          </article>
+        </div>
+
+        <h3>Más rutas para crecer</h3>
+        <div class="secondary-routes">
+          <button onclick="startLearningPublication('Plomería básica')">🚰 Plomería básica</button>
+          <button onclick="startLearningPublication('Electricidad básica')">💡 Electricidad básica</button>
+          <button onclick="startLearningPublication('Jardinería')">🌿 Jardinería</button>
+          <button onclick="showLearningGuide('emprender')">💡 Emprender con poco dinero</button>
+          <button onclick="showLearningGuide('publicar')">✍️ Cómo publicar mejor tu servicio</button>
+          <button onclick="showLearningGuide('cliente')">🤝 Atención al cliente</button>
+        </div>
+
+        <div id="learningGuide" class="learning-guide notice-card slim">
+          <strong>Guía rápida</strong>
+          <p>Elige una ruta para ver consejos prácticos o publica directamente lo que ofreces.</p>
+        </div>
+
+        <div class="notice-card slim future-box">
+          <strong>Próximamente</strong>
+          <p>Guías para preparar una idea de negocio, mejorar tus publicaciones y buscar apoyos de forma ordenada, sin manejar financiamiento directo dentro de la app por ahora.</p>
+        </div>
+      </section>
+
       <section id="avisoPrivacidad" class="section info-section">
         <h2>Aviso de Privacidad</h2>
         <p>Conecta Servicios recopila nombre público, teléfono, ubicación general y descripción de la publicación para mostrar registros locales y facilitar contacto por WhatsApp. El teléfono se muestra parcialmente oculto dentro de la app.</p>
@@ -445,6 +543,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
       <button onclick="showSection('inicio')">🏠<span>Inicio</span></button>
       <button onclick="showSection('publicaciones')">🔎<span>Publicaciones</span></button>
       <button onclick="startWizard()">➕<span>Publica</span></button>
+      <button onclick="showSection('aprende')">📚<span>Aprende</span></button>
       <button onclick="showSection('oficina')">🏢<span>Oficina</span></button>
     </nav>
   </div>
@@ -469,6 +568,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.0.2-cercania-asistente-redes"></script>
+  <script src="app.js?v=4.1-aprende-emprende"></script>
 </body>
 </html>

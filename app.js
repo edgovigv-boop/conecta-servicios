@@ -25,8 +25,8 @@ const DEFAULT_MUNICIPALITY = "Chapultepec";
 const DEFAULT_LOCALITY = "Chapultepec Centro";
 const STATES = ["Aguascalientes","Baja California","Baja California Sur","Campeche","Chiapas","Chihuahua","Ciudad de México","Coahuila","Colima","Durango","Guanajuato","Guerrero","Hidalgo","Jalisco","México","Michoacán","Morelos","Nayarit","Nuevo León","Oaxaca","Puebla","Querétaro","Quintana Roo","San Luis Potosí","Sinaloa","Sonora","Tabasco","Tamaulipas","Tlaxcala","Veracruz","Yucatán","Zacatecas"];
 const BLOCKED_WORDS = ["droga","armas","arma","sexo","sexual","escort","fraude","estafa","robo","robado","ilegal","marihuana","cocaína","cocaina"];
-const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v403";
-const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v403";
+const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v41";
+const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -203,7 +203,7 @@ function showSection(id, push = true) {
   currentSection = id;
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   target.classList.add("active");
-  const titles = { inicio:"Conecta Servicios", registro:"Publica", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", enlaceExterno:"Enlace externo" };
+  const titles = { inicio:"Conecta Servicios", registro:"Publica", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende" };
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
@@ -388,7 +388,7 @@ function formPayload() {
   };
   const evaluation = evaluatePublication(payload);
   payload.estado = evaluation.status;
-  payload.referencia = evaluation.reasons.length ? `Revisión automática: ${evaluation.reasons.join(", ")}` : "Activación automática v4.0.3";
+  payload.referencia = evaluation.reasons.length ? `Revisión automática: ${evaluation.reasons.join(", ")}` : "Activación automática v4.1";
   return payload;
 }
 function renderPublicationPreview() {
@@ -866,6 +866,57 @@ async function submitExternalLink(event) {
     await loadRemoteData();
     showSection("publicaciones");
   } catch (error) { console.error(error); showToast("No se pudo guardar el enlace"); }
+}
+
+
+function startLearningPublication(routeName) {
+  const normalized = normalize(routeName);
+  startWizard();
+  let category = "General";
+  let intent = "Ofrezco / Tengo disponible";
+  if (normalized.includes("mensajeria") || normalized.includes("entrega")) category = "Mensajería y envíos";
+  document.getElementById("pubCategory").value = category;
+  document.getElementById("pubIntent").value = intent;
+  document.querySelectorAll(".choice-card").forEach(button => {
+    const match = (button.dataset.category || "") === category && normalize(button.dataset.intent || "").includes("ofrezco");
+    button.classList.toggle("selected", match);
+  });
+  updateCategoryDetails();
+  wizardStep = 2;
+  updateWizard();
+  const title = document.getElementById("pubTitle");
+  if (title && !title.value) {
+    if (normalized.includes("alimentos")) title.value = "Ofrezco alimentos o ventas locales";
+    else if (normalized.includes("limpieza")) title.value = "Ofrezco servicio de limpieza";
+    else if (normalized.includes("reparaciones")) title.value = "Ofrezco reparaciones del hogar";
+    else if (normalized.includes("plomeria")) title.value = "Ofrezco plomería básica";
+    else if (normalized.includes("electricidad")) title.value = "Ofrezco electricidad básica";
+    else if (normalized.includes("jardineria")) title.value = "Ofrezco jardinería";
+    else if (normalized.includes("mensajeria") || normalized.includes("entrega")) title.value = "Ofrezco mensajería y entregas";
+  }
+  showToast(`Ruta seleccionada: ${routeName}. Completa tus datos para publicar.`);
+}
+
+function showLearningGuide(type) {
+  const guide = document.getElementById("learningGuide");
+  if (!guide) return;
+  const guides = {
+    emprender: {
+      title: "💡 Emprender con poco dinero",
+      text: "Empieza con lo que ya sabes hacer, define a quién ayudas, calcula costos básicos, ofrece algo claro y publica una primera versión sencilla. No esperes tener todo perfecto para conseguir tus primeros clientes."
+    },
+    publicar: {
+      title: "✍️ Cómo publicar mejor tu servicio",
+      text: "Usa un título directo, explica zona, horarios, qué incluye tu servicio, costo aproximado si aplica y agrega enlaces útiles. Evita textos muy largos o confusos."
+    },
+    cliente: {
+      title: "🤝 Atención al cliente",
+      text: "Responde rápido, confirma lugar y horario, explica condiciones antes de aceptar, cumple lo prometido y pide recomendaciones cuando el servicio salga bien."
+    }
+  };
+  const item = guides[type] || guides.publicar;
+  guide.innerHTML = `<strong>${item.title}</strong><p>${item.text}</p><button class="btn-small btn-purple" onclick="startWizard()">Publicar ahora</button>`;
+  guide.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 function initMobileFormComfort() {
