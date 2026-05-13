@@ -970,3 +970,21 @@ body {
 /* v4.6 - Oportunidades con lenguaje humano */
 .human-opportunities h3{color:var(--morado-oscuro);font-size:1.15rem;margin-top:4px}.human-need-grid{display:grid;gap:12px;margin:14px 0 16px}.need-option{display:grid!important;grid-template-columns:auto 1fr;gap:12px;align-items:start;background:linear-gradient(135deg,#fff,#fbf8ff);border:1px solid rgba(111,66,193,.14);border-radius:20px;padding:14px;box-shadow:0 8px 20px rgba(89,51,138,.08);font-weight:500!important}.need-option input{width:auto!important;margin-top:5px!important;accent-color:var(--morado)}.need-option strong{display:block;color:var(--morado-oscuro);font-size:1rem}.need-option small{display:block;color:#655b72;line-height:1.35;margin-top:3px}.why-update{width:100%;margin:4px 0 16px;text-align:center}.update-hero{margin-bottom:16px}.article-card{background:#fff;border:1px solid var(--line);border-radius:28px;padding:20px;box-shadow:0 12px 32px rgba(89,51,138,.12)}.article-card h3{color:var(--morado-oscuro);margin:16px 0 6px}.article-card p{line-height:1.55;color:#4d4658}.article-points{display:grid;gap:8px;background:#f6fff8;border:1px solid #d7f3de;border-radius:20px;padding:14px;margin:14px 0}.article-points span{font-weight:750;color:#0b6f25}.learning-opportunity-card{border:1px solid rgba(34,164,71,.2)}.learning-opportunity-card .compact-summary{border-left:5px solid var(--verde)!important}.compact-summary.no-toggle{cursor:default}
 @media(min-width:420px){.human-need-grid{grid-template-columns:1fr}.need-option{min-height:86px}}
+
+
+.admin-classification {
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.16);
+  border-radius: 14px;
+  padding: 10px 12px;
+  color: var(--ink);
+}
+.admin-classification small { display: block; color: var(--muted); margin-top: 2px; }
+.btn-gold {
+  background: linear-gradient(135deg, #f59e0b, #facc15);
+  color: #4a2b00;
+  border: none;
+  font-weight: 800;
+}
+.reclass-dialog .dialog-form { max-width: 680px; }
+.reclass-dialog .notice-card { margin-top: 8px; }

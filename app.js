@@ -29,7 +29,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v41";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.4.1-app-instalable-oportunidades";
+const PWA_VERSION = "v4.6.1-reclasificar-publicaciones";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -732,16 +732,19 @@ function unlockAdmin() {
   loadAdminData();
 }
 function adminCard(item) {
+  const systemNeed = humanNeedForPublication(item);
   return `<article class="card admin-card">
-    <div class="card-top"><div><span class="folio">${folio(item)}</span><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.name)} · ${escapeHtml(item.category)} · ${escapeHtml(item.municipality)}, ${escapeHtml(item.state)}</p></div><span class="status ${item.status}">${item.status}</span></div>
+    <div class="card-top"><div><span class="folio">${folio(item)}</span><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.name)} · ${escapeHtml(item.category)}${item.subcategory ? ` / ${escapeHtml(item.subcategory)}` : ""} · ${escapeHtml(item.municipality)}, ${escapeHtml(item.state)}</p></div><span class="status ${item.status}">${item.status}</span></div>
     <p>${escapeHtml(item.description).slice(0, 180)}</p>
     <p><strong>Teléfono:</strong> ${escapeHtml(cleanPhone(item.phone))} · últimos 4: ${last4(item.phone)}</p>
+    <p class="admin-classification"><strong>Sistema:</strong> ${escapeHtml(systemNeed.label)} · <small>${escapeHtml(systemNeed.help)}</small></p>
     <div class="admin-actions">
       <button class="btn-small btn-green" onclick="setPublicationStatus('${item.id}','activo')">Activo</button>
       <button class="btn-small btn-outline" onclick="setPublicationStatus('${item.id}','revision')">Revisión</button>
       <button class="btn-small btn-ghost" onclick="setPublicationStatus('${item.id}','oculto')">Oculto</button>
       <button class="btn-small btn-purple" onclick="setPublicationStatus('${item.id}','atendido')">Atendido</button>
       <button class="btn-small btn-outline" onclick="openEditDialog('${item.id}')">Editar</button>
+      <button class="btn-small btn-gold" onclick="openReclassifyDialog('${item.id}')">Reclasificar</button>
     </div>
   </article>`;
 }
@@ -758,7 +761,11 @@ function renderAdminPublications() {
   if (!list) return;
   renderAdminSummary(adminCache);
   const search = normalize(document.getElementById("adminSearch")?.value || "");
-  const filtered = adminCache.filter(item => !search || normalize([folio(item), item.id, item.name, item.title, item.phone, last4(item.phone), item.category, item.municipality, item.state, item.status].join(" ")).includes(search));
+  const filtered = adminCache.filter(item => {
+    const sys = humanNeedForPublication(item);
+    const bag = [folio(item), item.id, item.name, item.title, item.phone, last4(item.phone), item.category, item.subcategory, item.intent, item.municipality, item.state, item.status, sys.label, sys.key].join(" ");
+    return !search || normalize(bag).includes(search);
+  });
   list.innerHTML = filtered.length ? filtered.map(adminCard).join("") : `<div class="empty-state">Sin resultados en administración.</div>`;
 }
 async function setPublicationStatus(id, status) {
@@ -995,20 +1002,127 @@ function startLearningPublication(routeName) {
 
 
 
-const OPPORTUNITY_NEED_MAP = {
+
+const RECLASSIFICATION_PRESETS = {
   necesito_trabajo: {
     label: "Necesito trabajo",
-    categories: ["General", "Redes sociales"],
-    keywords: "trabajo empleo vacante oportunidad ayudante contratar busco solicito disponible oficio"
+    category: "Trabajo e ingresos",
+    subcategory: "Empleo local / busco trabajo",
+    intent: "Busco / Necesito",
+    help: "Personas que buscan empleo, chamba, apoyo temporal o una oportunidad para trabajar."
   },
   activarme_economicamente: {
     label: "Quiero activarme económicamente",
-    categories: ["General", "Mensajería y envíos", "Redes sociales"],
+    category: "Trabajo e ingresos",
+    subcategory: "Ofrezco servicio / busco clientes",
+    intent: "Ofrezco / Tengo disponible",
+    help: "Personas que ofrecen servicios, quieren generar ingresos o empezar a vender."
+  },
+  busco_ayuda: {
+    label: "Busco quién me ayude",
+    category: "Servicios para el hogar",
+    subcategory: "Necesito apoyo / servicio local",
+    intent: "Busco / Necesito",
+    help: "Necesidades de apoyo, limpieza, reparaciones, mantenimiento u oficios."
+  },
+  movilidad_entregas: {
+    label: "Necesito movilidad, entregas o mandados",
+    category: "Mensajería y envíos",
+    subcategory: "Movilidad / entregas / mandados",
+    intent: "Busco / Necesito",
+    help: "Entregas, mandados, documentos, compras, paquetes, viajes o apoyo con traslado."
+  },
+  aprender_algo: {
+    label: "Quiero aprender algo",
+    category: "Aprende y emprende",
+    subcategory: "Capacitación / ruta para generar ingresos",
+    intent: "Información o acuerdo local",
+    help: "Contenido o enlaces para aprender, mejorar habilidades o publicar mejor."
+  },
+  tengo_negocio: {
+    label: "Tengo un negocio",
+    category: "Tiendas y negocios locales",
+    subcategory: "Negocio local / ventas",
+    intent: "Ofrezco / Tengo disponible",
+    help: "Tiendas, panaderías, comida, papelerías, estéticas, ferreterías o ventas locales."
+  },
+  colaborar_comunidad: {
+    label: "Quiero colaborar con mi comunidad",
+    category: "Colaboración general",
+    subcategory: "Apoyo vecinal / colaboración",
+    intent: "Información o acuerdo local",
+    help: "Apoyos, favores, necesidades generales o colaboración entre personas de la zona."
+  }
+};
+function reclassificationOptionsHtml(selected = "") {
+  return Object.entries(RECLASSIFICATION_PRESETS).map(([key, preset]) => `<option value="${key}" ${key === selected ? "selected" : ""}>${preset.label}</option>`).join("");
+}
+function humanNeedForPublication(item) {
+  const haystack = normalize([item.category, item.subcategory, item.intent, item.title, item.description, item.route, item.transport].join(" "));
+  if (haystack.includes("trabajo") || haystack.includes("empleo") || haystack.includes("vacante") || haystack.includes("busco trabajo")) return { key: "necesito_trabajo", ...RECLASSIFICATION_PRESETS.necesito_trabajo };
+  if (haystack.includes("tienda") || haystack.includes("negocio") || haystack.includes("panader") || haystack.includes("papeler") || haystack.includes("ferreter") || haystack.includes("estetica") || haystack.includes("ventas")) return { key: "tengo_negocio", ...RECLASSIFICATION_PRESETS.tengo_negocio };
+  if (haystack.includes("mensaj") || haystack.includes("entrega") || haystack.includes("mandado") || haystack.includes("viaje") || haystack.includes("movilidad") || haystack.includes("paquete") || haystack.includes("moto") || haystack.includes("camioneta")) return { key: "movilidad_entregas", ...RECLASSIFICATION_PRESETS.movilidad_entregas };
+  if (haystack.includes("curso") || haystack.includes("aprend") || haystack.includes("capacit") || haystack.includes("emprend")) return { key: "aprender_algo", ...RECLASSIFICATION_PRESETS.aprender_algo };
+  if (haystack.includes("limpieza") || haystack.includes("reparacion") || haystack.includes("plomer") || haystack.includes("electric") || haystack.includes("jardiner") || haystack.includes("mantenimiento")) return { key: "busco_ayuda", ...RECLASSIFICATION_PRESETS.busco_ayuda };
+  if (normalize(item.intent).includes("ofrezco")) return { key: "activarme_economicamente", ...RECLASSIFICATION_PRESETS.activarme_economicamente };
+  return { key: "colaborar_comunidad", ...RECLASSIFICATION_PRESETS.colaborar_comunidad };
+}
+function openReclassifyDialog(id) {
+  const item = adminCache.find(p => p.id === id);
+  if (!item) return;
+  const guess = humanNeedForPublication(item);
+  document.getElementById("reclassId").value = item.id;
+  document.getElementById("reclassTitle").textContent = `${folio(item)} · ${item.title}`;
+  document.getElementById("reclassNeed").innerHTML = reclassificationOptionsHtml(guess.key);
+  document.getElementById("reclassCategory").value = item.category || guess.category;
+  document.getElementById("reclassSubcategory").value = item.subcategory || guess.subcategory;
+  document.getElementById("reclassIntent").value = item.intent || guess.intent;
+  document.getElementById("reclassStatus").value = item.status || "revision";
+  document.getElementById("reclassHelp").textContent = guess.help;
+  document.getElementById("reclassDialog").showModal();
+}
+function applyReclassificationPreset() {
+  const key = document.getElementById("reclassNeed").value;
+  const preset = RECLASSIFICATION_PRESETS[key];
+  if (!preset) return;
+  document.getElementById("reclassCategory").value = preset.category;
+  document.getElementById("reclassSubcategory").value = preset.subcategory;
+  document.getElementById("reclassIntent").value = preset.intent;
+  document.getElementById("reclassHelp").textContent = preset.help;
+}
+function closeReclassifyDialog() { document.getElementById("reclassDialog").close(); }
+async function saveReclassification(event) {
+  event.preventDefault();
+  const id = document.getElementById("reclassId").value;
+  const payload = {
+    categoria_principal: document.getElementById("reclassCategory").value.trim(),
+    subcategoria: document.getElementById("reclassSubcategory").value.trim(),
+    intencion: document.getElementById("reclassIntent").value,
+    estado: document.getElementById("reclassStatus").value
+  };
+  try {
+    await supabaseRequest(`publicaciones?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(payload) });
+    closeReclassifyDialog();
+    showToast("Publicación reclasificada");
+    await loadAdminData();
+    await loadRemoteData();
+  } catch (error) { console.error(error); showToast("No se pudo reclasificar"); }
+}
+
+const OPPORTUNITY_NEED_MAP = {
+  necesito_trabajo: {
+    label: "Necesito trabajo",
+    categories: ["Trabajo e ingresos", "Redes sociales", "General"],
+    keywords: "trabajo empleo vacante oportunidad ayudante contratar busco solicito disponible oficio chamba"
+  },
+  activarme_economicamente: {
+    label: "Quiero activarme económicamente",
+    categories: ["Trabajo e ingresos", "Servicios para el hogar", "Tiendas y negocios locales", "Alimentos y ventas", "Mensajería y envíos", "General"],
     keywords: "ofrezco servicio venta clientes ingreso negocio comida limpieza reparacion entrega mandado emprender"
   },
   busco_ayuda: {
     label: "Busco quién me ayude",
-    categories: ["General", "Redes sociales"],
+    categories: ["Servicios para el hogar", "Reparaciones y oficios", "Colaboración general", "Redes sociales", "General"],
     keywords: "busco necesito ayuda apoyo limpieza reparacion plomeria electricidad carpinteria jardineria mantenimiento"
   },
   movilidad_entregas: {
@@ -1018,17 +1132,17 @@ const OPPORTUNITY_NEED_MAP = {
   },
   aprender_algo: {
     label: "Quiero aprender algo",
-    categories: [],
+    categories: ["Aprende y emprende"],
     keywords: "aprende aprender curso capacitacion capacitar oficio emprender negocio publicar mejorar"
   },
   tengo_negocio: {
     label: "Tengo un negocio",
-    categories: ["General", "Redes sociales", "Mensajería y envíos"],
+    categories: ["Tiendas y negocios locales", "Alimentos y ventas", "Redes sociales", "Mensajería y envíos", "General"],
     keywords: "tienda negocio panaderia papeleria estetica ferreteria tortilleria comida ventas producto local entregas domicilio"
   },
   colaborar_comunidad: {
     label: "Quiero colaborar con mi comunidad",
-    categories: ["General", "Redes sociales"],
+    categories: ["Colaboración general", "Redes sociales", "General"],
     keywords: "colaboracion comunidad apoyo ayuda vecinos favor voluntario necesidad local"
   }
 };
@@ -1375,6 +1489,7 @@ function init() {
   populateStateSelects();
   document.getElementById("publicationForm").addEventListener("submit", submitPublication);
   document.getElementById("editForm").addEventListener("submit", saveEdit);
+  document.getElementById("reclassForm")?.addEventListener("submit", saveReclassification);
   document.getElementById("externalLinkForm")?.addEventListener("submit", submitExternalLink);
   history.replaceState({ section: "inicio" }, "", routeUrlForSection("inicio"));
   updateWizard();

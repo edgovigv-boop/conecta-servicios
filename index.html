@@ -387,13 +387,13 @@ Todo uso requiere autorización expresa y por escrito del titular.
         <div class="section-header">
           <div>
             <h2>Administración</h2>
-            <p>Controla publicaciones, estados, edición y revisión.</p>
+            <p>Controla publicaciones, estados, edición, revisión y reclasificación del sistema de oportunidades.</p>
           </div>
           <div class="admin-top-actions"><button class="btn-small btn-outline" onclick="loadAdminData()">Actualizar</button><button class="btn-small btn-outline" onclick="showSection('analitica')">📊 Analítica</button><button class="btn-small btn-purple" onclick="showSection('enlaceExterno')">+ Enlace externo</button></div>
         </div>
         <div class="admin-summary" id="adminSummary"></div>
         <label class="search-box">Buscar en admin
-          <input id="adminSearch" type="search" placeholder="Folio, teléfono, título, nombre, municipio" oninput="renderAdminPublications()" />
+          <input id="adminSearch" type="search" placeholder="Folio, teléfono, título, nombre, municipio, categoría o necesidad" oninput="renderAdminPublications()" />
         </label>
         <div id="adminList" class="list"></div>
       </section>
@@ -687,13 +687,63 @@ Todo uso requiere autorización expresa y por escrito del titular.
 
   <div id="toast" class="toast"></div>
 
+  <dialog id="reclassDialog" class="edit-dialog reclass-dialog">
+    <form id="reclassForm" method="dialog" class="form-card dialog-form">
+      <h2>Reclasificar publicación</h2>
+      <p id="reclassTitle" class="muted"></p>
+      <input type="hidden" id="reclassId" />
+      <label>Necesidad dentro del sistema
+        <select id="reclassNeed" onchange="applyReclassificationPreset()"></select>
+      </label>
+      <p id="reclassHelp" class="field-help"></p>
+      <label>Categoría operativa
+        <select id="reclassCategory">
+          <option>Trabajo e ingresos</option>
+          <option>Servicios para el hogar</option>
+          <option>Mensajería y envíos</option>
+          <option>Viajes compartidos</option>
+          <option>Tiendas y negocios locales</option>
+          <option>Alimentos y ventas</option>
+          <option>Reparaciones y oficios</option>
+          <option>Aprende y emprende</option>
+          <option>Colaboración general</option>
+          <option>Redes sociales</option>
+          <option>General</option>
+        </select>
+      </label>
+      <label>Subcategoría visible / interna
+        <input id="reclassSubcategory" type="text" placeholder="Ej. Limpieza, tienda local, busco trabajo, entrega en moto" />
+      </label>
+      <label>Intención
+        <select id="reclassIntent">
+          <option>Busco / Necesito</option>
+          <option>Ofrezco / Tengo disponible</option>
+          <option>Información o acuerdo local</option>
+        </select>
+      </label>
+      <label>Estado después de reclasificar
+        <select id="reclassStatus">
+          <option value="revision">revision</option>
+          <option value="activo">activo</option>
+          <option value="oculto">oculto</option>
+          <option value="atendido">atendido</option>
+        </select>
+      </label>
+      <div class="notice-card slim">
+        <strong>Uso recomendado</strong>
+        <p>Para limpiar registros antiguos, reclasifica los que sí sirvan y deja en “oculto” los que no estén claros. No se borra historial.</p>
+      </div>
+      <div class="dialog-actions"><button type="button" class="btn-small btn-ghost" onclick="closeReclassifyDialog()">Cancelar</button><button type="submit" class="btn-small btn-purple">Guardar reclasificación</button></div>
+    </form>
+  </dialog>
+
   <dialog id="editDialog" class="edit-dialog">
     <form id="editForm" method="dialog" class="form-card dialog-form">
       <h2>Editar publicación</h2>
       <input type="hidden" id="editId" />
       <label>Nombre público<input id="editName" type="text" /></label>
       <label>Título<input id="editTitle" type="text" /></label>
-      <label>Categoría<select id="editCategory"><option>General</option><option>Viajes compartidos</option><option>Mensajería y envíos</option></select></label>
+      <label>Categoría<select id="editCategory"><option>Trabajo e ingresos</option><option>Servicios para el hogar</option><option>Mensajería y envíos</option><option>Viajes compartidos</option><option>Tiendas y negocios locales</option><option>Alimentos y ventas</option><option>Reparaciones y oficios</option><option>Aprende y emprende</option><option>Colaboración general</option><option>Redes sociales</option><option>General</option></select></label>
       <label>Intención<select id="editIntent"><option>Busco / Necesito</option><option>Ofrezco / Tengo disponible</option><option>Información o acuerdo local</option></select></label>
       <div class="form-grid"><label>Estado<input id="editStateName" type="text" /></label><label>Municipio<input id="editMunicipality" type="text" /></label></div>
       <label>Localidad<input id="editLocality" type="text" /></label>
@@ -705,6 +755,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.6-oportunidades-lenguaje-humano"></script>
+  <script src="app.js?v=4.6.1-reclasificar-publicaciones"></script>
 </body>
 </html>

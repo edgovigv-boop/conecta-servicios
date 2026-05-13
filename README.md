@@ -1,4 +1,4 @@
-# Conecta Servicios v4.6 — Oportunidades con lenguaje humano
+# Conecta Servicios v4.6.1 — Oportunidades con lenguaje humano
 
 © 2026 Conecta Servicios. Todos los derechos reservados.
 
@@ -32,5 +32,27 @@ Sube o reemplaza en GitHub:
 - `manifest.json`
 - `service-worker.js`
 - carpeta `assets/`
+
+No requiere SQL nuevo.
+
+
+## v4.6.1 — Reclasificar publicaciones desde administración
+
+Esta versión agrega una herramienta administrativa para limpiar y reordenar registros antiguos sin borrarlos.
+
+Incluye:
+
+- Botón **Reclasificar** en cada publicación del panel admin.
+- Selección de necesidad dentro del sistema:
+  - Necesito trabajo
+  - Quiero activarme económicamente
+  - Busco quién me ayude
+  - Necesito movilidad, entregas o mandados
+  - Quiero aprender algo
+  - Tengo un negocio
+  - Quiero colaborar con mi comunidad
+- Categoría operativa y subcategoría editable.
+- Cambio de intención y estado desde la misma ventana.
+- Permite mantener visibles solo registros útiles y ocultar registros antiguos sin perder historial.
 
 No requiere SQL nuevo.
