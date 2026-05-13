@@ -29,7 +29,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v41";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.6.4-home-rutas-publicaciones-limpias";
+const PWA_VERSION = "v4.7-oportunidades-guiadas";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -241,7 +241,7 @@ function showSection(id, push = true) {
   currentSection = id;
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   target.classList.add("active");
-  const titles = { inicio:"Conecta Servicios", registro:"Publica", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme" };
+  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme" };
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
@@ -268,6 +268,61 @@ window.addEventListener("popstate", event => {
 });
 
 function startWizard() { trackEvent("click_publica"); showSection("registro"); wizardStep = 1; updateWizard(); }
+
+function startOpportunityGuide() {
+  trackEvent("click_oportunidades_guiadas");
+  showSection("oportunidades");
+}
+
+function setWizardPublishType(category, intent) {
+  document.getElementById("pubCategory").value = category || "General";
+  document.getElementById("pubIntent").value = intent || "Ofrezco / Tengo disponible";
+  document.querySelectorAll(".choice-card").forEach(button => {
+    const matchCategory = (button.dataset.category || "") === (category || "General");
+    const matchIntent = normalize(button.dataset.intent || "").includes(normalize((intent || "").split("/")[0] || ""));
+    button.classList.toggle("selected", matchCategory && (matchIntent || category !== "General"));
+  });
+  updateCategoryDetails();
+}
+
+function openOpportunityWizard(type) {
+  resetWizardForm();
+  const titleHint = document.getElementById("titleHint");
+  const routeConfig = {
+    ingresos: {
+      category: "Servicios",
+      intent: "Ofrezco / Tengo disponible",
+      toast: "Vamos a convertir lo que puedes hacer en una oportunidad publicada.",
+      hint: "Ej. Ofrezco limpieza por día / Hago mandados en moto / Vendo comida por encargo / Ofrezco reparaciones sencillas."
+    },
+    negocio: {
+      category: "Negocios locales",
+      intent: "Ofrezco / Tengo disponible",
+      toast: "Vamos a publicar tu negocio para que más personas de tu zona lo encuentren.",
+      hint: "Ej. Tengo una panadería en Chapultepec / Tiendita con productos básicos / Estética con servicio por cita."
+    },
+    necesito: {
+      category: "Servicios",
+      intent: "Busco / Necesito",
+      toast: "Vamos a ordenar tu necesidad para que alguien cercano pueda ayudarte.",
+      hint: "Ej. Busco quién limpie mi terreno / Necesito lavar mis autos / Busco personal para restaurante / Necesito un mandado."
+    },
+    entrega: {
+      category: "Entregas y mandados",
+      intent: "Busco / Necesito",
+      toast: "Vamos a publicar tu entrega, mandado o movilidad de forma clara.",
+      hint: "Ej. Necesito llevar documentos / Busco mandado local / Necesito traslado o entrega en moto."
+    }
+  };
+  const cfg = routeConfig[type] || routeConfig.ingresos;
+  setWizardPublishType(cfg.category, cfg.intent);
+  if (titleHint) titleHint.textContent = cfg.hint;
+  wizardStep = 2;
+  showSection("registro");
+  updateWizard();
+  showToast(cfg.toast);
+  trackEvent("oportunidad_guia_iniciada", null, { tipo: type });
+}
 function selectPublishType(button) {
   document.querySelectorAll(".choice-card").forEach(b => b.classList.remove("selected"));
   button.classList.add("selected");
@@ -278,13 +333,17 @@ function selectPublishType(button) {
 function updateCategoryDetails() {
   const category = document.getElementById("pubCategory").value || "General";
   const titleHint = document.getElementById("titleHint");
-  document.getElementById("generalDetails").classList.toggle("hidden", category !== "General");
-  document.getElementById("rideDetails").classList.toggle("hidden", category !== "Viajes compartidos");
-  document.getElementById("deliveryDetails").classList.toggle("hidden", category !== "Mensajería y envíos");
+  const deliveryCategories = ["Mensajería y envíos", "Entregas y mandados", "Movilidad"];
+  const rideCategory = category === "Viajes compartidos";
+  const deliveryCategory = deliveryCategories.includes(category);
+  document.getElementById("generalDetails").classList.toggle("hidden", rideCategory || deliveryCategory);
+  document.getElementById("rideDetails").classList.toggle("hidden", !rideCategory);
+  document.getElementById("deliveryDetails").classList.toggle("hidden", !deliveryCategory);
   if (titleHint) {
-    if (category === "Viajes compartidos") titleHint.textContent = "Ej. Viajo de Chapultepec a Toluca de lunes a viernes";
-    else if (category === "Mensajería y envíos") titleHint.textContent = "Ej. Hago entregas locales en moto / Busco envío de documentos";
-    else titleHint.textContent = "Ej. Ofrezco servicio de jardinería / Busco carpintero.";
+    if (rideCategory) titleHint.textContent = "Ej. Viajo de Chapultepec a Toluca de lunes a viernes";
+    else if (deliveryCategory) titleHint.textContent = "Ej. Hago entregas locales en moto / Necesito un mandado o traslado";
+    else if (category === "Negocios locales") titleHint.textContent = "Ej. Tengo una tiendita / panadería / estética / negocio local";
+    else titleHint.textContent = "Ej. Ofrezco servicio de jardinería / Busco carpintero / Busco trabajo en limpieza.";
   }
 }
 function validateWizardStep(step) {
@@ -324,14 +383,14 @@ function updateWizard() {
 function currentDescriptionValue() {
   const category = document.getElementById("pubCategory").value || "General";
   if (category === "Viajes compartidos") return document.getElementById("pubDescriptionRide").value.trim();
-  if (category === "Mensajería y envíos") return document.getElementById("pubDescriptionDelivery").value.trim();
+  if (["Mensajería y envíos","Entregas y mandados","Movilidad"].includes(category)) return document.getElementById("pubDescriptionDelivery").value.trim();
   return document.getElementById("pubDescription").value.trim();
 }
 
 function activeDescriptionElement() {
   const category = document.getElementById("pubCategory").value || "General";
   if (category === "Viajes compartidos") return document.getElementById("pubDescriptionRide");
-  if (category === "Mensajería y envíos") return document.getElementById("pubDescriptionDelivery");
+  if (["Mensajería y envíos","Entregas y mandados","Movilidad"].includes(category)) return document.getElementById("pubDescriptionDelivery");
   return document.getElementById("pubDescription");
 }
 function buildSuggestedDescription() {
@@ -350,8 +409,8 @@ function buildSuggestedDescription() {
   if (category === "Viajes compartidos") {
     return `${name} publica: ${title}. Ruta o destino: ${route || "por confirmar"}. Salida: ${departure || "por coordinar"}. Horario: ${time || "por acordar"}. La idea es compartir el viaje de forma directa y respetuosa con personas que vayan por la misma ruta.${budget ? ` Cooperación sugerida: $${budget}.` : ""}`;
   }
-  if (category === "Mensajería y envíos") {
-    return `${name} publica: ${title}. Servicio o necesidad relacionada con mensajería y envíos en ${zone || municipality}. Medio: ${transport || "por coordinar"}. Puede servir para mandados, documentos, entregas o traslados locales según acuerdo directo.${budget ? ` Costo o presupuesto sugerido: $${budget}.` : ""}`;
+  if (["Mensajería y envíos","Entregas y mandados","Movilidad"].includes(category)) {
+    return `${name} publica: ${title}. Servicio o necesidad relacionada con entregas, mandados o movilidad en ${zone || municipality}. Medio: ${transport || "por coordinar"}. Puede servir para mandados, documentos, entregas, rutas o traslados locales según acuerdo directo.${budget ? ` Costo o presupuesto sugerido: $${budget}.` : ""}`;
   }
   if (normalize(intent).includes("busco") || normalize(title).includes("busco") || normalize(title).includes("necesito")) {
     return `${name} necesita apoyo con: ${title}. La solicitud aplica en ${zone || municipality}. Se busca una persona disponible, responsable y con trato directo para acordar detalles por WhatsApp.${budget ? ` Presupuesto sugerido: $${budget}.` : ""}`;
@@ -435,7 +494,7 @@ function formPayload() {
   payload.estado = evaluation.status;
   payload.referencia = evaluation.reasons.length
     ? `Revisión automática: ${evaluation.reasons.join(", ")} · Sugerencia: ${inferred.label}`
-    : `Activación automática v4.6.2 · Clasificación: ${inferred.label}`;
+    : `Activación automática v4.7 · Clasificación: ${inferred.label}`;
   return payload;
 }
 function renderPublicationPreview() {
@@ -631,7 +690,23 @@ function updateFilterSummary(state, municipality) {
   if (!el) return;
   el.textContent = "";
 }
-function categoryIcon(category) { return category === "Viajes compartidos" ? "🚘" : category === "Mensajería y envíos" ? "📦" : category === "Redes sociales" ? "🔗" : "📌"; }
+function categoryIcon(category) {
+  const icons = {
+    "Trabajo": "💼",
+    "Servicios": "🛠",
+    "Limpieza": "🧹",
+    "Reparaciones": "🔧",
+    "Entregas y mandados": "📦",
+    "Movilidad": "🚘",
+    "Viajes compartidos": "🚘",
+    "Mensajería y envíos": "📦",
+    "Negocios locales": "🏪",
+    "Alimentos y ventas": "🍲",
+    "Redes sociales": "🔗",
+    "Colaboración general": "🤝"
+  };
+  return icons[category] || "📌";
+}
 function compactPublicationCard(item) {
   const icon = categoryIcon(item.category);
   const distanceText = nearbyMode && userLocation && Number.isFinite(item.distanceKm) ? ` · 📍 ${distanceLabel(item.distanceKm)}` : (nearbyMode && item.matchType === "municipio" ? " · 📍 mismo municipio" : "");
@@ -1038,54 +1113,26 @@ function startLearningPublication(routeName) {
 
 
 const RECLASSIFICATION_PRESETS = {
-  busco_trabajo_oportunidades: {
-    label: "Busco trabajo u oportunidades",
-    category: "Trabajo e ingresos",
-    subcategory: "Vacantes / encargos / trabajo disponible",
+  busca_necesita: {
+    label: "Busca / Necesita",
+    category: "Servicios",
+    subcategory: "Solicitud de apoyo o servicio",
     intent: "Busco / Necesito",
-    help: "Para personas que buscan oportunidades disponibles: vacantes, encargos, trabajos por día o necesidades que alguien puede atender."
+    help: "Para publicaciones donde alguien pide ayuda, busca personal, solicita un servicio o necesita resolver algo."
   },
-  empezar_algo_propio: {
-    label: "Quiero empezar algo propio",
-    category: "Trabajo e ingresos",
-    subcategory: "Ofrezco servicio / emprendimiento propio",
+  ofrece_disponible: {
+    label: "Ofrece / Tiene disponible",
+    category: "Servicios",
+    subcategory: "Servicio disponible",
     intent: "Ofrezco / Tengo disponible",
-    help: "Para personas que ofrecen un servicio, venden algo, quieren clientes o empiezan una actividad económica propia."
+    help: "Para publicaciones donde alguien ofrece trabajo, oficio, servicio, producto, negocio o disponibilidad."
   },
-  busco_ayuda: {
-    label: "Busco quién me ayude",
-    category: "Servicios para el hogar",
-    subcategory: "Necesito apoyo / servicio local",
-    intent: "Busco / Necesito",
-    help: "Necesidades de apoyo, limpieza, reparaciones, mantenimiento, oficios o ayuda local."
-  },
-  movilidad_entregas: {
-    label: "Necesito movilidad, entregas o mandados",
-    category: "Mensajería y envíos",
-    subcategory: "Movilidad / entregas / mandados",
-    intent: "Busco / Necesito",
-    help: "Entregas, mandados, documentos, compras, paquetes, viajes, rutas o apoyo con traslado."
-  },
-  aprender_algo: {
-    label: "Quiero aprender algo",
-    category: "Aprende y emprende",
-    subcategory: "Capacitación / ruta para generar ingresos",
+  informacion_local: {
+    label: "Información local / Redes",
+    category: "Redes sociales",
+    subcategory: "Aviso externo o información local",
     intent: "Información o acuerdo local",
-    help: "Contenido o enlaces para aprender, mejorar habilidades, emprender o publicar mejor."
-  },
-  tengo_negocio: {
-    label: "Tengo un negocio",
-    category: "Tiendas y negocios locales",
-    subcategory: "Negocio local / ventas",
-    intent: "Ofrezco / Tengo disponible",
-    help: "Tiendas, panaderías, comida, papelerías, estéticas, ferreterías o ventas locales."
-  },
-  ver_personas_buscando_empleo: {
-    label: "Quiero ver personas que buscan empleo",
-    category: "Personas que buscan empleo",
-    subcategory: "Candidatos / disponibilidad para trabajar",
-    intent: "Ofrezco / Tengo disponible",
-    help: "Para negocios o personas que quieren encontrar gente disponible para trabajar, apoyar por día o colaborar en servicios."
+    help: "Para enlaces externos, avisos de redes sociales o información útil sin copiar contenido ajeno."
   }
 };
 function reclassificationOptionsHtml(selected = "") {
@@ -1104,38 +1151,26 @@ function inferPublicationClassificationFromText(values = {}) {
   const route = values.route || values.ruta || "";
   const haystack = normalize([title, description, currentCategory, currentIntent, transport, route].join(" "));
 
-  const personLookingForJob = keywordAny(haystack, [
-    "busco trabajo", "busco empleo", "solicito empleo", "solicito trabajo", "necesito trabajo", "busco chamba", "busco una chamba",
-    "me ofrezco para trabajar", "disponible para trabajar", "busco oportunidad laboral", "trabajo de limpieza", "busco empleo de"
-  ]);
-  if (personLookingForJob) return { key: "ver_personas_buscando_empleo", ...RECLASSIFICATION_PRESETS.ver_personas_buscando_empleo };
+  const lookingForJob = keywordAny(haystack, ["busco trabajo", "busco empleo", "solicito empleo", "necesito trabajo", "busco chamba", "disponible para trabajar", "me ofrezco para trabajar"]);
+  if (lookingForJob) return { key: "ofrece_disponible", label: "Persona disponible para trabajar", category: "Trabajo", subcategory: "Busca empleo / disponible para trabajar", intent: "Ofrezco / Tengo disponible", help: "Persona que busca empleo o está disponible para trabajar." };
 
-  const jobAvailable = keywordAny(haystack, [
-    "vacante", "se solicita", "solicito personal", "busco personal", "contrato", "contratar", "necesito ayudante", "busco ayudante", "ocupo ayudante",
-    "necesito quien", "busco quien", "pago por", "trabajo por dia", "trabajo por día", "oportunidad de trabajo", "ayuda para limpiar", "necesito limpiar", "necesito lavar", "necesito un mandado"
-  ]);
-  if (jobAvailable) return { key: "busco_trabajo_oportunidades", ...RECLASSIFICATION_PRESETS.busco_trabajo_oportunidades };
-
-  const business = keywordAny(haystack, ["tienda", "tiendita", "negocio", "panader", "papeler", "ferreter", "estetica", "estética", "tortiller", "restaurante", "taquer", "miscelanea", "miscelánea", "vendo", "venta de", "ventas", "comida", "postres", "productos"]);
-  if (business) return { key: "tengo_negocio", ...RECLASSIFICATION_PRESETS.tengo_negocio };
-
+  const jobOrNeed = keywordAny(haystack, ["vacante", "se solicita", "solicito personal", "busco personal", "contrato", "contratar", "necesito ayudante", "busco ayudante", "busco quien", "necesito quien", "necesito limpiar", "necesito lavar", "necesito un mandado", "busco", "necesito", "requiero", "ocupo", "me urge"]);
+  const offer = keywordAny(haystack, ["ofrezco", "hago", "realizo", "servicio de", "doy servicio", "disponible", "vendo", "venta de", "tengo", "negocio", "tienda", "panader", "papeler", "estetica", "estética", "ferreter", "tortiller", "restaurante", "taquer"]);
   const mobility = keywordAny(haystack, ["mensaj", "entrega", "entregas", "mandado", "mandados", "movilidad", "viaje", "viajes", "traslado", "paquete", "documento", "moto", "bicicleta", "bici", "auto", "camioneta", "mudanza", "ruta", "waze"]);
-  if (mobility) return { key: "movilidad_entregas", ...RECLASSIFICATION_PRESETS.movilidad_entregas };
+  const cleaning = keywordAny(haystack, ["limpieza", "limpiar", "aseo", "lavar", "lavado", "terreno", "patio"]);
+  const repair = keywordAny(haystack, ["reparacion", "reparación", "plomer", "electric", "jardiner", "mantenimiento", "carpinter", "pintura", "albañil", "albanil"]);
+  const business = keywordAny(haystack, ["tienda", "tiendita", "negocio", "panader", "papeler", "ferreter", "estetica", "estética", "tortiller", "restaurante", "taquer", "miscelanea", "miscelánea", "vendo", "venta", "comida", "postres", "productos"]);
 
-  const learn = keywordAny(haystack, ["curso", "aprend", "capacit", "certific", "emprend", "plan de negocio", "publicar mejor"]);
-  if (learn) return { key: "aprender_algo", ...RECLASSIFICATION_PRESETS.aprender_algo };
+  let category = "Servicios";
+  let subcategory = "General";
+  if (mobility) { category = "Entregas y mandados"; subcategory = "Movilidad / entregas / mandados"; }
+  else if (cleaning) { category = "Limpieza"; subcategory = "Limpieza / lavado / apoyo por día"; }
+  else if (repair) { category = "Reparaciones"; subcategory = "Oficio / reparación / mantenimiento"; }
+  else if (business) { category = "Negocios locales"; subcategory = "Negocio local / ventas"; }
 
-  const homeNeed = keywordAny(haystack, ["limpieza", "limpiar", "lavar", "reparacion", "reparación", "plomer", "electric", "jardiner", "mantenimiento", "carpinter", "pintura", "albañil", "albanil", "detallado", "lavado de auto", "lavar auto"]);
-  if (homeNeed && normalize(currentIntent).includes("busco")) return { key: "busco_ayuda", ...RECLASSIFICATION_PRESETS.busco_ayuda };
-  if (homeNeed && normalize(currentIntent).includes("ofrezco")) return { key: "empezar_algo_propio", ...RECLASSIFICATION_PRESETS.empezar_algo_propio };
-
-  const offer = keywordAny(haystack, ["ofrezco", "hago", "realizo", "servicio de", "doy servicio", "disponible", "trabajo por mi cuenta", "puedo ayudar", "me dedico"]);
-  if (offer) return { key: "empezar_algo_propio", ...RECLASSIFICATION_PRESETS.empezar_algo_propio };
-
-  const need = keywordAny(haystack, ["busco", "necesito", "requiero", "ocupo", "me urge", "ayuda con"]);
-  if (need) return { key: "busco_ayuda", ...RECLASSIFICATION_PRESETS.busco_ayuda };
-
-  return { key: "empezar_algo_propio", ...RECLASSIFICATION_PRESETS.empezar_algo_propio };
+  if (jobOrNeed && !offer) return { key: "busca_necesita", label: "Busca / Necesita", category, subcategory, intent: "Busco / Necesito", help: "Solicitud que debe aparecer como necesidad o búsqueda." };
+  if (offer) return { key: "ofrece_disponible", label: "Ofrece / Tiene disponible", category, subcategory, intent: "Ofrezco / Tengo disponible", help: "Oferta, servicio o negocio disponible." };
+  return { key: "busca_necesita", label: "Busca / Necesita", category, subcategory, intent: "Busco / Necesito", help: "Clasificación general por revisar." };
 }
 function humanNeedForPublication(item) {
   return inferPublicationClassificationFromText(item || {});
@@ -1428,30 +1463,30 @@ function startLearnFlow(type) {
   const panel = document.getElementById("learnFlowPanel");
   if (!panel) return;
   const flows = {
-    basicos: {
-      icon: "🧭", title: "Cursos básicos para comenzar", intro: "Primero aprende a comunicar bien lo que haces para que te contacten con más confianza.",
-      items: ["Cómo publicar mejor tu servicio", "Atención al cliente por WhatsApp", "Cómo poner precio a tu trabajo", "Cómo conseguir tus primeros clientes"],
-      action: `<button class="btn-small btn-purple" onclick="showLearningGuide('publicar')">Ver guía rápida</button>`
+    servicio: {
+      icon: "🧭", title: "Qué puedo ofrecer", intro: "Piensa en algo que puedas resolver hoy: limpiar, entregar, cocinar, reparar, vender o apoyar por día.",
+      items: ["Elige algo que sí puedas cumplir", "Define zona y horario", "Explica qué incluye", "Publica claro y corto"],
+      action: `<button class="btn-small btn-purple" onclick="openOpportunityWizard('ingresos')">Guiarme para publicar</button>`
     },
-    profesionales: {
-      icon: "🛠", title: "Cursos profesionales y oficios", intro: "Elige una habilidad útil y conviértela en una publicación clara.",
-      items: ["Plomería básica", "Electricidad básica", "Reparaciones del hogar", "Manejo higiénico de alimentos"],
-      action: `<button class="btn-small btn-green" onclick="startWizard('Ofrezco servicio o negocio')">Publicar lo que sé hacer</button>`
+    publicar: {
+      icon: "✍️", title: "Publicar mejor mi servicio", intro: "Una publicación clara ayuda a que te contacten más rápido y con menos dudas.",
+      items: ["Título directo", "Descripción breve", "Zona donde atiendes", "WhatsApp y condiciones"],
+      action: `<button class="btn-small btn-purple" onclick="openOpportunityWizard('ingresos')">Crear publicación guiada</button>`
     },
-    ingresos: {
-      icon: "🚀", title: "Rutas para generar ingresos", intro: "Opciones sencillas para empezar a moverte económicamente desde tu zona.",
-      items: ["Alimentos y ventas", "Entregas y mandados", "Limpieza", "Reparaciones", "Tiendas y negocios locales"],
-      action: `<button class="btn-small btn-purple" onclick="startWizard('Ofrezco servicio o negocio')">Publicar mi servicio</button>`
+    negocio: {
+      icon: "🏪", title: "Mejorar mi negocio", intro: "Publica qué vendes, dónde atiendes y cómo te pueden contactar. Si necesitas entregas, busca mensajeros locales.",
+      items: ["Nombre del negocio", "Productos o servicios", "Horario y zona", "Entregas o contacto"],
+      action: `<button class="btn-small btn-purple" onclick="openOpportunityWizard('negocio')">Publicar mi negocio</button>`
     }
   };
-  const flow = flows[type] || flows.basicos;
+  const flow = flows[type] || flows.servicio;
   panel.innerHTML = `<div class="guided-flow-card learn-flow-card">
     <div class="guided-flow-head"><span>${flow.icon}</span><div><h2>${flow.title}</h2><p>${flow.intro}</p></div></div>
-    <div class="guided-steps">${flow.items.map((item, idx) => `<article class="guided-step-card"><small>Etapa ${idx + 1}</small><h3>${item}</h3><p>Revisa esta idea, adáptala a lo que sabes hacer y termina creando una publicación clara.</p></article>`).join("")}</div>
-    <div class="route-actions guided-actions">${flow.action}<button class="btn-small btn-outline" onclick="startWizard('Ofrezco servicio o negocio')">Publicar ahora</button></div>
+    <div class="guided-steps">${flow.items.map((item, idx) => `<article class="guided-step-card"><small>Paso ${idx + 1}</small><h3>${item}</h3><p>Responde con información simple. La app te ayuda a convertirlo en una publicación útil.</p></article>`).join("")}</div>
+    <div class="route-actions guided-actions">${flow.action}</div>
   </div>`;
   panel.scrollIntoView({ behavior: "smooth", block: "start" });
-  trackEvent("aprende_flujo", null, { tipo: type });
+  trackEvent("guia_publicar_mejor", null, { tipo: type });
 }
 
 function countEvents(rows, name) { return rows.filter(r => r.evento === name).length; }

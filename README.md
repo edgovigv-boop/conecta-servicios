@@ -1,22 +1,18 @@
-# Conecta Servicios v4.6.4 — Home, rutas y publicaciones limpias
+# Conecta Servicios v4.7 — Oportunidades guiadas
 
 © 2026 Conecta Servicios. Todos los derechos reservados.
 
 ## Cambios principales
 
-- Imagen principal de marca más grande y visible en la portada.
-- “Oportunidades para ti” queda como acceso a rutas guiadas, no como lista de textos largos.
-- Rutas guiadas separadas para:
-  - Quiero empezar algo propio
-  - Tengo un negocio
-  - Aprende y emprende
-- “Aprende y emprende” ahora se presenta como flujo guiado por bloques:
-  - Cursos básicos
-  - Cursos profesionales y oficios
-  - Rutas para generar ingresos
-- Se quitó “Busco quién me ayude” de Oportunidades para ti.
-- “Publicaciones cerca de mí” queda como sección para ver publicaciones reales por estado, municipio, categorías y búsqueda.
-- Se simplificó la sección de publicaciones quitando textos y controles que abrumaban.
+- Home más simple: el botón principal ahora es **+ Oportunidades para ti**.
+- **Oportunidades para ti** inicia una guía paso a paso para crear una publicación clara y bien clasificada.
+- Se mantiene **Publicaciones cerca de mí** como consulta de resultados reales.
+- Se eliminan rutas confusas tipo cursos dentro de Oportunidades.
+- Las guías llevan a publicar: generar ingresos, publicar un negocio o publicar una necesidad.
+- El usuario revisa su información antes de publicar.
+- La clasificación se apoya en palabras como: Busco, Ofrezco, Necesito, Tengo y Vendo.
+- Admin queda como respaldo para reclasificar, no como corrección obligatoria.
+- Se simplifican categorías administrativas: Trabajo, Servicios, Limpieza, Reparaciones, Entregas y mandados, Movilidad, Negocios locales, Alimentos y ventas, Redes sociales y Colaboración general.
 - No requiere SQL nuevo.
 
 ## Archivos a subir a GitHub

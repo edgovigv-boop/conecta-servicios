@@ -28,7 +28,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="icon" href="assets/icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=4.6.4-home-rutas-publicaciones-limpias" />
+  <link rel="stylesheet" href="styles.css?v=4.7-oportunidades-guiadas" />
 </head>
 <body>
   <div class="app-shell">
@@ -51,19 +51,12 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <p class="sync-status visually-hidden" id="syncStatus" aria-live="polite">Conectando con la base de datos...</p>
         </div>
 
-        <div class="home-shortcuts modern-shortcuts system-shortcuts home-primary-actions">
-          <button class="shortcut-card opportunities featured-opportunity mega-opportunity" onclick="showSection('oportunidades')">
-            <span>🎯</span><div><strong>Oportunidades para ti</strong><small>Rutas claras para activar, publicar o encontrar apoyo.</small></div><b>›</b>
+        <div class="home-shortcuts modern-shortcuts system-shortcuts home-primary-actions home-v47-actions">
+          <button class="shortcut-card opportunities featured-opportunity mega-opportunity opportunity-plus-card" onclick="startOpportunityGuide()">
+            <span class="mega-plus">+</span><div><strong>Oportunidades para ti</strong><small>La app te guía paso a paso hasta publicar una oportunidad clara y bien clasificada.</small></div><b>›</b>
           </button>
           <button class="shortcut-card nearby" onclick="requestNearbyPublications()">
-            <span>📍</span><div><strong>Publicaciones cerca de mí</strong><small>Resultados reales por ubicación y municipio.</small></div><b>›</b>
-          </button>
-        </div>
-
-        <div class="home-main-action public-action-under">
-          <button class="publica-circle wave-action larger-publica" onclick="startWizard()" aria-label="Publica">
-            <span class="circle-plus">+</span>
-            <strong>PUBLICA</strong>
+            <span>📍</span><div><strong>Publicaciones cerca de mí</strong><small>Consulta resultados reales por categoría, municipio y palabra clave.</small></div><b>›</b>
           </button>
         </div>
 
@@ -78,26 +71,26 @@ Todo uso requiere autorización expresa y por escrito del titular.
 
       </section>
 
-      <section id="oportunidades" class="section info-section opportunities-section clean-opportunities">
-        <div class="simple-section-title">
+      <section id="oportunidades" class="section info-section opportunities-section clean-opportunities opportunity-guide-start">
+        <div class="simple-section-title compact-title">
           <h2>Oportunidades para ti</h2>
-          <p>Elige una ruta. La app te guía paso a paso sin saturarte de texto.</p>
+          <p>Elige lo que quieres lograr. Enseguida iniciamos una guía corta para crear tu primera publicación bien dirigida.</p>
         </div>
 
-        <div class="route-button-list">
-          <button type="button" class="route-start-card" onclick="openGuidedRoute('empezar')">
+        <div class="route-button-list v47-route-list">
+          <button type="button" class="route-start-card" onclick="openOpportunityWizard('ingresos')">
             <span class="route-start-icon">🚀</span>
-            <span><strong>Quiero empezar algo propio</strong><small>Ideas para iniciar, organizar tu servicio y publicarlo correctamente.</small></span>
+            <span><strong>Quiero generar ingresos</strong><small>Servicios, limpieza, mandados, comida, reparaciones u otro apoyo que puedas ofrecer.</small></span>
             <b>›</b>
           </button>
-          <button type="button" class="route-start-card" onclick="openGuidedRoute('negocio')">
+          <button type="button" class="route-start-card" onclick="openOpportunityWizard('negocio')">
             <span class="route-start-icon">🏪</span>
-            <span><strong>Tengo un negocio</strong><small>Publica tu negocio, atrae clientes y conecta con mensajeros locales.</small></span>
+            <span><strong>Tengo un negocio</strong><small>Publica tu negocio, lo que vendes, tu zona y si necesitas mensajeros locales.</small></span>
             <b>›</b>
           </button>
-          <button type="button" class="route-start-card" onclick="showSection('aprende')">
-            <span class="route-start-icon">📘</span>
-            <span><strong>Aprende y emprende</strong><small>Cursos básicos, profesionales y rutas para generar ingresos.</small></span>
+          <button type="button" class="route-start-card" onclick="openOpportunityWizard('necesito')">
+            <span class="route-start-icon">🔎</span>
+            <span><strong>Necesito publicar algo</strong><small>Pide apoyo, busca personal, solicita un mandado, movilidad o comparte una oportunidad.</small></span>
             <b>›</b>
           </button>
         </div>
@@ -131,10 +124,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
               <p>Escribe natural usando frases como <b>Busco...</b>, <b>Ofrezco...</b>, <b>Necesito...</b>, <b>Tengo...</b> o <b>Vendo...</b>. Con eso el sistema acomoda tu publicación en la oportunidad correcta.</p>
             </div>
             <div class="choice-grid">
-              <button type="button" class="choice-card" data-category="General" data-intent="Ofrezco / Tengo disponible" onclick="selectPublishType(this)"><span>🛠</span><strong>Ofrezco servicio o negocio</strong><small>Oficios, comida, negocio local, apoyo, clases.</small></button>
-              <button type="button" class="choice-card" data-category="General" data-intent="Busco / Necesito" onclick="selectPublishType(this)"><span>🔎</span><strong>Busco ayuda o necesito algo</strong><small>Reparaciones, limpieza, apoyo, presupuesto.</small></button>
-              <button type="button" class="choice-card" data-category="Viajes compartidos" data-intent="Ofrezco / Tengo disponible" onclick="selectPublishType(this)"><span>🚘</span><strong>Viaje compartido</strong><small>Ruta, horario, salida y espacios.</small></button>
-              <button type="button" class="choice-card" data-category="Mensajería y envíos" data-intent="Ofrezco / Tengo disponible" onclick="selectPublishType(this)"><span>📦</span><strong>Mensajería o envío</strong><small>A pie, bici, moto, auto o camioneta.</small></button>
+              <button type="button" class="choice-card" data-category="Servicios" data-intent="Ofrezco / Tengo disponible" onclick="selectPublishType(this)"><span>🛠</span><strong>Ofrezco un servicio</strong><small>Oficios, limpieza, comida, apoyo o trabajo por cuenta propia.</small></button>
+              <button type="button" class="choice-card" data-category="Servicios" data-intent="Busco / Necesito" onclick="selectPublishType(this)"><span>🔎</span><strong>Busco ayuda o necesito algo</strong><small>Personal, limpieza, reparación, mandado o apoyo local.</small></button>
+              <button type="button" class="choice-card" data-category="Movilidad" data-intent="Ofrezco / Tengo disponible" onclick="selectPublishType(this)"><span>🚘</span><strong>Movilidad o viaje</strong><small>Ruta, horario, salida, traslado o espacios.</small></button>
+              <button type="button" class="choice-card" data-category="Entregas y mandados" data-intent="Ofrezco / Tengo disponible" onclick="selectPublishType(this)"><span>📦</span><strong>Entregas o mandados</strong><small>A pie, bici, moto, auto o camioneta.</small></button>
             </div>
             <input type="hidden" id="pubCategory" />
             <input type="hidden" id="pubIntent" />
@@ -306,7 +299,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
             <button type="button" class="filter-chip" data-filter-category="" data-filter-search="tienda negocio panaderia estetica papeleria ferreteria tortilleria comida vendo ventas" onclick="setCategoryChip(this)">Negocios</button>
             <button type="button" class="filter-chip" data-filter-category="Redes sociales" data-filter-search="" onclick="setCategoryChip(this)">Redes</button>
           </div>
-          <select id="categoryFilter" class="hidden" onchange="renderPublications()"><option value="">Todas las categorías</option><option>Viajes compartidos</option><option>Mensajería y envíos</option><option>General</option><option>Redes sociales</option></select>
+          <select id="categoryFilter" class="hidden" onchange="renderPublications()"><option value="">Todas las categorías</option><option>Trabajo</option><option>Servicios</option><option>Limpieza</option><option>Reparaciones</option><option>Entregas y mandados</option><option>Movilidad</option><option>Negocios locales</option><option>Alimentos y ventas</option><option>Redes sociales</option></select>
           <input id="chipSearchFilter" type="hidden" value="" />
           <div class="form-grid compact-location-filter">
             <label>Estado
@@ -500,14 +493,14 @@ Todo uso requiere autorización expresa y por escrito del titular.
 
       <section id="aprende" class="section info-section learn-section clean-learn-section">
         <div class="simple-section-title">
-          <h2>Aprende y emprende</h2>
-          <p>Elige una ruta. Te guiamos paso a paso para tomar acción y publicar correctamente.</p>
+          <h2>Guías para publicar mejor</h2>
+          <p>Esta sección no promete cursos ni certificaciones. Te ayuda con pasos sencillos para ordenar tu idea y publicarla mejor.</p>
         </div>
 
         <div class="route-button-list">
-          <button type="button" class="route-start-card" onclick="startLearnFlow('basicos')"><span class="route-start-icon">🧭</span><span><strong>Cursos básicos para comenzar</strong><small>Publicar mejor, atender por WhatsApp, poner precios y conseguir primeros clientes.</small></span><b>›</b></button>
-          <button type="button" class="route-start-card" onclick="startLearnFlow('profesionales')"><span class="route-start-icon">🛠</span><span><strong>Cursos profesionales y oficios</strong><small>Plomería, electricidad, reparaciones, alimentos y ventas.</small></span><b>›</b></button>
-          <button type="button" class="route-start-card" onclick="startLearnFlow('ingresos')"><span class="route-start-icon">🚀</span><span><strong>Rutas para generar ingresos</strong><small>Alimentos, entregas, limpieza, reparaciones y negocios locales.</small></span><b>›</b></button>
+          <button type="button" class="route-start-card" onclick="startLearnFlow('servicio')"><span class="route-start-icon">🧭</span><span><strong>Quiero saber qué puedo ofrecer</strong><small>Ideas prácticas para convertir lo que sabes hacer en una publicación.</small></span><b>›</b></button>
+          <button type="button" class="route-start-card" onclick="startLearnFlow('publicar')"><span class="route-start-icon">✍️</span><span><strong>Quiero publicar mejor mi servicio</strong><small>Título, descripción, zona, precio y trato por WhatsApp.</small></span><b>›</b></button>
+          <button type="button" class="route-start-card" onclick="startLearnFlow('negocio')"><span class="route-start-icon">🏪</span><span><strong>Quiero mejorar mi negocio</strong><small>Visibilidad, entregas locales y cómo explicar lo que vendes.</small></span><b>›</b></button>
         </div>
 
         <div id="learnFlowPanel" class="guided-panel learn-flow-panel"></div>
@@ -545,8 +538,8 @@ Todo uso requiere autorización expresa y por escrito del titular.
 
     <nav class="bottom-nav system-nav">
       <button onclick="showSection('inicio')">🏠<span>Inicio</span></button>
-      <button onclick="showSection('oportunidades')">🎯<span>Para ti</span></button>
-      <button onclick="startWizard()">➕<span>Publica</span></button>
+      <button onclick="startOpportunityGuide()">🎯<span>Para ti</span></button>
+      <button onclick="startOpportunityGuide()">➕<span>Oportunidad</span></button>
       <button onclick="showSection('oficina')">🏢<span>Oficina</span></button>
     </nav>
   </div>
@@ -558,23 +551,22 @@ Todo uso requiere autorización expresa y por escrito del titular.
       <h2>Reclasificar publicación</h2>
       <p id="reclassTitle" class="muted"></p>
       <input type="hidden" id="reclassId" />
-      <label>Necesidad dentro del sistema
+      <label>Tipo de publicación
         <select id="reclassNeed" onchange="applyReclassificationPreset()"></select>
       </label>
       <p id="reclassHelp" class="field-help"></p>
       <label>Categoría operativa
         <select id="reclassCategory">
-          <option>Trabajo e ingresos</option>
-          <option>Servicios para el hogar</option>
-          <option>Mensajería y envíos</option>
-          <option>Viajes compartidos</option>
-          <option>Tiendas y negocios locales</option>
+          <option>Trabajo</option>
+          <option>Servicios</option>
+          <option>Limpieza</option>
+          <option>Reparaciones</option>
+          <option>Entregas y mandados</option>
+          <option>Movilidad</option>
+          <option>Negocios locales</option>
           <option>Alimentos y ventas</option>
-          <option>Reparaciones y oficios</option>
-          <option>Aprende y emprende</option>
-          <option>Colaboración general</option>
           <option>Redes sociales</option>
-          <option>General</option>
+          <option>Colaboración general</option>
         </select>
       </label>
       <label>Subcategoría visible / interna
@@ -609,7 +601,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
       <input type="hidden" id="editId" />
       <label>Nombre público<input id="editName" type="text" /></label>
       <label>Título<input id="editTitle" type="text" /></label>
-      <label>Categoría<select id="editCategory"><option>Trabajo e ingresos</option><option>Servicios para el hogar</option><option>Mensajería y envíos</option><option>Viajes compartidos</option><option>Tiendas y negocios locales</option><option>Alimentos y ventas</option><option>Reparaciones y oficios</option><option>Aprende y emprende</option><option>Colaboración general</option><option>Redes sociales</option><option>General</option></select></label>
+      <label>Categoría<select id="editCategory"><option>Trabajo</option><option>Servicios</option><option>Limpieza</option><option>Reparaciones</option><option>Entregas y mandados</option><option>Movilidad</option><option>Negocios locales</option><option>Alimentos y ventas</option><option>Redes sociales</option><option>Colaboración general</option></select></label>
       <label>Intención<select id="editIntent"><option>Busco / Necesito</option><option>Ofrezco / Tengo disponible</option><option>Información o acuerdo local</option></select></label>
       <div class="form-grid"><label>Estado<input id="editStateName" type="text" /></label><label>Municipio<input id="editMunicipality" type="text" /></label></div>
       <label>Localidad<input id="editLocality" type="text" /></label>
@@ -621,6 +613,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.6.3-rutas-claras-home-simple"></script>
+  <script src="app.js?v=4.7-oportunidades-guiadas"></script>
 </body>
 </html>

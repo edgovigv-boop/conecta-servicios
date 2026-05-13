@@ -1123,3 +1123,33 @@ body {
   .route-start-card b{display:none;}
   .guided-flow-head{grid-template-columns:1fr;}
 }
+
+/* v4.7 — Oportunidades guiadas */
+.home-v47-actions{gap:14px;margin-top:14px;}
+.opportunity-plus-card{
+  min-height:126px!important;
+  background:linear-gradient(135deg,#7b46cf,#9c63ef 58%,#20b76b)!important;
+  color:#fff!important;
+  border:0!important;
+  box-shadow:0 20px 44px rgba(111,66,193,.30)!important;
+}
+.opportunity-plus-card .mega-plus{
+  width:64px!important;height:64px!important;border-radius:50%!important;
+  background:rgba(255,255,255,.22)!important;color:#fff!important;
+  font-size:3.2rem!important;line-height:1;font-weight:900!important;
+  display:grid!important;place-items:center!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.25),0 10px 24px rgba(0,0,0,.12)!important;
+}
+.opportunity-plus-card strong{font-size:1.35rem!important;color:#fff!important;letter-spacing:.01em;}
+.opportunity-plus-card small,.opportunity-plus-card b{color:#fff!important;opacity:.95!important;}
+.opportunity-guide-start .compact-title{padding:16px 18px;}
+.opportunity-guide-start .compact-title h2{font-size:1.45rem;}
+.v47-route-list .route-start-card{min-height:92px;}
+.wizard-card .classification-tip{background:linear-gradient(135deg,#fff,#f6fff8);}
+.filter-title{font-weight:900;color:var(--morado-oscuro);margin-bottom:10px;}
+.edit-dialog select option{font-size:1rem;}
+@media(max-width:380px){
+  .opportunity-plus-card{min-height:112px!important;}
+  .opportunity-plus-card .mega-plus{width:56px!important;height:56px!important;font-size:2.8rem!important;}
+  .opportunity-plus-card strong{font-size:1.18rem!important;}
+}
