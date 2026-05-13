@@ -100,13 +100,13 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <h3>¿Qué oportunidad necesitas encontrar?</h3>
           <p class="muted small">Marca las frases que más se parecen a tu situación. La app las traduce en oportunidades reales por zona e interés.</p>
           <div class="human-need-grid opportunity-checks">
-            <label class="need-option"><input type="checkbox" name="oppNeed" value="necesito_trabajo" /> <span><strong>Necesito trabajo</strong><small>Empleo local, oficios, apoyo temporal o personas que estén buscando ayuda.</small></span></label>
-            <label class="need-option"><input type="checkbox" name="oppNeed" value="activarme_economicamente" /> <span><strong>Quiero activarme económicamente</strong><small>Servicios, ventas, clientes, oportunidades para generar ingresos o empezar algo propio.</small></span></label>
-            <label class="need-option"><input type="checkbox" name="oppNeed" value="busco_ayuda" /> <span><strong>Busco quién me ayude</strong><small>Apoyo en casa, reparaciones, limpieza, oficios o colaboración cercana.</small></span></label>
+            <label class="need-option"><input type="checkbox" name="oppNeed" value="busco_trabajo_oportunidades" /> <span><strong>Busco trabajo u oportunidades</strong><small>Vacantes, encargos, trabajos por día o necesidades locales que alguien puede atender.</small></span></label>
+            <label class="need-option"><input type="checkbox" name="oppNeed" value="empezar_algo_propio" /> <span><strong>Quiero empezar algo propio</strong><small>Ofrecer un servicio, vender algo, conseguir clientes o iniciar una actividad económica.</small></span></label>
+            <label class="need-option"><input type="checkbox" name="oppNeed" value="busco_ayuda" /> <span><strong>Busco quién me ayude</strong><small>Apoyo en casa, reparaciones, limpieza, oficios o servicios cercanos.</small></span></label>
             <label class="need-option"><input type="checkbox" name="oppNeed" value="movilidad_entregas" /> <span><strong>Necesito movilidad, entregas o mandados</strong><small>Viajes compartidos, entregas locales, documentos, compras, paquetes o mudanzas pequeñas.</small></span></label>
-            <label class="need-option"><input type="checkbox" name="oppNeed" value="aprender_algo" /> <span><strong>Quiero aprender algo</strong><small>Rutas para aprender, emprender, publicar mejor y convertir habilidades en oportunidades.</small></span></label>
+            <label class="need-option"><input type="checkbox" name="oppNeed" value="aprender_algo" /> <span><strong>Quiero aprender algo</strong><small>Rutas para capacitarte, emprender, publicar mejor y convertir habilidades en oportunidades.</small></span></label>
             <label class="need-option"><input type="checkbox" name="oppNeed" value="tengo_negocio" /> <span><strong>Tengo un negocio</strong><small>Tiendas, comida, ventas, negocios locales y conexión con mensajeros o clientes cercanos.</small></span></label>
-            <label class="need-option"><input type="checkbox" name="oppNeed" value="colaborar_comunidad" /> <span><strong>Quiero colaborar con mi comunidad</strong><small>Apoyos, favores, necesidades, participación y colaboración entre personas de la zona.</small></span></label>
+            <label class="need-option"><input type="checkbox" name="oppNeed" value="ver_personas_buscando_empleo" /> <span><strong>Quiero ver personas que buscan empleo</strong><small>Personas disponibles para trabajar, apoyar por día o integrarse a un negocio o servicio.</small></span></label>
           </div>
 
           <button class="btn-small btn-outline why-update" type="button" onclick="showSection('actualizarme')">📘 ¿Por qué actualizarme en oportunidades y servicios?</button>
@@ -153,6 +153,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <div class="wizard-step active" data-step="1">
             <h3>¿Qué quieres publicar?</h3>
             <p class="muted">Elige una opción. Después podrás explicarlo con tus palabras.</p>
+            <div class="notice-card slim classification-tip">
+              <strong>La app te ayuda a clasificar mejor.</strong>
+              <p>Escribe natural usando frases como <b>Busco...</b>, <b>Ofrezco...</b>, <b>Necesito...</b>, <b>Tengo...</b> o <b>Vendo...</b>. Con eso el sistema acomoda tu publicación en la oportunidad correcta.</p>
+            </div>
             <div class="choice-grid">
               <button type="button" class="choice-card" data-category="General" data-intent="Ofrezco / Tengo disponible" onclick="selectPublishType(this)"><span>🛠</span><strong>Ofrezco servicio o negocio</strong><small>Oficios, comida, negocio local, apoyo, clases.</small></button>
               <button type="button" class="choice-card" data-category="General" data-intent="Busco / Necesito" onclick="selectPublishType(this)"><span>🔎</span><strong>Busco ayuda o necesito algo</strong><small>Reparaciones, limpieza, apoyo, presupuesto.</small></button>
@@ -195,7 +199,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
 
           <div class="wizard-step" data-step="4">
             <h3>Título de tu publicación</h3>
-            <p class="muted" id="titleHint">Ej. Ofrezco servicio de jardinería / Busco carpintero.</p>
+            <p class="muted" id="titleHint">Ej. Busco trabajo en limpieza / Ofrezco mandados en moto / Necesito quien lave mis autos / Tengo una panadería.</p>
             <label>Título
               <input id="pubTitle" type="text" placeholder="Escríbelo claro y corto" />
             </label>
@@ -205,7 +209,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
             <h3>Detalles</h3>
             <div id="generalDetails" class="dynamic-detail">
               <label>Descripción
-                <textarea id="pubDescription" rows="5" placeholder="Cuéntalo de forma natural. Puedes pegar links de Facebook, TikTok, Instagram, Waze o Google Maps."></textarea>
+                <textarea id="pubDescription" rows="5" placeholder="Cuéntalo de forma natural. Ej. Busco..., Ofrezco..., Necesito..., Tengo..., Vendo... Puedes pegar links de Facebook, TikTok, Instagram, Waze o Google Maps."></textarea>
               </label>
               <div class="description-helper" aria-label="Asistente de descripción">
                 <strong>✨ Asistente de descripción</strong>

@@ -29,7 +29,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v41";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.6.1-reclasificar-publicaciones";
+const PWA_VERSION = "v4.6.2-clasificacion-inteligente";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -427,9 +427,15 @@ function formPayload() {
     ubicacion_aproximada: Boolean(document.getElementById("pubLat")?.value && document.getElementById("pubLng")?.value),
     radio_servicio_km: 10
   };
+  const inferred = inferPublicationClassificationFromText(payload);
+  payload.categoria_principal = inferred.category || payload.categoria_principal;
+  payload.subcategoria = inferred.subcategory || payload.subcategoria || "";
+  payload.intencion = inferred.intent || payload.intencion;
   const evaluation = evaluatePublication(payload);
   payload.estado = evaluation.status;
-  payload.referencia = evaluation.reasons.length ? `Revisión automática: ${evaluation.reasons.join(", ")}` : "Activación automática v4.1";
+  payload.referencia = evaluation.reasons.length
+    ? `Revisión automática: ${evaluation.reasons.join(", ")} · Sugerencia: ${inferred.label}`
+    : `Activación automática v4.6.2 · Clasificación: ${inferred.label}`;
   return payload;
 }
 function renderPublicationPreview() {
@@ -442,6 +448,7 @@ function renderPublicationPreview() {
     <p><strong>Zona:</strong> ${escapeHtml(payload.municipio || "")}, ${escapeHtml(payload.estado_nombre || "")}</p>
     ${payload.latitud && payload.longitud ? `<p><strong>Cercanía:</strong> se usará ubicación aproximada para ordenar resultados.</p>` : ""}
     <p><strong>WhatsApp:</strong> ${maskPhone(payload.telefono)}</p>
+    <p><strong>Clasificación sugerida:</strong> ${escapeHtml(payload.categoria_principal || "")} · ${escapeHtml(payload.subcategoria || "")}</p>
     <p>${escapeHtml(payload.descripcion || "").slice(0, 180)}</p>
     <p class="muted"><strong>Resultado esperado:</strong> ${evaluation.status === "activo" ? "se activará automáticamente" : `quedará en revisión (${evaluation.reasons.join(", ")})`}</p>`;
 }
@@ -1004,40 +1011,40 @@ function startLearningPublication(routeName) {
 
 
 const RECLASSIFICATION_PRESETS = {
-  necesito_trabajo: {
-    label: "Necesito trabajo",
+  busco_trabajo_oportunidades: {
+    label: "Busco trabajo u oportunidades",
     category: "Trabajo e ingresos",
-    subcategory: "Empleo local / busco trabajo",
+    subcategory: "Vacantes / encargos / trabajo disponible",
     intent: "Busco / Necesito",
-    help: "Personas que buscan empleo, chamba, apoyo temporal o una oportunidad para trabajar."
+    help: "Para personas que buscan oportunidades disponibles: vacantes, encargos, trabajos por día o necesidades que alguien puede atender."
   },
-  activarme_economicamente: {
-    label: "Quiero activarme económicamente",
+  empezar_algo_propio: {
+    label: "Quiero empezar algo propio",
     category: "Trabajo e ingresos",
-    subcategory: "Ofrezco servicio / busco clientes",
+    subcategory: "Ofrezco servicio / emprendimiento propio",
     intent: "Ofrezco / Tengo disponible",
-    help: "Personas que ofrecen servicios, quieren generar ingresos o empezar a vender."
+    help: "Para personas que ofrecen un servicio, venden algo, quieren clientes o empiezan una actividad económica propia."
   },
   busco_ayuda: {
     label: "Busco quién me ayude",
     category: "Servicios para el hogar",
     subcategory: "Necesito apoyo / servicio local",
     intent: "Busco / Necesito",
-    help: "Necesidades de apoyo, limpieza, reparaciones, mantenimiento u oficios."
+    help: "Necesidades de apoyo, limpieza, reparaciones, mantenimiento, oficios o ayuda local."
   },
   movilidad_entregas: {
     label: "Necesito movilidad, entregas o mandados",
     category: "Mensajería y envíos",
     subcategory: "Movilidad / entregas / mandados",
     intent: "Busco / Necesito",
-    help: "Entregas, mandados, documentos, compras, paquetes, viajes o apoyo con traslado."
+    help: "Entregas, mandados, documentos, compras, paquetes, viajes, rutas o apoyo con traslado."
   },
   aprender_algo: {
     label: "Quiero aprender algo",
     category: "Aprende y emprende",
     subcategory: "Capacitación / ruta para generar ingresos",
     intent: "Información o acuerdo local",
-    help: "Contenido o enlaces para aprender, mejorar habilidades o publicar mejor."
+    help: "Contenido o enlaces para aprender, mejorar habilidades, emprender o publicar mejor."
   },
   tengo_negocio: {
     label: "Tengo un negocio",
@@ -1046,26 +1053,65 @@ const RECLASSIFICATION_PRESETS = {
     intent: "Ofrezco / Tengo disponible",
     help: "Tiendas, panaderías, comida, papelerías, estéticas, ferreterías o ventas locales."
   },
-  colaborar_comunidad: {
-    label: "Quiero colaborar con mi comunidad",
-    category: "Colaboración general",
-    subcategory: "Apoyo vecinal / colaboración",
-    intent: "Información o acuerdo local",
-    help: "Apoyos, favores, necesidades generales o colaboración entre personas de la zona."
+  ver_personas_buscando_empleo: {
+    label: "Quiero ver personas que buscan empleo",
+    category: "Personas que buscan empleo",
+    subcategory: "Candidatos / disponibilidad para trabajar",
+    intent: "Ofrezco / Tengo disponible",
+    help: "Para negocios o personas que quieren encontrar gente disponible para trabajar, apoyar por día o colaborar en servicios."
   }
 };
 function reclassificationOptionsHtml(selected = "") {
   return Object.entries(RECLASSIFICATION_PRESETS).map(([key, preset]) => `<option value="${key}" ${key === selected ? "selected" : ""}>${preset.label}</option>`).join("");
 }
+function keywordAny(text, words) {
+  const haystack = normalize(text);
+  return words.some(word => haystack.includes(normalize(word)));
+}
+function inferPublicationClassificationFromText(values = {}) {
+  const title = values.title || values.titulo || "";
+  const description = values.description || values.descripcion || "";
+  const currentCategory = values.category || values.categoria_principal || "";
+  const currentIntent = values.intent || values.intencion || "";
+  const transport = values.transport || values.medio || "";
+  const route = values.route || values.ruta || "";
+  const haystack = normalize([title, description, currentCategory, currentIntent, transport, route].join(" "));
+
+  const personLookingForJob = keywordAny(haystack, [
+    "busco trabajo", "busco empleo", "solicito empleo", "solicito trabajo", "necesito trabajo", "busco chamba", "busco una chamba",
+    "me ofrezco para trabajar", "disponible para trabajar", "busco oportunidad laboral", "trabajo de limpieza", "busco empleo de"
+  ]);
+  if (personLookingForJob) return { key: "ver_personas_buscando_empleo", ...RECLASSIFICATION_PRESETS.ver_personas_buscando_empleo };
+
+  const jobAvailable = keywordAny(haystack, [
+    "vacante", "se solicita", "solicito personal", "busco personal", "contrato", "contratar", "necesito ayudante", "busco ayudante", "ocupo ayudante",
+    "necesito quien", "busco quien", "pago por", "trabajo por dia", "trabajo por día", "oportunidad de trabajo", "ayuda para limpiar", "necesito limpiar", "necesito lavar", "necesito un mandado"
+  ]);
+  if (jobAvailable) return { key: "busco_trabajo_oportunidades", ...RECLASSIFICATION_PRESETS.busco_trabajo_oportunidades };
+
+  const business = keywordAny(haystack, ["tienda", "tiendita", "negocio", "panader", "papeler", "ferreter", "estetica", "estética", "tortiller", "restaurante", "taquer", "miscelanea", "miscelánea", "vendo", "venta de", "ventas", "comida", "postres", "productos"]);
+  if (business) return { key: "tengo_negocio", ...RECLASSIFICATION_PRESETS.tengo_negocio };
+
+  const mobility = keywordAny(haystack, ["mensaj", "entrega", "entregas", "mandado", "mandados", "movilidad", "viaje", "viajes", "traslado", "paquete", "documento", "moto", "bicicleta", "bici", "auto", "camioneta", "mudanza", "ruta", "waze"]);
+  if (mobility) return { key: "movilidad_entregas", ...RECLASSIFICATION_PRESETS.movilidad_entregas };
+
+  const learn = keywordAny(haystack, ["curso", "aprend", "capacit", "certific", "emprend", "plan de negocio", "publicar mejor"]);
+  if (learn) return { key: "aprender_algo", ...RECLASSIFICATION_PRESETS.aprender_algo };
+
+  const homeNeed = keywordAny(haystack, ["limpieza", "limpiar", "lavar", "reparacion", "reparación", "plomer", "electric", "jardiner", "mantenimiento", "carpinter", "pintura", "albañil", "albanil", "detallado", "lavado de auto", "lavar auto"]);
+  if (homeNeed && normalize(currentIntent).includes("busco")) return { key: "busco_ayuda", ...RECLASSIFICATION_PRESETS.busco_ayuda };
+  if (homeNeed && normalize(currentIntent).includes("ofrezco")) return { key: "empezar_algo_propio", ...RECLASSIFICATION_PRESETS.empezar_algo_propio };
+
+  const offer = keywordAny(haystack, ["ofrezco", "hago", "realizo", "servicio de", "doy servicio", "disponible", "trabajo por mi cuenta", "puedo ayudar", "me dedico"]);
+  if (offer) return { key: "empezar_algo_propio", ...RECLASSIFICATION_PRESETS.empezar_algo_propio };
+
+  const need = keywordAny(haystack, ["busco", "necesito", "requiero", "ocupo", "me urge", "ayuda con"]);
+  if (need) return { key: "busco_ayuda", ...RECLASSIFICATION_PRESETS.busco_ayuda };
+
+  return { key: "empezar_algo_propio", ...RECLASSIFICATION_PRESETS.empezar_algo_propio };
+}
 function humanNeedForPublication(item) {
-  const haystack = normalize([item.category, item.subcategory, item.intent, item.title, item.description, item.route, item.transport].join(" "));
-  if (haystack.includes("trabajo") || haystack.includes("empleo") || haystack.includes("vacante") || haystack.includes("busco trabajo")) return { key: "necesito_trabajo", ...RECLASSIFICATION_PRESETS.necesito_trabajo };
-  if (haystack.includes("tienda") || haystack.includes("negocio") || haystack.includes("panader") || haystack.includes("papeler") || haystack.includes("ferreter") || haystack.includes("estetica") || haystack.includes("ventas")) return { key: "tengo_negocio", ...RECLASSIFICATION_PRESETS.tengo_negocio };
-  if (haystack.includes("mensaj") || haystack.includes("entrega") || haystack.includes("mandado") || haystack.includes("viaje") || haystack.includes("movilidad") || haystack.includes("paquete") || haystack.includes("moto") || haystack.includes("camioneta")) return { key: "movilidad_entregas", ...RECLASSIFICATION_PRESETS.movilidad_entregas };
-  if (haystack.includes("curso") || haystack.includes("aprend") || haystack.includes("capacit") || haystack.includes("emprend")) return { key: "aprender_algo", ...RECLASSIFICATION_PRESETS.aprender_algo };
-  if (haystack.includes("limpieza") || haystack.includes("reparacion") || haystack.includes("plomer") || haystack.includes("electric") || haystack.includes("jardiner") || haystack.includes("mantenimiento")) return { key: "busco_ayuda", ...RECLASSIFICATION_PRESETS.busco_ayuda };
-  if (normalize(item.intent).includes("ofrezco")) return { key: "activarme_economicamente", ...RECLASSIFICATION_PRESETS.activarme_economicamente };
-  return { key: "colaborar_comunidad", ...RECLASSIFICATION_PRESETS.colaborar_comunidad };
+  return inferPublicationClassificationFromText(item || {});
 }
 function openReclassifyDialog(id) {
   const item = adminCache.find(p => p.id === id);
@@ -1078,7 +1124,7 @@ function openReclassifyDialog(id) {
   document.getElementById("reclassSubcategory").value = item.subcategory || guess.subcategory;
   document.getElementById("reclassIntent").value = item.intent || guess.intent;
   document.getElementById("reclassStatus").value = item.status || "revision";
-  document.getElementById("reclassHelp").textContent = guess.help;
+  document.getElementById("reclassHelp").textContent = `Sugerencia: ${guess.label}. ${guess.help}`;
   document.getElementById("reclassDialog").showModal();
 }
 function applyReclassificationPreset() {
@@ -1110,44 +1156,60 @@ async function saveReclassification(event) {
 }
 
 const OPPORTUNITY_NEED_MAP = {
-  necesito_trabajo: {
-    label: "Necesito trabajo",
-    categories: ["Trabajo e ingresos", "Redes sociales", "General"],
-    keywords: "trabajo empleo vacante oportunidad ayudante contratar busco solicito disponible oficio chamba"
+  busco_trabajo_oportunidades: {
+    label: "Busco trabajo u oportunidades",
+    categories: ["Trabajo e ingresos", "Servicios para el hogar", "Mensajería y envíos", "Redes sociales"],
+    exactIntent: "demanda",
+    keywords: "vacante solicita personal busco personal contratar contrato necesito ayudante busco ayudante necesito quien busco quien necesito limpiar necesito lavar necesito mandado trabajo por dia trabajo por día pago por encargo oportunidad chamba empleo disponible"
   },
-  activarme_economicamente: {
-    label: "Quiero activarme económicamente",
-    categories: ["Trabajo e ingresos", "Servicios para el hogar", "Tiendas y negocios locales", "Alimentos y ventas", "Mensajería y envíos", "General"],
-    keywords: "ofrezco servicio venta clientes ingreso negocio comida limpieza reparacion entrega mandado emprender"
+  empezar_algo_propio: {
+    label: "Quiero empezar algo propio",
+    categories: ["Trabajo e ingresos", "Servicios para el hogar", "Alimentos y ventas", "Mensajería y envíos", "Tiendas y negocios locales"],
+    exactIntent: "oferta",
+    keywords: "ofrezco servicio hago realizo vendo venta clientes negocio ingresos emprender comida limpieza reparacion entrega mandado jardineria plomeria electricidad"
   },
   busco_ayuda: {
     label: "Busco quién me ayude",
-    categories: ["Servicios para el hogar", "Reparaciones y oficios", "Colaboración general", "Redes sociales", "General"],
-    keywords: "busco necesito ayuda apoyo limpieza reparacion plomeria electricidad carpinteria jardineria mantenimiento"
+    categories: ["Servicios para el hogar", "Reparaciones y oficios", "Colaboración general"],
+    exactIntent: "demanda",
+    keywords: "busco necesito requiero ocupo ayuda apoyo limpieza reparacion plomeria electricidad carpinteria jardineria mantenimiento lavar terreno patio casa hogar"
   },
   movilidad_entregas: {
     label: "Necesito movilidad, entregas o mandados",
     categories: ["Mensajería y envíos", "Viajes compartidos"],
-    keywords: "entrega entregas mandado mandados movilidad viaje viajes traslado paquete documento moto bici auto camioneta mudanza ruta"
+    exactIntent: "mixto",
+    keywords: "entrega entregas mandado mandados movilidad viaje viajes traslado paquete documento moto bici auto camioneta mudanza ruta waze llevar recoger"
   },
   aprender_algo: {
     label: "Quiero aprender algo",
     categories: ["Aprende y emprende"],
-    keywords: "aprende aprender curso capacitacion capacitar oficio emprender negocio publicar mejorar"
+    exactIntent: "aprendizaje",
+    keywords: "aprende aprender curso capacitacion capacitar oficio emprender negocio publicar mejorar habilidades"
   },
   tengo_negocio: {
     label: "Tengo un negocio",
-    categories: ["Tiendas y negocios locales", "Alimentos y ventas", "Redes sociales", "Mensajería y envíos", "General"],
-    keywords: "tienda negocio panaderia papeleria estetica ferreteria tortilleria comida ventas producto local entregas domicilio"
+    categories: ["Tiendas y negocios locales", "Alimentos y ventas", "Redes sociales"],
+    exactIntent: "oferta",
+    keywords: "tienda tiendita negocio panaderia papeleria estetica ferreteria tortilleria comida ventas producto local entregas domicilio restaurante taqueria"
   },
-  colaborar_comunidad: {
-    label: "Quiero colaborar con mi comunidad",
-    categories: ["Colaboración general", "Redes sociales", "General"],
-    keywords: "colaboracion comunidad apoyo ayuda vecinos favor voluntario necesidad local"
+  ver_personas_buscando_empleo: {
+    label: "Quiero ver personas que buscan empleo",
+    categories: ["Personas que buscan empleo", "Trabajo e ingresos", "Redes sociales"],
+    exactIntent: "candidatos",
+    keywords: "busco trabajo busco empleo solicito empleo necesito trabajo busco chamba me ofrezco disponible para trabajar oportunidad laboral trabajo de limpieza empleo en restaurante ayudante"
   }
 };
+function normalizeOpportunityNeedKeys(needs = []) {
+  const map = {
+    necesito_trabajo: "busco_trabajo_oportunidades",
+    activarme_economicamente: "empezar_algo_propio",
+    colaborar_comunidad: "busco_ayuda"
+  };
+  const normalized = (needs || []).map(key => map[key] || key).filter(key => OPPORTUNITY_NEED_MAP[key]);
+  return Array.from(new Set(normalized));
+}
 function selectedOpportunityCriteria(prefs) {
-  const needs = prefs.needs || [];
+  const needs = normalizeOpportunityNeedKeys(prefs.needs || []);
   const categories = new Set();
   const keywords = [];
   const labels = [];
@@ -1158,11 +1220,11 @@ function selectedOpportunityCriteria(prefs) {
     (cfg.categories || []).forEach(c => categories.add(c));
     if (cfg.keywords) keywords.push(cfg.keywords);
   });
-  return { categories: Array.from(categories), keywords, labels };
+  return { categories: Array.from(categories), keywords, labels, needs };
 }
 function defaultOpportunityPreferences() {
   return {
-    needs: ["necesito_trabajo", "activarme_economicamente"],
+    needs: ["busco_trabajo_oportunidades", "empezar_algo_propio"],
     state: DEFAULT_STATE,
     municipality: DEFAULT_MUNICIPALITY
   };
@@ -1171,10 +1233,11 @@ function getOpportunityPreferences() {
   try {
     const saved = JSON.parse(localStorage.getItem(OPPORTUNITY_PREFS_KEY) || "{}");
     const prefs = { ...defaultOpportunityPreferences(), ...saved };
-    if (!prefs.needs && (prefs.categories || prefs.keywords)) {
+    prefs.needs = normalizeOpportunityNeedKeys(prefs.needs || defaultOpportunityPreferences().needs);
+    if (!prefs.needs.length && (prefs.categories || prefs.keywords)) {
       const needs = [];
       if ((prefs.categories || []).includes("Mensajería y envíos") || (prefs.categories || []).includes("Viajes compartidos")) needs.push("movilidad_entregas");
-      if ((prefs.categories || []).includes("General")) needs.push("activarme_economicamente");
+      if ((prefs.categories || []).includes("General")) needs.push("empezar_algo_propio");
       if ((prefs.keywords || []).join(" ").includes("limpieza") || (prefs.keywords || []).join(" ").includes("reparacion")) needs.push("busco_ayuda");
       prefs.needs = needs.length ? needs : defaultOpportunityPreferences().needs;
     }
@@ -1183,16 +1246,17 @@ function getOpportunityPreferences() {
 }
 function renderOpportunitySettings() {
   const prefs = getOpportunityPreferences();
-  document.querySelectorAll('input[name="oppNeed"]').forEach(input => input.checked = (prefs.needs || []).includes(input.value));
+  const needs = normalizeOpportunityNeedKeys(prefs.needs || []);
+  document.querySelectorAll('input[name="oppNeed"]').forEach(input => input.checked = needs.includes(input.value));
   const state = document.getElementById("oppState");
   const municipality = document.getElementById("oppMunicipality");
   if (state) state.value = prefs.state || "";
   if (municipality) municipality.value = prefs.municipality || "";
 }
 function saveOpportunityPreferences() {
-  const needs = Array.from(document.querySelectorAll('input[name="oppNeed"]:checked')).map(i => i.value);
+  const needs = normalizeOpportunityNeedKeys(Array.from(document.querySelectorAll('input[name="oppNeed"]:checked')).map(i => i.value));
   const prefs = {
-    needs: needs.length ? needs : ["activarme_economicamente"],
+    needs: needs.length ? needs : ["empezar_algo_propio"],
     state: document.getElementById("oppState")?.value || "",
     municipality: document.getElementById("oppMunicipality")?.value.trim() || ""
   };
@@ -1205,7 +1269,10 @@ function saveOpportunityPreferences() {
 function opportunityScore(item, prefs) {
   let score = 0;
   const criteria = selectedOpportunityCriteria(prefs);
+  const inferred = humanNeedForPublication(item);
   const haystack = normalize([item.title, item.description, item.category, item.subcategory, item.intent, item.municipality, item.locality, item.route, item.transport, item.name].join(" "));
+  const selectedKeys = criteria.needs || [];
+  if (selectedKeys.includes(inferred.key)) score += 20;
   const categoryMatch = criteria.categories.includes(item.category);
   if (categoryMatch) score += 5;
   let keywordHits = 0;
@@ -1216,15 +1283,16 @@ function opportunityScore(item, prefs) {
   if (keywordHits) score += 8 + keywordHits;
   if (prefs.state && normalize(item.state) === normalize(prefs.state)) score += 2;
   if (prefs.municipality && normalize(item.municipality).includes(normalize(prefs.municipality))) score += 5;
-  if (normalize(item.intent).includes("busco") || normalize(item.intent).includes("necesito")) score += 1;
-  if (!categoryMatch && !keywordHits) score = 0;
+  if (!categoryMatch && !keywordHits && !selectedKeys.includes(inferred.key)) score = 0;
   return score;
 }
 function opportunityReason(item, prefs) {
   const criteria = selectedOpportunityCriteria(prefs);
   const reasons = [];
+  const inferred = humanNeedForPublication(item);
+  if ((criteria.needs || []).includes(inferred.key)) reasons.push(inferred.label);
   const haystack = normalize([item.title, item.description, item.category, item.subcategory, item.intent, item.municipality, item.locality, item.route, item.transport, item.name].join(" "));
-  for (const key of (prefs.needs || [])) {
+  for (const key of (criteria.needs || [])) {
     const cfg = OPPORTUNITY_NEED_MAP[key];
     if (!cfg) continue;
     const words = (cfg.keywords || "").split(/\s+/).map(normalize).filter(Boolean);

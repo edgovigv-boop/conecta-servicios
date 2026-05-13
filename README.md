@@ -1,24 +1,27 @@
-# Conecta Servicios v4.6.1 — Oportunidades con lenguaje humano
+# Conecta Servicios v4.6.2 — Clasificación inteligente de publicaciones
 
 © 2026 Conecta Servicios. Todos los derechos reservados.
 
-Versión enfocada en convertir **Oportunidades para ti** en una experiencia más humana y menos confusa.
+Versión enfocada en que cada publicación nazca mejor clasificada y que **Oportunidades para ti** muestre resultados más precisos por intención real.
 
 ## Cambios principales
 
-- Se eliminó la división confusa entre “Categorías generales” e “Intereses específicos”.
-- Ahora la persona elige afirmaciones basadas en necesidades reales:
-  - Necesito trabajo
-  - Quiero activarme económicamente
+- Se ajustó la sección **Oportunidades para ti** para evitar opciones repetidas o confusas.
+- Nuevas frases de intención:
+  - Busco trabajo u oportunidades
+  - Quiero empezar algo propio
   - Busco quién me ayude
   - Necesito movilidad, entregas o mandados
   - Quiero aprender algo
   - Tengo un negocio
-  - Quiero colaborar con mi comunidad
-- La app traduce esas afirmaciones en categorías y palabras clave internas.
-- Se priorizan coincidencias más precisas por necesidad, zona e interés.
-- Se agregó el acceso **¿Por qué actualizarme en oportunidades y servicios?**.
-- Se conserva PWA instalable, analítica, enlaces directos, cercanía inteligente, Aprende y emprende y protección legal.
+  - Quiero ver personas que buscan empleo
+- Se quitó de la vista principal la opción amplia **Quiero colaborar con mi comunidad**.
+- Se reemplazó **Quiero activarme económicamente** por **Quiero empezar algo propio**.
+- La app interpreta palabras como **Busco**, **Ofrezco**, **Necesito**, **Tengo** y **Vendo** para sugerir mejor categoría, subcategoría e intención.
+- El panel admin conserva el botón **Reclasificar** y ahora sugiere mejor la clasificación de registros antiguos.
+- Al publicar, la vista previa muestra la **clasificación sugerida**.
+- Se priorizan coincidencias por intención, categoría, palabra clave, estado y municipio.
+- No borra registros antiguos y no requiere SQL nuevo.
 
 ## Archivos a subir
 
@@ -33,26 +36,8 @@ Sube o reemplaza en GitHub:
 - `service-worker.js`
 - carpeta `assets/`
 
-No requiere SQL nuevo.
+## Recomendación operativa
 
-
-## v4.6.1 — Reclasificar publicaciones desde administración
-
-Esta versión agrega una herramienta administrativa para limpiar y reordenar registros antiguos sin borrarlos.
-
-Incluye:
-
-- Botón **Reclasificar** en cada publicación del panel admin.
-- Selección de necesidad dentro del sistema:
-  - Necesito trabajo
-  - Quiero activarme económicamente
-  - Busco quién me ayude
-  - Necesito movilidad, entregas o mandados
-  - Quiero aprender algo
-  - Tengo un negocio
-  - Quiero colaborar con mi comunidad
-- Categoría operativa y subcategoría editable.
-- Cambio de intención y estado desde la misma ventana.
-- Permite mantener visibles solo registros útiles y ocultar registros antiguos sin perder historial.
+Después de subir esta versión, entra al panel admin y usa **Reclasificar** para revisar registros antiguos. Si una publicación todavía está ambigua, déjala en revisión u oculta hasta que quede bien ordenada.
 
 No requiere SQL nuevo.

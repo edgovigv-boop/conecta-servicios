@@ -4,7 +4,7 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.6-oportunidades-lenguaje-humano";
+const CACHE_NAME = "conecta-servicios-v4.6.2-clasificacion-inteligente";
 const STATIC_ASSETS = [
   "/",
   "/index.html",
