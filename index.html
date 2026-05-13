@@ -28,7 +28,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="icon" href="assets/icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=4.7-oportunidades-guiadas" />
+  <link rel="stylesheet" href="styles.css?v=4.7-home-visual-final" />
 </head>
 <body>
   <div class="app-shell">
@@ -42,33 +42,56 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </header>
 
     <main class="content">
-      <section id="inicio" class="section active">
-        <div class="hero-modern identity-hero home-simple-hero">
-          <div class="brand-hero-art" aria-hidden="true">
-            <img src="assets/brand-hero.webp" alt="" loading="eager" />
+      <section id="inicio" class="section active home-launch-section">
+        <div class="launch-home">
+          <div class="launch-hero-card" aria-label="Conecta Servicios">
+            <img src="assets/brand-hero.webp" alt="Conecta Servicios: comunidad, movilidad, entregas y oportunidades locales" loading="eager" />
           </div>
-          <div class="hero-stat-pill growth-pill"><span aria-hidden="true">📌</span><strong id="publicationsCount">0</strong> registros <small id="growthMessage">Sé de los primeros en registrarte gratis</small></div>
+
+          <button class="launch-main-button" type="button" onclick="startOpportunityGuide()" aria-label="Iniciar oportunidades para ti">
+            <span class="launch-plus">+</span>
+            <strong>Oportunidades<br>para ti</strong>
+          </button>
+
+          <button class="launch-nearby-button" type="button" onclick="requestNearbyPublications()">
+            <span aria-hidden="true">📍</span>
+            <strong>Publicaciones cerca de mí</strong>
+            <b aria-hidden="true">›</b>
+          </button>
+
+          <div class="launch-future-grid" aria-label="Funciones próximas">
+            <button type="button" class="future-tile" onclick="showToast('Mensajes inteligentes estará disponible próximamente.')">
+              <span aria-hidden="true">💬</span>
+              <strong>Mensajes inteligentes</strong>
+              <small>◷ Próximamente</small>
+            </button>
+            <button type="button" class="future-tile" onclick="showToast('Aprendizaje estará disponible próximamente.')">
+              <span aria-hidden="true">🎓</span>
+              <strong>Aprendizaje</strong>
+              <small>◷ Próximamente</small>
+            </button>
+          </div>
+
+          <div class="launch-stats-card">
+            <span class="stats-icon" aria-hidden="true">👥</span>
+            <div>
+              <strong><span id="publicationsCount">0</span> registros</strong>
+              <p id="growthMessage">Únete a más vecinos que ya están conectando oportunidades.</p>
+            </div>
+            <span class="trend-icon" aria-hidden="true">↗</span>
+          </div>
+
+          <div class="install-card launch-install-card" id="installCard">
+            <span class="install-logo" aria-hidden="true"></span>
+            <div>
+              <strong>Instala Conecta Servicios</strong>
+              <p>Añade la app a tu pantalla de inicio y accede más rápido.</p>
+            </div>
+            <button class="btn-small btn-green" id="installAppButton" type="button" onclick="installApp()">Instalar</button>
+            <button class="btn-small btn-ghost install-help-mini" type="button" onclick="showInstallHelp()">¿Cómo?</button>
+          </div>
           <p class="sync-status visually-hidden" id="syncStatus" aria-live="polite">Conectando con la base de datos...</p>
         </div>
-
-        <div class="home-shortcuts modern-shortcuts system-shortcuts home-primary-actions home-v47-actions">
-          <button class="shortcut-card opportunities featured-opportunity mega-opportunity opportunity-plus-card" onclick="startOpportunityGuide()">
-            <span class="mega-plus">+</span><div><strong>Oportunidades para ti</strong><small>La app te guía paso a paso hasta publicar una oportunidad clara y bien clasificada.</small></div><b>›</b>
-          </button>
-          <button class="shortcut-card nearby" onclick="requestNearbyPublications()">
-            <span>📍</span><div><strong>Publicaciones cerca de mí</strong><small>Consulta resultados reales por categoría, municipio y palabra clave.</small></div><b>›</b>
-          </button>
-        </div>
-
-        <div class="install-card" id="installCard">
-          <div>
-            <strong>Instala Conecta Servicios</strong>
-            <p>Agrega la app a tu pantalla de inicio para entrar más rápido, como una aplicación.</p>
-          </div>
-          <button class="btn-small btn-purple" id="installAppButton" type="button" onclick="installApp()">Instalar app</button>
-          <button class="btn-small btn-ghost" type="button" onclick="showInstallHelp()">¿Cómo?</button>
-        </div>
-
       </section>
 
       <section id="oportunidades" class="section info-section opportunities-section clean-opportunities opportunity-guide-start">
@@ -539,7 +562,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
     <nav class="bottom-nav system-nav">
       <button onclick="showSection('inicio')">🏠<span>Inicio</span></button>
       <button onclick="startOpportunityGuide()">🎯<span>Para ti</span></button>
-      <button onclick="startOpportunityGuide()">➕<span>Oportunidad</span></button>
+      <button onclick="startOpportunityGuide()">➕<span>Publica</span></button>
       <button onclick="showSection('oficina')">🏢<span>Oficina</span></button>
     </nav>
   </div>

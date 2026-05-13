@@ -1,4 +1,5 @@
-# Conecta Servicios v4.7 — Oportunidades guiadas
+# Conecta Servicios v4.7 — Oportunidades guiadas con home visual final
+
 
 © 2026 Conecta Servicios. Todos los derechos reservados.
 
@@ -25,3 +26,18 @@
 - manifest.json
 - service-worker.js
 - assets/
+
+## Ajuste visual final integrado
+
+- Se integra la imagen publicitaria autorizada en la pantalla principal.
+- Se reemplaza el símbolo triangular por un logo circular con nodos conectados.
+- El botón principal queda redondo, morado y con efecto de ondas: “Oportunidades para ti”.
+- “Publicaciones cerca de mí” queda como acceso secundario.
+- “Mensajes inteligentes” y “Aprendizaje” quedan como tarjetas “Próximamente”.
+- Se conservan las oportunidades guiadas, publicación paso a paso, clasificación y administración.
+
+Mensaje de commit sugerido:
+
+```
+Actualizar a v4.7 oportunidades guiadas
+```
