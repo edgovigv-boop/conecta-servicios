@@ -28,7 +28,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="icon" href="assets/icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=4.4-app-instalable" />
+  <link rel="stylesheet" href="styles.css?v=4.4.1-oportunidades-pwa" />
 </head>
 <body>
   <div class="app-shell">
@@ -64,6 +64,9 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <button class="shortcut-card nearby" onclick="requestNearbyPublications()">
             <span>📍</span><strong>Publicaciones cerca de mí</strong><b>›</b>
           </button>
+          <button class="shortcut-card opportunities" onclick="showSection('oportunidades')">
+            <span>🎯</span><strong>Oportunidades para ti</strong><b>›</b>
+          </button>
           <button class="shortcut-card delivery" onclick="applyCategoryAndShow('Mensajería y envíos')">
             <span>📦</span><strong>Mensajería y envíos</strong><b>›</b>
           </button>
@@ -86,6 +89,60 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <p>Todo convive en un solo espacio. El texto de cada publicación deja claro si alguien busca ayuda, ofrece servicio, comparte viaje o hace envíos.</p>
         </div>
       </section>
+
+      <section id="oportunidades" class="section info-section opportunities-section">
+        <div class="opportunities-hero">
+          <span class="learn-badge">Avisos inteligentes locales</span>
+          <h2>Oportunidades para ti</h2>
+          <p>Elige qué te interesa y la app te mostrará publicaciones relacionadas con tu zona, tus servicios o tus necesidades.</p>
+        </div>
+
+        <div class="notice-card slim">
+          <strong>Configura tus intereses</strong>
+          <p>Por ahora las oportunidades se muestran dentro de la app. Más adelante podremos activar avisos más avanzados con consentimiento.</p>
+        </div>
+
+        <div class="form-card opportunity-settings">
+          <h3>¿Qué quieres encontrar?</h3>
+          <div class="choice-grid opportunity-checks">
+            <label class="checkbox-line"><input type="checkbox" name="oppCategory" value="Mensajería y envíos" /> Mensajería y envíos</label>
+            <label class="checkbox-line"><input type="checkbox" name="oppCategory" value="Viajes compartidos" /> Viajes compartidos</label>
+            <label class="checkbox-line"><input type="checkbox" name="oppCategory" value="General" /> Servicios, negocios y ayuda general</label>
+          </div>
+
+          <h3>Intereses específicos</h3>
+          <div class="choice-grid opportunity-checks">
+            <label class="checkbox-line"><input type="checkbox" name="oppKeyword" value="trabajo empleo vacante oportunidad" /> Trabajo y oportunidades</label>
+            <label class="checkbox-line"><input type="checkbox" name="oppKeyword" value="tienda negocio panaderia papeleria estetica ferreteria tortilleria" /> Tiendas y negocios locales</label>
+            <label class="checkbox-line"><input type="checkbox" name="oppKeyword" value="limpieza casa negocio patio" /> Limpieza</label>
+            <label class="checkbox-line"><input type="checkbox" name="oppKeyword" value="reparacion mantenimiento plomeria electricidad carpinteria" /> Reparaciones y oficios</label>
+            <label class="checkbox-line"><input type="checkbox" name="oppKeyword" value="comida alimentos ventas pan antojitos" /> Alimentos y ventas</label>
+          </div>
+
+          <div class="form-grid">
+            <label>Estado
+              <select id="oppState">
+                <option value="México">México</option>
+                <option value="Morelos">Morelos</option>
+              </select>
+            </label>
+            <label>Municipio
+              <input id="oppMunicipality" type="text" value="Chapultepec" placeholder="Ej. Chapultepec, Mexicaltzingo, Cuernavaca" />
+            </label>
+          </div>
+          <button class="btn-big btn-purple" type="button" onclick="saveOpportunityPreferences()">Guardar y ver oportunidades</button>
+        </div>
+
+        <div class="opportunity-results-header">
+          <div>
+            <h3>Coincidencias recomendadas</h3>
+            <p id="opportunitySummary" class="muted">Configura tus intereses para ver oportunidades.</p>
+          </div>
+          <button class="btn-small btn-outline" onclick="renderOpportunities(true)">Actualizar</button>
+        </div>
+        <div id="opportunitiesList" class="compact-list opportunities-list"></div>
+      </section>
+
 
       <section id="registro" class="section">
         <div class="section-header compact">
@@ -324,6 +381,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <button class="mini-card" onclick="showSection('planes')"><strong>Planes y destacados</strong><small>Solicitar por WhatsApp</small></button>
           <button class="mini-card" onclick="showSection('notificaciones')"><strong>Notificaciones</strong><small>Elige avisos útiles</small></button>
           <button class="mini-card" onclick="showSection('aprende')"><strong>Aprende y emprende</strong><small>Rutas para generar ingresos</small></button>
+          <button class="mini-card" onclick="showSection('oportunidades')"><strong>Oportunidades para ti</strong><small>Coincidencias según tus intereses</small></button>
         </div>
         <div id="adminEntry" class="admin-entry hidden">
           <hr />
@@ -606,7 +664,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
       <button onclick="showSection('inicio')">🏠<span>Inicio</span></button>
       <button onclick="showSection('publicaciones')">🔎<span>Publicaciones</span></button>
       <button onclick="startWizard()">➕<span>Publica</span></button>
-      <button onclick="showSection('aprende')">📚<span>Aprende</span></button>
+      <button onclick="showSection('oportunidades')">🎯<span>Para ti</span></button>
       <button onclick="showSection('oficina')">🏢<span>Oficina</span></button>
     </nav>
   </div>
