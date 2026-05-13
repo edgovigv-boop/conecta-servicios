@@ -988,3 +988,65 @@ body {
 }
 .reclass-dialog .dialog-form { max-width: 680px; }
 .reclass-dialog .notice-card { margin-top: 8px; }
+
+
+/* v4.6.3 home simple y rutas claras */
+.home-simple-hero { padding-bottom: 12px; }
+.home-simple-hero .brand-hero-art { margin-bottom: 8px; }
+.home-simple-hero h1, .home-simple-hero > p:not(.sync-status) { display: none; }
+.growth-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  animation: softPulse 2.8s ease-in-out infinite;
+}
+.growth-pill small {
+  display: block;
+  width: 100%;
+  color: #6f42c1;
+  font-weight: 800;
+  font-size: .76rem;
+  letter-spacing: .01em;
+  animation: fadeUp .35s ease;
+}
+.home-primary-actions { margin-top: 12px; }
+.mega-opportunity {
+  transform: scale(1.02);
+  border: 1px solid rgba(111,66,193,.22);
+  background: linear-gradient(135deg, #ffffff, #f6f1ff);
+  box-shadow: 0 18px 38px rgba(111,66,193,.18);
+}
+.mega-opportunity strong { font-size: 1.12rem; }
+.public-action-under { margin: 18px 0 10px; }
+.larger-publica { width: 140px; height: 140px; }
+.larger-publica .circle-plus { font-size: 2.4rem; }
+.guided-opportunities .need-option { align-items: center; }
+.action-option {
+  width: 100%;
+  border: 1px solid rgba(111,66,193,.12);
+  background: #fff;
+  border-radius: 18px;
+  padding: 14px;
+  text-align: left;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  cursor: pointer;
+}
+.action-option b { font-size: 1.4rem; color: var(--morado); }
+.guided-panel { display: grid; gap: 10px; margin-top: 12px; }
+.guided-card {
+  background: #fff;
+  border: 1px solid rgba(40,167,69,.15);
+  border-radius: 20px;
+  box-shadow: 0 12px 28px rgba(30,30,60,.08);
+  overflow: hidden;
+}
+.guided-card .compact-detail { display: block; }
+.course-blocks { margin: 18px 0; }
+.course-grid { margin-bottom: 16px; }
+@keyframes softPulse {
+  0%,100% { box-shadow: 0 8px 22px rgba(111,66,193,.10); transform: translateY(0); }
+  50% { box-shadow: 0 12px 30px rgba(111,66,193,.20); transform: translateY(-1px); }
+}

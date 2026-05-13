@@ -28,7 +28,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="icon" href="assets/icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=4.6-oportunidades-lenguaje-humano" />
+  <link rel="stylesheet" href="styles.css?v=4.6.3-rutas-claras-home-simple" />
 </head>
 <body>
   <div class="app-shell">
@@ -43,29 +43,27 @@ Todo uso requiere autorización expresa y por escrito del titular.
 
     <main class="content">
       <section id="inicio" class="section active">
-        <div class="hero-modern identity-hero">
+        <div class="hero-modern identity-hero home-simple-hero">
           <div class="brand-hero-art" aria-hidden="true">
             <img src="assets/brand-hero.webp" alt="" loading="eager" />
           </div>
-          <h1>¿Qué oportunidad necesitas encontrar hoy?</h1>
-          <p>Conecta Servicios te acerca oportunidades reales según tu zona, tus intereses y lo que necesitas resolver.</p>
-          <div class="hero-stat-pill"><span aria-hidden="true">📌</span><strong id="publicationsCount">0</strong> registros</div>
+          <div class="hero-stat-pill growth-pill"><span aria-hidden="true">📌</span><strong id="publicationsCount">0</strong> registros <small id="growthMessage">Sé de los primeros en registrarte gratis</small></div>
           <p class="sync-status visually-hidden" id="syncStatus" aria-live="polite">Conectando con la base de datos...</p>
         </div>
 
-        <div class="home-main-action">
-          <button class="publica-circle wave-action" onclick="startWizard()" aria-label="Publica">
-            <span class="circle-plus">+</span>
-            <strong>PUBLICA</strong>
+        <div class="home-shortcuts modern-shortcuts system-shortcuts home-primary-actions">
+          <button class="shortcut-card opportunities featured-opportunity mega-opportunity" onclick="showSection('oportunidades')">
+            <span>🎯</span><div><strong>Oportunidades para ti</strong><small>Rutas claras para activar, publicar o encontrar apoyo.</small></div><b>›</b>
+          </button>
+          <button class="shortcut-card nearby" onclick="requestNearbyPublications()">
+            <span>📍</span><div><strong>Publicaciones cerca de mí</strong><small>Resultados reales por ubicación y municipio.</small></div><b>›</b>
           </button>
         </div>
 
-        <div class="home-shortcuts modern-shortcuts system-shortcuts">
-          <button class="shortcut-card opportunities featured-opportunity" onclick="showSection('oportunidades')">
-            <span>🎯</span><div><strong>Oportunidades para ti</strong><small>Según tu zona e intereses</small></div><b>›</b>
-          </button>
-          <button class="shortcut-card nearby" onclick="requestNearbyPublications()">
-            <span>📍</span><div><strong>Publicaciones cerca de mí</strong><small>Explora lo más cercano a tu ubicación</small></div><b>›</b>
+        <div class="home-main-action public-action-under">
+          <button class="publica-circle wave-action larger-publica" onclick="startWizard()" aria-label="Publica">
+            <span class="circle-plus">+</span>
+            <strong>PUBLICA</strong>
           </button>
         </div>
 
@@ -78,61 +76,33 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <button class="btn-small btn-ghost" type="button" onclick="showInstallHelp()">¿Cómo?</button>
         </div>
 
-        <div class="notice-card slim modern-note">
-          <strong>Un sistema de oportunidades</strong>
-          <p>Las oportunidades no deberían perderse entre publicaciones. Conecta Servicios las ordena por zona, interés y necesidad para que encuentres apoyo, trabajo, servicios o clientes cerca de ti.</p>
-        </div>
       </section>
 
       <section id="oportunidades" class="section info-section opportunities-section">
         <div class="opportunities-hero">
-          <span class="learn-badge">Avisos inteligentes locales</span>
+          <span class="learn-badge">Sistema de oportunidades</span>
           <h2>Oportunidades para ti</h2>
-          <p>Elige qué te interesa y la app te mostrará publicaciones relacionadas con tu zona, tus servicios o tus necesidades.</p>
+          <p>Elige una ruta y la app te lleva al siguiente paso. Las búsquedas reales viven en <strong>Publicaciones cerca de mí</strong>.</p>
         </div>
 
         <div class="notice-card slim">
-          <strong>Configura tus intereses</strong>
-          <p>Por ahora las oportunidades se muestran dentro de la app. Más adelante podremos activar avisos más avanzados con consentimiento.</p>
+          <strong>Rutas guiadas, no filtros confusos</strong>
+          <p>Esta sección orienta: publicar, empezar, aprender o mejorar. Para ver anuncios y personas cercanas usa Publicaciones cerca de mí.</p>
         </div>
 
-        <div class="form-card opportunity-settings human-opportunities">
-          <h3>¿Qué oportunidad necesitas encontrar?</h3>
-          <p class="muted small">Marca las frases que más se parecen a tu situación. La app las traduce en oportunidades reales por zona e interés.</p>
-          <div class="human-need-grid opportunity-checks">
-            <label class="need-option"><input type="checkbox" name="oppNeed" value="busco_trabajo_oportunidades" /> <span><strong>Busco trabajo u oportunidades</strong><small>Vacantes, encargos, trabajos por día o necesidades locales que alguien puede atender.</small></span></label>
-            <label class="need-option"><input type="checkbox" name="oppNeed" value="empezar_algo_propio" /> <span><strong>Quiero empezar algo propio</strong><small>Ofrecer un servicio, vender algo, conseguir clientes o iniciar una actividad económica.</small></span></label>
-            <label class="need-option"><input type="checkbox" name="oppNeed" value="busco_ayuda" /> <span><strong>Busco quién me ayude</strong><small>Apoyo en casa, reparaciones, limpieza, oficios o servicios cercanos.</small></span></label>
-            <label class="need-option"><input type="checkbox" name="oppNeed" value="movilidad_entregas" /> <span><strong>Necesito movilidad, entregas o mandados</strong><small>Viajes compartidos, entregas locales, documentos, compras, paquetes o mudanzas pequeñas.</small></span></label>
-            <label class="need-option"><input type="checkbox" name="oppNeed" value="aprender_algo" /> <span><strong>Quiero aprender algo</strong><small>Rutas para capacitarte, emprender, publicar mejor y convertir habilidades en oportunidades.</small></span></label>
-            <label class="need-option"><input type="checkbox" name="oppNeed" value="tengo_negocio" /> <span><strong>Tengo un negocio</strong><small>Tiendas, comida, ventas, negocios locales y conexión con mensajeros o clientes cercanos.</small></span></label>
-            <label class="need-option"><input type="checkbox" name="oppNeed" value="ver_personas_buscando_empleo" /> <span><strong>Quiero ver personas que buscan empleo</strong><small>Personas disponibles para trabajar, apoyar por día o integrarse a un negocio o servicio.</small></span></label>
+        <div class="form-card opportunity-settings guided-opportunities">
+          <h3>¿Qué quieres lograr?</h3>
+          <div class="human-need-grid opportunity-actions">
+            <button type="button" class="need-option action-option" onclick="openGuidedOpportunity('empezar')"><span><strong>Quiero empezar algo propio</strong><small>Ideas de servicios, alimentos, limpieza, entregas, reparaciones y publicar mi primer servicio.</small></span><b>›</b></button>
+            <button type="button" class="need-option action-option" onclick="openGuidedOpportunity('negocio')"><span><strong>Tengo un negocio</strong><small>Publica tu negocio, encuentra mensajeros locales o mejora tu forma de vender.</small></span><b>›</b></button>
+            <button type="button" class="need-option action-option" onclick="showSection('aprende')"><span><strong>Aprende y emprende</strong><small>Rutas para generar ingresos, cursos básicos y cursos profesionales.</small></span><b>›</b></button>
+            <button type="button" class="need-option action-option" onclick="requestNearbyPublications()"><span><strong>Busco quién me ayude</strong><small>Ve servicios, personas disponibles, negocios, mandados y apoyo cerca de ti.</small></span><b>›</b></button>
           </div>
 
           <button class="btn-small btn-outline why-update" type="button" onclick="showSection('actualizarme')">📘 ¿Por qué actualizarme en oportunidades y servicios?</button>
-
-          <div class="form-grid">
-            <label>Estado
-              <select id="oppState">
-                <option value="México">México</option>
-                <option value="Morelos">Morelos</option>
-              </select>
-            </label>
-            <label>Municipio
-              <input id="oppMunicipality" type="text" value="Chapultepec" placeholder="Ej. Chapultepec, Mexicaltzingo, Cuernavaca" />
-            </label>
-          </div>
-          <button class="btn-big btn-purple" type="button" onclick="saveOpportunityPreferences()">Guardar y ver oportunidades</button>
         </div>
 
-        <div class="opportunity-results-header">
-          <div>
-            <h3>Coincidencias recomendadas</h3>
-            <p id="opportunitySummary" class="muted">Configura tus intereses para ver oportunidades.</p>
-          </div>
-          <button class="btn-small btn-outline" onclick="renderOpportunities(true)">Actualizar</button>
-        </div>
-        <div id="opportunitiesList" class="compact-list opportunities-list"></div>
+        <div id="guidedOpportunityPanel" class="guided-panel"></div>
       </section>
 
 
@@ -549,6 +519,24 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <p>Aprende una habilidad, organiza tu servicio, publícalo y conecta con personas de tu zona.</p>
         </div>
 
+        <div class="course-blocks">
+          <h3>Cursos básicos para comenzar</h3>
+          <div class="mini-grid course-grid">
+            <button class="mini-card" onclick="showLearningGuide('publicar')"><strong>Cómo publicar mejor tu servicio</strong><small>Escribe claro, vende mejor y evita confusiones.</small></button>
+            <button class="mini-card" onclick="showLearningGuide('cliente')"><strong>Atención al cliente por WhatsApp</strong><small>Responde, acuerda y genera confianza.</small></button>
+            <button class="mini-card" onclick="showLearningGuide('precios')"><strong>Cómo poner precio a tu trabajo</strong><small>Costos, zona, tiempo y acuerdos claros.</small></button>
+            <button class="mini-card" onclick="showLearningGuide('primeros_clientes')"><strong>Cómo conseguir tus primeros clientes</strong><small>Promoción local y publicaciones útiles.</small></button>
+          </div>
+
+          <h3>Cursos profesionales y oficios</h3>
+          <div class="mini-grid course-grid">
+            <button class="mini-card" onclick="startLearningPublication('Plomería básica')"><strong>Plomería básica</strong><small>Servicios sencillos y seguros para el hogar.</small></button>
+            <button class="mini-card" onclick="startLearningPublication('Electricidad básica')"><strong>Electricidad básica</strong><small>Instalaciones menores y mantenimiento simple.</small></button>
+            <button class="mini-card" onclick="startLearningPublication('Reparaciones del hogar')"><strong>Reparaciones del hogar</strong><small>Mantenimiento, pintura, ajustes y arreglos.</small></button>
+            <button class="mini-card" onclick="startLearningPublication('Manejo higiénico de alimentos')"><strong>Manejo higiénico de alimentos</strong><small>Base para vender comida con más confianza.</small></button>
+          </div>
+        </div>
+
         <h3>Rutas principales para generar ingresos</h3>
         <div class="learning-grid primary-routes">
           <article class="learning-card featured">
@@ -759,6 +747,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.6.1-reclasificar-publicaciones"></script>
+  <script src="app.js?v=4.6.3-rutas-claras-home-simple"></script>
 </body>
 </html>

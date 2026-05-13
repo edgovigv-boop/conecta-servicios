@@ -29,7 +29,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v41";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.6.2-clasificacion-inteligente";
+const PWA_VERSION = "v4.6.3-rutas-claras-home-simple";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -682,7 +682,31 @@ function renderPublications() {
 }
 function renderLoading() { const list = document.getElementById("publicationsList"); if (list) list.innerHTML = `<div class="empty-state">Cargando registros...</div>`; }
 function renderAll() { renderPublications(); updateHomeCounts(); renderOpportunities(false); if (adminUnlocked) renderAdminPublications(); }
-function updateHomeCounts() { const count = document.getElementById("publicationsCount"); if (count) count.textContent = publicationsCache.length; }
+setInterval(updateHomeCounts, 3500);
+function updateHomeCounts() {
+  const count = document.getElementById("publicationsCount");
+  const growth = document.getElementById("growthMessage");
+  const total = publicationsCache.length;
+  if (count) count.textContent = total;
+  if (growth) {
+    let messages = [
+      "Sé de los primeros en registrarte gratis",
+      "Tu oportunidad puede estar cerca de ti",
+      "Publica hoy y empieza a conectar"
+    ];
+    if (total >= 30) messages = [
+      "Comunidad en crecimiento: súmate gratis",
+      "Sé parte de la nueva economía local",
+      "Tu servicio puede estar más cerca de quien lo necesita"
+    ];
+    if (total >= 100) messages = [
+      "Las oportunidades locales están tomando fuerza",
+      "Conecta, publica y activa tu economía local",
+      "No te quedes fuera de las oportunidades de tu zona"
+    ];
+    growth.textContent = messages[Math.floor(Date.now() / 3500) % messages.length];
+  }
+}
 function contactPublication(id) {
   const item = publicationsCache.find(p => p.id === id) || adminCache.find(p => p.id === id);
   if (!item) return;
@@ -1368,6 +1392,31 @@ function renderOpportunities(scrollToList = false) {
   }
 }
 
+function openGuidedOpportunity(type) {
+  const panel = document.getElementById("guidedOpportunityPanel");
+  if (!panel) return;
+  trackEvent("oportunidad_ruta_guiada", null, { tipo: type });
+  const templates = {
+    empezar: {
+      icon: "🚀",
+      title: "Quiero empezar algo propio",
+      text: "Empieza con una habilidad, un producto o un servicio sencillo. Elige una ruta, prepara una publicación clara y prueba con personas de tu zona.",
+      items: ["Ideas de servicios para iniciar", "Alimentos y ventas", "Limpieza", "Entregas y mandados", "Reparaciones", "Publicar mi primer servicio"],
+      actions: `<button class="btn-small btn-purple" onclick="showSection('aprende')">Ver rutas para generar ingresos</button><button class="btn-small btn-green" onclick="startWizard('Ofrezco servicio o negocio')">Publicar mi primer servicio</button>`
+    },
+    negocio: {
+      icon: "🏪",
+      title: "Tengo un negocio",
+      text: "Haz visible tu negocio, muestra qué vendes, horarios, zona y WhatsApp. También puedes conectar con mensajeros locales para entregas a domicilio.",
+      items: ["Publicar mi negocio", "Contactar mensajeros independientes", "Publicar lo que vendo", "Compartir ubicación o redes", "Mejorar mi publicación"],
+      actions: `<button class="btn-small btn-purple" onclick="startLearningPublication('Tiendas y negocios locales')">Publicar mi negocio</button><button class="btn-small btn-outline" onclick="applyCategoryAndShow('Mensajería y envíos')">Buscar mensajeros locales</button>`
+    }
+  };
+  const data = templates[type] || templates.empezar;
+  panel.innerHTML = `<article class="guided-card open"><div class="compact-summary no-toggle"><span class="compact-icon">${data.icon}</span><span><span class="compact-title">${data.title}</span><span class="compact-meta">Ruta guiada de Conecta Servicios</span></span></div><div class="compact-detail"><p>${data.text}</p><ul>${data.items.map(i => `<li>${i}</li>`).join("")}</ul><div class="detail-actions">${data.actions}</div></div></article>`;
+  panel.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
 async function loadAnalyticsData() {
   const panel = document.getElementById("analyticsPanel");
   if (panel) panel.innerHTML = `<div class="empty-state">Cargando analítica...</div>`;
@@ -1448,6 +1497,14 @@ function showLearningGuide(type) {
     cliente: {
       title: "🤝 Atención al cliente",
       text: "Responde rápido, confirma lugar y horario, explica condiciones antes de aceptar, cumple lo prometido y pide recomendaciones cuando el servicio salga bien."
+    },
+    precios: {
+      title: "💵 Cómo poner precio a tu trabajo",
+      text: "Calcula materiales, tiempo, traslado y dificultad. Explica desde el inicio qué incluye tu precio y qué cosas se cobran aparte."
+    },
+    primeros_clientes: {
+      title: "📣 Cómo conseguir tus primeros clientes",
+      text: "Publica claro, comparte tu enlace en grupos cercanos, pide recomendaciones y empieza con servicios sencillos que puedas cumplir bien."
     }
   };
   const item = guides[type] || guides.publicar;
