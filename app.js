@@ -29,7 +29,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v41";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.6.3-rutas-claras-home-simple";
+const PWA_VERSION = "v4.6.4-home-rutas-publicaciones-limpias";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -241,7 +241,7 @@ function showSection(id, push = true) {
   currentSection = id;
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   target.classList.add("active");
-  const titles = { inicio:"Conecta Servicios", registro:"Publica", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades", actualizarme:"Por qué actualizarme" };
+  const titles = { inicio:"Conecta Servicios", registro:"Publica", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme" };
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
@@ -506,6 +506,8 @@ function setCategoryChip(button) {
   document.querySelectorAll(".filter-chip").forEach(b => b.classList.remove("active"));
   button.classList.add("active");
   document.getElementById("categoryFilter").value = button.dataset.filterCategory || "";
+  const chipSearch = document.getElementById("chipSearchFilter");
+  if (chipSearch) chipSearch.value = button.dataset.filterSearch || "";
   renderPublications();
 }
 function applyCategoryAndShow(category) {
@@ -536,7 +538,7 @@ async function requestNearbyPublications() {
     if (stateEl) stateEl.value = nearbyFallbackState;
     if (munEl) { munEl.value = nearbyFallbackMunicipality; munEl.disabled = false; }
     const controls = document.getElementById("nearbyControls");
-    if (controls) controls.classList.remove("hidden");
+    if (controls) controls.classList.add("hidden");
     showToast("Mostrando publicaciones cercanas");
     renderPublications();
   } catch (error) {
@@ -583,6 +585,7 @@ function filterPublications(list) {
   const state = document.getElementById("stateFilter")?.value || "";
   const municipality = document.getElementById("municipalityFilter")?.value || "";
   const search = normalize(document.getElementById("mainSearch")?.value || "");
+  const chipSearch = normalize(document.getElementById("chipSearchFilter")?.value || "");
   updateFilterSummary(state, municipality);
   const nearbySummary = document.getElementById("nearbySummary");
   if (nearbySummary) nearbySummary.classList.toggle("hidden", !nearbyMode || !userLocation);
@@ -590,7 +593,10 @@ function filterPublications(list) {
   const baseFiltered = list.filter(item => {
     const matchesCategory = !category || item.category === category;
     const haystack = normalize([folio(item), item.name, item.title, item.description, item.category, item.subcategory, item.state, item.municipality, item.locality, item.route, item.transport].join(" "));
-    return matchesCategory && (!search || haystack.includes(search));
+    const matchesText = !search || haystack.includes(search);
+    const chipWords = chipSearch ? chipSearch.split(/\s+/).filter(Boolean) : [];
+    const matchesChip = !chipWords.length || chipWords.some(word => haystack.includes(word));
+    return matchesCategory && matchesText && matchesChip;
   });
 
   if (nearbyMode && userLocation) {
@@ -623,10 +629,7 @@ function filterPublications(list) {
 function updateFilterSummary(state, municipality) {
   const el = document.getElementById("filterSummary");
   if (!el) return;
-  if (nearbyMode && userLocation) { el.textContent = `Mostrando cercanas por GPS y registros de ${nearbyFallbackMunicipality || "tu municipio"} sin ubicación exacta (radio: ${getNearbyRadiusKm()} km)`; return; }
-  if (!state) el.textContent = "Mostrando resultados para: Todo México";
-  else if (!municipality) el.textContent = `Mostrando resultados para: ${state}`;
-  else el.textContent = `Mostrando resultados para: ${municipality}, ${state}`;
+  el.textContent = "";
 }
 function categoryIcon(category) { return category === "Viajes compartidos" ? "🚘" : category === "Mensajería y envíos" ? "📦" : category === "Redes sociales" ? "🔗" : "📌"; }
 function compactPublicationCard(item) {
@@ -1364,57 +1367,11 @@ function toggleOpportunityDetail(id) {
   }
 }
 function renderOpportunities(scrollToList = false) {
-  const list = document.getElementById("opportunitiesList");
-  const summary = document.getElementById("opportunitySummary");
-  if (!list) return;
-  const prefs = getOpportunityPreferences();
-  renderOpportunitySettings();
-  const ranked = publicationsCache
-    .map(item => ({ item, score: opportunityScore(item, prefs) }))
-    .filter(row => row.score > 0)
-    .sort((a,b) => b.score - a.score || String(b.item.createdAt).localeCompare(String(a.item.createdAt)))
-    .slice(0, 20);
-  const criteria = selectedOpportunityCriteria(prefs);
-  if (summary) {
-    const place = prefs.municipality ? `${prefs.municipality}, ${prefs.state || ""}` : (prefs.state || "Todo México");
-    summary.textContent = ranked.length ? `Encontramos ${ranked.length} oportunidades para: ${criteria.labels.join(", ") || "tus intereses"} en ${place}.` : `Aún no encontramos coincidencias exactas para ${criteria.labels.join(", ") || "tus intereses"} en ${place}. Puedes ampliar zona o elegir otra necesidad.`;
-  }
-  const learnCard = (prefs.needs || []).includes("aprender_algo") ? `<article class="compact-publication opportunity-card learning-opportunity-card open">
-    <div class="compact-summary no-toggle"><span class="compact-icon">📘</span><span><span class="compact-title">Quiero aprender algo útil</span><span class="compact-meta">Rutas para capacitarte, emprender y publicar mejor tus servicios.</span></span></div>
-    <div class="compact-detail"><span class="category-badge">Aprende y emprende</span><p>Explora rutas como alimentos y ventas, mensajería, limpieza, reparaciones, negocios locales y cómo publicar mejor tu servicio.</p><div class="detail-actions"><button class="btn-small btn-purple" onclick="showSection('aprende')">Ver rutas</button><button class="btn-small btn-green" onclick="startWizard('Ofrezco servicio o negocio')">Publicar mi servicio</button></div></div>
-  </article>` : "";
-  list.innerHTML = (learnCard || ranked.length)
-    ? learnCard + ranked.map(row => opportunityCard(row.item, opportunityReason(row.item, prefs))).join("")
-    : `<div class="empty-state">Todavía no hay oportunidades con esos intereses. Puedes revisar Publicaciones o cambiar tus preferencias.</div>`;
-  if (scrollToList) {
-    trackEvent("click_oportunidades", null, { municipio: prefs.municipality, estado_nombre: prefs.state });
-    list.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
+  trackEvent("vista_oportunidades_rutas");
 }
 
 function openGuidedOpportunity(type) {
-  const panel = document.getElementById("guidedOpportunityPanel");
-  if (!panel) return;
-  trackEvent("oportunidad_ruta_guiada", null, { tipo: type });
-  const templates = {
-    empezar: {
-      icon: "🚀",
-      title: "Quiero empezar algo propio",
-      text: "Empieza con una habilidad, un producto o un servicio sencillo. Elige una ruta, prepara una publicación clara y prueba con personas de tu zona.",
-      items: ["Ideas de servicios para iniciar", "Alimentos y ventas", "Limpieza", "Entregas y mandados", "Reparaciones", "Publicar mi primer servicio"],
-      actions: `<button class="btn-small btn-purple" onclick="showSection('aprende')">Ver rutas para generar ingresos</button><button class="btn-small btn-green" onclick="startWizard('Ofrezco servicio o negocio')">Publicar mi primer servicio</button>`
-    },
-    negocio: {
-      icon: "🏪",
-      title: "Tengo un negocio",
-      text: "Haz visible tu negocio, muestra qué vendes, horarios, zona y WhatsApp. También puedes conectar con mensajeros locales para entregas a domicilio.",
-      items: ["Publicar mi negocio", "Contactar mensajeros independientes", "Publicar lo que vendo", "Compartir ubicación o redes", "Mejorar mi publicación"],
-      actions: `<button class="btn-small btn-purple" onclick="startLearningPublication('Tiendas y negocios locales')">Publicar mi negocio</button><button class="btn-small btn-outline" onclick="applyCategoryAndShow('Mensajería y envíos')">Buscar mensajeros locales</button>`
-    }
-  };
-  const data = templates[type] || templates.empezar;
-  panel.innerHTML = `<article class="guided-card open"><div class="compact-summary no-toggle"><span class="compact-icon">${data.icon}</span><span><span class="compact-title">${data.title}</span><span class="compact-meta">Ruta guiada de Conecta Servicios</span></span></div><div class="compact-detail"><p>${data.text}</p><ul>${data.items.map(i => `<li>${i}</li>`).join("")}</ul><div class="detail-actions">${data.actions}</div></div></article>`;
-  panel.scrollIntoView({ behavior: "smooth", block: "center" });
+  openGuidedRoute(type);
 }
 
 async function loadAnalyticsData() {
@@ -1429,6 +1386,74 @@ async function loadAnalyticsData() {
     if (panel) panel.innerHTML = `<div class="empty-state">No se pudo cargar la analítica. Revisa que ejecutaste el SQL de v4.2 en Supabase.</div>`;
   }
 }
+
+const GUIDED_ROUTES = {
+  empezar: {
+    icon: "🚀",
+    title: "Quiero empezar algo propio",
+    intro: "Te ayudamos a elegir una idea sencilla, ordenar lo que puedes ofrecer y publicarlo para que personas cercanas te encuentren.",
+    steps: [
+      { title: "Elige algo que puedas hacer pronto", text: "Puedes iniciar con alimentos y ventas, limpieza, entregas, reparaciones sencillas o apoyo general. Lo importante es comenzar con algo claro y real." },
+      { title: "Define zona, horario y forma de contacto", text: "Piensa dónde puedes trabajar, qué días puedes atender y cómo quieres que te contacten por WhatsApp." },
+      { title: "Publica tu primer servicio", text: "Usa una frase directa como: Ofrezco limpieza de patios, Hago entregas locales en moto o Vendo comida por encargo." }
+    ],
+    actions: `<button class="btn-small btn-purple" onclick="startWizard('Ofrezco servicio o negocio')">Publicar mi primer servicio</button><button class="btn-small btn-outline" onclick="showSection('aprende')">Ver Aprende y emprende</button>`
+  },
+  negocio: {
+    icon: "🏪",
+    title: "Tengo un negocio",
+    intro: "Tu negocio puede aparecer para que más personas de tu zona sepan qué vendes, dónde estás y cómo contactarte.",
+    steps: [
+      { title: "Publica lo esencial", text: "Nombre del negocio, productos principales, zona, horario, WhatsApp y enlaces de Facebook, Instagram o ubicación." },
+      { title: "Conecta con mensajeros locales", text: "Si no tienes repartidor, busca personas cercanas que hagan mandados, entregas o traslados para apoyar tus pedidos." },
+      { title: "Atrae clientes con publicaciones claras", text: "Publica promociones, productos principales o servicios especiales sin saturar de texto." }
+    ],
+    actions: `<button class="btn-small btn-purple" onclick="startLearningPublication('Tiendas y negocios locales')">Publicar mi negocio</button><button class="btn-small btn-outline" onclick="applyCategoryAndShow('Mensajería y envíos')">Buscar mensajeros locales</button>`
+  }
+};
+function openGuidedRoute(type) {
+  const route = GUIDED_ROUTES[type] || GUIDED_ROUTES.empezar;
+  const target = document.getElementById("guidedRouteContent");
+  if (!target) return;
+  target.innerHTML = `<div class="guided-flow-card">
+    <button class="btn-small btn-ghost" onclick="showSection('oportunidades')">← Volver</button>
+    <div class="guided-flow-head"><span>${route.icon}</span><div><h2>${route.title}</h2><p>${route.intro}</p></div></div>
+    <div class="guided-steps">${route.steps.map((step, idx) => `<article class="guided-step-card"><small>Paso ${idx + 1}</small><h3>${step.title}</h3><p>${step.text}</p></article>`).join("")}</div>
+    <div class="route-actions guided-actions">${route.actions}</div>
+  </div>`;
+  showSection("rutaGuiada");
+  trackEvent("ruta_guiada", null, { tipo: type });
+}
+function startLearnFlow(type) {
+  const panel = document.getElementById("learnFlowPanel");
+  if (!panel) return;
+  const flows = {
+    basicos: {
+      icon: "🧭", title: "Cursos básicos para comenzar", intro: "Primero aprende a comunicar bien lo que haces para que te contacten con más confianza.",
+      items: ["Cómo publicar mejor tu servicio", "Atención al cliente por WhatsApp", "Cómo poner precio a tu trabajo", "Cómo conseguir tus primeros clientes"],
+      action: `<button class="btn-small btn-purple" onclick="showLearningGuide('publicar')">Ver guía rápida</button>`
+    },
+    profesionales: {
+      icon: "🛠", title: "Cursos profesionales y oficios", intro: "Elige una habilidad útil y conviértela en una publicación clara.",
+      items: ["Plomería básica", "Electricidad básica", "Reparaciones del hogar", "Manejo higiénico de alimentos"],
+      action: `<button class="btn-small btn-green" onclick="startWizard('Ofrezco servicio o negocio')">Publicar lo que sé hacer</button>`
+    },
+    ingresos: {
+      icon: "🚀", title: "Rutas para generar ingresos", intro: "Opciones sencillas para empezar a moverte económicamente desde tu zona.",
+      items: ["Alimentos y ventas", "Entregas y mandados", "Limpieza", "Reparaciones", "Tiendas y negocios locales"],
+      action: `<button class="btn-small btn-purple" onclick="startWizard('Ofrezco servicio o negocio')">Publicar mi servicio</button>`
+    }
+  };
+  const flow = flows[type] || flows.basicos;
+  panel.innerHTML = `<div class="guided-flow-card learn-flow-card">
+    <div class="guided-flow-head"><span>${flow.icon}</span><div><h2>${flow.title}</h2><p>${flow.intro}</p></div></div>
+    <div class="guided-steps">${flow.items.map((item, idx) => `<article class="guided-step-card"><small>Etapa ${idx + 1}</small><h3>${item}</h3><p>Revisa esta idea, adáptala a lo que sabes hacer y termina creando una publicación clara.</p></article>`).join("")}</div>
+    <div class="route-actions guided-actions">${flow.action}<button class="btn-small btn-outline" onclick="startWizard('Ofrezco servicio o negocio')">Publicar ahora</button></div>
+  </div>`;
+  panel.scrollIntoView({ behavior: "smooth", block: "start" });
+  trackEvent("aprende_flujo", null, { tipo: type });
+}
+
 function countEvents(rows, name) { return rows.filter(r => r.evento === name).length; }
 function uniqueSessions(rows) { return new Set(rows.map(r => r.session_id).filter(Boolean)).size; }
 function renderMetric(label, value) { return `<div class="metric-card"><strong>${value}</strong><span>${label}</span></div>`; }

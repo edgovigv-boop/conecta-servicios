@@ -28,7 +28,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="icon" href="assets/icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=4.6.3-rutas-claras-home-simple" />
+  <link rel="stylesheet" href="styles.css?v=4.6.4-home-rutas-publicaciones-limpias" />
 </head>
 <body>
   <div class="app-shell">
@@ -78,33 +78,36 @@ Todo uso requiere autorización expresa y por escrito del titular.
 
       </section>
 
-      <section id="oportunidades" class="section info-section opportunities-section">
-        <div class="opportunities-hero">
-          <span class="learn-badge">Sistema de oportunidades</span>
+      <section id="oportunidades" class="section info-section opportunities-section clean-opportunities">
+        <div class="simple-section-title">
           <h2>Oportunidades para ti</h2>
-          <p>Elige una ruta y la app te lleva al siguiente paso. Las búsquedas reales viven en <strong>Publicaciones cerca de mí</strong>.</p>
+          <p>Elige una ruta. La app te guía paso a paso sin saturarte de texto.</p>
         </div>
 
-        <div class="notice-card slim">
-          <strong>Rutas guiadas, no filtros confusos</strong>
-          <p>Esta sección orienta: publicar, empezar, aprender o mejorar. Para ver anuncios y personas cercanas usa Publicaciones cerca de mí.</p>
+        <div class="route-button-list">
+          <button type="button" class="route-start-card" onclick="openGuidedRoute('empezar')">
+            <span class="route-start-icon">🚀</span>
+            <span><strong>Quiero empezar algo propio</strong><small>Ideas para iniciar, organizar tu servicio y publicarlo correctamente.</small></span>
+            <b>›</b>
+          </button>
+          <button type="button" class="route-start-card" onclick="openGuidedRoute('negocio')">
+            <span class="route-start-icon">🏪</span>
+            <span><strong>Tengo un negocio</strong><small>Publica tu negocio, atrae clientes y conecta con mensajeros locales.</small></span>
+            <b>›</b>
+          </button>
+          <button type="button" class="route-start-card" onclick="showSection('aprende')">
+            <span class="route-start-icon">📘</span>
+            <span><strong>Aprende y emprende</strong><small>Cursos básicos, profesionales y rutas para generar ingresos.</small></span>
+            <b>›</b>
+          </button>
         </div>
 
-        <div class="form-card opportunity-settings guided-opportunities">
-          <h3>¿Qué quieres lograr?</h3>
-          <div class="human-need-grid opportunity-actions">
-            <button type="button" class="need-option action-option" onclick="openGuidedOpportunity('empezar')"><span><strong>Quiero empezar algo propio</strong><small>Ideas de servicios, alimentos, limpieza, entregas, reparaciones y publicar mi primer servicio.</small></span><b>›</b></button>
-            <button type="button" class="need-option action-option" onclick="openGuidedOpportunity('negocio')"><span><strong>Tengo un negocio</strong><small>Publica tu negocio, encuentra mensajeros locales o mejora tu forma de vender.</small></span><b>›</b></button>
-            <button type="button" class="need-option action-option" onclick="showSection('aprende')"><span><strong>Aprende y emprende</strong><small>Rutas para generar ingresos, cursos básicos y cursos profesionales.</small></span><b>›</b></button>
-            <button type="button" class="need-option action-option" onclick="requestNearbyPublications()"><span><strong>Busco quién me ayude</strong><small>Ve servicios, personas disponibles, negocios, mandados y apoyo cerca de ti.</small></span><b>›</b></button>
-          </div>
-
-          <button class="btn-small btn-outline why-update" type="button" onclick="showSection('actualizarme')">📘 ¿Por qué actualizarme en oportunidades y servicios?</button>
-        </div>
-
-        <div id="guidedOpportunityPanel" class="guided-panel"></div>
+        <button class="btn-small btn-outline why-update" type="button" onclick="showSection('actualizarme')">📘 ¿Por qué actualizarme en oportunidades y servicios?</button>
       </section>
 
+      <section id="rutaGuiada" class="section info-section guided-route-section">
+        <div id="guidedRouteContent"></div>
+      </section>
 
       <section id="registro" class="section">
         <div class="section-header compact">
@@ -291,17 +294,21 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <button class="btn-small btn-purple" onclick="startWizard()">+ Publica</button>
         </div>
 
-        <div class="filter-card modern-filter">
-          <div class="filter-title">Filtrar</div>
-          <div class="chip-row" aria-label="Categorías rápidas">
-            <button type="button" class="filter-chip active" data-filter-category="" onclick="setCategoryChip(this)">Todo</button>
-            <button type="button" class="filter-chip" data-filter-category="General" onclick="setCategoryChip(this)">Servicios</button>
-            <button type="button" class="filter-chip" data-filter-category="Mensajería y envíos" onclick="setCategoryChip(this)">Envíos</button>
-            <button type="button" class="filter-chip" data-filter-category="Viajes compartidos" onclick="setCategoryChip(this)">Viajes</button>
-            <button type="button" class="filter-chip" data-filter-category="Redes sociales" onclick="setCategoryChip(this)">Redes</button>
+        <div class="filter-card modern-filter clean-filter-card">
+          <div class="filter-title">Filtra por categoría</div>
+          <div class="chip-row category-filter-row" aria-label="Categorías rápidas">
+            <button type="button" class="filter-chip active" data-filter-category="" data-filter-search="" onclick="setCategoryChip(this)">Todo</button>
+            <button type="button" class="filter-chip" data-filter-category="" data-filter-search="trabajo empleo vacante chamba ayudante personal" onclick="setCategoryChip(this)">Trabajo</button>
+            <button type="button" class="filter-chip" data-filter-category="" data-filter-search="limpieza limpiar lava lavado aseo" onclick="setCategoryChip(this)">Limpieza</button>
+            <button type="button" class="filter-chip" data-filter-category="" data-filter-search="reparacion reparar plomero electricidad albañil mantenimiento carpintero" onclick="setCategoryChip(this)">Reparaciones</button>
+            <button type="button" class="filter-chip" data-filter-category="Mensajería y envíos" data-filter-search="mandado entrega documento paquete moto bicicleta camioneta" onclick="setCategoryChip(this)">Entregas y mandados</button>
+            <button type="button" class="filter-chip" data-filter-category="Viajes compartidos" data-filter-search="ruta viaje traslado movilidad" onclick="setCategoryChip(this)">Movilidad</button>
+            <button type="button" class="filter-chip" data-filter-category="" data-filter-search="tienda negocio panaderia estetica papeleria ferreteria tortilleria comida vendo ventas" onclick="setCategoryChip(this)">Negocios</button>
+            <button type="button" class="filter-chip" data-filter-category="Redes sociales" data-filter-search="" onclick="setCategoryChip(this)">Redes</button>
           </div>
           <select id="categoryFilter" class="hidden" onchange="renderPublications()"><option value="">Todas las categorías</option><option>Viajes compartidos</option><option>Mensajería y envíos</option><option>General</option><option>Redes sociales</option></select>
-          <div class="form-grid">
+          <input id="chipSearchFilter" type="hidden" value="" />
+          <div class="form-grid compact-location-filter">
             <label>Estado
               <select id="stateFilter" data-state-select data-blank="true" data-default="México" autocomplete="off" onchange="handleStateFilterChange()"></select>
             </label>
@@ -309,27 +316,11 @@ Todo uso requiere autorización expresa y por escrito del titular.
               <input id="municipalityFilter" type="text" value="Chapultepec" placeholder="Ej. Chapultepec" autocomplete="off" autocapitalize="words" spellcheck="false" inputmode="text" oninput="renderPublications()" />
             </label>
           </div>
-          <div class="filter-actions">
-            <button class="btn-small btn-outline" onclick="renderPublications()">Ver resultados</button>
-            <button class="btn-small btn-ghost" onclick="resetLocationFilters()">Restablecer Chapultepec</button>
-          </div>
-          <div id="nearbyControls" class="nearby-controls hidden">
-            <label>Radio de búsqueda
-              <select id="nearbyRadius" onchange="renderPublications()">
-                <option value="10">10 km</option>
-                <option value="25" selected>25 km</option>
-                <option value="50">50 km</option>
-                <option value="100">100 km</option>
-              </select>
-            </label>
-          </div>
-          <p id="filterSummary" class="filter-summary">Mostrando resultados para: Chapultepec, México</p>
-          <p id="nearbySummary" class="nearby-summary hidden">📍 Modo cercanía inteligente. Se muestran publicaciones con ubicación GPS dentro del radio y registros del mismo municipio aunque aún no tengan coordenadas.</p>
         </div>
 
-        <label class="search-box">
-          Buscar
-          <input id="mainSearch" type="search" placeholder="Ej. taquería, carpintero, viaje, moto" oninput="renderPublications()" />
+        <label class="search-box clean-search-box">
+          Buscar por palabra clave
+          <input id="mainSearch" type="search" placeholder="Ej. limpieza, empleo, mandado, panadería, plomero" oninput="renderPublications()" />
         </label>
 
         <div id="publicationsList" class="compact-list"></div>
@@ -507,136 +498,19 @@ Todo uso requiere autorización expresa y por escrito del titular.
       </section>
 
 
-      <section id="aprende" class="section info-section learn-section">
-        <div class="learn-hero">
-          <span class="learn-badge">Nueva sección</span>
+      <section id="aprende" class="section info-section learn-section clean-learn-section">
+        <div class="simple-section-title">
           <h2>Aprende y emprende</h2>
-          <p>Rutas prácticas para mejorar habilidades, ofrecer servicios y publicar mejor dentro de Conecta Servicios.</p>
+          <p>Elige una ruta. Te guiamos paso a paso para tomar acción y publicar correctamente.</p>
         </div>
 
-        <div class="learn-callout">
-          <strong>Idea central</strong>
-          <p>Aprende una habilidad, organiza tu servicio, publícalo y conecta con personas de tu zona.</p>
+        <div class="route-button-list">
+          <button type="button" class="route-start-card" onclick="startLearnFlow('basicos')"><span class="route-start-icon">🧭</span><span><strong>Cursos básicos para comenzar</strong><small>Publicar mejor, atender por WhatsApp, poner precios y conseguir primeros clientes.</small></span><b>›</b></button>
+          <button type="button" class="route-start-card" onclick="startLearnFlow('profesionales')"><span class="route-start-icon">🛠</span><span><strong>Cursos profesionales y oficios</strong><small>Plomería, electricidad, reparaciones, alimentos y ventas.</small></span><b>›</b></button>
+          <button type="button" class="route-start-card" onclick="startLearnFlow('ingresos')"><span class="route-start-icon">🚀</span><span><strong>Rutas para generar ingresos</strong><small>Alimentos, entregas, limpieza, reparaciones y negocios locales.</small></span><b>›</b></button>
         </div>
 
-        <div class="course-blocks">
-          <h3>Cursos básicos para comenzar</h3>
-          <div class="mini-grid course-grid">
-            <button class="mini-card" onclick="showLearningGuide('publicar')"><strong>Cómo publicar mejor tu servicio</strong><small>Escribe claro, vende mejor y evita confusiones.</small></button>
-            <button class="mini-card" onclick="showLearningGuide('cliente')"><strong>Atención al cliente por WhatsApp</strong><small>Responde, acuerda y genera confianza.</small></button>
-            <button class="mini-card" onclick="showLearningGuide('precios')"><strong>Cómo poner precio a tu trabajo</strong><small>Costos, zona, tiempo y acuerdos claros.</small></button>
-            <button class="mini-card" onclick="showLearningGuide('primeros_clientes')"><strong>Cómo conseguir tus primeros clientes</strong><small>Promoción local y publicaciones útiles.</small></button>
-          </div>
-
-          <h3>Cursos profesionales y oficios</h3>
-          <div class="mini-grid course-grid">
-            <button class="mini-card" onclick="startLearningPublication('Plomería básica')"><strong>Plomería básica</strong><small>Servicios sencillos y seguros para el hogar.</small></button>
-            <button class="mini-card" onclick="startLearningPublication('Electricidad básica')"><strong>Electricidad básica</strong><small>Instalaciones menores y mantenimiento simple.</small></button>
-            <button class="mini-card" onclick="startLearningPublication('Reparaciones del hogar')"><strong>Reparaciones del hogar</strong><small>Mantenimiento, pintura, ajustes y arreglos.</small></button>
-            <button class="mini-card" onclick="startLearningPublication('Manejo higiénico de alimentos')"><strong>Manejo higiénico de alimentos</strong><small>Base para vender comida con más confianza.</small></button>
-          </div>
-        </div>
-
-        <h3>Rutas principales para generar ingresos</h3>
-        <div class="learning-grid primary-routes">
-          <article class="learning-card featured">
-            <span class="route-icon">🍲</span>
-            <div>
-              <small>Ruta 1</small>
-              <h4>Alimentos y ventas</h4>
-              <p>Comida casera, pan, postres, antojitos, pedidos por encargo y ventas locales.</p>
-              <ul>
-                <li>Qué puedes ofrecer</li>
-                <li>Cómo presentar tu producto</li>
-                <li>Cómo publicar y recibir pedidos</li>
-              </ul>
-              <button class="btn-small btn-purple" onclick="startLearningPublication('Alimentos y ventas')">Publicar algo de alimentos</button>
-            </div>
-          </article>
-
-          <article class="learning-card featured business-route">
-            <span class="route-icon">🏪</span>
-            <div>
-              <small>Ruta 2</small>
-              <h4>Tiendas y negocios locales</h4>
-              <p>Tienditas, panaderías, papelerías, estéticas, ferreterías, tortillerías, comida desde casa y negocios de barrio.</p>
-              <ul>
-                <li>Qué información conviene publicar: productos, zona, horario y WhatsApp</li>
-                <li>Cómo mostrar promociones, enlaces o ubicación sin complicar al cliente</li>
-                <li>Cómo conectar con mensajeros locales para ofrecer entregas a domicilio</li>
-              </ul>
-              <div class="route-actions">
-                <button class="btn-small btn-purple" onclick="startLearningPublication('Tiendas y negocios locales')">Publicar mi negocio</button>
-                <button class="btn-small btn-outline" onclick="applyCategoryAndShow('Mensajería y envíos')">Buscar mensajeros locales</button>
-              </div>
-            </div>
-          </article>
-
-          <article class="learning-card featured">
-            <span class="route-icon">📦</span>
-            <div>
-              <small>Ruta 3</small>
-              <h4>Mensajería y entregas</h4>
-              <p>Mandados, documentos, compras, comida, paquetes y traslados locales.</p>
-              <ul>
-                <li>Medio: a pie, bici, moto, auto o camioneta</li>
-                <li>Zonas y horarios</li>
-                <li>Cómo acordar costos y entregas</li>
-              </ul>
-              <button class="btn-small btn-green" onclick="startLearningPublication('Mensajería y envíos')">Publicar servicio de entregas</button>
-            </div>
-          </article>
-
-          <article class="learning-card featured">
-            <span class="route-icon">🧹</span>
-            <div>
-              <small>Ruta 4</small>
-              <h4>Limpieza de casas o negocios</h4>
-              <p>Limpieza de hogares, locales, patios, terrenos y apoyo posterior a eventos.</p>
-              <ul>
-                <li>Qué tipo de limpieza ofreces</li>
-                <li>Qué materiales necesitas</li>
-                <li>Cómo publicar zonas y horarios</li>
-              </ul>
-              <button class="btn-small btn-purple" onclick="startLearningPublication('Limpieza de casas o negocios')">Publicar servicio de limpieza</button>
-            </div>
-          </article>
-
-          <article class="learning-card featured">
-            <span class="route-icon">🛠</span>
-            <div>
-              <small>Ruta 5</small>
-              <h4>Reparaciones del hogar</h4>
-              <p>Arreglos sencillos, pintura, puertas, muebles, mantenimiento y apoyo general.</p>
-              <ul>
-                <li>Describe qué sabes hacer</li>
-                <li>Define trabajos pequeños o por cotización</li>
-                <li>Publica ejemplos claros de servicio</li>
-              </ul>
-              <button class="btn-small btn-green" onclick="startLearningPublication('Reparaciones del hogar')">Publicar reparación o mantenimiento</button>
-            </div>
-          </article>
-        </div>
-
-        <h3>Más rutas para crecer</h3>
-        <div class="secondary-routes">
-          <button onclick="startLearningPublication('Plomería básica')">🚰 Plomería básica</button>
-          <button onclick="startLearningPublication('Electricidad básica')">💡 Electricidad básica</button>
-          <button onclick="startLearningPublication('Jardinería')">🌿 Jardinería</button>
-          <button onclick="showLearningGuide('emprender')">💡 Emprender con poco dinero</button>
-          <button onclick="showLearningGuide('publicar')">✍️ Cómo publicar mejor tu servicio</button>
-          <button onclick="showLearningGuide('cliente')">🤝 Atención al cliente</button>
-        </div>
-
-        <div id="learningGuide" class="learning-guide notice-card slim">
-          <strong>Guía rápida</strong>
-          <p>Elige una ruta para ver consejos prácticos o publica directamente lo que ofreces.</p>
-        </div>
-
-        <div class="notice-card slim future-box">
-          <strong>Próximamente</strong>
-          <p>Guías para preparar una idea de negocio, mejorar tus publicaciones y buscar apoyos de forma ordenada, sin manejar financiamiento directo dentro de la app por ahora.</p>
-        </div>
+        <div id="learnFlowPanel" class="guided-panel learn-flow-panel"></div>
       </section>
 
       <section id="instalarApp" class="section info-section">
