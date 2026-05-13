@@ -28,7 +28,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="icon" href="assets/icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=4.5-sistema-oportunidades" />
+  <link rel="stylesheet" href="styles.css?v=4.6-oportunidades-lenguaje-humano" />
 </head>
 <body>
   <div class="app-shell">
@@ -96,22 +96,20 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <p>Por ahora las oportunidades se muestran dentro de la app. Más adelante podremos activar avisos más avanzados con consentimiento.</p>
         </div>
 
-        <div class="form-card opportunity-settings">
-          <h3>¿Qué quieres encontrar?</h3>
-          <div class="choice-grid opportunity-checks">
-            <label class="checkbox-line"><input type="checkbox" name="oppCategory" value="Mensajería y envíos" /> Mensajería y envíos</label>
-            <label class="checkbox-line"><input type="checkbox" name="oppCategory" value="Viajes compartidos" /> Viajes compartidos</label>
-            <label class="checkbox-line"><input type="checkbox" name="oppCategory" value="General" /> Servicios, negocios y ayuda general</label>
+        <div class="form-card opportunity-settings human-opportunities">
+          <h3>¿Qué oportunidad necesitas encontrar?</h3>
+          <p class="muted small">Marca las frases que más se parecen a tu situación. La app las traduce en oportunidades reales por zona e interés.</p>
+          <div class="human-need-grid opportunity-checks">
+            <label class="need-option"><input type="checkbox" name="oppNeed" value="necesito_trabajo" /> <span><strong>Necesito trabajo</strong><small>Empleo local, oficios, apoyo temporal o personas que estén buscando ayuda.</small></span></label>
+            <label class="need-option"><input type="checkbox" name="oppNeed" value="activarme_economicamente" /> <span><strong>Quiero activarme económicamente</strong><small>Servicios, ventas, clientes, oportunidades para generar ingresos o empezar algo propio.</small></span></label>
+            <label class="need-option"><input type="checkbox" name="oppNeed" value="busco_ayuda" /> <span><strong>Busco quién me ayude</strong><small>Apoyo en casa, reparaciones, limpieza, oficios o colaboración cercana.</small></span></label>
+            <label class="need-option"><input type="checkbox" name="oppNeed" value="movilidad_entregas" /> <span><strong>Necesito movilidad, entregas o mandados</strong><small>Viajes compartidos, entregas locales, documentos, compras, paquetes o mudanzas pequeñas.</small></span></label>
+            <label class="need-option"><input type="checkbox" name="oppNeed" value="aprender_algo" /> <span><strong>Quiero aprender algo</strong><small>Rutas para aprender, emprender, publicar mejor y convertir habilidades en oportunidades.</small></span></label>
+            <label class="need-option"><input type="checkbox" name="oppNeed" value="tengo_negocio" /> <span><strong>Tengo un negocio</strong><small>Tiendas, comida, ventas, negocios locales y conexión con mensajeros o clientes cercanos.</small></span></label>
+            <label class="need-option"><input type="checkbox" name="oppNeed" value="colaborar_comunidad" /> <span><strong>Quiero colaborar con mi comunidad</strong><small>Apoyos, favores, necesidades, participación y colaboración entre personas de la zona.</small></span></label>
           </div>
 
-          <h3>Intereses específicos</h3>
-          <div class="choice-grid opportunity-checks">
-            <label class="checkbox-line"><input type="checkbox" name="oppKeyword" value="trabajo empleo vacante oportunidad" /> Trabajo y oportunidades</label>
-            <label class="checkbox-line"><input type="checkbox" name="oppKeyword" value="tienda negocio panaderia papeleria estetica ferreteria tortilleria" /> Tiendas y negocios locales</label>
-            <label class="checkbox-line"><input type="checkbox" name="oppKeyword" value="limpieza casa negocio patio" /> Limpieza</label>
-            <label class="checkbox-line"><input type="checkbox" name="oppKeyword" value="reparacion mantenimiento plomeria electricidad carpinteria" /> Reparaciones y oficios</label>
-            <label class="checkbox-line"><input type="checkbox" name="oppKeyword" value="comida alimentos ventas pan antojitos" /> Alimentos y ventas</label>
-          </div>
+          <button class="btn-small btn-outline why-update" type="button" onclick="showSection('actualizarme')">📘 ¿Por qué actualizarme en oportunidades y servicios?</button>
 
           <div class="form-grid">
             <label>Estado
@@ -429,6 +427,31 @@ Todo uso requiere autorización expresa y por escrito del titular.
         <p>Confirma lugar, horario, costo y condiciones antes de aceptar. Si algo parece extraño, repórtalo a la oficina por WhatsApp.</p>
       </section>
 
+      <section id="actualizarme" class="section info-section update-article-section">
+        <div class="learn-hero update-hero">
+          <span class="learn-badge">Contexto y futuro laboral</span>
+          <h2>¿Por qué actualizarme en oportunidades y servicios?</h2>
+          <p>El trabajo, los servicios y la forma de conseguir ingresos están cambiando. Conecta Servicios busca ordenar oportunidades locales para que no se pierdan entre publicaciones sueltas.</p>
+        </div>
+        <div class="article-card">
+          <h3>El problema</h3>
+          <p>Muchas oportunidades existen, pero están dispersas: grupos de Facebook, mensajes de WhatsApp, recomendaciones, publicaciones que se pierden y personas que no saben dónde ofrecer lo que hacen.</p>
+          <h3>Lo que está cambiando</h3>
+          <p>La economía exige adaptarse: aprender habilidades útiles, ofrecer servicios de forma clara, aprovechar la cercanía, conectar negocios con mensajeros, y convertir oficios o productos en ingresos reales.</p>
+          <h3>Qué propone Conecta Servicios</h3>
+          <p>No se trata solo de publicar. La idea es ordenar necesidades, servicios, negocios, trabajo, aprendizaje y colaboración por zona e interés para que cada persona encuentre algo que pueda ayudarle hoy o prepararle para mañana.</p>
+          <div class="article-points">
+            <span>✅ Publica lo que necesitas u ofreces.</span>
+            <span>✅ Encuentra oportunidades según tu zona.</span>
+            <span>✅ Aprende rutas para generar ingresos.</span>
+            <span>✅ Conecta negocios, servicios, entregas y comunidad.</span>
+          </div>
+          <p class="muted small">Nota: esta sección es informativa y busca orientar. Los enlaces o recursos externos deben revisarse directamente en su fuente original.</p>
+          <button class="btn-big btn-purple" type="button" onclick="showSection('oportunidades')">Configurar mis oportunidades</button>
+          <button class="btn-big btn-green" type="button" onclick="showSection('aprende')">Ver Aprende y emprende</button>
+        </div>
+      </section>
+
       <section id="planes" class="section info-section">
         <h2>Planes y destacados</h2>
         <p class="muted">Por ahora los pagos son manuales por WhatsApp. No hay cobro automático dentro de la app.</p>
@@ -682,6 +705,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.5-sistema-oportunidades"></script>
+  <script src="app.js?v=4.6-oportunidades-lenguaje-humano"></script>
 </body>
 </html>

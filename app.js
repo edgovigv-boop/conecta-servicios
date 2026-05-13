@@ -241,7 +241,7 @@ function showSection(id, push = true) {
   currentSection = id;
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   target.classList.add("active");
-  const titles = { inicio:"Conecta Servicios", registro:"Publica", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades" };
+  const titles = { inicio:"Conecta Servicios", registro:"Publica", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades", actualizarme:"Por qué actualizarme" };
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
@@ -995,63 +995,133 @@ function startLearningPublication(routeName) {
 
 
 
+const OPPORTUNITY_NEED_MAP = {
+  necesito_trabajo: {
+    label: "Necesito trabajo",
+    categories: ["General", "Redes sociales"],
+    keywords: "trabajo empleo vacante oportunidad ayudante contratar busco solicito disponible oficio"
+  },
+  activarme_economicamente: {
+    label: "Quiero activarme económicamente",
+    categories: ["General", "Mensajería y envíos", "Redes sociales"],
+    keywords: "ofrezco servicio venta clientes ingreso negocio comida limpieza reparacion entrega mandado emprender"
+  },
+  busco_ayuda: {
+    label: "Busco quién me ayude",
+    categories: ["General", "Redes sociales"],
+    keywords: "busco necesito ayuda apoyo limpieza reparacion plomeria electricidad carpinteria jardineria mantenimiento"
+  },
+  movilidad_entregas: {
+    label: "Necesito movilidad, entregas o mandados",
+    categories: ["Mensajería y envíos", "Viajes compartidos"],
+    keywords: "entrega entregas mandado mandados movilidad viaje viajes traslado paquete documento moto bici auto camioneta mudanza ruta"
+  },
+  aprender_algo: {
+    label: "Quiero aprender algo",
+    categories: [],
+    keywords: "aprende aprender curso capacitacion capacitar oficio emprender negocio publicar mejorar"
+  },
+  tengo_negocio: {
+    label: "Tengo un negocio",
+    categories: ["General", "Redes sociales", "Mensajería y envíos"],
+    keywords: "tienda negocio panaderia papeleria estetica ferreteria tortilleria comida ventas producto local entregas domicilio"
+  },
+  colaborar_comunidad: {
+    label: "Quiero colaborar con mi comunidad",
+    categories: ["General", "Redes sociales"],
+    keywords: "colaboracion comunidad apoyo ayuda vecinos favor voluntario necesidad local"
+  }
+};
+function selectedOpportunityCriteria(prefs) {
+  const needs = prefs.needs || [];
+  const categories = new Set();
+  const keywords = [];
+  const labels = [];
+  needs.forEach(key => {
+    const cfg = OPPORTUNITY_NEED_MAP[key];
+    if (!cfg) return;
+    labels.push(cfg.label);
+    (cfg.categories || []).forEach(c => categories.add(c));
+    if (cfg.keywords) keywords.push(cfg.keywords);
+  });
+  return { categories: Array.from(categories), keywords, labels };
+}
 function defaultOpportunityPreferences() {
   return {
-    categories: ["Mensajería y envíos", "Viajes compartidos", "General"],
-    keywords: [],
+    needs: ["necesito_trabajo", "activarme_economicamente"],
     state: DEFAULT_STATE,
     municipality: DEFAULT_MUNICIPALITY
   };
 }
 function getOpportunityPreferences() {
-  try { return { ...defaultOpportunityPreferences(), ...(JSON.parse(localStorage.getItem(OPPORTUNITY_PREFS_KEY) || "{}")) }; }
-  catch { return defaultOpportunityPreferences(); }
+  try {
+    const saved = JSON.parse(localStorage.getItem(OPPORTUNITY_PREFS_KEY) || "{}");
+    const prefs = { ...defaultOpportunityPreferences(), ...saved };
+    if (!prefs.needs && (prefs.categories || prefs.keywords)) {
+      const needs = [];
+      if ((prefs.categories || []).includes("Mensajería y envíos") || (prefs.categories || []).includes("Viajes compartidos")) needs.push("movilidad_entregas");
+      if ((prefs.categories || []).includes("General")) needs.push("activarme_economicamente");
+      if ((prefs.keywords || []).join(" ").includes("limpieza") || (prefs.keywords || []).join(" ").includes("reparacion")) needs.push("busco_ayuda");
+      prefs.needs = needs.length ? needs : defaultOpportunityPreferences().needs;
+    }
+    return prefs;
+  } catch { return defaultOpportunityPreferences(); }
 }
 function renderOpportunitySettings() {
   const prefs = getOpportunityPreferences();
-  document.querySelectorAll('input[name="oppCategory"]').forEach(input => input.checked = prefs.categories.includes(input.value));
-  document.querySelectorAll('input[name="oppKeyword"]').forEach(input => input.checked = (prefs.keywords || []).includes(input.value));
+  document.querySelectorAll('input[name="oppNeed"]').forEach(input => input.checked = (prefs.needs || []).includes(input.value));
   const state = document.getElementById("oppState");
   const municipality = document.getElementById("oppMunicipality");
   if (state) state.value = prefs.state || "";
   if (municipality) municipality.value = prefs.municipality || "";
 }
 function saveOpportunityPreferences() {
-  const categories = Array.from(document.querySelectorAll('input[name="oppCategory"]:checked')).map(i => i.value);
-  const keywords = Array.from(document.querySelectorAll('input[name="oppKeyword"]:checked')).map(i => i.value);
+  const needs = Array.from(document.querySelectorAll('input[name="oppNeed"]:checked')).map(i => i.value);
   const prefs = {
-    categories: categories.length ? categories : ["General"],
-    keywords,
+    needs: needs.length ? needs : ["activarme_economicamente"],
     state: document.getElementById("oppState")?.value || "",
     municipality: document.getElementById("oppMunicipality")?.value.trim() || ""
   };
   localStorage.setItem(OPPORTUNITY_PREFS_KEY, JSON.stringify(prefs));
-  trackEvent("guardar_oportunidades", null, { categorias: prefs.categories, municipio: prefs.municipality, estado_nombre: prefs.state });
+  const criteria = selectedOpportunityCriteria(prefs);
+  trackEvent("guardar_oportunidades", null, { intereses: criteria.labels, municipio: prefs.municipality, estado_nombre: prefs.state });
   renderOpportunities(true);
-  showToast("Intereses guardados");
+  showToast("Oportunidades configuradas");
 }
 function opportunityScore(item, prefs) {
   let score = 0;
-  const haystack = normalize([item.title, item.description, item.category, item.subcategory, item.intent, item.municipality, item.locality, item.route, item.transport].join(" "));
-  const categoryMatch = (prefs.categories || []).includes(item.category);
-  if (categoryMatch) score += 6;
-  for (const group of (prefs.keywords || [])) {
+  const criteria = selectedOpportunityCriteria(prefs);
+  const haystack = normalize([item.title, item.description, item.category, item.subcategory, item.intent, item.municipality, item.locality, item.route, item.transport, item.name].join(" "));
+  const categoryMatch = criteria.categories.includes(item.category);
+  if (categoryMatch) score += 5;
+  let keywordHits = 0;
+  for (const group of criteria.keywords) {
     const words = group.split(/\s+/).map(normalize).filter(Boolean);
-    if (words.some(w => haystack.includes(w))) score += 5;
+    if (words.some(w => haystack.includes(w))) keywordHits += 1;
   }
+  if (keywordHits) score += 8 + keywordHits;
   if (prefs.state && normalize(item.state) === normalize(prefs.state)) score += 2;
-  if (prefs.municipality && normalize(item.municipality).includes(normalize(prefs.municipality))) score += 4;
+  if (prefs.municipality && normalize(item.municipality).includes(normalize(prefs.municipality))) score += 5;
   if (normalize(item.intent).includes("busco") || normalize(item.intent).includes("necesito")) score += 1;
-  if (!categoryMatch && !(prefs.keywords || []).length) score = 0;
+  if (!categoryMatch && !keywordHits) score = 0;
   return score;
 }
 function opportunityReason(item, prefs) {
+  const criteria = selectedOpportunityCriteria(prefs);
   const reasons = [];
-  if ((prefs.categories || []).includes(item.category)) reasons.push(item.category);
+  const haystack = normalize([item.title, item.description, item.category, item.subcategory, item.intent, item.municipality, item.locality, item.route, item.transport, item.name].join(" "));
+  for (const key of (prefs.needs || [])) {
+    const cfg = OPPORTUNITY_NEED_MAP[key];
+    if (!cfg) continue;
+    const words = (cfg.keywords || "").split(/\s+/).map(normalize).filter(Boolean);
+    const cat = (cfg.categories || []).includes(item.category);
+    const word = words.some(w => haystack.includes(w));
+    if (cat || word) reasons.push(cfg.label);
+  }
   if (prefs.municipality && normalize(item.municipality).includes(normalize(prefs.municipality))) reasons.push("tu municipio");
-  if (prefs.state && normalize(item.state) === normalize(prefs.state) && !reasons.includes("tu municipio")) reasons.push(item.state);
+  if (!reasons.length && criteria.labels.length) reasons.push(criteria.labels[0]);
   if (!reasons.length) reasons.push("interés relacionado");
-  return reasons.join(" · ");
+  return Array.from(new Set(reasons)).slice(0,3).join(" · ");
 }
 function opportunityCard(item, reason) {
   const icon = categoryIcon(item.category);
@@ -1098,12 +1168,17 @@ function renderOpportunities(scrollToList = false) {
     .filter(row => row.score > 0)
     .sort((a,b) => b.score - a.score || String(b.item.createdAt).localeCompare(String(a.item.createdAt)))
     .slice(0, 20);
+  const criteria = selectedOpportunityCriteria(prefs);
   if (summary) {
     const place = prefs.municipality ? `${prefs.municipality}, ${prefs.state || ""}` : (prefs.state || "Todo México");
-    summary.textContent = ranked.length ? `Encontramos ${ranked.length} oportunidades relacionadas con tus intereses en ${place}.` : `Aún no encontramos coincidencias con tus intereses en ${place}. Prueba ampliar municipio o categorías.`;
+    summary.textContent = ranked.length ? `Encontramos ${ranked.length} oportunidades para: ${criteria.labels.join(", ") || "tus intereses"} en ${place}.` : `Aún no encontramos coincidencias exactas para ${criteria.labels.join(", ") || "tus intereses"} en ${place}. Puedes ampliar zona o elegir otra necesidad.`;
   }
-  list.innerHTML = ranked.length
-    ? ranked.map(row => opportunityCard(row.item, opportunityReason(row.item, prefs))).join("")
+  const learnCard = (prefs.needs || []).includes("aprender_algo") ? `<article class="compact-publication opportunity-card learning-opportunity-card open">
+    <div class="compact-summary no-toggle"><span class="compact-icon">📘</span><span><span class="compact-title">Quiero aprender algo útil</span><span class="compact-meta">Rutas para capacitarte, emprender y publicar mejor tus servicios.</span></span></div>
+    <div class="compact-detail"><span class="category-badge">Aprende y emprende</span><p>Explora rutas como alimentos y ventas, mensajería, limpieza, reparaciones, negocios locales y cómo publicar mejor tu servicio.</p><div class="detail-actions"><button class="btn-small btn-purple" onclick="showSection('aprende')">Ver rutas</button><button class="btn-small btn-green" onclick="startWizard('Ofrezco servicio o negocio')">Publicar mi servicio</button></div></div>
+  </article>` : "";
+  list.innerHTML = (learnCard || ranked.length)
+    ? learnCard + ranked.map(row => opportunityCard(row.item, opportunityReason(row.item, prefs))).join("")
     : `<div class="empty-state">Todavía no hay oportunidades con esos intereses. Puedes revisar Publicaciones o cambiar tus preferencias.</div>`;
   if (scrollToList) {
     trackEvent("click_oportunidades", null, { municipio: prefs.municipality, estado_nombre: prefs.state });

@@ -1,17 +1,24 @@
-# Conecta Servicios v4.5 — Sistema de oportunidades
+# Conecta Servicios v4.6 — Oportunidades con lenguaje humano
 
 © 2026 Conecta Servicios. Todos los derechos reservados.
 
-Versión enfocada en presentar la app como un sistema local de oportunidades:
+Versión enfocada en convertir **Oportunidades para ti** en una experiencia más humana y menos confusa.
 
-- Título principal: **¿Qué oportunidad necesitas encontrar hoy?**
-- Botón **+ PUBLICA** más grande y protagonista.
-- **Oportunidades para ti** más visible y llamativo.
-- Se conserva **Publicaciones cerca de mí**.
-- Se retiran de portada los accesos sueltos a Mensajería y Viajes, porque ahora viven dentro de categorías e intereses.
-- Frase de cierre enfocada en ordenar oportunidades por zona, interés y necesidad.
-- Navegación inferior simplificada: Inicio, Para ti, Publica y Oficina.
-- Mantiene PWA instalable, analítica, enlaces directos, cercanía inteligente, Aprende y emprende y protección legal.
+## Cambios principales
+
+- Se eliminó la división confusa entre “Categorías generales” e “Intereses específicos”.
+- Ahora la persona elige afirmaciones basadas en necesidades reales:
+  - Necesito trabajo
+  - Quiero activarme económicamente
+  - Busco quién me ayude
+  - Necesito movilidad, entregas o mandados
+  - Quiero aprender algo
+  - Tengo un negocio
+  - Quiero colaborar con mi comunidad
+- La app traduce esas afirmaciones en categorías y palabras clave internas.
+- Se priorizan coincidencias más precisas por necesidad, zona e interés.
+- Se agregó el acceso **¿Por qué actualizarme en oportunidades y servicios?**.
+- Se conserva PWA instalable, analítica, enlaces directos, cercanía inteligente, Aprende y emprende y protección legal.
 
 ## Archivos a subir
 
