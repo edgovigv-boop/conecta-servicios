@@ -1,7 +1,7 @@
 {
   "name": "Conecta Servicios",
   "short_name": "Conecta",
-  "description": "Publica, explora y conecta con servicios, negocios, viajes y envíos cerca de ti.",
+  "description": "Sistema local de oportunidades: publica, encuentra y recibe opciones según tu zona e intereses.",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",

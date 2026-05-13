@@ -879,3 +879,89 @@ body {
   .install-card { grid-template-columns: 1fr; }
   .install-card .btn-small { width: 100%; }
 }
+
+/* ===== v4.5 Sistema de oportunidades ===== */
+.hero-modern.identity-hero h1{
+  font-size: clamp(2.15rem, 7vw, 2.85rem);
+  line-height: .98;
+  text-align: center;
+  letter-spacing: -.04em;
+  margin: 12px 0 10px;
+}
+.hero-modern.identity-hero p{
+  max-width: 350px;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 1rem;
+  line-height: 1.38;
+}
+.home-main-action{
+  margin: 20px 0 22px!important;
+}
+.publica-circle{
+  width: 188px!important;
+  height: 188px!important;
+  box-shadow: 0 22px 42px rgba(111,66,193,.36), inset 0 0 0 2px rgba(255,255,255,.24)!important;
+}
+.publica-circle strong{
+  font-size: 1.5rem!important;
+}
+.circle-plus{
+  width: 66px!important;
+  height: 66px!important;
+  font-size: 3.55rem!important;
+}
+.system-shortcuts{
+  gap: 14px!important;
+  margin-bottom: 18px!important;
+}
+.system-shortcuts .shortcut-card{
+  grid-template-columns: auto 1fr auto!important;
+  padding: 17px 18px!important;
+}
+.system-shortcuts .shortcut-card div{
+  min-width: 0;
+}
+.system-shortcuts .shortcut-card small{
+  display:block;
+  margin-top:3px;
+  font-size:.82rem;
+  color:#665b73;
+  font-weight:650;
+}
+.shortcut-card.featured-opportunity{
+  background: linear-gradient(135deg, #7b46cf, #9c63ef)!important;
+  color:#fff!important;
+  border:0!important;
+  box-shadow: 0 16px 34px rgba(111,66,193,.28)!important;
+}
+.shortcut-card.featured-opportunity span{
+  background: rgba(255,255,255,.2)!important;
+  color:#fff!important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.24);
+}
+.shortcut-card.featured-opportunity small,
+.shortcut-card.featured-opportunity b{
+  color:#fff!important;
+  opacity:.92;
+}
+.modern-note{
+  background: linear-gradient(135deg,#fff,#f7f1ff 62%,#f1fff4)!important;
+  border-color: rgba(111,66,193,.18)!important;
+}
+.modern-note strong{
+  color: var(--morado-oscuro);
+  font-size: 1.08rem;
+}
+.modern-note p{
+  color:#4f465c;
+  line-height:1.45;
+}
+.bottom-nav.system-nav{
+  grid-template-columns: repeat(4,1fr)!important;
+}
+@media(max-width:360px){
+  .publica-circle{width:160px!important;height:160px!important;}
+  .circle-plus{width:56px!important;height:56px!important;font-size:3rem!important;}
+  .hero-modern.identity-hero h1{font-size:2rem;}
+}

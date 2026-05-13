@@ -4,12 +4,12 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.4.1-app-instalable";
+const CACHE_NAME = "conecta-servicios-v4.5-sistema-oportunidades";
 const STATIC_ASSETS = [
   "/",
   "/index.html",
-  "/styles.css?v=4.4.1-oportunidades-pwa",
-  "/app.js?v=4.4-app-instalable",
+  "/styles.css?v=4.5-sistema-oportunidades",
+  "/app.js?v=4.5-sistema-oportunidades",
   "/manifest.json",
   "/assets/brand-hero.webp",
   "/assets/icon-192.png",

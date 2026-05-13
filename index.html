@@ -28,7 +28,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="icon" href="assets/icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=4.4.1-oportunidades-pwa" />
+  <link rel="stylesheet" href="styles.css?v=4.5-sistema-oportunidades" />
 </head>
 <body>
   <div class="app-shell">
@@ -47,8 +47,8 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <div class="brand-hero-art" aria-hidden="true">
             <img src="assets/brand-hero.webp" alt="" loading="eager" />
           </div>
-          <h1>¿Qué vamos a hacer hoy?</h1>
-          <p>Publica lo que necesitas, lo que ofreces o revisa, explora publicaciones de tu zona.</p>
+          <h1>¿Qué oportunidad necesitas encontrar hoy?</h1>
+          <p>Conecta Servicios te acerca oportunidades reales según tu zona, tus intereses y lo que necesitas resolver.</p>
           <div class="hero-stat-pill"><span aria-hidden="true">📌</span><strong id="publicationsCount">0</strong> registros</div>
           <p class="sync-status visually-hidden" id="syncStatus" aria-live="polite">Conectando con la base de datos...</p>
         </div>
@@ -60,18 +60,12 @@ Todo uso requiere autorización expresa y por escrito del titular.
           </button>
         </div>
 
-        <div class="home-shortcuts modern-shortcuts">
+        <div class="home-shortcuts modern-shortcuts system-shortcuts">
+          <button class="shortcut-card opportunities featured-opportunity" onclick="showSection('oportunidades')">
+            <span>🎯</span><div><strong>Oportunidades para ti</strong><small>Según tu zona e intereses</small></div><b>›</b>
+          </button>
           <button class="shortcut-card nearby" onclick="requestNearbyPublications()">
-            <span>📍</span><strong>Publicaciones cerca de mí</strong><b>›</b>
-          </button>
-          <button class="shortcut-card opportunities" onclick="showSection('oportunidades')">
-            <span>🎯</span><strong>Oportunidades para ti</strong><b>›</b>
-          </button>
-          <button class="shortcut-card delivery" onclick="applyCategoryAndShow('Mensajería y envíos')">
-            <span>📦</span><strong>Mensajería y envíos</strong><b>›</b>
-          </button>
-          <button class="shortcut-card ride" onclick="applyCategoryAndShow('Viajes compartidos')">
-            <span>🚘</span><strong>Viajes compartidos</strong><b>›</b>
+            <span>📍</span><div><strong>Publicaciones cerca de mí</strong><small>Explora lo más cercano a tu ubicación</small></div><b>›</b>
           </button>
         </div>
 
@@ -85,8 +79,8 @@ Todo uso requiere autorización expresa y por escrito del titular.
         </div>
 
         <div class="notice-card slim modern-note">
-          <strong>Sin divisiones complicadas</strong>
-          <p>Todo convive en un solo espacio. El texto de cada publicación deja claro si alguien busca ayuda, ofrece servicio, comparte viaje o hace envíos.</p>
+          <strong>Un sistema de oportunidades</strong>
+          <p>Las oportunidades no deberían perderse entre publicaciones. Conecta Servicios las ordena por zona, interés y necesidad para que encuentres apoyo, trabajo, servicios o clientes cerca de ti.</p>
         </div>
       </section>
 
@@ -660,11 +654,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </footer>
 
 
-    <nav class="bottom-nav">
+    <nav class="bottom-nav system-nav">
       <button onclick="showSection('inicio')">🏠<span>Inicio</span></button>
-      <button onclick="showSection('publicaciones')">🔎<span>Publicaciones</span></button>
-      <button onclick="startWizard()">➕<span>Publica</span></button>
       <button onclick="showSection('oportunidades')">🎯<span>Para ti</span></button>
+      <button onclick="startWizard()">➕<span>Publica</span></button>
       <button onclick="showSection('oficina')">🏢<span>Oficina</span></button>
     </nav>
   </div>
@@ -689,6 +682,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.4-app-instalable"></script>
+  <script src="app.js?v=4.5-sistema-oportunidades"></script>
 </body>
 </html>

@@ -1,18 +1,29 @@
-# Conecta Servicios v4.4.1 — App instalable con Oportunidades para ti
-
-Versión corregida que fusiona la app instalable tipo PWA con la sección **Oportunidades para ti**.
-
-Incluye:
-
-- App instalable tipo PWA.
-- `manifest.json` y `service-worker.js`.
-- Íconos para Android/iPhone.
-- Botón **Instalar app**.
-- Sección **Oportunidades para ti** visible desde la portada, oficina y barra inferior.
-- Configuración de intereses por categoría, estado y municipio.
-- Coincidencias recomendadas con publicaciones activas.
-- Analítica, enlaces directos, cercanía inteligente, Aprende y emprende y protección legal.
-
-No requiere SQL nuevo si ya ejecutaste el SQL de v4.2.
+# Conecta Servicios v4.5 — Sistema de oportunidades
 
 © 2026 Conecta Servicios. Todos los derechos reservados.
+
+Versión enfocada en presentar la app como un sistema local de oportunidades:
+
+- Título principal: **¿Qué oportunidad necesitas encontrar hoy?**
+- Botón **+ PUBLICA** más grande y protagonista.
+- **Oportunidades para ti** más visible y llamativo.
+- Se conserva **Publicaciones cerca de mí**.
+- Se retiran de portada los accesos sueltos a Mensajería y Viajes, porque ahora viven dentro de categorías e intereses.
+- Frase de cierre enfocada en ordenar oportunidades por zona, interés y necesidad.
+- Navegación inferior simplificada: Inicio, Para ti, Publica y Oficina.
+- Mantiene PWA instalable, analítica, enlaces directos, cercanía inteligente, Aprende y emprende y protección legal.
+
+## Archivos a subir
+
+Sube o reemplaza en GitHub:
+
+- `index.html`
+- `styles.css`
+- `app.js`
+- `README.md`
+- `LICENSE`
+- `manifest.json`
+- `service-worker.js`
+- carpeta `assets/`
+
+No requiere SQL nuevo.
