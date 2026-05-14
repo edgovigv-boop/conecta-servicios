@@ -1701,7 +1701,7 @@ body {
 }
 
 
-/* v4.7.10 — ajuste fino: logo sin deformación y hero más equilibrado */
+/* v4.7.11 — ajuste fino: logo sin deformación y hero más equilibrado */
 .app-shell.home-mode .home-v477{
   padding-top:18px!important;
 }
@@ -1797,4 +1797,43 @@ body {
   .app-shell.home-mode .hero-copy p{font-size:.72rem!important;}
   .app-shell.home-mode .hero-chips{left:12px!important;bottom:11px!important;max-width:235px!important;}
   .app-shell.home-mode .opportunity-orb{margin-top:-18px!important;}
+}
+
+
+/* v4.7.11 — ajuste fino: logo circular real y hero más abierto */
+.cs-node-logo{
+  width:58px!important;height:58px!important;min-width:58px!important;flex:0 0 58px!important;
+  border-radius:50%!important;background:linear-gradient(145deg,#401590,#19034c)!important;
+  overflow:hidden!important;display:grid!important;place-items:center!important;padding:6px!important;
+  box-shadow:0 8px 22px rgba(111,66,193,.34),inset 0 0 0 2px rgba(255,255,255,.12)!important;
+}
+.cs-node-logo:before,.cs-node-logo:after,.cs-node-logo i{display:none!important;content:none!important;}
+.cs-node-logo svg{display:block;width:100%;height:100%;filter:drop-shadow(0 0 6px rgba(255,255,255,.22));}
+.home-v477-brand{align-items:center!important;min-width:0!important;}
+.home-v477-brand strong{font-size:1.92rem!important;}
+.home-v477-brand small{font-size:1.27rem!important;}
+.home-v477-hero{min-height:294px!important;border-radius:26px!important;overflow:hidden!important;}
+.hero-scene{
+  background-image:linear-gradient(90deg,rgba(12,0,47,.94) 0%,rgba(16,0,55,.86) 25%,rgba(18,0,57,.38) 48%,rgba(18,0,57,.06) 78%),url('assets/hero-scene-clean-v4711.png')!important;
+  background-size:cover!important;background-position:center center!important;
+}
+.hero-copy{padding:23px 18px 0!important;max-width:220px!important;}
+.hero-copy h1{font-size:1.86rem!important;line-height:1.09!important;letter-spacing:-.035em!important;}
+.hero-copy em{margin:10px 0 12px!important;width:38px!important;height:4px!important;}
+.hero-copy p{font-size:.90rem!important;line-height:1.24!important;max-width:188px!important;}
+.hero-chips{bottom:14px!important;left:14px!important;gap:7px!important;padding:8px 9px!important;border-radius:18px!important;}
+.hero-chips b{width:34px!important;height:34px!important;font-size:1rem!important;}
+.hero-chips span{font-size:.67rem!important;}
+.opportunity-orb{margin-top:-26px!important;}
+@media(max-width:380px){
+  .cs-node-logo{width:50px!important;height:50px!important;min-width:50px!important;padding:5px!important;}
+  .home-v477-brand strong{font-size:1.58rem!important;}
+  .home-v477-brand small{font-size:1.05rem!important;}
+  .home-v477-hero{min-height:276px!important;border-radius:24px!important;}
+  .hero-scene{background-position:center center!important;}
+  .hero-copy{padding:20px 16px 0!important;max-width:200px!important;}
+  .hero-copy h1{font-size:1.58rem!important;line-height:1.08!important;}
+  .hero-copy p{font-size:.78rem!important;line-height:1.22!important;max-width:170px!important;}
+  .hero-chips{bottom:12px!important;left:12px!important;gap:5px!important;padding:7px!important;}
+  .hero-chips b{width:30px!important;height:30px!important;}
 }
