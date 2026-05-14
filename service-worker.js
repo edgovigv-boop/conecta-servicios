@@ -4,7 +4,7 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.7.7-home-integrado-real";
+const CACHE_NAME = "conecta-servicios-v4.7.8-home-integrado-real";
 const ASSETS = [
   "./",
   "index.html",

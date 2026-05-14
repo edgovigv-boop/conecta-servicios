@@ -1722,6 +1722,7 @@ function init() {
   document.getElementById("reclassForm")?.addEventListener("submit", saveReclassification);
   document.getElementById("externalLinkForm")?.addEventListener("submit", submitExternalLink);
   history.replaceState({ section: "inicio" }, "", routeUrlForSection("inicio"));
+  document.querySelector(".app-shell")?.classList.add("home-mode");
   updateWizard();
   updateCategoryDetails();
   initMobileFormComfort();
