@@ -1398,6 +1398,7 @@ body {
 .home-visual-exact{
   position:relative;
   width:100%;
+  aspect-ratio:9/16;
   max-width:430px;
   margin:0 auto;
   overflow:hidden;
@@ -1409,8 +1410,9 @@ body {
   display:block;
   width:100%;
   height:auto;
-  min-height:100vh;
-  object-fit:cover;
+  height:auto;
+  min-height:0;
+  object-fit:contain;
   object-position:top center;
   pointer-events:none;
   user-select:none;
@@ -1448,3 +1450,10 @@ body {
   .hot-opportunities{top:44.5%;}
   .hot-nearby{top:61.3%;}
 }
+
+
+/* v4.7.5 - home 9:16 exacto sin recorte */
+.home-visual-exact{aspect-ratio:9/16!important;overflow:visible!important;background:#05020d!important;}
+.home-visual-img{width:100%!important;height:auto!important;min-height:0!important;object-fit:contain!important;object-position:top center!important;}
+.app-shell.home-mode .content{align-items:flex-start!important;overflow-x:hidden!important;}
+@media (display-mode: standalone){.home-visual-exact{max-width:430px!important;}}

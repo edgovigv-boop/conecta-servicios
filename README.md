@@ -1,15 +1,32 @@
-# Conecta Servicios v4.7.4 — Home idéntico, navegación y accesos nuevos
+# Conecta Servicios v4.7.5 — Home 9:16 exacto
+
+Corrección visual para que el home use la imagen aprobada como pantalla completa 9:16, sin recorte dentro de tarjetas.
 
 Incluye:
 
-- Home visual basado en la propuesta aprobada.
-- Logo circular con nodos conectados.
-- Campanita abre Notificaciones.
-- Icono de persona abre Mis publicaciones.
-- Oficina / Contacto queda arriba en el home.
-- Navegación inferior: Inicio, Para ti, Mensajes y Aprendizaje.
-- Mensajes y Aprendizaje quedan como Próximamente.
-- Tarjeta de instalación alineada como la propuesta visual.
-- Conserva la funcionalidad de v4.7 Oportunidades guiadas.
+- Home visual basado en la maqueta aprobada.
+- Imagen 9:16 exacta en `assets/home-final-v475.webp`.
+- Botones invisibles sobre la imagen para conservar funcionalidad.
+- Campanita hacia Notificaciones.
+- Perfil hacia Mis publicaciones.
+- Mensajes y Aprendizaje como Próximamente.
+- Service worker actualizado para romper caché.
 
-No requiere SQL nuevo.
+Subir a GitHub:
+
+```text
+index.html
+styles.css
+app.js
+README.md
+LICENSE
+manifest.json
+service-worker.js
+assets/
+```
+
+Commit sugerido:
+
+```text
+Actualizar a v4.7.5 home 9x16 exacto
+```
