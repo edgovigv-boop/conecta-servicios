@@ -1294,3 +1294,81 @@ body {
   .launch-hero-card{max-height:230px;border-radius:24px;}
   .launch-hero-card img{min-height:0!important;}
 }
+
+/* v4.7.3 — home más fiel a la propuesta visual autorizada */
+.app-shell.home-mode .app-header{
+  display:none;
+}
+.app-shell.home-mode .content{
+  padding:0 14px 14px;
+  background:linear-gradient(180deg,#19044e 0,#2e0875 24%,#f7f4ff 55%,#f7f4ff 100%);
+  min-height:100vh;
+}
+.app-shell.home-mode .launch-home{
+  gap:14px;
+  padding-top:14px;
+}
+.launch-brandbar{
+  display:grid;
+  grid-template-columns:auto 1fr auto auto auto;
+  align-items:center;
+  gap:10px;
+  color:#fff;
+  padding:8px 4px 4px;
+}
+.node-logo{
+  width:50px;height:50px;border-radius:18px;display:block;position:relative;
+  background:radial-gradient(circle at 50% 50%,#71d642 0 8%,transparent 9%),
+             conic-gradient(from 25deg,#fff 0 20%,transparent 20% 35%,#fff 35% 52%,transparent 52% 69%,#fff 69% 86%,transparent 86% 100%),
+             linear-gradient(135deg,#4b1aa2,#16024a);
+  box-shadow:0 10px 24px rgba(0,0,0,.25),0 0 18px rgba(110,255,88,.18);
+}
+.node-logo::before,.node-logo::after{content:"";position:absolute;inset:0;border-radius:inherit;}
+.node-logo::before{background:
+  radial-gradient(circle at 18% 18%,#fff 0 5px,transparent 6px),
+  radial-gradient(circle at 84% 28%,#fff 0 5px,transparent 6px),
+  radial-gradient(circle at 78% 82%,#fff 0 5px,transparent 6px),
+  radial-gradient(circle at 22% 78%,#fff 0 5px,transparent 6px);
+}
+.node-logo::after{background:
+  linear-gradient(35deg,transparent 38%,#7de04d 39% 43%,transparent 44%),
+  linear-gradient(145deg,transparent 41%,#7de04d 42% 46%,transparent 47%);
+  opacity:.95;
+}
+.launch-brandtext strong{display:block;font-size:1.65rem;line-height:.95;font-weight:950;letter-spacing:-.03em;}
+.launch-brandtext small{display:block;font-size:1.05rem;color:#d8c8ff;margin-top:2px;}
+.launch-round-icon{
+  width:42px;height:42px;border-radius:999px;border:0;background:rgba(255,255,255,.12);color:#fff;
+  display:grid;place-items:center;font-size:1.05rem;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);
+}
+.app-shell.home-mode .launch-hero-card{
+  margin-top:4px;
+  border-radius:28px;
+  aspect-ratio: 897 / 515;
+  max-height:none;
+  box-shadow:0 24px 54px rgba(17,2,65,.32);
+}
+.app-shell.home-mode .launch-hero-card img{
+  width:100%!important;height:100%!important;object-fit:cover!important;object-position:center center!important;
+}
+.app-shell.home-mode .launch-main-button{
+  width:176px;height:176px;margin:-4px auto 4px;
+  background:radial-gradient(circle at 38% 28%,#b889ff 0,#7b39e0 46%,#3a077b 100%);
+  box-shadow:0 26px 58px rgba(111,66,193,.34),inset 0 0 0 2px rgba(255,255,255,.16);
+}
+.app-shell.home-mode .launch-nearby-button,
+.app-shell.home-mode .future-tile,
+.app-shell.home-mode .launch-stats-card,
+.app-shell.home-mode .launch-install-card{
+  box-shadow:0 16px 34px rgba(89,51,138,.12);
+}
+.app-shell.home-mode .launch-nearby-button{width:min(100%,350px);}
+@media(max-width:380px){
+  .launch-brandbar{padding-top:6px;}
+  .node-logo{width:44px;height:44px;border-radius:16px;}
+  .launch-brandtext strong{font-size:1.42rem;}
+  .launch-brandtext small{font-size:.96rem;}
+  .launch-round-icon{width:38px;height:38px;font-size:.96rem;}
+  .app-shell.home-mode .launch-hero-card{border-radius:24px;}
+  .app-shell.home-mode .launch-main-button{width:158px;height:158px;}
+}

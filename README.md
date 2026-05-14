@@ -1,18 +1,16 @@
-# Conecta Servicios v4.7.2 — Home hero ajustado
-
-Corrección visual de la v4.7.1.
+# Conecta Servicios v4.7.3 — Home más fiel a la propuesta visual
 
 Incluye:
 
-- Imagen superior ajustada como tarjeta horizontal real, sin recortes laterales.
-- Logo circular con nodos conectados.
-- Se mantiene el botón redondo protagonista “Oportunidades para ti”.
-- Se mantiene “Publicaciones cerca de mí”.
-- Se conservan Mensajes inteligentes y Aprendizaje como “Próximamente”.
-- Se mantiene la funcionalidad de oportunidades guiadas de v4.7.
-- Se actualizó caché/service worker a v4.7.2.
+- Home sin la barra superior antigua en la pantalla de inicio.
+- Encabezado visual propio con logo circular de nodos.
+- Hero superior ajustado para que no se recorte de forma incorrecta.
+- Botón redondo protagonista “Oportunidades para ti”.
+- “Publicaciones cerca de mí” como acceso secundario.
+- Tarjetas “Mensajes inteligentes” y “Aprendizaje” como Próximamente.
+- Se mantiene la funcionalidad de v4.7 oportunidades guiadas.
 
-Para publicar, reemplaza en GitHub:
+Subir a GitHub/Vercel:
 
 - index.html
 - styles.css
@@ -23,6 +21,6 @@ Para publicar, reemplaza en GitHub:
 - service-worker.js
 - assets/
 
-Mensaje sugerido:
+Commit sugerido:
 
-Actualizar a v4.7.2 home hero ajustado
+Actualizar a v4.7.3 home más fiel

@@ -28,7 +28,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="icon" href="assets/icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=4.7.2-home-hero-ajustado" />
+  <link rel="stylesheet" href="styles.css?v=4.7.3-home-mas-fiel" />
 </head>
 <body>
   <div class="app-shell">
@@ -44,6 +44,16 @@ Todo uso requiere autorización expresa y por escrito del titular.
     <main class="content">
       <section id="inicio" class="section active home-launch-section">
         <div class="launch-home">
+          <div class="launch-brandbar" aria-label="Conecta Servicios">
+            <span class="node-logo" aria-hidden="true"></span>
+            <div class="launch-brandtext">
+              <strong>Conecta</strong>
+              <small>Servicios</small>
+            </div>
+            <span class="launch-brand-spacer"></span>
+            <button type="button" class="launch-round-icon" onclick="showToast('Mensajes inteligentes estará disponible próximamente.')" aria-label="Mensajes inteligentes próximamente">🔔</button>
+            <button type="button" class="launch-round-icon" onclick="showSection('oficina')" aria-label="Oficina">👤</button>
+          </div>
           <div class="launch-hero-card" aria-label="Conecta Servicios">
             <img src="assets/brand-hero.webp" alt="Conecta Servicios: comunidad, movilidad, entregas y oportunidades locales" loading="eager" />
           </div>
@@ -636,6 +646,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.7.2-home-hero-ajustado"></script>
+  <script src="app.js?v=4.7.3-home-mas-fiel"></script>
 </body>
 </html>

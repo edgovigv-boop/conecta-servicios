@@ -29,7 +29,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v41";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.7.2-home-hero-ajustado";
+const PWA_VERSION = "v4.7.3-home-mas-fiel";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -239,6 +239,7 @@ function showSection(id, push = true) {
   if (!target) return;
   if (push && id !== currentSection) history.pushState({ section: id }, "", routeUrlForSection(id));
   currentSection = id;
+  document.querySelector(".app-shell")?.classList.toggle("home-mode", id === "inicio");
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   target.classList.add("active");
   const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme" };
@@ -494,7 +495,7 @@ function formPayload() {
   payload.estado = evaluation.status;
   payload.referencia = evaluation.reasons.length
     ? `Revisión automática: ${evaluation.reasons.join(", ")} · Sugerencia: ${inferred.label}`
-    : `Activación automática v4.7.2 · Clasificación: ${inferred.label}`;
+    : `Activación automática v4.7.3 · Clasificación: ${inferred.label}`;
   return payload;
 }
 function renderPublicationPreview() {
