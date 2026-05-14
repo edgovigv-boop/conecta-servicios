@@ -1699,3 +1699,102 @@ body {
   .home-stat-v477,.install-card-v477{padding:10px!important;}
   .install-card-v477 button{padding:9px 10px!important;font-size:.82rem!important;}
 }
+
+
+/* v4.7.10 — ajuste fino: logo sin deformación y hero más equilibrado */
+.app-shell.home-mode .home-v477{
+  padding-top:18px!important;
+}
+.app-shell.home-mode .home-v477-brand .cs-node-logo,
+.app-shell.home-mode .install-card-v477 .cs-node-logo{
+  aspect-ratio:1/1!important;
+  border-radius:50%!important;
+  transform:none!important;
+  flex:0 0 auto!important;
+  overflow:hidden!important;
+  background:
+    radial-gradient(circle at 50% 50%,#68c83d 0 8%,transparent 9%),
+    linear-gradient(145deg,#4d1cad 0%,#160044 100%)!important;
+}
+.app-shell.home-mode .home-v477-brand .cs-node-logo{
+  width:54px!important;
+  height:54px!important;
+}
+.app-shell.home-mode .install-card-v477 .cs-node-logo{
+  width:48px!important;
+  height:48px!important;
+}
+.app-shell.home-mode .cs-node-logo:before{
+  content:""!important;
+  position:absolute!important;
+  inset:7px!important;
+  border-radius:50%!important;
+  border:5px solid rgba(255,255,255,.96)!important;
+  border-right-color:transparent!important;
+  border-bottom-color:rgba(255,255,255,.42)!important;
+  transform:rotate(-20deg)!important;
+}
+.app-shell.home-mode .cs-node-logo:after{
+  content:""!important;
+  position:absolute!important;
+  left:21px!important;
+  top:25px!important;
+  width:24px!important;
+  height:4px!important;
+  border-radius:999px!important;
+  background:#6bd13f!important;
+  transform:rotate(-18deg)!important;
+  box-shadow:-8px -12px 0 -2px #fff, 18px -7px 0 -2px #fff, 14px 17px 0 -2px #fff!important;
+}
+.app-shell.home-mode .cs-node-logo i{
+  left:24px!important;
+  top:24px!important;
+  width:8px!important;
+  height:8px!important;
+  border-radius:50%!important;
+  background:#6bd13f!important;
+}
+.app-shell.home-mode .home-v477-hero{
+  height:236px!important;
+  min-height:236px!important;
+  border-radius:26px!important;
+  margin-top:2px!important;
+}
+.app-shell.home-mode .hero-scene{
+  background-image:
+    linear-gradient(90deg,rgba(12,0,45,.98) 0%,rgba(13,0,47,.92) 28%,rgba(18,0,56,.38) 51%,rgba(18,0,56,.03) 76%),
+    url('assets/hero-scene-v479.webp')!important;
+  background-size:auto 108%!important;
+  background-position:58% center!important;
+  background-repeat:no-repeat!important;
+}
+.app-shell.home-mode .hero-copy{
+  padding:22px 17px 0!important;
+  max-width:196px!important;
+}
+.app-shell.home-mode .hero-copy h1{
+  font-size:1.52rem!important;
+  line-height:1.12!important;
+}
+.app-shell.home-mode .hero-copy p{
+  font-size:.80rem!important;
+}
+.app-shell.home-mode .hero-chips{
+  bottom:13px!important;
+  left:15px!important;
+  max-width:250px!important;
+}
+.app-shell.home-mode .opportunity-orb{
+  margin-top:-20px!important;
+  margin-bottom:13px!important;
+}
+@media(max-width:380px){
+  .app-shell.home-mode .home-v477-brand .cs-node-logo{width:48px!important;height:48px!important;}
+  .app-shell.home-mode .home-v477-hero{height:220px!important;min-height:220px!important;border-radius:24px!important;}
+  .app-shell.home-mode .hero-scene{background-size:auto 106%!important;background-position:60% center!important;}
+  .app-shell.home-mode .hero-copy{padding:20px 14px 0!important;max-width:178px!important;}
+  .app-shell.home-mode .hero-copy h1{font-size:1.34rem!important;}
+  .app-shell.home-mode .hero-copy p{font-size:.72rem!important;}
+  .app-shell.home-mode .hero-chips{left:12px!important;bottom:11px!important;max-width:235px!important;}
+  .app-shell.home-mode .opportunity-orb{margin-top:-18px!important;}
+}
