@@ -1,3 +1,5 @@
-# Conecta Servicios v4.7.8 — Home integrado corregido
+# Conecta Servicios v4.7.9 — Home real proporcionado
 
-Corrección: el home inicia en modo visual real desde la primera carga, sin mostrar la barra superior antigua. Conserva el diseño integrado, el acceso animado de Publicaciones cerca de mí, campanita para notificaciones y perfil para Mis publicaciones.
+Corrección visual del home: interfaz real con hero proporcionado, escena limpia, textos HTML reales, botón Oportunidades y CTA cercano dinámico.
+
+Subir a GitHub/Vercel reemplazando archivos principales y carpeta assets.
