@@ -1295,7 +1295,7 @@ body {
   .launch-hero-card img{min-height:0!important;}
 }
 
-/* v4.7.3 — home más fiel a la propuesta visual autorizada */
+/* v4.7.4 — home más fiel a la propuesta visual autorizada */
 .app-shell.home-mode .app-header{
   display:none;
 }
@@ -1371,4 +1371,80 @@ body {
   .launch-round-icon{width:38px;height:38px;font-size:.96rem;}
   .app-shell.home-mode .launch-hero-card{border-radius:24px;}
   .app-shell.home-mode .launch-main-button{width:158px;height:158px;}
+}
+
+
+/* v4.7.4 — home idéntico a propuesta visual y navegación simplificada */
+.app-shell.home-mode .app-header,
+.app-shell.home-mode .bottom-nav,
+.app-shell.home-mode .legal-footer{
+  display:none!important;
+}
+.app-shell.home-mode{
+  background:#05020d!important;
+  padding-bottom:0!important;
+}
+.app-shell.home-mode .content{
+  padding:0!important;
+  min-height:100vh!important;
+  background:#05020d!important;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+}
+.app-shell.home-mode #inicio{
+  width:100%;
+}
+.home-visual-exact{
+  position:relative;
+  width:100%;
+  max-width:430px;
+  margin:0 auto;
+  overflow:hidden;
+  background:#05020d;
+  display:block!important;
+  gap:0!important;
+}
+.home-visual-img{
+  display:block;
+  width:100%;
+  height:auto;
+  min-height:100vh;
+  object-fit:cover;
+  object-position:top center;
+  pointer-events:none;
+  user-select:none;
+}
+.home-hotspot{
+  position:absolute;
+  border:0;
+  background:rgba(255,255,255,0);
+  color:transparent;
+  padding:0;
+  z-index:5;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.hot-bell{left:74%;top:5.4%;width:9%;height:5.4%;border-radius:999px;}
+.hot-profile{left:86%;top:5.4%;width:9%;height:5.4%;border-radius:999px;}
+.hot-office{left:70%;top:10.7%;width:25%;height:4.2%;border-radius:999px;}
+.hot-opportunities{left:31%;top:44.8%;width:38%;height:18%;border-radius:999px;}
+.hot-nearby{left:14%;top:61.5%;width:72%;height:6.2%;border-radius:999px;}
+.hot-messages-card{left:5%;top:69.8%;width:44%;height:9.5%;border-radius:22px;}
+.hot-learning-card{left:51%;top:69.8%;width:44%;height:9.5%;border-radius:22px;}
+.hot-install{left:70%;top:88%;width:25%;height:5.4%;border-radius:18px;}
+.hot-nav-inicio{left:7%;bottom:1.8%;width:18%;height:7%;}
+.hot-nav-para-ti{left:28%;bottom:1.8%;width:18%;height:7%;}
+.hot-nav-mensajes{left:51%;bottom:1.8%;width:18%;height:7%;}
+.hot-nav-aprendizaje{left:73%;bottom:1.8%;width:22%;height:7%;}
+.system-nav{
+  grid-template-columns:repeat(4,1fr)!important;
+  border-radius:22px 22px 0 0;
+}
+.system-nav button:nth-child(1){color:var(--morado);font-weight:800;}
+.my-publications-section .compact-list{display:grid;gap:10px;}
+.my-publications-section .notice-card{background:linear-gradient(135deg,#fff,#f7fff8);}
+@media(max-width:380px){
+  .hot-opportunities{top:44.5%;}
+  .hot-nearby{top:61.3%;}
 }

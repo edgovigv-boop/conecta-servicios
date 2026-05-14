@@ -28,7 +28,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="icon" href="assets/icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=4.7.3-home-mas-fiel" />
+  <link rel="stylesheet" href="styles.css?v=4.7.4-home-identico" />
 </head>
 <body>
   <div class="app-shell">
@@ -43,63 +43,22 @@ Todo uso requiere autorización expresa y por escrito del titular.
 
     <main class="content">
       <section id="inicio" class="section active home-launch-section">
-        <div class="launch-home">
-          <div class="launch-brandbar" aria-label="Conecta Servicios">
-            <span class="node-logo" aria-hidden="true"></span>
-            <div class="launch-brandtext">
-              <strong>Conecta</strong>
-              <small>Servicios</small>
-            </div>
-            <span class="launch-brand-spacer"></span>
-            <button type="button" class="launch-round-icon" onclick="showToast('Mensajes inteligentes estará disponible próximamente.')" aria-label="Mensajes inteligentes próximamente">🔔</button>
-            <button type="button" class="launch-round-icon" onclick="showSection('oficina')" aria-label="Oficina">👤</button>
-          </div>
-          <div class="launch-hero-card" aria-label="Conecta Servicios">
-            <img src="assets/brand-hero.webp" alt="Conecta Servicios: comunidad, movilidad, entregas y oportunidades locales" loading="eager" />
-          </div>
-
-          <button class="launch-main-button" type="button" onclick="startOpportunityGuide()" aria-label="Iniciar oportunidades para ti">
-            <span class="launch-plus">+</span>
-            <strong>Oportunidades<br>para ti</strong>
-          </button>
-
-          <button class="launch-nearby-button" type="button" onclick="requestNearbyPublications()">
-            <span aria-hidden="true">📍</span>
-            <strong>Publicaciones cerca de mí</strong>
-            <b aria-hidden="true">›</b>
-          </button>
-
-          <div class="launch-future-grid" aria-label="Funciones próximas">
-            <button type="button" class="future-tile" onclick="showToast('Mensajes inteligentes estará disponible próximamente.')">
-              <span aria-hidden="true">💬</span>
-              <strong>Mensajes inteligentes</strong>
-              <small>◷ Próximamente</small>
-            </button>
-            <button type="button" class="future-tile" onclick="showToast('Aprendizaje estará disponible próximamente.')">
-              <span aria-hidden="true">🎓</span>
-              <strong>Aprendizaje</strong>
-              <small>◷ Próximamente</small>
-            </button>
-          </div>
-
-          <div class="launch-stats-card">
-            <span class="stats-icon" aria-hidden="true">👥</span>
-            <div>
-              <strong><span id="publicationsCount">0</span> registros</strong>
-              <p id="growthMessage">Únete a más vecinos que ya están conectando oportunidades.</p>
-            </div>
-            <span class="trend-icon" aria-hidden="true">↗</span>
-          </div>
-
-          <div class="install-card launch-install-card" id="installCard">
-            <span class="install-logo" aria-hidden="true"></span>
-            <div>
-              <strong>Instala Conecta Servicios</strong>
-              <p>Añade la app a tu pantalla de inicio y accede más rápido.</p>
-            </div>
-            <button class="btn-small btn-green" id="installAppButton" type="button" onclick="installApp()">Instalar</button>
-            <button class="btn-small btn-ghost install-help-mini" type="button" onclick="showInstallHelp()">¿Cómo?</button>
-          </div>
+        <div class="launch-home home-visual-exact" aria-label="Inicio de Conecta Servicios">
+          <img class="home-visual-img" src="assets/home-final-v474.webp" alt="Conecta Servicios: oportunidades, publicaciones cercanas, mensajes inteligentes y aprendizaje" loading="eager" />
+          <button class="home-hotspot hot-bell" type="button" onclick="showSection('notificaciones')" aria-label="Abrir notificaciones"></button>
+          <button class="home-hotspot hot-profile" type="button" onclick="showSection('misPublicaciones')" aria-label="Abrir mis publicaciones"></button>
+          <button class="home-hotspot hot-office" type="button" onclick="showSection('oficina')" aria-label="Abrir oficina y contacto"></button>
+          <button class="home-hotspot hot-opportunities" type="button" onclick="startOpportunityGuide()" aria-label="Iniciar oportunidades para ti"></button>
+          <button class="home-hotspot hot-nearby" type="button" onclick="requestNearbyPublications()" aria-label="Ver publicaciones cerca de mí"></button>
+          <button class="home-hotspot hot-messages-card" type="button" onclick="showToast('Mensajes inteligentes estará disponible próximamente.')" aria-label="Mensajes inteligentes próximamente"></button>
+          <button class="home-hotspot hot-learning-card" type="button" onclick="showToast('Aprendizaje estará disponible próximamente.')" aria-label="Aprendizaje próximamente"></button>
+          <button class="home-hotspot hot-install" type="button" onclick="installApp()" aria-label="Instalar Conecta Servicios"></button>
+          <button class="home-hotspot hot-nav-inicio" type="button" onclick="showSection('inicio')" aria-label="Inicio"></button>
+          <button class="home-hotspot hot-nav-para-ti" type="button" onclick="startOpportunityGuide()" aria-label="Para ti"></button>
+          <button class="home-hotspot hot-nav-mensajes" type="button" onclick="showToast('Mensajes inteligentes estará disponible próximamente.')" aria-label="Mensajes próximamente"></button>
+          <button class="home-hotspot hot-nav-aprendizaje" type="button" onclick="showToast('Aprendizaje estará disponible próximamente.')" aria-label="Aprendizaje próximamente"></button>
+          <span id="publicationsCount" class="visually-hidden">0</span>
+          <span id="growthMessage" class="visually-hidden">Únete a más vecinos que ya están conectando oportunidades.</span>
           <p class="sync-status visually-hidden" id="syncStatus" aria-live="polite">Conectando con la base de datos...</p>
         </div>
       </section>
@@ -451,6 +410,21 @@ Todo uso requiere autorización expresa y por escrito del titular.
       </section>
 
 
+      <section id="misPublicaciones" class="section info-section my-publications-section">
+        <h2>Mis publicaciones</h2>
+        <div class="notice-card">
+          <strong>Control de tus registros</strong>
+          <p>Escribe tu WhatsApp completo o los últimos 4 dígitos para encontrar tus publicaciones activas y solicitar cambios.</p>
+        </div>
+        <div class="form-card">
+          <label>WhatsApp o últimos 4 dígitos
+            <input id="myPhoneSearch" type="tel" placeholder="Ej. 3145" oninput="renderMyPublications()" />
+          </label>
+          <button class="btn-big btn-purple" type="button" onclick="renderMyPublications()">Buscar mis publicaciones</button>
+        </div>
+        <div id="myPublicationsList" class="compact-list"></div>
+      </section>
+
       <section id="notificaciones" class="section info-section">
         <h2>Notificaciones</h2>
         <div class="notice-card">
@@ -571,9 +545,9 @@ Todo uso requiere autorización expresa y por escrito del titular.
 
     <nav class="bottom-nav system-nav">
       <button onclick="showSection('inicio')">🏠<span>Inicio</span></button>
-      <button onclick="startOpportunityGuide()">🎯<span>Para ti</span></button>
-      <button onclick="startOpportunityGuide()">➕<span>Publica</span></button>
-      <button onclick="showSection('oficina')">🏢<span>Oficina</span></button>
+      <button onclick="startOpportunityGuide()">🔖<span>Para ti</span></button>
+      <button onclick="showToast('Mensajes inteligentes estará disponible próximamente.')">💬<span>Mensajes</span></button>
+      <button onclick="showToast('Aprendizaje estará disponible próximamente.')">🎓<span>Aprendizaje</span></button>
     </nav>
   </div>
 
@@ -646,6 +620,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.7.3-home-mas-fiel"></script>
+  <script src="app.js?v=4.7.4-home-identico"></script>
 </body>
 </html>

@@ -29,7 +29,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v41";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.7.3-home-mas-fiel";
+const PWA_VERSION = "v4.7.4-home-identico-navegacion";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -242,7 +242,7 @@ function showSection(id, push = true) {
   document.querySelector(".app-shell")?.classList.toggle("home-mode", id === "inicio");
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   target.classList.add("active");
-  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme" };
+  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme" };
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
@@ -250,6 +250,7 @@ function showSection(id, push = true) {
   trackEvent("vista_seccion", null, { seccion: id });
   if (id === "analitica" && adminUnlocked) loadAnalyticsData();
   if (id === "oportunidades") renderOpportunities(false);
+  if (id === "misPublicaciones") renderMyPublications();
 }
 function goBack() {
   if (currentSection === "inicio") {
@@ -760,7 +761,50 @@ function renderPublications() {
   if (count) count.textContent = publicationsCache.length;
 }
 function renderLoading() { const list = document.getElementById("publicationsList"); if (list) list.innerHTML = `<div class="empty-state">Cargando registros...</div>`; }
-function renderAll() { renderPublications(); updateHomeCounts(); renderOpportunities(false); if (adminUnlocked) renderAdminPublications(); }
+
+function myPublicationCard(item) {
+  const icon = categoryIcon(item.category);
+  const meta = [item.municipality, item.state, folio(item)].filter(Boolean).join(" · ");
+  return `<article class="compact-publication my-publication-card" id="my-pub-${item.id}">
+    <button class="compact-summary" type="button" onclick="toggleMyPublicationDetail('${item.id}')">
+      <span class="compact-icon">${icon}</span>
+      <span><span class="compact-title">${escapeHtml(item.title)}</span><span class="compact-meta">${escapeHtml(meta)} · ${maskPhone(item.phone)}</span></span>
+      <span class="compact-chevron">›</span>
+    </button>
+    <div class="compact-detail">
+      <span class="category-badge">${icon} ${escapeHtml(item.category)}</span>
+      <p><strong>Publicado por:</strong> ${escapeHtml(item.name)}</p>
+      <p class="description">${linkify(item.description)}</p>
+      <p><strong>Estado:</strong> ${escapeHtml(item.status || "activo")} · <strong>Contacto:</strong> ${maskPhone(item.phone)}</p>
+      <div class="detail-actions">
+        <button class="btn-small btn-outline" onclick="sharePublication('${item.id}')">Compartir</button>
+        <button class="btn-small btn-ghost" onclick="requestModification('${item.id}')">Solicitar cambio</button>
+        <button class="btn-small btn-ghost" onclick="requestAttended('${item.id}')">Marcar como atendida</button>
+      </div>
+    </div>
+  </article>`;
+}
+function toggleMyPublicationDetail(id) {
+  const card = document.getElementById(`my-pub-${id}`);
+  if (!card) return;
+  card.classList.toggle("open");
+}
+function renderMyPublications() {
+  const list = document.getElementById("myPublicationsList");
+  if (!list) return;
+  const raw = cleanPhone(document.getElementById("myPhoneSearch")?.value || "");
+  if (!raw || raw.length < 4) {
+    list.innerHTML = `<div class="empty-state">Escribe al menos los últimos 4 dígitos del WhatsApp registrado.</div>`;
+    return;
+  }
+  const matches = publicationsCache.filter(item => {
+    const phone = cleanPhone(item.phone);
+    return raw.length >= 10 ? phone === raw || phone.endsWith(raw.slice(-10)) : phone.endsWith(raw);
+  });
+  list.innerHTML = matches.length ? matches.map(myPublicationCard).join("") : `<div class="empty-state">No encontramos publicaciones activas con esos dígitos. Si tu publicación está en revisión, revisa con Oficina / Contacto.</div>`;
+}
+
+function renderAll() { renderPublications(); updateHomeCounts(); renderOpportunities(false); renderMyPublications(); if (adminUnlocked) renderAdminPublications(); }
 setInterval(updateHomeCounts, 3500);
 function updateHomeCounts() {
   const count = document.getElementById("publicationsCount");
