@@ -1155,7 +1155,7 @@ body {
 }
 
 
-/* v4.7.1 visual final — home con imagen autorizada y botón circular protagonista */
+/* v4.7.2 visual final — hero ajustado sin recorte */
 .home-launch-section { padding: 0; }
 .launch-home { display: grid; gap: 14px; }
 .launch-hero-card {
@@ -1273,4 +1273,24 @@ body {
   .launch-install-card { grid-template-columns: auto 1fr; }
   .launch-install-card .btn-small { width: 100%; }
   .launch-install-card .btn-green, .launch-install-card .install-help-mini { grid-column: span 2; }
+}
+
+
+/* v4.7.2 — ajuste final: la imagen superior ahora es una tarjeta horizontal real, no una captura vertical recortada */
+.launch-hero-card{
+  aspect-ratio: 897 / 515;
+  min-height: unset!important;
+  max-height: 252px;
+  border-radius: 28px;
+}
+.launch-hero-card img{
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  object-fit:cover!important;
+  object-position:center center!important;
+}
+@media(max-width:380px){
+  .launch-hero-card{max-height:230px;border-radius:24px;}
+  .launch-hero-card img{min-height:0!important;}
 }

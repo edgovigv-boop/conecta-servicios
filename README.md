@@ -1,24 +1,18 @@
-# Conecta Servicios v4.7.1 — Home visual corregido
+# Conecta Servicios v4.7.2 — Home hero ajustado
 
-# Conecta Servicios v4.7.1 — Oportunidades guiadas con home visual final
+Corrección visual de la v4.7.1.
 
+Incluye:
 
-© 2026 Conecta Servicios. Todos los derechos reservados.
+- Imagen superior ajustada como tarjeta horizontal real, sin recortes laterales.
+- Logo circular con nodos conectados.
+- Se mantiene el botón redondo protagonista “Oportunidades para ti”.
+- Se mantiene “Publicaciones cerca de mí”.
+- Se conservan Mensajes inteligentes y Aprendizaje como “Próximamente”.
+- Se mantiene la funcionalidad de oportunidades guiadas de v4.7.
+- Se actualizó caché/service worker a v4.7.2.
 
-## Cambios principales
-
-- Home más simple: el botón principal ahora es **+ Oportunidades para ti**.
-- **Oportunidades para ti** inicia una guía paso a paso para crear una publicación clara y bien clasificada.
-- Se mantiene **Publicaciones cerca de mí** como consulta de resultados reales.
-- Se eliminan rutas confusas tipo cursos dentro de Oportunidades.
-- Las guías llevan a publicar: generar ingresos, publicar un negocio o publicar una necesidad.
-- El usuario revisa su información antes de publicar.
-- La clasificación se apoya en palabras como: Busco, Ofrezco, Necesito, Tengo y Vendo.
-- Admin queda como respaldo para reclasificar, no como corrección obligatoria.
-- Se simplifican categorías administrativas: Trabajo, Servicios, Limpieza, Reparaciones, Entregas y mandados, Movilidad, Negocios locales, Alimentos y ventas, Redes sociales y Colaboración general.
-- No requiere SQL nuevo.
-
-## Archivos a subir a GitHub
+Para publicar, reemplaza en GitHub:
 
 - index.html
 - styles.css
@@ -29,17 +23,6 @@
 - service-worker.js
 - assets/
 
-## Ajuste visual final integrado
+Mensaje sugerido:
 
-- Se integra la imagen publicitaria autorizada en la pantalla principal.
-- Se reemplaza el símbolo triangular por un logo circular con nodos conectados.
-- El botón principal queda redondo, morado y con efecto de ondas: “Oportunidades para ti”.
-- “Publicaciones cerca de mí” queda como acceso secundario.
-- “Mensajes inteligentes” y “Aprendizaje” quedan como tarjetas “Próximamente”.
-- Se conservan las oportunidades guiadas, publicación paso a paso, clasificación y administración.
-
-Mensaje de commit sugerido:
-
-```
-Actualizar a v4.7.1 oportunidades guiadas
-```
+Actualizar a v4.7.2 home hero ajustado
