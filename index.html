@@ -28,7 +28,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="icon" href="assets/icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=4.7.6-home-limpio-cta-dinamico" />
+  <link rel="stylesheet" href="styles.css?v=4.7.7-home-integrado-real" />
 </head>
 <body>
   <div class="app-shell">
@@ -42,23 +42,71 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </header>
 
     <main class="content">
-      <section id="inicio" class="section active home-launch-section">
-        <div class="launch-home home-visual-exact" aria-label="Inicio de Conecta Servicios">
-          <img class="home-visual-img" src="assets/home-final-v476.webp" alt="Conecta Servicios: home limpio con oportunidades, publicaciones cercanas y accesos próximos" loading="eager" />
-          <button class="home-hotspot hot-bell" type="button" onclick="showSection('notificaciones')" aria-label="Abrir notificaciones"></button>
-          <button class="home-hotspot hot-profile" type="button" onclick="showSection('misPublicaciones')" aria-label="Abrir mis publicaciones"></button>
-          <button class="home-hotspot hot-office" type="button" onclick="showSection('oficina')" aria-label="Abrir oficina y contacto"></button>
-          <button class="home-hotspot hot-opportunities" type="button" onclick="startOpportunityGuide()" aria-label="Iniciar oportunidades para ti"></button>
-          <button class="home-hotspot hot-nearby" type="button" onclick="requestNearbyPublications()" aria-label="Ver publicaciones cerca de mí"></button>
-          <button class="home-hotspot hot-messages-card" type="button" onclick="showToast('Mensajes inteligentes estará disponible próximamente.')" aria-label="Mensajes inteligentes próximamente"></button>
-          <button class="home-hotspot hot-learning-card" type="button" onclick="showToast('Aprendizaje estará disponible próximamente.')" aria-label="Aprendizaje próximamente"></button>
-          <button class="home-hotspot hot-install" type="button" onclick="installApp()" aria-label="Instalar Conecta Servicios"></button>
-          <button class="home-hotspot hot-nav-inicio" type="button" onclick="showSection('inicio')" aria-label="Inicio"></button>
-          <button class="home-hotspot hot-nav-para-ti" type="button" onclick="startOpportunityGuide()" aria-label="Para ti"></button>
-          <button class="home-hotspot hot-nav-mensajes" type="button" onclick="showToast('Mensajes inteligentes estará disponible próximamente.')" aria-label="Mensajes próximamente"></button>
-          <button class="home-hotspot hot-nav-aprendizaje" type="button" onclick="showToast('Aprendizaje estará disponible próximamente.')" aria-label="Aprendizaje próximamente"></button>
-          <span id="publicationsCount" class="visually-hidden">0</span>
-          <span id="growthMessage" class="visually-hidden">Únete a más vecinos que ya están conectando oportunidades.</span>
+      <section id="inicio" class="section active home-integrated-section">
+        <div class="home-v477" aria-label="Inicio de Conecta Servicios">
+          <div class="home-v477-top">
+            <div class="home-v477-brand">
+              <span class="cs-node-logo" aria-hidden="true"><i></i></span>
+              <div><strong>Conecta</strong><small>Servicios</small></div>
+            </div>
+            <div class="home-v477-top-actions">
+              <button class="home-round-action" type="button" onclick="showSection('notificaciones')" aria-label="Notificaciones">🔔<b></b></button>
+              <button class="home-round-action" type="button" onclick="showSection('misPublicaciones')" aria-label="Mis publicaciones">👤</button>
+              <button class="office-pill" type="button" onclick="showSection('oficina')" aria-label="Oficina y contacto">⌂ Oficina / Contacto</button>
+            </div>
+          </div>
+
+          <div class="home-v477-hero">
+            <div class="hero-copy">
+              <h1>Tu comunidad,<br><span>más conectada</span><br>que nunca.</h1>
+              <em></em>
+              <p>Servicios locales, movilidad,<br>entregas y apoyo entre<br>vecinos.</p>
+            </div>
+            <div class="hero-scene" aria-hidden="true"></div>
+            <div class="hero-chips" aria-label="Categorías destacadas">
+              <span><b>▣</b>Trabajos</span>
+              <span><b>♧</b>Movilidad</span>
+              <span><b>□</b>Entregas</span>
+              <span><b>●</b>Vecinos</span>
+            </div>
+          </div>
+
+          <button class="opportunity-orb" type="button" onclick="startOpportunityGuide()" aria-label="Oportunidades para ti">
+            <span class="orb-plus">＋</span>
+            <strong>Oportunidades<br>para ti</strong>
+          </button>
+
+          <button class="nearby-cta-pulse" type="button" onclick="requestNearbyPublications()" aria-label="Publicaciones cerca de mí">
+            <span class="pin-icon">📍</span>
+            <strong>Publicaciones cerca de mí</strong>
+            <b>›</b>
+          </button>
+
+          <div class="future-grid-v477">
+            <button type="button" class="future-card-v477" onclick="showToast('Mensajes inteligentes estará disponible próximamente.')">
+              <span class="future-emoji">💬</span>
+              <strong>Mensajes<br>inteligentes</strong>
+              <small>◷ Próximamente</small>
+            </button>
+            <button type="button" class="future-card-v477" onclick="showToast('Aprendizaje estará disponible próximamente.')">
+              <span class="future-emoji">🎓</span>
+              <strong>Aprendizaje</strong>
+              <small>◷ Próximamente</small>
+            </button>
+          </div>
+
+          <div class="home-stat-v477">
+            <span class="stat-people">👥</span>
+            <div><strong><span id="publicationsCount">0</span> <small>registros</small></strong><p id="growthMessage">Únete a más vecinos que ya están conectando oportunidades.</p></div>
+            <span class="trend-icon">↗</span>
+          </div>
+
+          <div class="install-card-v477">
+            <span class="install-logo cs-node-logo" aria-hidden="true"><i></i></span>
+            <div><strong>Instala <span>Conecta Servicios</span></strong><p>Añade la app a tu pantalla de inicio y accede más rápido.</p></div>
+            <button type="button" onclick="installApp()">Instalar ↓</button>
+          </div>
+
           <p class="sync-status visually-hidden" id="syncStatus" aria-live="polite">Conectando con la base de datos...</p>
         </div>
       </section>
@@ -620,6 +668,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.7.4-home-identico"></script>
+  <script src="app.js?v=4.7.7-home-integrado-real"></script>
 </body>
 </html>

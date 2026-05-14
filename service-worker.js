@@ -4,14 +4,14 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.7.6-home-limpio-cta-dinamico-navegacion";
+const CACHE_NAME = "conecta-servicios-v4.7.7-home-integrado-real";
 const ASSETS = [
   "./",
   "index.html",
   "styles.css",
   "app.js",
   "manifest.json",
-  "assets/home-final-v476.webp",
+  "assets/hero-scene-v477.webp",
   "assets/icon-192.png",
   "assets/icon-512.png",
   "assets/apple-touch-icon.png",
