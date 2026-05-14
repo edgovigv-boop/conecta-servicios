@@ -1457,3 +1457,17 @@ body {
 .home-visual-img{width:100%!important;height:auto!important;min-height:0!important;object-fit:contain!important;object-position:top center!important;}
 .app-shell.home-mode .content{align-items:flex-start!important;overflow-x:hidden!important;}
 @media (display-mode: standalone){.home-visual-exact{max-width:430px!important;}}
+
+
+/* v4.7.6 — home limpio sin apariencia de captura y CTA cercano dinámico */
+.app-shell.home-mode{background:#f7f4ff!important;}
+.app-shell.home-mode .content{background:#f7f4ff!important;}
+.home-visual-exact{background:#f7f4ff!important;overflow:hidden!important;}
+.home-visual-img{display:block!important;width:100%!important;height:auto!important;object-fit:contain!important;}
+.hot-nearby{overflow:visible;}
+.hot-nearby::before,.hot-nearby::after{content:"";position:absolute;inset:-10px -14px;border-radius:999px;pointer-events:none;border:2px solid rgba(111,66,193,.26);opacity:.72;animation:nearbyPulse 2.15s ease-out infinite;}
+.hot-nearby::after{animation-delay:1.05s;border-color:rgba(34,164,71,.22);}
+@keyframes nearbyPulse{0%{transform:scale(.98);opacity:.78;}70%{transform:scale(1.08);opacity:0;}100%{transform:scale(1.08);opacity:0;}}
+.hot-nearby{animation:nearbyFloat 2.8s ease-in-out infinite;}
+@keyframes nearbyFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-2px);}}
+@media(max-width:380px){.hot-nearby::before,.hot-nearby::after{inset:-8px -10px;}}
