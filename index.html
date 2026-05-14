@@ -28,7 +28,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="icon" href="assets/icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=4.7.10-home-proporciones-logo" />
+  <link rel="stylesheet" href="styles.css?v=4.7.12-ajuste-definitivo" />
 </head>
 <body>
   <div class="app-shell home-mode">
@@ -73,10 +73,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
             </div>
             <div class="hero-scene" aria-hidden="true"></div>
             <div class="hero-chips" aria-label="Categorías destacadas">
-              <span><b>▣</b>Trabajos</span>
-              <span><b>♧</b>Movilidad</span>
-              <span><b>□</b>Entregas</span>
-              <span><b>●</b>Vecinos</span>
+              <span><b>💼</b>Trabajos</span>
+              <span><b>🚲</b>Movilidad</span>
+              <span><b>📦</b>Entregas</span>
+              <span><b>👥</b>Vecinos</span>
             </div>
           </div>
 
@@ -327,45 +327,35 @@ Todo uso requiere autorización expresa y por escrito del titular.
         </form>
       </section>
 
-      <section id="publicaciones" class="section">
-        <div class="section-header">
-          <div>
-            <h2>Publicaciones</h2>
-            <p>Lista compacta para explorar rápido. Toca una publicación para ver detalles.</p>
-          </div>
-          <button class="btn-small btn-purple" onclick="startWizard()">+ Publica</button>
+      <section id="publicaciones" class="section publicaciones-clean-section">
+        <div class="publicaciones-location-card">
+          <label>Estado
+            <select id="stateFilter" data-state-select data-blank="true" data-default="México" autocomplete="off" onchange="handleStateFilterChange()"></select>
+          </label>
+          <label>Municipio
+            <input id="municipalityFilter" type="text" value="" placeholder="Escribe tu municipio" autocomplete="off" autocapitalize="words" spellcheck="false" inputmode="text" oninput="renderPublications()" />
+          </label>
         </div>
 
-        <div class="filter-card modern-filter clean-filter-card">
-          <div class="filter-title">Filtra por categoría</div>
-          <div class="chip-row category-filter-row" aria-label="Categorías rápidas">
-            <button type="button" class="filter-chip active" data-filter-category="" data-filter-search="" onclick="setCategoryChip(this)">Todo</button>
-            <button type="button" class="filter-chip" data-filter-category="" data-filter-search="trabajo empleo vacante chamba ayudante personal" onclick="setCategoryChip(this)">Trabajo</button>
-            <button type="button" class="filter-chip" data-filter-category="" data-filter-search="limpieza limpiar lava lavado aseo" onclick="setCategoryChip(this)">Limpieza</button>
-            <button type="button" class="filter-chip" data-filter-category="" data-filter-search="reparacion reparar plomero electricidad albañil mantenimiento carpintero" onclick="setCategoryChip(this)">Reparaciones</button>
-            <button type="button" class="filter-chip" data-filter-category="Mensajería y envíos" data-filter-search="mandado entrega documento paquete moto bicicleta camioneta" onclick="setCategoryChip(this)">Entregas y mandados</button>
-            <button type="button" class="filter-chip" data-filter-category="Viajes compartidos" data-filter-search="ruta viaje traslado movilidad" onclick="setCategoryChip(this)">Movilidad</button>
-            <button type="button" class="filter-chip" data-filter-category="" data-filter-search="tienda negocio panaderia estetica papeleria ferreteria tortilleria comida vendo ventas" onclick="setCategoryChip(this)">Negocios</button>
-            <button type="button" class="filter-chip" data-filter-category="Redes sociales" data-filter-search="" onclick="setCategoryChip(this)">Redes</button>
-          </div>
-          <select id="categoryFilter" class="hidden" onchange="renderPublications()"><option value="">Todas las categorías</option><option>Trabajo</option><option>Servicios</option><option>Limpieza</option><option>Reparaciones</option><option>Entregas y mandados</option><option>Movilidad</option><option>Negocios locales</option><option>Alimentos y ventas</option><option>Redes sociales</option></select>
-          <input id="chipSearchFilter" type="hidden" value="" />
-          <div class="form-grid compact-location-filter">
-            <label>Estado
-              <select id="stateFilter" data-state-select data-blank="true" data-default="México" autocomplete="off" onchange="handleStateFilterChange()"></select>
-            </label>
-            <label>Municipio
-              <input id="municipalityFilter" type="text" value="Chapultepec" placeholder="Ej. Chapultepec" autocomplete="off" autocapitalize="words" spellcheck="false" inputmode="text" oninput="renderPublications()" />
-            </label>
-          </div>
-        </div>
-
-        <label class="search-box clean-search-box">
+        <label class="search-box clean-search-box publicaciones-search">
           Buscar por palabra clave
           <input id="mainSearch" type="search" placeholder="Ej. limpieza, empleo, mandado, panadería, plomero" oninput="renderPublications()" />
         </label>
 
-        <div id="publicationsList" class="compact-list"></div>
+        <div class="floating-category-dock" aria-label="Filtros rápidos de categoría">
+          <button type="button" class="filter-chip active" title="Todo" aria-label="Todo" data-filter-category="" data-filter-search="" onclick="setCategoryChip(this)">Todo</button>
+          <button type="button" class="filter-chip" title="Trabajo" aria-label="Trabajo" data-filter-category="" data-filter-search="trabajo empleo vacante chamba ayudante personal" onclick="setCategoryChip(this)">💼</button>
+          <button type="button" class="filter-chip" title="Limpieza" aria-label="Limpieza" data-filter-category="" data-filter-search="limpieza limpiar lava lavado aseo" onclick="setCategoryChip(this)">🧹</button>
+          <button type="button" class="filter-chip" title="Reparaciones" aria-label="Reparaciones" data-filter-category="" data-filter-search="reparacion reparar plomero electricidad albañil mantenimiento carpintero" onclick="setCategoryChip(this)">🛠</button>
+          <button type="button" class="filter-chip" title="Entregas y mandados" aria-label="Entregas y mandados" data-filter-category="Mensajería y envíos" data-filter-search="mandado entrega documento paquete moto bicicleta camioneta" onclick="setCategoryChip(this)">📦</button>
+          <button type="button" class="filter-chip" title="Movilidad" aria-label="Movilidad" data-filter-category="Viajes compartidos" data-filter-search="ruta viaje traslado movilidad" onclick="setCategoryChip(this)">🚲</button>
+          <button type="button" class="filter-chip" title="Negocios" aria-label="Negocios" data-filter-category="" data-filter-search="tienda negocio panaderia estetica papeleria ferreteria tortilleria comida vendo ventas" onclick="setCategoryChip(this)">🏪</button>
+          <button type="button" class="filter-chip" title="Redes" aria-label="Redes" data-filter-category="Redes sociales" data-filter-search="" onclick="setCategoryChip(this)">🔗</button>
+        </div>
+        <select id="categoryFilter" class="hidden" onchange="renderPublications()"><option value="">Todas las categorías</option><option>Trabajo</option><option>Servicios</option><option>Limpieza</option><option>Reparaciones</option><option>Entregas y mandados</option><option>Movilidad</option><option>Negocios locales</option><option>Alimentos y ventas</option><option>Redes sociales</option></select>
+        <input id="chipSearchFilter" type="hidden" value="" />
+
+        <div id="publicationsList" class="compact-list publicaciones-results"></div>
       </section>
 
       <section id="oficina" class="section">
@@ -677,6 +667,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.7.7-home-integrado-real"></script>
+  <script src="app.js?v=4.7.12-ajuste-definitivo"></script>
 </body>
 </html>

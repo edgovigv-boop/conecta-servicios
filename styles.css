@@ -1837,3 +1837,74 @@ body {
   .hero-chips{bottom:12px!important;left:12px!important;gap:5px!important;padding:7px!important;}
   .hero-chips b{width:30px!important;height:30px!important;}
 }
+
+/* v4.7.12 — ajuste definitivo solicitado por diseño móvil */
+.app-shell.home-mode{background:linear-gradient(180deg,#110047 0%,#170056 17%,#f8f5ff 46%,#fbfaff 100%)!important;}
+.app-shell.home-mode .home-v477{padding:16px 16px 10px!important;}
+/* Logo circular de nodos: siempre completo y sin deformación */
+.app-shell.home-mode .cs-node-logo{
+  width:54px!important;height:54px!important;min-width:54px!important;flex:0 0 54px!important;
+  border-radius:50%!important;display:grid!important;place-items:center!important;padding:5px!important;
+  overflow:visible!important;background:linear-gradient(145deg,#421299,#17003f)!important;
+  box-shadow:0 8px 22px rgba(111,66,193,.34),inset 0 0 0 2px rgba(255,255,255,.12)!important;
+}
+.app-shell.home-mode .cs-node-logo svg{width:100%!important;height:100%!important;display:block!important;overflow:visible!important;}
+.app-shell.home-mode .cs-node-logo:before,
+.app-shell.home-mode .cs-node-logo:after,
+.app-shell.home-mode .cs-node-logo i{display:none!important;content:none!important;}
+.app-shell.home-mode .home-v477-brand strong{font-size:1.86rem!important;line-height:.95!important;}
+.app-shell.home-mode .home-v477-brand small{font-size:1.18rem!important;line-height:1.05!important;}
+/* Hero: recuperar mujer con celular, evitar texto tapado y mostrar frase completa */
+.app-shell.home-mode .home-v477-hero{
+  height:270px!important;min-height:270px!important;border-radius:26px!important;margin-top:4px!important;overflow:hidden!important;
+}
+.app-shell.home-mode .hero-scene{
+  background-image:linear-gradient(90deg,rgba(12,0,47,.96) 0%,rgba(16,0,55,.88) 27%,rgba(18,0,57,.45) 51%,rgba(18,0,57,.10) 78%),url('assets/hero-scene-clean-v4711.png')!important;
+  background-size:cover!important;
+  background-position:center center!important;
+  background-repeat:no-repeat!important;
+}
+.app-shell.home-mode .hero-copy{padding:20px 17px 0!important;max-width:218px!important;}
+.app-shell.home-mode .hero-copy h1{font-size:1.62rem!important;line-height:1.09!important;letter-spacing:-.035em!important;}
+.app-shell.home-mode .hero-copy em{margin:9px 0 9px!important;width:36px!important;height:4px!important;}
+.app-shell.home-mode .hero-copy p{font-size:.76rem!important;line-height:1.18!important;max-width:168px!important;}
+.app-shell.home-mode .hero-chips{
+  left:14px!important;bottom:12px!important;max-width:262px!important;padding:8px 9px!important;gap:6px!important;
+  border-radius:18px!important;background:rgba(20,2,69,.68)!important;
+}
+.app-shell.home-mode .hero-chips b{width:32px!important;height:32px!important;font-size:1rem!important;line-height:1!important;}
+.app-shell.home-mode .hero-chips span{font-size:.63rem!important;gap:4px!important;}
+.app-shell.home-mode .opportunity-orb{width:136px!important;height:136px!important;margin-top:-18px!important;margin-bottom:12px!important;}
+.app-shell.home-mode .orb-plus{font-size:3rem!important;}
+.app-shell.home-mode .opportunity-orb strong{font-size:.98rem!important;}
+/* Publicaciones cerca de mí: entrada notable, sin competir con el plus */
+.app-shell.home-mode .nearby-cta-pulse{box-shadow:0 15px 35px rgba(84,35,151,.16),0 0 0 5px rgba(111,66,193,.04)!important;}
+/* Pantalla publicaciones: publicaciones protagonistas, filtros mínimos */
+.publicaciones-clean-section{padding:14px 14px 92px!important;position:relative!important;}
+.publicaciones-location-card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:14px;box-shadow:0 10px 28px rgba(89,51,138,.10);margin-bottom:12px;display:grid;gap:10px;}
+.publicaciones-location-card label{font-weight:850;color:#2d2540;display:block;margin:0;}
+.publicaciones-location-card select,.publicaciones-location-card input{width:100%;margin-top:7px;padding:13px 14px;border:1px solid #d9d2e8;border-radius:16px;font:inherit;background:#fff;}
+.publicaciones-search{background:#fff;border:1px solid var(--line);border-radius:20px;padding:12px 14px;box-shadow:0 10px 24px rgba(89,51,138,.08);margin-bottom:12px!important;}
+.publicaciones-search input{margin-top:7px!important;}
+.floating-category-dock{position:sticky;top:10px;float:right;z-index:12;display:flex;flex-direction:column;gap:7px;width:42px;margin:0 0 8px 8px;}
+.floating-category-dock .filter-chip{width:42px;height:42px;min-width:42px;border-radius:16px;padding:0;border:1px solid rgba(111,66,193,.16);background:#fff;box-shadow:0 8px 18px rgba(89,51,138,.10);font-size:1rem;display:grid;place-items:center;color:#4d247f;}
+.floating-category-dock .filter-chip:first-child{font-size:.66rem;font-weight:900;}
+.floating-category-dock .filter-chip.active{background:linear-gradient(145deg,#7c4ce5,#431498);color:#fff;border-color:transparent;}
+.publicaciones-results{clear:none;}
+#publicaciones .empty-state{margin-right:50px;}
+#publicaciones .publication-card{margin-right:50px;}
+/* si hubiera restos del filtro anterior, ocultarlos */
+#publicaciones .section-header,#publicaciones .clean-filter-card{display:none!important;}
+@media(max-width:380px){
+  .app-shell.home-mode .cs-node-logo{width:50px!important;height:50px!important;min-width:50px!important;}
+  .app-shell.home-mode .home-v477-hero{height:258px!important;min-height:258px!important;}
+  .app-shell.home-mode .hero-copy{padding:18px 15px 0!important;max-width:202px!important;}
+  .app-shell.home-mode .hero-copy h1{font-size:1.48rem!important;}
+  .app-shell.home-mode .hero-copy p{font-size:.70rem!important;max-width:156px!important;}
+  .app-shell.home-mode .hero-chips{left:12px!important;bottom:10px!important;max-width:240px!important;gap:5px!important;padding:7px!important;}
+  .app-shell.home-mode .hero-chips b{width:29px!important;height:29px!important;font-size:.92rem!important;}
+  .app-shell.home-mode .hero-chips span{font-size:.58rem!important;}
+  .floating-category-dock{width:38px;gap:6px;}
+  .floating-category-dock .filter-chip{width:38px;height:38px;min-width:38px;border-radius:14px;font-size:.95rem;}
+  #publicaciones .empty-state,#publicaciones .publication-card{margin-right:44px;}
+}

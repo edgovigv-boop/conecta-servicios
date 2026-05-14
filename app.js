@@ -21,15 +21,15 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const OFFICE_PHONE = "7225703145";
 const ADMIN_PIN = "3145";
 const DEFAULT_STATE = "México";
-const DEFAULT_MUNICIPALITY = "Chapultepec";
-const DEFAULT_LOCALITY = "Chapultepec Centro";
+const DEFAULT_MUNICIPALITY = "";
+const DEFAULT_LOCALITY = "";
 const STATES = ["Aguascalientes","Baja California","Baja California Sur","Campeche","Chiapas","Chihuahua","Ciudad de México","Coahuila","Colima","Durango","Guanajuato","Guerrero","Hidalgo","Jalisco","México","Michoacán","Morelos","Nayarit","Nuevo León","Oaxaca","Puebla","Querétaro","Quintana Roo","San Luis Potosí","Sinaloa","Sonora","Tabasco","Tamaulipas","Tlaxcala","Veracruz","Yucatán","Zacatecas"];
 const BLOCKED_WORDS = ["droga","armas","arma","sexo","sexual","escort","fraude","estafa","robo","robado","ilegal","marihuana","cocaína","cocaina"];
 const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v41";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.7.7-home-integrado-real";
+const PWA_VERSION = "v4.7.12-ajuste-definitivo";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -552,7 +552,7 @@ function handleStateFilterChange() {
   const state = document.getElementById("stateFilter").value;
   const municipality = document.getElementById("municipalityFilter");
   if (!state) { municipality.value = ""; municipality.disabled = true; }
-  else { municipality.disabled = false; if (!municipality.value) municipality.value = state === DEFAULT_STATE ? DEFAULT_MUNICIPALITY : ""; }
+  else { municipality.disabled = false; }
   renderPublications();
 }
 function resetLocationFilters() {
@@ -560,7 +560,7 @@ function resetLocationFilters() {
   document.getElementById("stateFilter").value = DEFAULT_STATE;
   const municipality = document.getElementById("municipalityFilter");
   municipality.disabled = false;
-  municipality.value = DEFAULT_MUNICIPALITY;
+  municipality.value = "";
   renderPublications();
 }
 function setCategoryChip(button) {
@@ -588,7 +588,7 @@ async function requestNearbyPublications() {
     const munEl = document.getElementById("municipalityFilter");
     // Guardamos el municipio visible como respaldo inteligente para publicaciones antiguas sin coordenadas.
     nearbyFallbackState = stateEl?.value || DEFAULT_STATE;
-    nearbyFallbackMunicipality = munEl?.value || (nearbyFallbackState === DEFAULT_STATE ? DEFAULT_MUNICIPALITY : "");
+    nearbyFallbackMunicipality = munEl?.value || "";
 
     const pos = await getBrowserPosition();
     userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
