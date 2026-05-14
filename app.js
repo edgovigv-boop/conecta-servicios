@@ -29,7 +29,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v41";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.7-oportunidades-guiadas";
+const PWA_VERSION = "v4.7.1-oportunidades-guiadas";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -494,7 +494,7 @@ function formPayload() {
   payload.estado = evaluation.status;
   payload.referencia = evaluation.reasons.length
     ? `Revisión automática: ${evaluation.reasons.join(", ")} · Sugerencia: ${inferred.label}`
-    : `Activación automática v4.7 · Clasificación: ${inferred.label}`;
+    : `Activación automática v4.7.1 · Clasificación: ${inferred.label}`;
   return payload;
 }
 function renderPublicationPreview() {

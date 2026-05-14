@@ -1,4 +1,6 @@
-# Conecta Servicios v4.7 — Oportunidades guiadas con home visual final
+# Conecta Servicios v4.7.1 — Home visual corregido
+
+# Conecta Servicios v4.7.1 — Oportunidades guiadas con home visual final
 
 
 © 2026 Conecta Servicios. Todos los derechos reservados.
@@ -39,5 +41,5 @@
 Mensaje de commit sugerido:
 
 ```
-Actualizar a v4.7 oportunidades guiadas
+Actualizar a v4.7.1 oportunidades guiadas
 ```

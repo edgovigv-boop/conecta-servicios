@@ -1124,7 +1124,7 @@ body {
   .guided-flow-head{grid-template-columns:1fr;}
 }
 
-/* v4.7 — Oportunidades guiadas */
+/* v4.7.1 — Oportunidades guiadas */
 .home-v47-actions{gap:14px;margin-top:14px;}
 .opportunity-plus-card{
   min-height:126px!important;
@@ -1155,7 +1155,7 @@ body {
 }
 
 
-/* v4.7 visual final — home con imagen autorizada y botón circular protagonista */
+/* v4.7.1 visual final — home con imagen autorizada y botón circular protagonista */
 .home-launch-section { padding: 0; }
 .launch-home { display: grid; gap: 14px; }
 .launch-hero-card {

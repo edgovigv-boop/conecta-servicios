@@ -4,4 +4,4 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.7-home-visual-final
+const CACHE_NAME = "conecta-servicios-v4.7.1.1-home-visual-corregido
