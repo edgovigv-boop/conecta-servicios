@@ -2,12 +2,12 @@
   "name": "Conecta Servicios",
   "short_name": "Conecta",
   "description": "Sistema local de oportunidades: publica, encuentra y recibe opciones según tu zona e intereses.",
-  "start_url": "/?source=pwa",
+  "start_url": "/?source=pwa&v=4.7.18",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
-  "theme_color": "#6f42c1",
+  "theme_color": "#19004f",
   "lang": "es-MX",
   "categories": [
     "business",
@@ -17,19 +17,19 @@
   ],
   "icons": [
     {
-      "src": "assets/icon-192.png",
+      "src": "assets/icon-v4718-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "assets/icon-512.png",
+      "src": "assets/icon-v4718-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "assets/maskable-512.png",
+      "src": "assets/maskable-v4718-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

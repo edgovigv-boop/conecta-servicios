@@ -29,10 +29,14 @@ const KNOWN_MUNICIPALITIES = {
   "Morelos": ["Cuernavaca","Jiutepec","Temixco","Emiliano Zapata","Yautepec","Cuautla","Jojutla","Xochitepec","Tepoztlán","Zacatepec"],
   "Ciudad de México": ["Álvaro Obregón","Azcapotzalco","Benito Juárez","Coyoacán","Cuajimalpa de Morelos","Cuauhtémoc","Gustavo A. Madero","Iztacalco","Iztapalapa","Magdalena Contreras","Miguel Hidalgo","Milpa Alta","Tláhuac","Tlalpan","Venustiano Carranza","Xochimilco"]
 };
-const MUNICIPIOS_MX_URL = "https://raw.githubusercontent.com/cisnerosnow/json-estados-municipios-mexico/master/estados-municipios.json";
+const MUNICIPIOS_MX_URLS = [
+  "assets/municipios-mx-completo.json",
+  "https://cdn.jsdelivr.net/gh/cisnerosnow/json-estados-municipios-mexico@master/estados-municipios.json",
+  "https://raw.githubusercontent.com/cisnerosnow/json-estados-municipios-mexico/master/estados-municipios.json"
+];
 const MUNICIPIOS_MX_LOCAL_URL = "assets/municipios-mx-base.json";
 const INEGI_MGEM_URL = "https://gaia.inegi.org.mx/wscatgeo/v2/mgem";
-const MUNICIPIOS_MX_CACHE_KEY = "conecta_municipios_mx_v4717";
+const MUNICIPIOS_MX_CACHE_KEY = "conecta_municipios_mx_v4718";
 let municipiosMx = { ...KNOWN_MUNICIPALITIES };
 const STATE_ALIASES = {
   "Coahuila": "Coahuila de Zaragoza",
@@ -55,7 +59,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v41";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.7.17-cierre-estable-logo-hero-municipios";
+const PWA_VERSION = "v4.7.18-rescate-socios";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -261,30 +265,34 @@ function normalizeMunicipiosCatalog(data) {
 }
 
 async function loadMunicipiosMx() {
+  populateStateSelects();
   try {
     const cached = localStorage.getItem(MUNICIPIOS_MX_CACHE_KEY);
-    if (cached) municipiosMx = { ...municipiosMx, ...JSON.parse(cached) };
+    if (cached) {
+      municipiosMx = { ...municipiosMx, ...JSON.parse(cached) };
+      populateStateSelects();
+      updateAllMunicipalitySelects();
+    }
   } catch {}
-  try {
-    const localRes = await fetch(MUNICIPIOS_MX_LOCAL_URL, { cache: "force-cache" });
-    if (localRes.ok) {
-      const localData = await localRes.json();
-      municipiosMx = { ...municipiosMx, ...localData };
-      populateStateSelects();
-      updateAllMunicipalitySelects();
-    }
-  } catch (error) { console.debug("Municipios locales no disponibles:", error.message); }
-  try {
-    const remoteRes = await fetch(MUNICIPIOS_MX_URL, { cache: "force-cache" });
-    if (remoteRes.ok) {
+
+  // Carga primero el catálogo local completo si está disponible; luego intenta CDN/raw.
+  for (const url of MUNICIPIOS_MX_URLS) {
+    try {
+      const remoteRes = await fetch(url, { cache: "reload" });
+      if (!remoteRes.ok) continue;
       const remoteData = await remoteRes.json();
-      municipiosMx = { ...municipiosMx, ...normalizeMunicipiosCatalog(remoteData) };
-      try { localStorage.setItem(MUNICIPIOS_MX_CACHE_KEY, JSON.stringify(municipiosMx)); } catch {}
-      populateStateSelects();
-      updateAllMunicipalitySelects();
-    }
-  } catch (error) { console.debug("Catálogo remoto de municipios no disponible:", error.message); }
-  // INEGI oficial: se consulta en segundo plano para completar y mantener actualizado el catálogo.
+      const normalized = normalizeMunicipiosCatalog(remoteData);
+      if (Object.keys(normalized).length >= 20) {
+        municipiosMx = { ...municipiosMx, ...normalized };
+        try { localStorage.setItem(MUNICIPIOS_MX_CACHE_KEY, JSON.stringify(municipiosMx)); } catch {}
+        populateStateSelects();
+        updateAllMunicipalitySelects();
+        break;
+      }
+    } catch (error) { console.debug("Catálogo municipios no disponible:", url, error.message); }
+  }
+
+  // INEGI oficial: segundo plano por estado seleccionado / actualización progresiva.
   loadMunicipiosFromInegi().catch(error => console.debug("INEGI municipios no disponible:", error.message));
 }
 function parseInegiMunicipalities(payload) {
