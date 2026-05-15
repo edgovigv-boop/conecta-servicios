@@ -27,10 +27,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/icon-v4718-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-v4718.png" />
-  <title>Conecta Servicios v4.8.2</title>
-  <link rel="stylesheet" href="styles.css?v=4.8.2-filtros-chat-cursos" />
+  <title>Conecta Servicios v4.8.3</title>
+  <link rel="stylesheet" href="styles.css?v=4.8.3-reconstruccion-visual-controlada" />
 </head>
-<body>
+<body data-version="4.8.3-reconstruccion-visual-controlada">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -631,11 +631,12 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </footer>
 
 
-    <nav class="bottom-nav system-nav">
-      <button onclick="showSection('inicio')">🏠<span>Inicio</span></button>
-      <button onclick="startOpportunityGuide()">🔖<span>Para ti</span></button>
-      <button onclick="showSection('mensajes')">💬<span>Mensajes</span></button>
-      <button onclick="showSection('aprende')">🎓<span>Aprendizaje</span></button>
+    <nav class="bottom-nav system-nav" aria-label="Navegación principal">
+      <button type="button" onclick="showSection('inicio')">🏠<span>Inicio</span></button>
+      <button type="button" onclick="startOpportunityGuide()">🔖<span>Para ti</span></button>
+      <button type="button" class="publish-nav-action" onclick="showSection('registro')">＋<span>Publica</span></button>
+      <button type="button" onclick="showSection('mensajes')">💬<span>Mensajes</span></button>
+      <button type="button" onclick="showSection('aprende')">🎓<span>Aprendizaje</span></button>
     </nav>
   </div>
 
@@ -708,6 +709,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.8.2-filtros-chat-cursos"></script>
+  <script src="app.js?v=4.8.3-reconstruccion-visual-controlada"></script>
 </body>
 </html>

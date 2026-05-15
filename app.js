@@ -36,7 +36,7 @@ const MUNICIPIOS_MX_URLS = [
 ];
 const MUNICIPIOS_MX_LOCAL_URL = "assets/municipios-mx-base.json";
 const INEGI_MGEM_URL = "https://gaia.inegi.org.mx/wscatgeo/v2/mgem";
-const MUNICIPIOS_MX_CACHE_KEY = "conecta_municipios_mx_v482";
+const MUNICIPIOS_MX_CACHE_KEY = "conecta_municipios_mx_v483";
 let municipiosMx = { ...KNOWN_MUNICIPALITIES };
 const STATE_ALIASES = {
   "Coahuila": "Coahuila de Zaragoza",
@@ -55,11 +55,11 @@ const INEGI_STATE_KEYS = {
 };
 const MUNICIPIOS_SOURCE_NOTE = "INEGI Catálogo Único de Claves Geoestadísticas";
 const BLOCKED_WORDS = ["droga","armas","arma","sexo","sexual","escort","fraude","estafa","robo","robado","ilegal","marihuana","cocaína","cocaina"];
-const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v482";
+const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.8.2-filtros-chat-cursos";
+const PWA_VERSION = "v4.8.3-reconstruccion-visual-controlada";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -78,7 +78,7 @@ let analyticsCache = [];
 let deferredInstallPrompt = null;
 const TOTAL_STEPS = 7;
 const APP_VERSION_KEY = "conecta_servicios_app_version";
-const CHAT_STORAGE_KEY = "conecta_smart_chat_v482";
+const CHAT_STORAGE_KEY = "conecta_smart_chat_v483";
 
 
 function cleanPhone(phone) { return String(phone || "").replace(/\D/g, ""); }
@@ -385,7 +385,8 @@ function fillMunicipalitySelect(select, state, options = {}) {
   select.innerHTML = "";
 
   if (!state) {
-    select.append(new Option(placeholder, ""));
+    const disabledText = options.disabledPlaceholder || "Selecciona un estado para ver municipios";
+    select.append(new Option(disabledText, ""));
     select.value = "";
     select.disabled = options.disableWhenAllMexico !== false;
     select.classList.add("select-disabled-soft");
@@ -403,7 +404,7 @@ function fillMunicipalitySelect(select, state, options = {}) {
 }
 function updateMunicipalityFilterOptions() {
   const state = document.getElementById("stateFilter")?.value || "";
-  fillMunicipalitySelect(document.getElementById("municipalityFilter"), state, { placeholder: "Todos los municipios" });
+  fillMunicipalitySelect(document.getElementById("municipalityFilter"), state, { placeholder: "Todos los municipios", disabledPlaceholder: "Municipios desactivados" });
 }
 function updateAllMunicipalitySelects() {
   updateMunicipalityFilterOptions();
@@ -791,19 +792,37 @@ function applyCategoryAndShow(category) {
     renderPublications();
   }, 50);
 }
+function resetPublicationFiltersToAllMexico() {
+  const stateEl = document.getElementById("stateFilter");
+  const munEl = document.getElementById("municipalityFilter");
+  const searchEl = document.getElementById("mainSearch");
+  const categoryEl = document.getElementById("categoryFilter");
+  const chipSearchEl = document.getElementById("chipSearchFilter");
+  if (stateEl) stateEl.value = "";
+  updateMunicipalityFilterOptions();
+  if (munEl) munEl.value = "";
+  if (searchEl) searchEl.value = "";
+  if (categoryEl) categoryEl.value = "";
+  if (chipSearchEl) chipSearchEl.value = "";
+  activateAllCategoryFilterSafe();
+}
+
 async function requestNearbyPublications() {
   trackEvent("click_publicaciones_cerca");
   showSection("publicaciones");
-  activateAllCategoryFilterSafe();
+
+  // v4.8.3 control visual: entrar desde Home SIEMPRE abre Todo México.
+  // No filtra por estado, municipio ni categoría; muestra todos los registros activos
+  // y, si hay GPS, solo ordena los cercanos arriba.
+  resetPublicationFiltersToAllMexico();
   const stateEl = document.getElementById("stateFilter");
   const munEl = document.getElementById("municipalityFilter");
-
-  // Entrada profesional: al abrir desde Home se muestra TODO por defecto.
-  // La ubicación solo sirve para ordenar y señalar cercanía, no para esconder registros.
-  nearbyFallbackState = stateEl?.value || "";
-  nearbyFallbackMunicipality = munEl?.value || "";
+  nearbyFallbackState = "";
+  nearbyFallbackMunicipality = "";
   nearbyMode = true;
-  showToast("Mostrando todas las publicaciones; las cercanas aparecerán primero si autorizas ubicación.");
+  if (stateEl) stateEl.value = "";
+  if (munEl) { munEl.value = ""; munEl.disabled = true; }
+  showToast("Mostrando todo México; si autorizas ubicación, las cercanas aparecen primero.");
   renderPublications();
 
   try {
@@ -960,7 +979,7 @@ function renderPublications() {
   if (isLoading) { renderLoading(); return; }
   const filtered = filterPublications(publicationsCache);
   const emptyMessage = nearbyMode
-    ? `No encontramos publicaciones cercanas dentro de ${getNearbyRadiusKm()} km ni registros del municipio seleccionado. Puedes aumentar el radio o cambiar el municipio.`
+    ? "No hay publicaciones activas para mostrar en este momento. La ubicación solo ordena resultados, no los oculta."
     : "No hay registros con esos filtros. Prueba otro municipio o categoría.";
   list.innerHTML = filtered.length ? filtered.map(compactPublicationCard).join("") : `<div class="empty-state">${emptyMessage}</div>`;
   const summary = document.getElementById("resultsSummary");
@@ -968,7 +987,7 @@ function renderPublications() {
     const state = document.getElementById("stateFilter")?.value || "";
     const municipality = document.getElementById("municipalityFilter")?.value || "";
     const scope = !state ? "Todo México" : (municipality ? `${municipality}, ${state}` : `${state} · todos los municipios`);
-    const mode = nearbyMode ? " · cercanos primero si hay ubicación" : "";
+    const mode = nearbyMode ? " · vista general, cercanos primero si hay ubicación" : "";
     summary.textContent = `${filtered.length} resultado${filtered.length === 1 ? "" : "s"} encontrados · ${scope}${mode}`;
   }
   const count = document.getElementById("publicationsCount");

@@ -4,12 +4,12 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.8.2-filtros-chat-cursos";
+const CACHE_NAME = "conecta-servicios-v4.8.3-reconstruccion-visual-controlada";
 const ASSETS = [
   "./",
   "index.html",
-  "styles.css?v=4.8.2-filtros-chat-cursos",
-  "app.js?v=4.8.2-filtros-chat-cursos",
+  "styles.css?v=4.8.3-reconstruccion-visual-controlada",
+  "app.js?v=4.8.3-reconstruccion-visual-controlada",
   "manifest.json",
   "assets/hero-scene-v4718.webp",
   "assets/hero-scene-clean-v4711.png",
