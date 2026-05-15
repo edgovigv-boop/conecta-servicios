@@ -20,16 +20,21 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const OFFICE_PHONE = "7225703145";
 const ADMIN_PIN = "3145";
-const DEFAULT_STATE = "México";
+const DEFAULT_STATE = "";
 const DEFAULT_MUNICIPALITY = "";
 const DEFAULT_LOCALITY = "";
 const STATES = ["Aguascalientes","Baja California","Baja California Sur","Campeche","Chiapas","Chihuahua","Ciudad de México","Coahuila","Colima","Durango","Guanajuato","Guerrero","Hidalgo","Jalisco","México","Michoacán","Morelos","Nayarit","Nuevo León","Oaxaca","Puebla","Querétaro","Quintana Roo","San Luis Potosí","Sinaloa","Sonora","Tabasco","Tamaulipas","Tlaxcala","Veracruz","Yucatán","Zacatecas"];
+const KNOWN_MUNICIPALITIES = {
+  "México": ["Calimaya","Chapultepec","Mexicaltzingo","Metepec","Toluca","Tenango del Valle","Tianguistenco","San Mateo Atenco","Lerma","Ocoyoacac","Zinacantepec","Almoloya de Juárez","Rayón","Atizapán","Capulhuac","Xalatlaco","Santiago Tianguistenco"],
+  "Morelos": ["Cuernavaca","Jiutepec","Temixco","Emiliano Zapata","Yautepec","Cuautla","Jojutla","Xochitepec","Tepoztlán","Zacatepec"],
+  "Ciudad de México": ["Álvaro Obregón","Azcapotzalco","Benito Juárez","Coyoacán","Cuajimalpa de Morelos","Cuauhtémoc","Gustavo A. Madero","Iztacalco","Iztapalapa","Magdalena Contreras","Miguel Hidalgo","Milpa Alta","Tláhuac","Tlalpan","Venustiano Carranza","Xochimilco"]
+};
 const BLOCKED_WORDS = ["droga","armas","arma","sexo","sexual","escort","fraude","estafa","robo","robado","ilegal","marihuana","cocaína","cocaina"];
 const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v41";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.7.12-ajuste-definitivo";
+const PWA_VERSION = "v4.7.14-final-logo-publicaciones";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -199,6 +204,7 @@ async function loadRemoteData(options = {}) {
     const mapped = (rows || []).map(mapPublication);
     handleNotificationCheck(mapped);
     publicationsCache = mapped;
+    updateMunicipalityFilterOptions();
     setSyncStatus("", "ok");
     renderAll();
   } catch (error) {
@@ -224,9 +230,30 @@ function populateStateSelects() {
     select.innerHTML = "";
     if (blank) select.append(new Option("Todo México", ""));
     STATES.forEach(state => select.append(new Option(state, state)));
-    // En filtros públicos, la experiencia inicia en Todo México. Cada persona puede filtrar su estado/municipio.
     select.value = blank ? "" : def;
   });
+  updateMunicipalityFilterOptions();
+}
+function getMunicipalitiesForState(state) {
+  const fromKnown = KNOWN_MUNICIPALITIES[state] || [];
+  const fromData = publicationsCache
+    .filter(item => !state || normalize(item.state) === normalize(state))
+    .map(item => item.municipality)
+    .filter(Boolean);
+  return Array.from(new Set([...fromKnown, ...fromData]))
+    .sort((a, b) => String(a).localeCompare(String(b), "es", { sensitivity: "base" }));
+}
+function updateMunicipalityFilterOptions() {
+  const select = document.getElementById("municipalityFilter");
+  if (!select || select.tagName !== "SELECT") return;
+  const state = document.getElementById("stateFilter")?.value || "";
+  const current = select.value || "";
+  select.innerHTML = "";
+  select.append(new Option(state ? "Todos los municipios" : "Todos los municipios", ""));
+  getMunicipalitiesForState(state).forEach(m => select.append(new Option(m, m)));
+  if ([...select.options].some(o => o.value === current)) select.value = current;
+  else select.value = "";
+  select.disabled = false;
 }
 function routeUrlForSection(id) {
   const params = new URLSearchParams(location.search);
@@ -550,18 +577,13 @@ function resetWizardForm() {
 }
 function handleStateFilterChange() {
   clearNearbyMode();
-  const state = document.getElementById("stateFilter").value;
-  const municipality = document.getElementById("municipalityFilter");
-  if (!state) { municipality.value = ""; municipality.disabled = true; }
-  else { municipality.disabled = false; }
+  updateMunicipalityFilterOptions();
   renderPublications();
 }
 function resetLocationFilters() {
   clearNearbyMode();
   document.getElementById("stateFilter").value = "";
-  const municipality = document.getElementById("municipalityFilter");
-  municipality.disabled = true;
-  municipality.value = "";
+  updateMunicipalityFilterOptions();
   renderPublications();
 }
 function setCategoryChip(button) {
@@ -588,7 +610,7 @@ async function requestNearbyPublications() {
     const stateEl = document.getElementById("stateFilter");
     const munEl = document.getElementById("municipalityFilter");
     // Guardamos el municipio visible como respaldo inteligente para publicaciones antiguas sin coordenadas.
-    nearbyFallbackState = stateEl?.value || DEFAULT_STATE;
+    nearbyFallbackState = stateEl?.value || "";
     nearbyFallbackMunicipality = munEl?.value || "";
 
     const pos = await getBrowserPosition();
@@ -671,8 +693,8 @@ function filterPublications(list) {
 
     // Respaldo inteligente: publicaciones locales antiguas sin coordenadas.
     // Así no desaparecen registros reales del mismo municipio, pero tampoco se mezcla otro estado por error.
-    const fallbackState = nearbyFallbackState || state || DEFAULT_STATE;
-    const fallbackMunicipality = nearbyFallbackMunicipality || municipality || (fallbackState === DEFAULT_STATE ? DEFAULT_MUNICIPALITY : "");
+    const fallbackState = nearbyFallbackState || state || "";
+    const fallbackMunicipality = nearbyFallbackMunicipality || municipality || "";
     const localFallback = baseFiltered
       .filter(item => !hasCoordinates(item))
       .filter(item => !fallbackState || normalize(item.state) === normalize(fallbackState))

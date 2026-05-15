@@ -1,4 +1,5 @@
-# Conecta Servicios v4.7.13 — Home final y publicaciones por México
+# Conecta Servicios v4.7.14 — logo final y publicaciones limpias
+
 
 Cambios principales:
 
@@ -14,3 +15,12 @@ Cambios principales:
 - Perfil = Mis publicaciones.
 
 No requiere SQL nuevo.
+
+## v4.7.14
+- Logo circular con nodos unificado en header, PWA e instalación.
+- Hero ajustado para mostrar mejor la mujer con celular y evitar texto tapado.
+- Iconos del hero restaurados: maletín, bici, caja y personas.
+- Publicaciones cerca de mí inicia en Todo México.
+- Estado y municipio se seleccionan desde listas desplegables.
+- Buscador simplificado con icono de lupa.
+- Menos texto en publicaciones para dar protagonismo al listado.

@@ -48,12 +48,12 @@ Todo uso requiere autorización expresa y por escrito del titular.
             <div class="home-v477-brand">
               <span class="cs-node-logo" aria-hidden="true">
                 <svg viewBox="0 0 64 64" role="img" focusable="false">
-                  <circle cx="32" cy="32" r="24" fill="none" stroke="rgba(255,255,255,.96)" stroke-width="6" stroke-linecap="round" stroke-dasharray="74 22" transform="rotate(-22 32 32)"/>
-                  <circle cx="32" cy="32" r="7" fill="#6cc842"/>
-                  <circle cx="9" cy="15" r="5.5" fill="#fff"/>
-                  <circle cx="54" cy="20" r="5" fill="#fff"/>
-                  <circle cx="15" cy="52" r="5" fill="#fff"/>
-                  <path d="M32 32 L50 20 M32 32 L16 52" stroke="#6cc842" stroke-width="4" stroke-linecap="round"/>
+                  <circle cx="32" cy="32" r="25" fill="none" stroke="rgba(255,255,255,.98)" stroke-width="6" stroke-linecap="round" stroke-dasharray="116 42" transform="rotate(-20 32 32)"/>
+                  <circle cx="32" cy="32" r="7" fill="#67c33f"/>
+                  <circle cx="8" cy="16" r="5.5" fill="#fff"/>
+                  <circle cx="56" cy="21" r="5.2" fill="#fff"/>
+                  <circle cx="16" cy="55" r="5.2" fill="#fff"/>
+                  <path d="M32 32 L56 21 M32 32 L16 55 M32 32 L8 16" stroke="#67c33f" stroke-width="4" stroke-linecap="round"/>
                 </svg>
               </span>
               <div><strong>Conecta</strong><small>Servicios</small></div>
@@ -106,7 +106,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
 
           <div class="home-stat-v477">
             <span class="stat-people">👥</span>
-            <div><strong><span id="publicationsCount">0</span> <small>registros</small></strong><p id="growthMessage">Únete a más vecinos que ya están conectando oportunidades.</p></div>
+            <div><strong><span id="publicationsCount">0</span> <small>registros</small></strong><p id="growthMessage">Tu servicio puede estar más cerca de quien lo necesita</p></div>
             <span class="trend-icon">↗</span>
           </div>
 
@@ -328,19 +328,16 @@ Todo uso requiere autorización expresa y por escrito del titular.
       </section>
 
       <section id="publicaciones" class="section publicaciones-clean-section">
-        <div class="publicaciones-location-card">
-          <div class="filter-intro">Todo México por defecto. Filtra tu estado y municipio para ver tu zona.</div>
-          <label>Estado
-            <select id="stateFilter" data-state-select data-blank="true" data-default="" autocomplete="off" onchange="handleStateFilterChange()"></select>
-          </label>
-          <label>Municipio
-            <input id="municipalityFilter" type="text" value="" placeholder="Primero elige estado" autocomplete="off" autocapitalize="words" spellcheck="false" inputmode="text" oninput="renderPublications()" />
-          </label>
+        <div class="publicaciones-location-card ultra-clean-filters">
+          <select id="stateFilter" class="filter-select-main" data-state-select data-blank="true" data-default="" autocomplete="off" onchange="handleStateFilterChange()"></select>
+          <select id="municipalityFilter" class="filter-select-main" autocomplete="off" onchange="renderPublications()">
+            <option value="">Todos los municipios</option>
+          </select>
         </div>
 
-        <label class="search-box clean-search-box publicaciones-search">
-          Buscar por palabra clave
-          <input id="mainSearch" type="search" placeholder="Ej. limpieza, empleo, mandado, panadería, plomero" oninput="renderPublications()" />
+        <label class="search-box clean-search-box publicaciones-search icon-only-search" aria-label="Buscar por palabra clave">
+          <span aria-hidden="true">🔎</span>
+          <input id="mainSearch" type="search" placeholder="Buscar: limpieza, empleo, mandado..." oninput="renderPublications()" />
         </label>
 
         <div class="floating-category-dock" aria-label="Filtros rápidos de categoría">
