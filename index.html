@@ -329,11 +329,12 @@ Todo uso requiere autorización expresa y por escrito del titular.
 
       <section id="publicaciones" class="section publicaciones-clean-section">
         <div class="publicaciones-location-card">
+          <div class="filter-intro">Todo México por defecto. Filtra tu estado y municipio para ver tu zona.</div>
           <label>Estado
-            <select id="stateFilter" data-state-select data-blank="true" data-default="México" autocomplete="off" onchange="handleStateFilterChange()"></select>
+            <select id="stateFilter" data-state-select data-blank="true" data-default="" autocomplete="off" onchange="handleStateFilterChange()"></select>
           </label>
           <label>Municipio
-            <input id="municipalityFilter" type="text" value="" placeholder="Escribe tu municipio" autocomplete="off" autocapitalize="words" spellcheck="false" inputmode="text" oninput="renderPublications()" />
+            <input id="municipalityFilter" type="text" value="" placeholder="Primero elige estado" autocomplete="off" autocapitalize="words" spellcheck="false" inputmode="text" oninput="renderPublications()" />
           </label>
         </div>
 

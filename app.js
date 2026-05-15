@@ -222,9 +222,10 @@ function populateStateSelects() {
     const blank = select.dataset.blank === "true";
     const def = select.dataset.default || DEFAULT_STATE;
     select.innerHTML = "";
-    if (blank) select.append(new Option("Todos los estados", ""));
+    if (blank) select.append(new Option("Todo México", ""));
     STATES.forEach(state => select.append(new Option(state, state)));
-    select.value = blank ? def : def;
+    // En filtros públicos, la experiencia inicia en Todo México. Cada persona puede filtrar su estado/municipio.
+    select.value = blank ? "" : def;
   });
 }
 function routeUrlForSection(id) {
@@ -557,9 +558,9 @@ function handleStateFilterChange() {
 }
 function resetLocationFilters() {
   clearNearbyMode();
-  document.getElementById("stateFilter").value = DEFAULT_STATE;
+  document.getElementById("stateFilter").value = "";
   const municipality = document.getElementById("municipalityFilter");
-  municipality.disabled = false;
+  municipality.disabled = true;
   municipality.value = "";
   renderPublications();
 }

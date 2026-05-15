@@ -1908,3 +1908,117 @@ body {
   .floating-category-dock .filter-chip{width:38px;height:38px;min-width:38px;border-radius:14px;font-size:.95rem;}
   #publicaciones .empty-state,#publicaciones .publication-card{margin-right:44px;}
 }
+
+/* v4.7.13 — Home final y publicaciones por México */
+.app-shell.home-mode .home-v477{
+  padding:18px 16px 10px!important;
+}
+.app-shell.home-mode .home-v477-top{
+  align-items:center!important;
+  margin-bottom:14px!important;
+  overflow:visible!important;
+}
+/* Logo único: círculo completo con nodos, sin deformarse ni cortarse */
+.app-shell.home-mode .cs-node-logo,
+.cs-node-logo{
+  width:52px!important;
+  height:52px!important;
+  min-width:52px!important;
+  flex:0 0 52px!important;
+  border-radius:50%!important;
+  overflow:visible!important;
+  padding:3px!important;
+  display:grid!important;
+  place-items:center!important;
+  background:linear-gradient(145deg,#3d1490 0%,#180042 100%)!important;
+  box-shadow:0 8px 20px rgba(62,20,144,.30), inset 0 0 0 1px rgba(255,255,255,.16)!important;
+  transform:none!important;
+}
+.app-shell.home-mode .cs-node-logo svg,
+.cs-node-logo svg{
+  width:48px!important;
+  height:48px!important;
+  display:block!important;
+  overflow:visible!important;
+  transform:none!important;
+}
+.app-shell.home-mode .home-v477-brand strong{font-size:1.78rem!important;line-height:.96!important;}
+.app-shell.home-mode .home-v477-brand small{font-size:1.12rem!important;line-height:1.05!important;}
+/* Hero: abrir encuadre para recuperar mujer con celular y dejar texto completo */
+.app-shell.home-mode .home-v477-hero{
+  height:286px!important;
+  min-height:286px!important;
+  border-radius:26px!important;
+  overflow:hidden!important;
+}
+.app-shell.home-mode .hero-scene{
+  background-image:
+    linear-gradient(90deg,rgba(12,0,47,.97) 0%,rgba(16,0,55,.91) 30%,rgba(18,0,57,.58) 52%,rgba(18,0,57,.18) 78%),
+    url('assets/hero-scene-v477.webp')!important;
+  background-size:auto 100%!important;
+  background-position:center center!important;
+  background-repeat:no-repeat!important;
+}
+.app-shell.home-mode .hero-copy{
+  padding:19px 18px 0!important;
+  max-width:220px!important;
+}
+.app-shell.home-mode .hero-copy h1{
+  font-size:1.50rem!important;
+  line-height:1.08!important;
+  letter-spacing:-.035em!important;
+}
+.app-shell.home-mode .hero-copy em{margin:8px 0 9px!important;width:35px!important;height:4px!important;}
+.app-shell.home-mode .hero-copy p{
+  font-size:.74rem!important;
+  line-height:1.16!important;
+  max-width:172px!important;
+}
+/* Íconos originales restaurados y separados del texto */
+.app-shell.home-mode .hero-chips{
+  left:14px!important;
+  bottom:10px!important;
+  max-width:270px!important;
+  padding:7px 9px!important;
+  gap:6px!important;
+  border-radius:18px!important;
+  background:rgba(20,2,69,.72)!important;
+}
+.app-shell.home-mode .hero-chips b{
+  width:31px!important;
+  height:31px!important;
+  font-size:1rem!important;
+  line-height:1!important;
+}
+.app-shell.home-mode .hero-chips span{font-size:.61rem!important;gap:3px!important;}
+.app-shell.home-mode .opportunity-orb{
+  width:138px!important;height:138px!important;margin-top:-17px!important;margin-bottom:12px!important;
+}
+.app-shell.home-mode .orb-plus{font-size:3rem!important;}
+.app-shell.home-mode .opportunity-orb strong{font-size:.98rem!important;}
+/* Publicaciones: Todo México por defecto y filtro claro */
+.publicaciones-location-card .filter-intro{
+  font-size:.82rem;
+  line-height:1.25;
+  color:#5b5367;
+  background:#f7f4ff;
+  border:1px solid #ebe4f7;
+  border-radius:14px;
+  padding:9px 10px;
+  font-weight:650;
+}
+#municipalityFilter:disabled{background:#f7f4ff;color:#777;}
+@media(max-width:380px){
+  .app-shell.home-mode .cs-node-logo,.cs-node-logo{width:48px!important;height:48px!important;min-width:48px!important;}
+  .app-shell.home-mode .cs-node-logo svg,.cs-node-logo svg{width:44px!important;height:44px!important;}
+  .app-shell.home-mode .home-v477-brand strong{font-size:1.55rem!important;}
+  .app-shell.home-mode .home-v477-brand small{font-size:1rem!important;}
+  .app-shell.home-mode .home-v477-hero{height:276px!important;min-height:276px!important;border-radius:24px!important;}
+  .app-shell.home-mode .hero-scene{background-size:auto 100%!important;background-position:center center!important;}
+  .app-shell.home-mode .hero-copy{padding:17px 15px 0!important;max-width:204px!important;}
+  .app-shell.home-mode .hero-copy h1{font-size:1.38rem!important;line-height:1.08!important;}
+  .app-shell.home-mode .hero-copy p{font-size:.68rem!important;line-height:1.14!important;max-width:158px!important;}
+  .app-shell.home-mode .hero-chips{left:12px!important;bottom:9px!important;max-width:242px!important;padding:6px 7px!important;gap:5px!important;}
+  .app-shell.home-mode .hero-chips b{width:28px!important;height:28px!important;font-size:.9rem!important;}
+  .app-shell.home-mode .hero-chips span{font-size:.56rem!important;}
+}
