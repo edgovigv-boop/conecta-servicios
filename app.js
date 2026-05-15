@@ -36,7 +36,7 @@ const MUNICIPIOS_MX_URLS = [
 ];
 const MUNICIPIOS_MX_LOCAL_URL = "assets/municipios-mx-base.json";
 const INEGI_MGEM_URL = "https://gaia.inegi.org.mx/wscatgeo/v2/mgem";
-const MUNICIPIOS_MX_CACHE_KEY = "conecta_municipios_mx_v4718";
+const MUNICIPIOS_MX_CACHE_KEY = "conecta_municipios_mx_v482";
 let municipiosMx = { ...KNOWN_MUNICIPALITIES };
 const STATE_ALIASES = {
   "Coahuila": "Coahuila de Zaragoza",
@@ -55,11 +55,11 @@ const INEGI_STATE_KEYS = {
 };
 const MUNICIPIOS_SOURCE_NOTE = "INEGI Catálogo Único de Claves Geoestadísticas";
 const BLOCKED_WORDS = ["droga","armas","arma","sexo","sexual","escort","fraude","estafa","robo","robado","ilegal","marihuana","cocaína","cocaina"];
-const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v41";
+const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v482";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.8.1-plataforma-profesional";
+const PWA_VERSION = "v4.8.2-filtros-chat-cursos";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -77,6 +77,9 @@ let pendingSharedPublicationId = null;
 let analyticsCache = [];
 let deferredInstallPrompt = null;
 const TOTAL_STEPS = 7;
+const APP_VERSION_KEY = "conecta_servicios_app_version";
+const CHAT_STORAGE_KEY = "conecta_smart_chat_v482";
+
 
 function cleanPhone(phone) { return String(phone || "").replace(/\D/g, ""); }
 function maskPhone(phone) {
@@ -88,6 +91,16 @@ function last4(phone) { return cleanPhone(phone).slice(-4); }
 function createId() { return crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`; }
 function folio(item) { return `PUB-${String(item.id || "00000").replace(/-/g, "").slice(0, 5).toUpperCase()}`; }
 function normalize(value) { return String(value || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+function uniqueByNormalized(list) {
+  const seen = new Set();
+  return (list || []).map(v => String(v || "").trim()).filter(Boolean).filter(value => {
+    const key = normalize(value);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 function money(value) { const n = Number(value || 0); return n > 0 ? `$${n.toLocaleString("es-MX")}` : "A tratar"; }
 function toNumberOrNull(value) {
   const n = Number(value);
@@ -230,6 +243,8 @@ async function loadRemoteData(options = {}) {
     handleNotificationCheck(mapped);
     publicationsCache = mapped;
     updateMunicipalityFilterOptions();
+    renderCourseCards?.();
+    renderSmartChat?.();
     setSyncStatus("", "ok");
     renderAll();
   } catch (error) {
@@ -352,45 +367,60 @@ function populateStateSelects() {
   updateAllMunicipalitySelects();
 }
 function getMunicipalitiesForState(state) {
+  if (!state) return [];
   const official = officialStateName(state);
   const fromOfficial = municipiosMx[official] || municipiosMx[state] || [];
   const fromKnown = KNOWN_MUNICIPALITIES[state] || KNOWN_MUNICIPALITIES[official] || [];
   const fromData = publicationsCache
-    .filter(item => !state || normalize(item.state) === normalize(state) || normalize(item.state) === normalize(official))
+    .filter(item => normalize(item.state) === normalize(state) || normalize(item.state) === normalize(official))
     .map(item => item.municipality)
     .filter(Boolean);
-  return Array.from(new Set([...fromOfficial, ...fromKnown, ...fromData]))
-    .filter(Boolean)
+  return uniqueByNormalized([...fromOfficial, ...fromKnown, ...fromData])
     .sort((a, b) => String(a).localeCompare(String(b), "es", { sensitivity: "base" }));
 }
 function fillMunicipalitySelect(select, state, options = {}) {
   if (!select || select.tagName !== "SELECT") return;
   const current = select.value || "";
+  const placeholder = options.placeholder || "Todos los municipios";
   select.innerHTML = "";
-  select.append(new Option(options.placeholder || "Todos los municipios", ""));
+
+  if (!state) {
+    select.append(new Option(placeholder, ""));
+    select.value = "";
+    select.disabled = options.disableWhenAllMexico !== false;
+    select.classList.add("select-disabled-soft");
+    select.title = "Selecciona un estado para habilitar municipios";
+    return;
+  }
+
+  select.disabled = false;
+  select.classList.remove("select-disabled-soft");
+  select.title = "";
+  select.append(new Option(placeholder, ""));
   getMunicipalitiesForState(state).forEach(m => select.append(new Option(m, m)));
   if ([...select.options].some(o => o.value === current)) select.value = current;
   else select.value = "";
-  select.disabled = false;
 }
 function updateMunicipalityFilterOptions() {
-  fillMunicipalitySelect(document.getElementById("municipalityFilter"), document.getElementById("stateFilter")?.value || "", { placeholder: "Todos los municipios" });
+  const state = document.getElementById("stateFilter")?.value || "";
+  fillMunicipalitySelect(document.getElementById("municipalityFilter"), state, { placeholder: "Todos los municipios" });
 }
 function updateAllMunicipalitySelects() {
   updateMunicipalityFilterOptions();
-  fillMunicipalitySelect(document.getElementById("pubMunicipality"), document.getElementById("pubState")?.value || "", { placeholder: "Selecciona municipio" });
+  fillMunicipalitySelect(document.getElementById("pubMunicipality"), document.getElementById("pubState")?.value || "", { placeholder: "Selecciona municipio", disableWhenAllMexico: false });
   fillMunicipalitySelect(document.getElementById("notifMunicipality"), document.getElementById("notifState")?.value || "", { placeholder: "Todos los municipios" });
-  fillMunicipalitySelect(document.getElementById("externalMunicipality"), document.getElementById("externalState")?.value || "", { placeholder: "Selecciona municipio" });
+  fillMunicipalitySelect(document.getElementById("externalMunicipality"), document.getElementById("externalState")?.value || "", { placeholder: "Selecciona municipio", disableWhenAllMexico: false });
 }
 function handlePairedStateChange(stateId, municipalityId, placeholder) {
   const state = document.getElementById(stateId)?.value || "";
   const munSelect = document.getElementById(municipalityId);
-  fillMunicipalitySelect(munSelect, state, { placeholder });
+  fillMunicipalitySelect(munSelect, state, { placeholder, disableWhenAllMexico: false });
+  if (!state) return;
   if (state && getMunicipalitiesForState(state).length <= 20 && munSelect) {
     munSelect.innerHTML = "";
     munSelect.append(new Option("Cargando municipios...", ""));
   }
-  ensureMunicipalitiesForState(state).finally(() => fillMunicipalitySelect(munSelect, state, { placeholder }));
+  ensureMunicipalitiesForState(state).finally(() => fillMunicipalitySelect(munSelect, state, { placeholder, disableWhenAllMexico: false }));
 }
 function routeUrlForSection(id) {
   const params = new URLSearchParams(location.search);
@@ -423,6 +453,8 @@ function showSection(id, push = true) {
     activateAllCategoryFilterSafe();
     renderPublications();
   }
+  if (id === "mensajes") renderSmartChat?.();
+  if (id === "aprende") renderCourseCards?.();
 }
 function goBack() {
   if (currentSection === "inicio") {
@@ -763,34 +795,25 @@ async function requestNearbyPublications() {
   trackEvent("click_publicaciones_cerca");
   showSection("publicaciones");
   activateAllCategoryFilterSafe();
-  showToast("Solicitando ubicación aproximada...");
-  try {
-    const stateEl = document.getElementById("stateFilter");
-    const munEl = document.getElementById("municipalityFilter");
-    // Guardamos el municipio visible como respaldo inteligente para publicaciones antiguas sin coordenadas.
-    nearbyFallbackState = stateEl?.value || "";
-    nearbyFallbackMunicipality = munEl?.value || "";
+  const stateEl = document.getElementById("stateFilter");
+  const munEl = document.getElementById("municipalityFilter");
 
+  // Entrada profesional: al abrir desde Home se muestra TODO por defecto.
+  // La ubicación solo sirve para ordenar y señalar cercanía, no para esconder registros.
+  nearbyFallbackState = stateEl?.value || "";
+  nearbyFallbackMunicipality = munEl?.value || "";
+  nearbyMode = true;
+  showToast("Mostrando todas las publicaciones; las cercanas aparecerán primero si autorizas ubicación.");
+  renderPublications();
+
+  try {
     const pos = await getBrowserPosition();
     userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
     trackEvent("permiso_ubicacion_aceptado", null, { precision_m: Math.round(pos.coords.accuracy || 0) });
-    nearbyMode = true;
-
-    // Dejamos visible el municipio de respaldo, pero la búsqueda GPS no depende de este texto.
-    if (stateEl) stateEl.value = nearbyFallbackState;
-    if (munEl) { munEl.value = nearbyFallbackMunicipality; munEl.disabled = false; }
-    const controls = document.getElementById("nearbyControls");
-    if (controls) controls.classList.add("hidden");
-    showToast("Mostrando publicaciones cercanas");
     renderPublications();
   } catch (error) {
-    console.error(error);
-    nearbyMode = false;
+    console.debug("Ubicación no disponible; se mantiene vista general.", error.message);
     trackEvent("permiso_ubicacion_rechazado");
-    const controls = document.getElementById("nearbyControls");
-    if (controls) controls.classList.add("hidden");
-    showToast("No se pudo usar tu ubicación. Puedes buscar por municipio.");
-    renderPublications();
   }
 }
 async function capturePublicationLocation() {
@@ -841,25 +864,23 @@ function filterPublications(list) {
     return matchesCategory && matchesText && matchesChip;
   });
 
-  if (nearbyMode && userLocation) {
-    const radiusKm = getNearbyRadiusKm();
-    const gpsMatches = baseFiltered
-      .filter(item => hasCoordinates(item))
-      .map(item => ({ ...item, distanceKm: haversineKm(userLocation.lat, userLocation.lng, Number(item.lat), Number(item.lng)), matchType: "gps" }))
-      .filter(item => Number.isFinite(item.distanceKm) && item.distanceKm <= radiusKm)
-      .sort((a, b) => a.distanceKm - b.distanceKm);
+  if (nearbyMode) {
+    const annotated = baseFiltered.map(item => {
+      if (userLocation && hasCoordinates(item)) {
+        const distanceKm = haversineKm(userLocation.lat, userLocation.lng, Number(item.lat), Number(item.lng));
+        return { ...item, distanceKm, matchType: "gps" };
+      }
+      return { ...item, matchType: "general" };
+    });
 
-    // Respaldo inteligente: publicaciones locales antiguas sin coordenadas.
-    // Así no desaparecen registros reales del mismo municipio, pero tampoco se mezcla otro estado por error.
-    const fallbackState = nearbyFallbackState || state || "";
-    const fallbackMunicipality = nearbyFallbackMunicipality || municipality || "";
-    const localFallback = baseFiltered
-      .filter(item => !hasCoordinates(item))
-      .filter(item => !fallbackState || normalize(item.state) === normalize(fallbackState))
-      .filter(item => !fallbackMunicipality || normalize(item.municipality).includes(normalize(fallbackMunicipality)))
-      .map(item => ({ ...item, matchType: "municipio" }));
-
-    return [...gpsMatches, ...localFallback];
+    // Conecta Servicios no debe esconder registros por falta de coordenadas.
+    // Ordena los cercanos arriba, pero conserva todos los resultados activos.
+    return annotated.sort((a, b) => {
+      const ad = Number.isFinite(a.distanceKm) ? a.distanceKm : Number.POSITIVE_INFINITY;
+      const bd = Number.isFinite(b.distanceKm) ? b.distanceKm : Number.POSITIVE_INFINITY;
+      if (ad !== bd) return ad - bd;
+      return String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
+    });
   }
 
   return baseFiltered.filter(item => {
@@ -871,7 +892,11 @@ function filterPublications(list) {
 function updateFilterSummary(state, municipality) {
   const el = document.getElementById("filterSummary");
   if (!el) return;
-  el.textContent = "";
+  if (!state) {
+    el.textContent = "Todo México · municipios desactivados hasta elegir un estado";
+  } else {
+    el.textContent = municipality ? `${municipality}, ${state}` : `${state} · todos los municipios`;
+  }
 }
 function categoryIcon(category) {
   const icons = {
@@ -938,6 +963,14 @@ function renderPublications() {
     ? `No encontramos publicaciones cercanas dentro de ${getNearbyRadiusKm()} km ni registros del municipio seleccionado. Puedes aumentar el radio o cambiar el municipio.`
     : "No hay registros con esos filtros. Prueba otro municipio o categoría.";
   list.innerHTML = filtered.length ? filtered.map(compactPublicationCard).join("") : `<div class="empty-state">${emptyMessage}</div>`;
+  const summary = document.getElementById("resultsSummary");
+  if (summary) {
+    const state = document.getElementById("stateFilter")?.value || "";
+    const municipality = document.getElementById("municipalityFilter")?.value || "";
+    const scope = !state ? "Todo México" : (municipality ? `${municipality}, ${state}` : `${state} · todos los municipios`);
+    const mode = nearbyMode ? " · cercanos primero si hay ubicación" : "";
+    summary.textContent = `${filtered.length} resultado${filtered.length === 1 ? "" : "s"} encontrados · ${scope}${mode}`;
+  }
   const count = document.getElementById("publicationsCount");
   if (count) count.textContent = publicationsCache.length;
 }
@@ -1816,6 +1849,19 @@ function updateInstallCard() {
     button.textContent = "Instalar app";
   }
 }
+async function refreshAppCacheIfNeeded() {
+  try {
+    const previous = localStorage.getItem(APP_VERSION_KEY);
+    if (previous !== PWA_VERSION) {
+      const keys = await caches.keys();
+      await Promise.all(keys.filter(key => key.startsWith("conecta-servicios-")).map(key => caches.delete(key)));
+      localStorage.setItem(APP_VERSION_KEY, PWA_VERSION);
+    }
+  } catch (error) {
+    console.debug("No se pudo limpiar caché anterior", error.message);
+  }
+}
+
 async function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
   try {
@@ -1903,12 +1949,15 @@ function init() {
   document.getElementById("editForm").addEventListener("submit", saveEdit);
   document.getElementById("reclassForm")?.addEventListener("submit", saveReclassification);
   document.getElementById("externalLinkForm")?.addEventListener("submit", submitExternalLink);
+  document.getElementById("pubState")?.addEventListener("change", () => handlePairedStateChange("pubState", "pubMunicipality", "Selecciona municipio"));
+  document.getElementById("notifState")?.addEventListener("change", () => handlePairedStateChange("notifState", "notifMunicipality", "Todos los municipios"));
+  document.getElementById("externalState")?.addEventListener("change", () => handlePairedStateChange("externalState", "externalMunicipality", "Selecciona municipio"));
   history.replaceState({ section: "inicio" }, "", routeUrlForSection("inicio"));
   document.querySelector(".app-shell")?.classList.add("home-mode");
   updateWizard();
   updateCategoryDetails();
   initMobileFormComfort();
-  registerServiceWorker();
+  refreshAppCacheIfNeeded().finally(registerServiceWorker);
   updateInstallCard();
   renderNotificationSettings();
   renderOpportunitySettings();
@@ -1919,17 +1968,86 @@ function init() {
 document.addEventListener("DOMContentLoaded", init);
 
 
-// v4.8.1 — Mensajes inteligentes ligeros: guía conversacional sin IA pesada
+// v4.8.2 — Mensajes inteligentes con chat piloto + aprendizaje por cursos
 let smartLastSuggestion = { query: "", category: "" };
 
+const DEFAULT_CHAT_MESSAGES = [
+  { role: "bot", text: "¡Hola! Soy el asistente de Conecta Servicios. Escribe lo que necesitas y te ayudo a buscar, publicar o aprender." }
+];
+
+const COURSE_CATALOG = [
+  {
+    title: "Capacítate para el empleo",
+    provider: "Fundación Carlos Slim",
+    tag: "Oficios y empleo",
+    keywords: "oficios empleo electricidad ventas cocina reparación negocio administración salud construcción",
+    description: "Cursos prácticos para aprender oficios, habilidades laborales y herramientas para generar ingresos.",
+    url: "https://capacitateparaelempleo.org/"
+  },
+  {
+    title: "Aprende.org",
+    provider: "Fundación Carlos Slim",
+    tag: "Aprendizaje abierto",
+    keywords: "cursos gratis aprender oficios capacitación celular empleo habilidades",
+    description: "Plataforma de aprendizaje en línea con contenidos accesibles desde el celular.",
+    url: "https://aprende.org/"
+  },
+  {
+    title: "Google Actívate",
+    provider: "Google / Skillshop",
+    tag: "Negocio digital",
+    keywords: "marketing digital ventas internet negocio google comercio electrónico apps nube productividad",
+    description: "Cursos para fortalecer carrera, confianza digital y crecimiento de negocios.",
+    url: "https://skillshop.exceedlms.com/student/catalog/list?category_ids=7880-google-activate"
+  },
+  {
+    title: "Crece con Google",
+    provider: "Google",
+    tag: "Carrera y negocio",
+    keywords: "trabajo carrera negocio crecer habilidades digitales productividad búsqueda empleo",
+    description: "Recursos para encontrar trabajo, progresar profesionalmente o hacer crecer un negocio.",
+    url: "https://crece.withgoogle.com/"
+  },
+  {
+    title: "IBM SkillsBuild",
+    provider: "IBM",
+    tag: "Tecnología gratuita",
+    keywords: "tecnología inteligencia artificial datos nube ciberseguridad programación habilidades profesionales",
+    description: "Formación gratuita en línea para desarrollar habilidades tecnológicas y profesionales.",
+    url: "https://skillsbuild.org/es/"
+  }
+];
+
+function loadChatMessages() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || "null");
+    return Array.isArray(saved) && saved.length ? saved : DEFAULT_CHAT_MESSAGES;
+  } catch {
+    return DEFAULT_CHAT_MESSAGES;
+  }
+}
+function saveChatMessages(messages) {
+  try { localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages.slice(-40))); } catch {}
+}
+function renderSmartChat() {
+  const list = document.getElementById("chatMessages");
+  if (!list) return;
+  const messages = loadChatMessages();
+  list.innerHTML = messages.map(message => `<div class="chat-bubble ${message.role === "user" ? "user" : "bot"}">${linkify(message.text)}</div>`).join("");
+  list.scrollTop = list.scrollHeight;
+}
+function pushChat(role, text) {
+  const messages = loadChatMessages();
+  messages.push({ role, text, at: new Date().toISOString() });
+  saveChatMessages(messages);
+  renderSmartChat();
+}
 function fillSmartMessage(text) {
   const input = document.getElementById("smartMessageInput");
   if (!input) return;
   input.value = text;
   input.focus();
-  handleSmartMessage();
 }
-
 function detectSmartIntent(rawText) {
   const text = normalize(rawText);
   if (/paquete|mandado|enviar|entrega|documento|reparto|llevar|traer|moto|bicicleta/.test(text)) {
@@ -1938,43 +2056,37 @@ function detectSmartIntent(rawText) {
   if (/viaje|viajar|ruta|traslado|ride|avent[oó]n|pasaje|llevarme|toluca|cdmx|pachuca|cuernavaca/.test(text)) {
     return { category: "Viajes compartidos", query: "viaje ruta traslado", label: "Viajes compartidos", action: "buscar" };
   }
-  if (/aprend|curso|capacita|clase|enseña|enseñar|mejorar|especializar|ingresos|oficio/.test(text)) {
-    return { category: "", query: "aprendizaje", label: "Aprendizaje", action: "aprender" };
+  if (/aprend|curso|capacita|clase|enseña|ensenar|mejorar|especializar|ingresos|oficio|carlos slim|google|skillsbuild/.test(text)) {
+    return { category: "", query: "aprendizaje", label: "Cursos gratuitos", action: "aprender" };
   }
   if (/ofrezco|servicio|trabajo|clientes|vendo|reparo|limpio|hago|negocio|publicar/.test(text)) {
     return { category: "Servicios", query: "servicio trabajo clientes", label: "Publicar servicio", action: "publicar" };
   }
   return { category: "", query: text.split(/\s+/).slice(0, 4).join(" "), label: "Búsqueda general", action: "buscar" };
 }
-
-function handleSmartMessage() {
-  const input = document.getElementById("smartMessageInput");
-  const panel = document.getElementById("smartMessageResult");
-  if (!input || !panel) return;
-  const raw = input.value.trim();
-  if (!raw) {
-    panel.innerHTML = `<strong>Escribe una necesidad primero.</strong><p>Ejemplo: “Necesito enviar un paquete hoy” o “Busco viaje compartido a Toluca”.</p>`;
-    return;
-  }
+function smartReplyFor(raw) {
   const intent = detectSmartIntent(raw);
   smartLastSuggestion = { query: intent.query, category: intent.category };
-
-  if (intent.action === "aprender") {
-    panel.innerHTML = `<strong>Ruta sugerida: ${escapeHtml(intent.label)}</strong><p>Esto encaja con capacitación breve desde el celular. Puedes entrar al módulo de aprendizaje para guías prácticas antes de publicar.</p><div class="smart-actions"><button type="button" onclick="showSection('aprende')">Abrir aprendizaje</button><button type="button" class="secondary" onclick="startOpportunityGuide()">Crear oportunidad</button></div>`;
-    trackEvent("mensaje_inteligente_aprendizaje");
-    return;
-  }
-
-  if (intent.action === "publicar") {
-    panel.innerHTML = `<strong>Ruta sugerida: publicar una oportunidad</strong><p>El asistente detectó que quieres ofrecer algo o conseguir clientes. Lo mejor es guiarte para crear una publicación clara, con municipio, categoría y WhatsApp protegido.</p><div class="smart-actions"><button type="button" onclick="startOpportunityGuide()">Crear publicación guiada</button><button type="button" class="secondary" onclick="smartShowSuggested()">Ver publicaciones relacionadas</button></div>`;
-    trackEvent("mensaje_inteligente_publicar");
-    return;
-  }
-
-  panel.innerHTML = `<strong>Ruta sugerida: ${escapeHtml(intent.label)}</strong><p>Conecta puede buscar opciones relacionadas y, si no hay resultados, llevarte a publicar tu necesidad para que personas cercanas la vean.</p><div class="smart-actions"><button type="button" onclick="smartShowSuggested()">Buscar coincidencias</button><button type="button" class="secondary" onclick="startOpportunityGuide()">Publicar necesidad</button></div>`;
-  trackEvent("mensaje_inteligente_busqueda", null, { categoria: intent.category || "general" });
+  if (intent.action === "aprender") return "Te conviene entrar a Aprendizaje. Ahí agregué cursos gratuitos como Fundación Carlos Slim, Google Actívate e IBM SkillsBuild para mejorar habilidades desde el celular.";
+  if (intent.action === "publicar") return "Esto parece una oportunidad para publicar. Puedo llevarte al registro guiado para crear una publicación clara con municipio, categoría y WhatsApp protegido.";
+  return `Encontré una ruta posible: ${intent.label}. Puedo buscar coincidencias o ayudarte a publicar la necesidad si no aparece una opción adecuada.`;
 }
-
+function sendSmartChatMessage() {
+  const input = document.getElementById("smartMessageInput");
+  const panel = document.getElementById("smartMessageResult");
+  if (!input) return;
+  const raw = input.value.trim();
+  if (!raw) { showToast("Escribe un mensaje primero"); return; }
+  pushChat("user", raw);
+  input.value = "";
+  const reply = smartReplyFor(raw);
+  setTimeout(() => pushChat("bot", reply), 180);
+  if (panel) {
+    panel.innerHTML = `<strong>${escapeHtml(detectSmartIntent(raw).label)}</strong><p>${escapeHtml(reply)}</p><div class="smart-actions"><button type="button" onclick="smartShowSuggested()">Buscar coincidencias</button><button type="button" class="secondary" onclick="startOpportunityGuide()">Publicar</button><button type="button" class="secondary" onclick="showSection('aprende')">Cursos</button></div>`;
+  }
+  trackEvent("mensaje_chat_enviado", null, { intencion: detectSmartIntent(raw).label });
+}
+function handleSmartMessage() { sendSmartChatMessage(); }
 function smartShowSuggested() {
   showSection("publicaciones");
   setTimeout(() => {
@@ -1993,3 +2105,36 @@ function smartShowSuggested() {
     search?.focus();
   }, 60);
 }
+function setCourseSearch(value) {
+  const input = document.getElementById("courseSearch");
+  if (input) input.value = value;
+  renderCourseCards();
+}
+function renderCourseCards() {
+  const list = document.getElementById("courseList");
+  if (!list) return;
+  const q = normalize(document.getElementById("courseSearch")?.value || "");
+  const courses = COURSE_CATALOG.filter(course => {
+    const haystack = normalize([course.title, course.provider, course.tag, course.keywords, course.description].join(" "));
+    return !q || q.split(/\s+/).filter(Boolean).every(word => haystack.includes(word));
+  });
+  list.innerHTML = courses.length ? courses.map((course, idx) => `<article class="course-card">
+    <span class="course-icon">${idx === 0 || idx === 1 ? "🎓" : idx === 2 || idx === 3 ? "📈" : "💻"}</span>
+    <div>
+      <small>${escapeHtml(course.tag)}</small>
+      <h3>${escapeHtml(course.title)}</h3>
+      <p>${escapeHtml(course.description)}</p>
+      <b>${escapeHtml(course.provider)}</b>
+    </div>
+    <button type="button" onclick="openCourseLink('${course.url}')">Ver</button>
+  </article>`).join("") : `<div class="empty-state">No encontré cursos con esa palabra. Prueba “oficios”, “ventas”, “tecnología” o “negocio”.</div>`;
+}
+function openCourseLink(url) {
+  trackEvent("abrir_curso_externo", null, { url });
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderSmartChat();
+  renderCourseCards();
+});

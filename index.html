@@ -27,8 +27,8 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/icon-v4718-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-v4718.png" />
-  <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=4.8.1-plataforma-profesional" />
+  <title>Conecta Servicios v4.8.2</title>
+  <link rel="stylesheet" href="styles.css?v=4.8.2-filtros-chat-cursos" />
 </head>
 <body>
   <div class="app-shell home-mode">
@@ -86,12 +86,12 @@ Todo uso requiere autorización expresa y por escrito del titular.
             <button type="button" class="future-card-v477" onclick="showSection('mensajes')">
               <span class="future-emoji">💬</span>
               <strong>Mensajes<br>inteligentes</strong>
-              <small>◷ Piloto</small>
+              <small>Chat</small>
             </button>
             <button type="button" class="future-card-v477" onclick="showSection('aprende')">
               <span class="future-emoji">🎓</span>
               <strong>Aprendizaje</strong>
-              <small>◷ Piloto</small>
+              <small>Cursos gratis</small>
             </button>
           </div>
 
@@ -343,6 +343,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
         </div>
         <select id="categoryFilter" class="hidden" onchange="renderPublications()"><option value="">Todas las categorías</option><option>Trabajo</option><option>Servicios</option><option>Limpieza</option><option>Reparaciones</option><option>Entregas y mandados</option><option>Movilidad</option><option>Negocios locales</option><option>Alimentos y ventas</option><option>Redes sociales</option></select>
         <input id="chipSearchFilter" type="hidden" value="" />
+        <div id="resultsSummary" class="results-summary-card" aria-live="polite">Mostrando publicaciones disponibles.</div>
 
         <div id="publicationsList" class="compact-list publicaciones-results"></div>
       </section>
@@ -534,57 +535,70 @@ Todo uso requiere autorización expresa y por escrito del titular.
       </section>
 
 
-      <section id="mensajes" class="section info-section smart-messages-section">
+      <section id="mensajes" class="section info-section smart-messages-section chat-live-section">
         <div class="simple-section-title smart-title-block">
-          <span class="pilot-badge">Piloto inteligente ligero</span>
+          <span class="pilot-badge">Chat interno + asistente</span>
           <h2>Mensajes inteligentes</h2>
-          <p>Un asistente local para entender lo que la persona necesita, sugerir una categoría y llevarla a buscar o publicar sin perderse.</p>
+          <p>Un espacio para que las personas escriban lo que necesitan, reciban una ruta sugerida y puedan iniciar una conversación dentro de la app.</p>
         </div>
 
-        <div class="smart-assistant-card">
-          <div class="smart-assistant-head">
+        <div class="chat-shell-card">
+          <div class="chat-head">
             <span class="smart-bot-icon">🤖</span>
             <div>
               <strong>Asistente Conecta</strong>
-              <small>Funciona sin IA pesada: primero guía, filtra y recomienda con reglas seguras.</small>
+              <small>Te ayuda a buscar, publicar o aprender según lo que escribas.</small>
             </div>
           </div>
-          <label class="smart-input-label">Escribe lo que necesitas o quieres ofrecer
-            <textarea id="smartMessageInput" rows="4" placeholder="Ej. Necesito enviar un paquete a Pachuca hoy / Busco viaje a Toluca / Quiero aprender a ofrecer mis servicios"></textarea>
-          </label>
-          <div class="smart-quick-row" aria-label="Ejemplos rápidos">
+          <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
+          <div class="smart-quick-row chat-quick-row" aria-label="Ejemplos rápidos">
             <button type="button" onclick="fillSmartMessage('Necesito enviar un paquete dentro del municipio')">Enviar paquete</button>
-            <button type="button" onclick="fillSmartMessage('Busco viaje compartido a Toluca')">Viaje compartido</button>
-            <button type="button" onclick="fillSmartMessage('Quiero ofrecer mi servicio y conseguir clientes')">Ofrecer servicio</button>
-            <button type="button" onclick="fillSmartMessage('Quiero aprender algo para mejorar mis ingresos')">Aprendizaje</button>
+            <button type="button" onclick="fillSmartMessage('Busco viaje compartido a Toluca')">Viaje</button>
+            <button type="button" onclick="fillSmartMessage('Quiero ofrecer mi servicio')">Ofrecer</button>
+            <button type="button" onclick="fillSmartMessage('Quiero tomar cursos gratuitos')">Cursos</button>
           </div>
-          <button type="button" class="btn-big btn-purple" onclick="handleSmartMessage()">Analizar mensaje</button>
-          <div id="smartMessageResult" class="smart-result-panel" aria-live="polite">
-            <strong>Ejemplo de valor:</strong>
-            <p>El usuario escribe una frase normal y Conecta la convierte en una ruta clara: buscar, publicar o aprender.</p>
+          <label class="chat-input-row" aria-label="Escribe tu mensaje">
+            <textarea id="smartMessageInput" rows="2" placeholder="Escribe tu mensaje... Ej. Busco quien entregue un paquete hoy"></textarea>
+            <button type="button" onclick="sendSmartChatMessage()" aria-label="Enviar mensaje">➤</button>
+          </label>
+          <div class="chat-actions-row">
+            <button type="button" class="btn-small btn-purple" onclick="startOpportunityGuide()">Publicar algo</button>
+            <button type="button" class="btn-small btn-outline" onclick="smartShowSuggested()">Buscar coincidencias</button>
+            <button type="button" class="btn-small btn-green" onclick="showSection('aprende')">Ver cursos</button>
           </div>
         </div>
 
-        <div class="smart-roadmap-grid">
-          <article class="smart-roadmap-card"><span>1</span><strong>Hoy</strong><p>Guía y filtros inteligentes sin costos altos.</p></article>
-          <article class="smart-roadmap-card"><span>2</span><strong>Siguiente</strong><p>Recomendaciones por municipio, categoría e intención.</p></article>
-          <article class="smart-roadmap-card"><span>3</span><strong>Futuro</strong><p>Chatbot con pagos, seguimiento y capacitación integrada.</p></article>
+        <div id="smartMessageResult" class="smart-result-panel" aria-live="polite">
+          <strong>Listo para inversionistas:</strong>
+          <p>El usuario ya puede escribir, recibir guía y moverse a publicaciones, cursos o registro. Para chat entre usuarios en tiempo real, la siguiente fase conecta esta pantalla a Supabase Realtime.</p>
         </div>
       </section>
 
-      <section id="aprende" class="section info-section learn-section clean-learn-section">
-        <div class="simple-section-title">
-          <h2>Guías para publicar mejor</h2>
-          <p>Esta sección no promete cursos ni certificaciones. Te ayuda con pasos sencillos para ordenar tu idea y publicarla mejor.</p>
+      <section id="aprende" class="section info-section learn-section clean-learn-section courses-section">
+        <div class="learn-hero courses-hero">
+          <span class="learn-badge">Cursos básicos gratuitos</span>
+          <h2>Aprendizaje para generar ingresos</h2>
+          <p>Este módulo apunta a cursos prácticos, gratuitos y accesibles desde el celular: oficios, habilidades digitales, negocio local y empleabilidad.</p>
         </div>
 
-        <div class="route-button-list">
-          <button type="button" class="route-start-card" onclick="startLearnFlow('servicio')"><span class="route-start-icon">🧭</span><span><strong>Quiero saber qué puedo ofrecer</strong><small>Ideas prácticas para convertir lo que sabes hacer en una publicación.</small></span><b>›</b></button>
-          <button type="button" class="route-start-card" onclick="startLearnFlow('publicar')"><span class="route-start-icon">✍️</span><span><strong>Quiero publicar mejor mi servicio</strong><small>Título, descripción, zona, precio y trato por WhatsApp.</small></span><b>›</b></button>
-          <button type="button" class="route-start-card" onclick="startLearnFlow('negocio')"><span class="route-start-icon">🏪</span><span><strong>Quiero mejorar mi negocio</strong><small>Visibilidad, entregas locales y cómo explicar lo que vendes.</small></span><b>›</b></button>
+        <div class="course-search-card">
+          <label>Buscar curso o habilidad
+            <input id="courseSearch" type="search" placeholder="Ej. ventas, electricidad, marketing, tecnología, negocio" oninput="renderCourseCards()" />
+          </label>
+          <div class="smart-quick-row course-tags">
+            <button type="button" onclick="setCourseSearch('oficios')">Oficios</button>
+            <button type="button" onclick="setCourseSearch('ventas')">Ventas</button>
+            <button type="button" onclick="setCourseSearch('marketing digital')">Marketing</button>
+            <button type="button" onclick="setCourseSearch('tecnología')">Tecnología</button>
+          </div>
         </div>
 
-        <div id="learnFlowPanel" class="guided-panel learn-flow-panel"></div>
+        <div id="courseList" class="course-list"></div>
+
+        <div class="notice-card slim">
+          <strong>Importante</strong>
+          <p>Conecta Servicios no cobra por estos enlaces ni sustituye a las plataformas educativas. La idea es acercar rutas de capacitación útiles para que la gente mejore su servicio o negocio.</p>
+        </div>
       </section>
 
       <section id="instalarApp" class="section info-section">
@@ -694,6 +708,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.8.1-plataforma-profesional"></script>
+  <script src="app.js?v=4.8.2-filtros-chat-cursos"></script>
 </body>
 </html>
