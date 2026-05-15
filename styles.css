@@ -2249,3 +2249,126 @@ body {
   .opportunity-orb{width:138px!important;height:138px!important;margin-top:-16px!important;}
   .publicaciones-location-card.ultra-clean-filters,.icon-only-search{margin-right:44px!important;}
 }
+
+
+/* v4.7.17 — cierre estable: logo único, hero legible y publicaciones limpias */
+.app-shell.home-mode .cs-node-logo{
+  background:transparent!important;
+  box-shadow:none!important;
+  border-radius:50%!important;
+  padding:0!important;
+  overflow:visible!important;
+  display:inline-grid!important;
+  place-items:center!important;
+  width:58px!important;
+  height:58px!important;
+  min-width:58px!important;
+  flex:0 0 58px!important;
+}
+.app-shell.home-mode .cs-node-logo:before,
+.app-shell.home-mode .cs-node-logo:after,
+.app-shell.home-mode .cs-node-logo i{display:none!important;content:none!important;}
+.app-shell.home-mode .cs-node-logo img,
+.cs-node-logo img{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  filter:drop-shadow(0 7px 14px rgba(20,0,64,.24));
+}
+.install-card-v477 .install-logo{width:52px!important;height:52px!important;min-width:52px!important;}
+
+.app-shell.home-mode .home-v477{padding-top:18px!important;}
+.app-shell.home-mode .home-v477-hero{
+  height:292px!important;
+  min-height:292px!important;
+  border-radius:26px!important;
+  overflow:hidden!important;
+  background:#17005a!important;
+}
+.app-shell.home-mode .hero-scene{
+  background-image:
+    linear-gradient(90deg,rgba(13,0,47,.96) 0%,rgba(14,0,48,.88) 30%,rgba(14,0,48,.42) 49%,rgba(14,0,48,.10) 70%,rgba(14,0,48,0) 100%),
+    linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.02)),
+    url('assets/hero-scene-clean-v4711.png')!important;
+  background-size:auto 108%!important;
+  background-position:53% center!important;
+  filter:brightness(1.18) saturate(1.07)!important;
+}
+.app-shell.home-mode .hero-copy{
+  padding:21px 18px 0!important;
+  max-width:228px!important;
+}
+.app-shell.home-mode .hero-copy h1{
+  font-size:1.76rem!important;
+  line-height:1.08!important;
+  letter-spacing:-.035em!important;
+}
+.app-shell.home-mode .hero-copy p{
+  font-size:.84rem!important;
+  line-height:1.24!important;
+  max-width:198px!important;
+  margin-bottom:0!important;
+}
+.app-shell.home-mode .hero-copy em{margin:9px 0 10px!important;}
+.app-shell.home-mode .hero-chips{
+  left:16px!important;
+  bottom:12px!important;
+  max-width:255px!important;
+  padding:8px 9px!important;
+  gap:6px!important;
+  border-radius:18px!important;
+  background:rgba(20,2,69,.72)!important;
+}
+.app-shell.home-mode .hero-chips b{
+  width:33px!important;
+  height:33px!important;
+  font-size:1rem!important;
+}
+.app-shell.home-mode .hero-chips span{font-size:.65rem!important;}
+.app-shell.home-mode .opportunity-orb{margin-top:-23px!important;}
+
+@media(max-width:380px){
+  .app-shell.home-mode .home-v477-brand .cs-node-logo{width:50px!important;height:50px!important;min-width:50px!important;}
+  .app-shell.home-mode .home-v477-brand strong{font-size:1.62rem!important;}
+  .app-shell.home-mode .home-v477-brand small{font-size:1.10rem!important;}
+  .app-shell.home-mode .home-v477-hero{height:268px!important;min-height:268px!important;}
+  .app-shell.home-mode .hero-scene{background-size:auto 112%!important;background-position:54% center!important;}
+  .app-shell.home-mode .hero-copy{padding:19px 15px 0!important;max-width:205px!important;}
+  .app-shell.home-mode .hero-copy h1{font-size:1.54rem!important;}
+  .app-shell.home-mode .hero-copy p{font-size:.76rem!important;max-width:176px!important;}
+  .app-shell.home-mode .hero-chips{left:12px!important;bottom:10px!important;max-width:236px!important;}
+  .app-shell.home-mode .hero-chips b{width:30px!important;height:30px!important;}
+  .app-shell.home-mode .hero-chips span{font-size:.60rem!important;}
+}
+
+/* Publicaciones: menos fricción visual, filtros debajo del encabezado y listado protagonista */
+#publicaciones .content,
+section#publicaciones{background:#f7f4ff!important;}
+#publicaciones .filter-card{
+  margin:6px 0 12px!important;
+  padding:12px!important;
+  border-radius:24px!important;
+  box-shadow:0 10px 24px rgba(77,43,119,.08)!important;
+}
+#publicaciones .filter-card label{font-size:0!important;margin-bottom:10px!important;}
+#publicaciones .filter-card select,
+#publicaciones .filter-card input{
+  margin-top:0!important;
+  min-height:56px!important;
+  border-radius:18px!important;
+  font-size:1.03rem!important;
+  font-weight:800!important;
+  padding-left:18px!important;
+}
+#searchInput{padding-left:46px!important;background:#fff!important;}
+#publicaciones .search-box{position:relative;font-size:0!important;}
+#publicaciones .search-box:before{content:'🔍';position:absolute;left:16px;top:17px;z-index:2;font-size:1.18rem;opacity:.78;}
+#publicaciones .section-header p,
+#publicaciones .filter-summary,
+#publicaciones .sync-status:not(.visually-hidden){display:none!important;}
+#publicaciones .section-header{margin-bottom:8px!important;}
+#publicaciones .section-header h2{font-size:1.35rem!important;}
+#publicaciones .card{margin-bottom:12px!important;}
+.floating-category-filter{top:118px!important;}

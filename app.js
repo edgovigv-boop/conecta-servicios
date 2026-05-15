@@ -32,7 +32,7 @@ const KNOWN_MUNICIPALITIES = {
 const MUNICIPIOS_MX_URL = "https://raw.githubusercontent.com/cisnerosnow/json-estados-municipios-mexico/master/estados-municipios.json";
 const MUNICIPIOS_MX_LOCAL_URL = "assets/municipios-mx-base.json";
 const INEGI_MGEM_URL = "https://gaia.inegi.org.mx/wscatgeo/v2/mgem";
-const MUNICIPIOS_MX_CACHE_KEY = "conecta_municipios_mx_v4716";
+const MUNICIPIOS_MX_CACHE_KEY = "conecta_municipios_mx_v4717";
 let municipiosMx = { ...KNOWN_MUNICIPALITIES };
 const STATE_ALIASES = {
   "Coahuila": "Coahuila de Zaragoza",
@@ -55,7 +55,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v41";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.7.16-correccion-critica-estable";
+const PWA_VERSION = "v4.7.17-cierre-estable-logo-hero-municipios";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -245,6 +245,21 @@ async function loadAdminData() {
   } catch (error) { console.error(error); showToast("No se pudo cargar administración"); }
 }
 function officialStateName(state) { return STATE_ALIASES[state] || state || ""; }
+
+function normalizeMunicipiosCatalog(data) {
+  const out = {};
+  if (!data || typeof data !== "object") return out;
+  Object.entries(data).forEach(([state, list]) => {
+    if (!Array.isArray(list)) return;
+    const cleanList = Array.from(new Set(list.map(v => String(v || "").trim()).filter(Boolean)))
+      .sort((a,b) => a.localeCompare(b, "es", { sensitivity: "base" }));
+    out[state] = cleanList;
+    const shortName = Object.entries(STATE_ALIASES).find(([, official]) => normalize(official) === normalize(state))?.[0];
+    if (shortName) out[shortName] = cleanList;
+  });
+  return out;
+}
+
 async function loadMunicipiosMx() {
   try {
     const cached = localStorage.getItem(MUNICIPIOS_MX_CACHE_KEY);
@@ -259,6 +274,16 @@ async function loadMunicipiosMx() {
       updateAllMunicipalitySelects();
     }
   } catch (error) { console.debug("Municipios locales no disponibles:", error.message); }
+  try {
+    const remoteRes = await fetch(MUNICIPIOS_MX_URL, { cache: "force-cache" });
+    if (remoteRes.ok) {
+      const remoteData = await remoteRes.json();
+      municipiosMx = { ...municipiosMx, ...normalizeMunicipiosCatalog(remoteData) };
+      try { localStorage.setItem(MUNICIPIOS_MX_CACHE_KEY, JSON.stringify(municipiosMx)); } catch {}
+      populateStateSelects();
+      updateAllMunicipalitySelects();
+    }
+  } catch (error) { console.debug("Catálogo remoto de municipios no disponible:", error.message); }
   // INEGI oficial: se consulta en segundo plano para completar y mantener actualizado el catálogo.
   loadMunicipiosFromInegi().catch(error => console.debug("INEGI municipios no disponible:", error.message));
 }
@@ -351,8 +376,13 @@ function updateAllMunicipalitySelects() {
 }
 function handlePairedStateChange(stateId, municipalityId, placeholder) {
   const state = document.getElementById(stateId)?.value || "";
-  fillMunicipalitySelect(document.getElementById(municipalityId), state, { placeholder });
-  ensureMunicipalitiesForState(state);
+  const munSelect = document.getElementById(municipalityId);
+  fillMunicipalitySelect(munSelect, state, { placeholder });
+  if (state && getMunicipalitiesForState(state).length <= 20 && munSelect) {
+    munSelect.innerHTML = "";
+    munSelect.append(new Option("Cargando municipios...", ""));
+  }
+  ensureMunicipalitiesForState(state).finally(() => fillMunicipalitySelect(munSelect, state, { placeholder }));
 }
 function routeUrlForSection(id) {
   const params = new URLSearchParams(location.search);

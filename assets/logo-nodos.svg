@@ -1,25 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Conecta Servicios">
   <defs>
-    <radialGradient id="g" cx="50%" cy="50%" r="70%">
+    <radialGradient id="bg" cx="50%" cy="45%" r="62%">
       <stop offset="0" stop-color="#6f42c1"/>
-      <stop offset="0.62" stop-color="#361078"/>
-      <stop offset="1" stop-color="#150044"/>
+      <stop offset="0.62" stop-color="#38107a"/>
+      <stop offset="1" stop-color="#140041"/>
     </radialGradient>
     <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feGaussianBlur stdDeviation="6" result="b"/>
       <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
-  <rect x="18" y="18" width="476" height="476" rx="112" fill="url(#g)"/>
+  <circle cx="256" cy="256" r="232" fill="url(#bg)"/>
   <g fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
-    <path d="M92 168a172 172 0 0 1 276-67" stroke="#fff" stroke-width="30"/>
-    <path d="M420 174a172 172 0 0 1-88 219" stroke="#fff" stroke-width="30"/>
-    <path d="M121 344a172 172 0 0 0 148 79" stroke="#fff" stroke-width="30"/>
-    <path d="M168 321 256 258 366 238" stroke="#67c33f" stroke-width="32"/>
+    <path d="M92 169a174 174 0 0 1 282-71" stroke="#fff" stroke-width="32"/>
+    <path d="M421 174a174 174 0 0 1-86 219" stroke="#fff" stroke-width="32"/>
+    <path d="M123 345a174 174 0 0 0 142 77" stroke="#fff" stroke-width="32"/>
+    <path d="M156 317 256 258 372 236" stroke="#67c33f" stroke-width="34"/>
   </g>
-  <circle cx="256" cy="258" r="38" fill="#67c33f"/>
-  <circle cx="91" cy="168" r="30" fill="#fff"/>
-  <circle cx="388" cy="98" r="27" fill="#fff"/>
-  <circle cx="420" cy="174" r="26" fill="#fff"/>
-  <circle cx="121" cy="344" r="27" fill="#fff"/>
+  <circle cx="256" cy="258" r="40" fill="#67c33f"/>
+  <circle cx="92" cy="169" r="31" fill="#fff"/>
+  <circle cx="388" cy="99" r="28" fill="#fff"/>
+  <circle cx="421" cy="174" r="27" fill="#fff"/>
+  <circle cx="123" cy="345" r="28" fill="#fff"/>
 </svg>
