@@ -9,7 +9,12 @@
   "background_color": "#ffffff",
   "theme_color": "#6f42c1",
   "lang": "es-MX",
-  "categories": ["business", "productivity", "social", "utilities"],
+  "categories": [
+    "business",
+    "productivity",
+    "social",
+    "utilities"
+  ],
   "icons": [
     {
       "src": "assets/icon-192.png",

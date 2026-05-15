@@ -29,12 +29,20 @@ const KNOWN_MUNICIPALITIES = {
   "Morelos": ["Cuernavaca","Jiutepec","Temixco","Emiliano Zapata","Yautepec","Cuautla","Jojutla","Xochitepec","Tepoztlán","Zacatepec"],
   "Ciudad de México": ["Álvaro Obregón","Azcapotzalco","Benito Juárez","Coyoacán","Cuajimalpa de Morelos","Cuauhtémoc","Gustavo A. Madero","Iztacalco","Iztapalapa","Magdalena Contreras","Miguel Hidalgo","Milpa Alta","Tláhuac","Tlalpan","Venustiano Carranza","Xochimilco"]
 };
+const MUNICIPIOS_MX_URL = "https://raw.githubusercontent.com/cisnerosnow/json-estados-municipios-mexico/master/estados-municipios.json";
+const MUNICIPIOS_MX_CACHE_KEY = "conecta_municipios_mx_v4715";
+let municipiosMx = { ...KNOWN_MUNICIPALITIES };
+const STATE_ALIASES = {
+  "Coahuila": "Coahuila de Zaragoza",
+  "Michoacán": "Michoacán de Ocampo",
+  "Veracruz": "Veracruz de Ignacio de la Llave"
+};
 const BLOCKED_WORDS = ["droga","armas","arma","sexo","sexual","escort","fraude","estafa","robo","robado","ilegal","marihuana","cocaína","cocaina"];
 const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v41";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.7.14-final-logo-publicaciones";
+const PWA_VERSION = "v4.7.15-logo-municipios-hero-final";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -223,37 +231,69 @@ async function loadAdminData() {
     renderAdminPublications();
   } catch (error) { console.error(error); showToast("No se pudo cargar administración"); }
 }
+function officialStateName(state) { return STATE_ALIASES[state] || state || ""; }
+async function loadMunicipiosMx() {
+  try {
+    const cached = localStorage.getItem(MUNICIPIOS_MX_CACHE_KEY);
+    if (cached) { municipiosMx = { ...municipiosMx, ...JSON.parse(cached) }; }
+  } catch {}
+  try {
+    const res = await fetch(MUNICIPIOS_MX_URL, { cache: "force-cache" });
+    if (!res.ok) throw new Error("No se pudo cargar municipios");
+    const data = await res.json();
+    municipiosMx = { ...municipiosMx, ...data };
+    try { localStorage.setItem(MUNICIPIOS_MX_CACHE_KEY, JSON.stringify(data)); } catch {}
+    populateStateSelects();
+    updateAllMunicipalitySelects();
+  } catch (error) { console.debug("Municipios MX usando respaldo local:", error.message); }
+}
 function populateStateSelects() {
   document.querySelectorAll("[data-state-select]").forEach(select => {
     const blank = select.dataset.blank === "true";
     const def = select.dataset.default || DEFAULT_STATE;
+    const current = select.value || def || "";
     select.innerHTML = "";
     if (blank) select.append(new Option("Todo México", ""));
     STATES.forEach(state => select.append(new Option(state, state)));
-    select.value = blank ? "" : def;
+    if ([...select.options].some(o => o.value === current)) select.value = current;
+    else select.value = blank ? "" : def;
   });
-  updateMunicipalityFilterOptions();
+  updateAllMunicipalitySelects();
 }
 function getMunicipalitiesForState(state) {
-  const fromKnown = KNOWN_MUNICIPALITIES[state] || [];
+  const official = officialStateName(state);
+  const fromOfficial = municipiosMx[official] || municipiosMx[state] || [];
+  const fromKnown = KNOWN_MUNICIPALITIES[state] || KNOWN_MUNICIPALITIES[official] || [];
   const fromData = publicationsCache
-    .filter(item => !state || normalize(item.state) === normalize(state))
+    .filter(item => !state || normalize(item.state) === normalize(state) || normalize(item.state) === normalize(official))
     .map(item => item.municipality)
     .filter(Boolean);
-  return Array.from(new Set([...fromKnown, ...fromData]))
+  return Array.from(new Set([...fromOfficial, ...fromKnown, ...fromData]))
+    .filter(Boolean)
     .sort((a, b) => String(a).localeCompare(String(b), "es", { sensitivity: "base" }));
 }
-function updateMunicipalityFilterOptions() {
-  const select = document.getElementById("municipalityFilter");
+function fillMunicipalitySelect(select, state, options = {}) {
   if (!select || select.tagName !== "SELECT") return;
-  const state = document.getElementById("stateFilter")?.value || "";
   const current = select.value || "";
   select.innerHTML = "";
-  select.append(new Option(state ? "Todos los municipios" : "Todos los municipios", ""));
+  select.append(new Option(options.placeholder || "Todos los municipios", ""));
   getMunicipalitiesForState(state).forEach(m => select.append(new Option(m, m)));
   if ([...select.options].some(o => o.value === current)) select.value = current;
   else select.value = "";
   select.disabled = false;
+}
+function updateMunicipalityFilterOptions() {
+  fillMunicipalitySelect(document.getElementById("municipalityFilter"), document.getElementById("stateFilter")?.value || "", { placeholder: "Todos los municipios" });
+}
+function updateAllMunicipalitySelects() {
+  updateMunicipalityFilterOptions();
+  fillMunicipalitySelect(document.getElementById("pubMunicipality"), document.getElementById("pubState")?.value || "", { placeholder: "Selecciona municipio" });
+  fillMunicipalitySelect(document.getElementById("notifMunicipality"), document.getElementById("notifState")?.value || "", { placeholder: "Todos los municipios" });
+  fillMunicipalitySelect(document.getElementById("externalMunicipality"), document.getElementById("externalState")?.value || "", { placeholder: "Selecciona municipio" });
+}
+function handlePairedStateChange(stateId, municipalityId, placeholder) {
+  const state = document.getElementById(stateId)?.value || "";
+  fillMunicipalitySelect(document.getElementById(municipalityId), state, { placeholder });
 }
 function routeUrlForSection(id) {
   const params = new URLSearchParams(location.search);
