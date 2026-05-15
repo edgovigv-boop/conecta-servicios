@@ -4,14 +4,16 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.7.13";
+const CACHE_NAME = "conecta-servicios-v4.7.16-critical-stable";
 const ASSETS = [
   "./",
   "index.html",
   "styles.css",
   "app.js",
   "manifest.json",
-  "assets/hero-scene-v479.webp",
+  "assets/hero-scene-bright-v4716.webp",
+  "assets/logo-nodos.svg",
+  "assets/municipios-mx-base.json",
   "assets/icon-192.png",
   "assets/icon-512.png",
   "assets/apple-touch-icon.png",

@@ -1,4 +1,4 @@
-# Conecta Servicios v4.7.15 — Logo, municipios y hero final
+# Conecta Servicios v4.7.16 — Logo, municipios y hero final
 
 Correcciones aplicadas:
 

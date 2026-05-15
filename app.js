@@ -30,19 +30,32 @@ const KNOWN_MUNICIPALITIES = {
   "Ciudad de México": ["Álvaro Obregón","Azcapotzalco","Benito Juárez","Coyoacán","Cuajimalpa de Morelos","Cuauhtémoc","Gustavo A. Madero","Iztacalco","Iztapalapa","Magdalena Contreras","Miguel Hidalgo","Milpa Alta","Tláhuac","Tlalpan","Venustiano Carranza","Xochimilco"]
 };
 const MUNICIPIOS_MX_URL = "https://raw.githubusercontent.com/cisnerosnow/json-estados-municipios-mexico/master/estados-municipios.json";
-const MUNICIPIOS_MX_CACHE_KEY = "conecta_municipios_mx_v4715";
+const MUNICIPIOS_MX_LOCAL_URL = "assets/municipios-mx-base.json";
+const INEGI_MGEM_URL = "https://gaia.inegi.org.mx/wscatgeo/v2/mgem";
+const MUNICIPIOS_MX_CACHE_KEY = "conecta_municipios_mx_v4716";
 let municipiosMx = { ...KNOWN_MUNICIPALITIES };
 const STATE_ALIASES = {
   "Coahuila": "Coahuila de Zaragoza",
   "Michoacán": "Michoacán de Ocampo",
   "Veracruz": "Veracruz de Ignacio de la Llave"
 };
+const INEGI_STATE_KEYS = {
+  "Aguascalientes":"01", "Baja California":"02", "Baja California Sur":"03", "Campeche":"04",
+  "Coahuila":"05", "Coahuila de Zaragoza":"05", "Colima":"06", "Chiapas":"07", "Chihuahua":"08",
+  "Ciudad de México":"09", "Durango":"10", "Guanajuato":"11", "Guerrero":"12", "Hidalgo":"13",
+  "Jalisco":"14", "México":"15", "Michoacán":"16", "Michoacán de Ocampo":"16", "Morelos":"17",
+  "Nayarit":"18", "Nuevo León":"19", "Oaxaca":"20", "Puebla":"21", "Querétaro":"22",
+  "Quintana Roo":"23", "San Luis Potosí":"24", "Sinaloa":"25", "Sonora":"26", "Tabasco":"27",
+  "Tamaulipas":"28", "Tlaxcala":"29", "Veracruz":"30", "Veracruz de Ignacio de la Llave":"30",
+  "Yucatán":"31", "Zacatecas":"32"
+};
+const MUNICIPIOS_SOURCE_NOTE = "INEGI Catálogo Único de Claves Geoestadísticas";
 const BLOCKED_WORDS = ["droga","armas","arma","sexo","sexual","escort","fraude","estafa","robo","robado","ilegal","marihuana","cocaína","cocaina"];
 const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v41";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.7.15-logo-municipios-hero-final";
+const PWA_VERSION = "v4.7.16-correccion-critica-estable";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -235,17 +248,62 @@ function officialStateName(state) { return STATE_ALIASES[state] || state || ""; 
 async function loadMunicipiosMx() {
   try {
     const cached = localStorage.getItem(MUNICIPIOS_MX_CACHE_KEY);
-    if (cached) { municipiosMx = { ...municipiosMx, ...JSON.parse(cached) }; }
+    if (cached) municipiosMx = { ...municipiosMx, ...JSON.parse(cached) };
   } catch {}
   try {
-    const res = await fetch(MUNICIPIOS_MX_URL, { cache: "force-cache" });
-    if (!res.ok) throw new Error("No se pudo cargar municipios");
-    const data = await res.json();
-    municipiosMx = { ...municipiosMx, ...data };
-    try { localStorage.setItem(MUNICIPIOS_MX_CACHE_KEY, JSON.stringify(data)); } catch {}
-    populateStateSelects();
-    updateAllMunicipalitySelects();
-  } catch (error) { console.debug("Municipios MX usando respaldo local:", error.message); }
+    const localRes = await fetch(MUNICIPIOS_MX_LOCAL_URL, { cache: "force-cache" });
+    if (localRes.ok) {
+      const localData = await localRes.json();
+      municipiosMx = { ...municipiosMx, ...localData };
+      populateStateSelects();
+      updateAllMunicipalitySelects();
+    }
+  } catch (error) { console.debug("Municipios locales no disponibles:", error.message); }
+  // INEGI oficial: se consulta en segundo plano para completar y mantener actualizado el catálogo.
+  loadMunicipiosFromInegi().catch(error => console.debug("INEGI municipios no disponible:", error.message));
+}
+function parseInegiMunicipalities(payload) {
+  const rows = Array.isArray(payload?.datos) ? payload.datos : (Array.isArray(payload) ? payload : []);
+  return rows.map(row => row.nomgeo || row.nom_agem || row.NOM_MUN || row.nombre || row.nom_mun || row.NOMGEO || "")
+    .map(v => String(v).trim())
+    .filter(Boolean);
+}
+async function fetchInegiMunicipiosForState(state) {
+  const official = officialStateName(state);
+  const key = INEGI_STATE_KEYS[state] || INEGI_STATE_KEYS[official];
+  if (!key) return [];
+  const response = await fetch(`${INEGI_MGEM_URL}/${key}`, { cache: "force-cache" });
+  if (!response.ok) throw new Error(`INEGI ${state} ${response.status}`);
+  return parseInegiMunicipalities(await response.json());
+}
+async function ensureMunicipalitiesForState(state) {
+  if (!state) return;
+  const current = getMunicipalitiesForState(state);
+  if (current.length > 20) return;
+  try {
+    const list = await fetchInegiMunicipiosForState(state);
+    if (list.length) {
+      municipiosMx[state] = list;
+      municipiosMx[officialStateName(state)] = list;
+      try { localStorage.setItem(MUNICIPIOS_MX_CACHE_KEY, JSON.stringify(municipiosMx)); } catch {}
+      updateAllMunicipalitySelects();
+    }
+  } catch (error) { console.debug("No se pudo cargar municipios INEGI para", state, error.message); }
+}
+async function loadMunicipiosFromInegi() {
+  const entries = STATES.map(async state => {
+    try {
+      const list = await fetchInegiMunicipiosForState(state);
+      if (list.length) {
+        municipiosMx[state] = list;
+        municipiosMx[officialStateName(state)] = list;
+      }
+    } catch (error) { console.debug("INEGI estado omitido", state, error.message); }
+  });
+  await Promise.allSettled(entries);
+  try { localStorage.setItem(MUNICIPIOS_MX_CACHE_KEY, JSON.stringify(municipiosMx)); } catch {}
+  populateStateSelects();
+  updateAllMunicipalitySelects();
 }
 function populateStateSelects() {
   document.querySelectorAll("[data-state-select]").forEach(select => {
@@ -294,6 +352,7 @@ function updateAllMunicipalitySelects() {
 function handlePairedStateChange(stateId, municipalityId, placeholder) {
   const state = document.getElementById(stateId)?.value || "";
   fillMunicipalitySelect(document.getElementById(municipalityId), state, { placeholder });
+  ensureMunicipalitiesForState(state);
 }
 function routeUrlForSection(id) {
   const params = new URLSearchParams(location.search);
@@ -618,6 +677,8 @@ function resetWizardForm() {
 function handleStateFilterChange() {
   clearNearbyMode();
   updateMunicipalityFilterOptions();
+  const state = document.getElementById("stateFilter")?.value || "";
+  ensureMunicipalitiesForState(state);
   renderPublications();
 }
 function resetLocationFilters() {
@@ -1780,6 +1841,7 @@ function init() {
   adminRouteEnabled = params.get("admin") === "1" || params.get("admin") === "true";
   document.getElementById("adminEntry").classList.toggle("hidden", !adminRouteEnabled);
   populateStateSelects();
+  loadMunicipiosMx();
   document.getElementById("publicationForm").addEventListener("submit", submitPublication);
   document.getElementById("editForm").addEventListener("submit", saveEdit);
   document.getElementById("reclassForm")?.addEventListener("submit", saveReclassification);
