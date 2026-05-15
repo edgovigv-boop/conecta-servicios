@@ -1,13 +1,13 @@
 {
   "name": "Conecta Servicios",
   "short_name": "Conecta",
-  "description": "Plataforma local de oportunidades, publicaciones cercanas, chat interno, publicaciones cercanas, mensajes inteligentes y cursos gratuitos.",
-  "start_url": "/?source=pwa&v=4.8.2",
+  "description": "Plataforma local de oportunidades, publicaciones cercanas, mensajes inteligentes y cursos gratuitos.",
+  "start_url": "/?source=pwa&v=4.8.5",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
-  "theme_color": "#19004f",
+  "theme_color": "#0e5bff",
   "lang": "es-MX",
   "categories": [
     "business",
@@ -17,19 +17,19 @@
   ],
   "icons": [
     {
-      "src": "assets/icon-v4718-192.png",
+      "src": "assets/pwa-plus-icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "assets/icon-v4718-512.png",
+      "src": "assets/pwa-plus-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "assets/maskable-v4718-512.png",
+      "src": "assets/pwa-plus-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

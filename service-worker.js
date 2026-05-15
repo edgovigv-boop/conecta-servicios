@@ -4,21 +4,21 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.8.4-ajustes-limpios";
+const CACHE_NAME = "conecta-servicios-v4.8.5-ajustes-finales-inversionistas";
 const ASSETS = [
   "./",
   "index.html",
-  "styles.css?v=4.8.3-reconstruccion-visual-controlada",
-  "app.js?v=4.8.3-reconstruccion-visual-controlada",
+  "styles.css?v=4.8.5-ajustes-finales-inversionistas",
+  "app.js?v=4.8.5-ajustes-finales-inversionistas",
   "manifest.json",
   "assets/hero-scene-v4718.webp",
   "assets/hero-scene-clean-v4711.png",
-  "assets/logo-conecta-v4718.svg",
   "assets/municipios-mx-base.json",
-  "assets/icon-v4718-192.png",
-  "assets/icon-v4718-512.png",
-  "assets/apple-touch-v4718.png",
-  "assets/maskable-v4718-512.png"
+  "assets/municipios-mx-completo.json",
+  "assets/pwa-plus-icon-192.png",
+  "assets/pwa-plus-icon-512.png",
+  "assets/apple-touch-plus.png",
+  "assets/pwa-plus-maskable-512.png"
 ];
 
 self.addEventListener("install", event => {
@@ -37,7 +37,8 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
   const request = event.request;
-  const isAppShell = request.mode === "navigate" || /\/(index\.html|app\.js|styles\.css|manifest\.json)(\?|$)/.test(new URL(request.url).pathname + new URL(request.url).search);
+  const url = new URL(request.url);
+  const isAppShell = request.mode === "navigate" || /\/(index\.html|app\.js|styles\.css|manifest\.json)(\?|$)/.test(url.pathname + url.search);
   if (isAppShell) {
     event.respondWith(
       fetch(request, { cache: "no-store" })

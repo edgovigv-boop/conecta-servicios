@@ -36,7 +36,7 @@ const MUNICIPIOS_MX_URLS = [
 ];
 const MUNICIPIOS_MX_LOCAL_URL = "assets/municipios-mx-base.json";
 const INEGI_MGEM_URL = "https://gaia.inegi.org.mx/wscatgeo/v2/mgem";
-const MUNICIPIOS_MX_CACHE_KEY = "conecta_municipios_mx_v484";
+const MUNICIPIOS_MX_CACHE_KEY = "conecta_municipios_mx_v485";
 let municipiosMx = { ...KNOWN_MUNICIPALITIES };
 const STATE_ALIASES = {
   "Coahuila": "Coahuila de Zaragoza",
@@ -59,7 +59,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.8.4-ajustes-limpios";
+const PWA_VERSION = "v4.8.5-ajustes-finales-inversionistas";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -78,7 +78,7 @@ let analyticsCache = [];
 let deferredInstallPrompt = null;
 const TOTAL_STEPS = 7;
 const APP_VERSION_KEY = "conecta_servicios_app_version";
-const CHAT_STORAGE_KEY = "conecta_smart_chat_v483";
+const CHAT_STORAGE_KEY = "conecta_smart_chat_v485";
 
 
 function cleanPhone(phone) { return String(phone || "").replace(/\D/g, ""); }
@@ -1987,52 +1987,82 @@ function init() {
 document.addEventListener("DOMContentLoaded", init);
 
 
-// v4.8.4 — Ajustes limpios de filtros congelados, dock bajo, artículo y botón central
+// v4.8.5 — Ajustes finales: filtros no congelados, chat limpio, cursos como botones y PWA plus
 let smartLastSuggestion = { query: "", category: "" };
 
-const DEFAULT_CHAT_MESSAGES = [
-  { role: "bot", text: "¡Hola! Soy el asistente de Conecta Servicios. Escribe lo que necesitas y te ayudo a buscar, publicar o aprender." }
-];
+const DEFAULT_CHAT_MESSAGES = [];
 
 const COURSE_CATALOG = [
   {
-    title: "Capacítate para el empleo",
-    provider: "Fundación Carlos Slim",
-    tag: "Oficios y empleo",
-    keywords: "oficios empleo electricidad ventas cocina reparación negocio administración salud construcción",
-    description: "Cursos prácticos para aprender oficios, habilidades laborales y herramientas para generar ingresos.",
-    url: "https://capacitateparaelempleo.org/"
+    title: "Oficios y empleo",
+    provider: "Fundación Carlos Slim · Capacítate para el empleo",
+    tag: "Oficios",
+    icon: "🛠",
+    keywords: "oficios empleo electricidad reparación construcción mantenimiento cocina limpieza ventas oficio autoempleo",
+    description: "Cursos para aprender habilidades prácticas y mejorar oportunidades de ingreso.",
+    url: "https://capacitateparaelempleo.org/cursos"
   },
   {
-    title: "Aprende.org",
-    provider: "Fundación Carlos Slim",
-    tag: "Aprendizaje abierto",
-    keywords: "cursos gratis aprender oficios capacitación celular empleo habilidades",
-    description: "Plataforma de aprendizaje en línea con contenidos accesibles desde el celular.",
-    url: "https://aprende.org/"
+    title: "Autoempleo y negocio local",
+    provider: "Fundación Carlos Slim · Aprende.org",
+    tag: "Negocio",
+    icon: "🏪",
+    keywords: "autoempleo negocio local emprender administración finanzas comercio ventas clientes ingresos",
+    description: "Rutas útiles para organizar un servicio, negocio o actividad independiente.",
+    url: "https://aprende.org/capacitate"
   },
   {
-    title: "Google Actívate",
-    provider: "Google / Skillshop",
-    tag: "Negocio digital",
-    keywords: "marketing digital ventas internet negocio google comercio electrónico apps nube productividad",
-    description: "Cursos para fortalecer carrera, confianza digital y crecimiento de negocios.",
-    url: "https://skillshop.exceedlms.com/student/catalog/list?category_ids=7880-google-activate"
+    title: "Alimentos y ventas",
+    provider: "Fundación Carlos Slim · Capacítate para el empleo",
+    tag: "Ventas",
+    icon: "🍲",
+    keywords: "alimentos cocina ventas comercio comida preparación atención cliente negocio",
+    description: "Opciones para personas que venden comida, productos o servicios de atención al cliente.",
+    url: "https://capacitateparaelempleo.org/cursos"
   },
   {
-    title: "Crece con Google",
-    provider: "Google",
-    tag: "Carrera y negocio",
-    keywords: "trabajo carrera negocio crecer habilidades digitales productividad búsqueda empleo",
-    description: "Recursos para encontrar trabajo, progresar profesionalmente o hacer crecer un negocio.",
-    url: "https://crece.withgoogle.com/"
+    title: "Computación y tecnología básica",
+    provider: "Fundación Carlos Slim · Aprende.org",
+    tag: "Tecnología",
+    icon: "💻",
+    keywords: "computación tecnología celular redes sociales internet aplicaciones digitalizate software sistemas",
+    description: "Capacitación para usar mejor computadora, celular, internet y herramientas digitales.",
+    url: "https://capacitateparaelempleo.org/categorias/view/7"
   },
   {
-    title: "IBM SkillsBuild",
-    provider: "IBM",
-    tag: "Tecnología gratuita",
-    keywords: "tecnología inteligencia artificial datos nube ciberseguridad programación habilidades profesionales",
-    description: "Formación gratuita en línea para desarrollar habilidades tecnológicas y profesionales.",
+    title: "Marketing digital",
+    provider: "Google Actívate / Skillshop",
+    tag: "Digital",
+    icon: "📈",
+    keywords: "marketing digital ventas online comercio electrónico google negocio clientes anuncios internet",
+    description: "Cursos para promocionar servicios, negocios y productos usando herramientas digitales.",
+    url: "https://skillshop.exceedlms.com/sl/d9e04e29"
+  },
+  {
+    title: "Productividad y búsqueda de empleo",
+    provider: "Crece con Google",
+    tag: "Empleo",
+    icon: "📋",
+    keywords: "productividad empleo trabajo carrera currículum entrevista habilidades profesionales negocio",
+    description: "Herramientas y cursos para mejorar habilidades laborales y crecimiento profesional.",
+    url: "https://grow.google/intl/es/courses-and-tools/"
+  },
+  {
+    title: "Inteligencia artificial y datos",
+    provider: "IBM SkillsBuild",
+    tag: "IA",
+    icon: "🤖",
+    keywords: "inteligencia artificial ia datos tecnología nube ciberseguridad programación skillsbuild ibm",
+    description: "Formación gratuita para iniciar en habilidades tecnológicas de alta demanda.",
+    url: "https://skillsbuild.org/es/adult-learners"
+  },
+  {
+    title: "Ciberseguridad y nube",
+    provider: "IBM SkillsBuild",
+    tag: "Tecnología",
+    icon: "☁️",
+    keywords: "ciberseguridad nube tecnología seguridad digital internet datos ibm skillsbuild",
+    description: "Rutas para conocer seguridad digital, nube y competencias tecnológicas básicas.",
     url: "https://skillsbuild.org/es/"
   }
 ];
@@ -2100,9 +2130,7 @@ function sendSmartChatMessage() {
   input.value = "";
   const reply = smartReplyFor(raw);
   setTimeout(() => pushChat("bot", reply), 180);
-  if (panel) {
-    panel.innerHTML = `<strong>${escapeHtml(detectSmartIntent(raw).label)}</strong><p>${escapeHtml(reply)}</p><div class="smart-actions"><button type="button" onclick="smartShowSuggested()">Buscar coincidencias</button><button type="button" class="secondary" onclick="startOpportunityGuide()">Publicar</button><button type="button" class="secondary" onclick="showSection('aprende')">Cursos</button></div>`;
-  }
+  if (panel) panel.innerHTML = "";
   trackEvent("mensaje_chat_enviado", null, { intencion: detectSmartIntent(raw).label });
 }
 function handleSmartMessage() { sendSmartChatMessage(); }
@@ -2137,16 +2165,16 @@ function renderCourseCards() {
     const haystack = normalize([course.title, course.provider, course.tag, course.keywords, course.description].join(" "));
     return !q || q.split(/\s+/).filter(Boolean).every(word => haystack.includes(word));
   });
-  list.innerHTML = courses.length ? courses.map((course, idx) => `<article class="course-card">
-    <span class="course-icon">${idx === 0 || idx === 1 ? "🎓" : idx === 2 || idx === 3 ? "📈" : "💻"}</span>
-    <div>
+  list.innerHTML = courses.length ? courses.map(course => `<button class="course-card course-button-card" type="button" onclick="openCourseLink('${course.url}')">
+    <span class="course-icon">${escapeHtml(course.icon || "🎓")}</span>
+    <span>
       <small>${escapeHtml(course.tag)}</small>
-      <h3>${escapeHtml(course.title)}</h3>
+      <strong>${escapeHtml(course.title)}</strong>
       <p>${escapeHtml(course.description)}</p>
       <b>${escapeHtml(course.provider)}</b>
-    </div>
-    <button type="button" onclick="openCourseLink('${course.url}')">Ver</button>
-  </article>`).join("") : `<div class="empty-state">No encontré cursos con esa palabra. Prueba “oficios”, “ventas”, “tecnología” o “negocio”.</div>`;
+    </span>
+    <span class="course-open-pill">Ver</span>
+  </button>`).join("") : `<div class="empty-state">No encontré cursos con esa palabra. Prueba “oficios”, “ventas”, “tecnología” o “negocio”.</div>`;
 }
 function openCourseLink(url) {
   trackEvent("abrir_curso_externo", null, { url });

@@ -25,12 +25,12 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <meta name="apple-mobile-web-app-title" content="Conecta Servicios" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="assets/icon-v4718-192.png" sizes="192x192" />
-  <link rel="apple-touch-icon" href="assets/apple-touch-v4718.png" />
-  <title>Conecta Servicios v4.8.4</title>
-  <link rel="stylesheet" href="styles.css?v=4.8.4-ajustes-limpios" />
+  <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
+  <title>Conecta Servicios v4.8.5</title>
+  <link rel="stylesheet" href="styles.css?v=4.8.5-ajustes-finales-inversionistas" />
 </head>
-<body data-version="4.8.4-ajustes-limpios">
+<body data-version="4.8.5-ajustes-finales-inversionistas">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -45,9 +45,8 @@ Todo uso requiere autorización expresa y por escrito del titular.
       <section id="inicio" class="section active home-integrated-section">
         <div class="home-v477" aria-label="Inicio de Conecta Servicios">
           <div class="home-v477-top">
-            <div class="home-v477-brand">
-              <span class="cs-node-logo" aria-hidden="true"><img src="assets/logo-conecta-v4718.svg" alt="" loading="eager"></span>
-              <div><strong>Conecta</strong><small>Servicios</small></div>
+            <div class="home-v477-brand text-brand-only">
+              <div><strong>Conecta Servicios</strong></div>
             </div>
             <div class="home-v477-top-actions">
               <button class="home-round-action" type="button" onclick="showSection('notificaciones')" aria-label="Notificaciones">🔔<b></b></button>
@@ -529,18 +528,11 @@ Todo uso requiere autorización expresa y por escrito del titular.
 
 
       <section id="mensajes" class="section info-section smart-messages-section chat-live-section">
-        <div class="simple-section-title smart-title-block">
-          <span class="pilot-badge">Chat interno + asistente</span>
-          <h2>Mensajes inteligentes</h2>
-          <p>Un espacio para que las personas escriban lo que necesitan, reciban una ruta sugerida y puedan iniciar una conversación dentro de la app.</p>
-        </div>
-
         <div class="chat-shell-card">
-          <div class="chat-head">
+          <div class="chat-head clean-chat-head">
             <span class="smart-bot-icon">🤖</span>
             <div>
               <strong>Asistente Conecta</strong>
-              <small>Te ayuda a buscar, publicar o aprender según lo que escribas.</small>
             </div>
           </div>
           <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
@@ -561,29 +553,21 @@ Todo uso requiere autorización expresa y por escrito del titular.
           </div>
         </div>
 
-        <div id="smartMessageResult" class="smart-result-panel" aria-live="polite">
-          <strong>Listo para inversionistas:</strong>
-          <p>El usuario ya puede escribir, recibir guía y moverse a publicaciones, cursos o registro. Para chat entre usuarios en tiempo real, la siguiente fase conecta esta pantalla a Supabase Realtime.</p>
-        </div>
+        <div id="smartMessageResult" class="smart-result-panel hidden" aria-live="polite"></div>
       </section>
 
       <section id="aprende" class="section info-section learn-section clean-learn-section courses-section">
         <div class="learn-hero courses-hero">
           <span class="learn-badge">Cursos básicos gratuitos</span>
           <h2>Aprendizaje para generar ingresos</h2>
-          <p>Este módulo apunta a cursos prácticos, gratuitos y accesibles desde el celular: oficios, habilidades digitales, negocio local y empleabilidad.</p>
+          <p>Encuentra rutas de capacitación gratuitas por oficio, negocio, tecnología o ventas. Cada botón abre la plataforma educativa original.</p>
         </div>
 
         <div class="course-search-card">
           <label>Buscar curso o habilidad
             <input id="courseSearch" type="search" placeholder="Ej. ventas, electricidad, marketing, tecnología, negocio" oninput="renderCourseCards()" />
           </label>
-          <div class="smart-quick-row course-tags">
-            <button type="button" onclick="setCourseSearch('oficios')">Oficios</button>
-            <button type="button" onclick="setCourseSearch('ventas')">Ventas</button>
-            <button type="button" onclick="setCourseSearch('marketing digital')">Marketing</button>
-            <button type="button" onclick="setCourseSearch('tecnología')">Tecnología</button>
-          </div>
+          
         </div>
 
         <div id="courseList" class="course-list"></div>
@@ -702,6 +686,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.8.3-reconstruccion-visual-controlada"></script>
+  <script src="app.js?v=4.8.5-ajustes-finales-inversionistas"></script>
 </body>
 </html>
