@@ -36,7 +36,7 @@ const MUNICIPIOS_MX_URLS = [
 ];
 const MUNICIPIOS_MX_LOCAL_URL = "assets/municipios-mx-base.json";
 const INEGI_MGEM_URL = "https://gaia.inegi.org.mx/wscatgeo/v2/mgem";
-const MUNICIPIOS_MX_CACHE_KEY = "conecta_municipios_mx_v483";
+const MUNICIPIOS_MX_CACHE_KEY = "conecta_municipios_mx_v484";
 let municipiosMx = { ...KNOWN_MUNICIPALITIES };
 const STATE_ALIASES = {
   "Coahuila": "Coahuila de Zaragoza",
@@ -59,7 +59,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.8.3-reconstruccion-visual-controlada";
+const PWA_VERSION = "v4.8.4-ajustes-limpios";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -811,7 +811,7 @@ async function requestNearbyPublications() {
   trackEvent("click_publicaciones_cerca");
   showSection("publicaciones");
 
-  // v4.8.3 control visual: entrar desde Home SIEMPRE abre Todo México.
+  // v4.8.4: filtros visibles congelados; entrar desde Home abre Todo México.
   // No filtra por estado, municipio ni categoría; muestra todos los registros activos
   // y, si hay GPS, solo ordena los cercanos arriba.
   resetPublicationFiltersToAllMexico();
@@ -1987,7 +1987,7 @@ function init() {
 document.addEventListener("DOMContentLoaded", init);
 
 
-// v4.8.2 — Mensajes inteligentes con chat piloto + aprendizaje por cursos
+// v4.8.4 — Ajustes limpios de filtros congelados, dock bajo, artículo y botón central
 let smartLastSuggestion = { query: "", category: "" };
 
 const DEFAULT_CHAT_MESSAGES = [

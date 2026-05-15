@@ -27,10 +27,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/icon-v4718-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-v4718.png" />
-  <title>Conecta Servicios v4.8.3</title>
-  <link rel="stylesheet" href="styles.css?v=4.8.3-reconstruccion-visual-controlada" />
+  <title>Conecta Servicios v4.8.4</title>
+  <link rel="stylesheet" href="styles.css?v=4.8.4-ajustes-limpios" />
 </head>
-<body data-version="4.8.3-reconstruccion-visual-controlada">
+<body data-version="4.8.4-ajustes-limpios">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -319,17 +319,19 @@ Todo uso requiere autorización expresa y por escrito del titular.
       </section>
 
       <section id="publicaciones" class="section publicaciones-clean-section">
-        <div class="publicaciones-location-card ultra-clean-filters">
-          <select id="stateFilter" class="filter-select-main" data-state-select data-blank="true" data-default="" autocomplete="off" onchange="handleStateFilterChange()"></select>
-          <select id="municipalityFilter" class="filter-select-main" autocomplete="off" onchange="renderPublications()">
-            <option value="">Todos los municipios</option>
-          </select>
-        </div>
+        <div class="publicaciones-sticky-controls" aria-label="Filtros de publicaciones">
+          <div class="publicaciones-location-card ultra-clean-filters">
+            <select id="stateFilter" class="filter-select-main" data-state-select data-blank="true" data-default="" autocomplete="off" onchange="handleStateFilterChange()"></select>
+            <select id="municipalityFilter" class="filter-select-main" autocomplete="off" onchange="renderPublications()">
+              <option value="">Todos los municipios</option>
+            </select>
+          </div>
 
-        <label class="search-box clean-search-box publicaciones-search fixed-search-box" aria-label="Buscar por palabra clave" onclick="document.getElementById('mainSearch')?.focus()">
-          <span class="search-icon-safe" aria-hidden="true">🔎</span>
-          <input id="mainSearch" type="search" placeholder="Buscar servicios, productos, viajes o ayuda..." autocomplete="off" inputmode="search" enterkeyhint="search" oninput="renderPublications()" />
-        </label>
+          <label class="search-box clean-search-box publicaciones-search fixed-search-box" aria-label="Buscar por palabra clave" onclick="document.getElementById('mainSearch')?.focus()">
+            <span class="search-icon-safe" aria-hidden="true">🔎</span>
+            <input id="mainSearch" type="search" placeholder="Buscar servicios, productos, viajes o ayuda..." autocomplete="off" inputmode="search" enterkeyhint="search" oninput="renderPublications()" />
+          </label>
+        </div>
 
         <div class="floating-category-dock" aria-label="Filtros rápidos de categoría">
           <button type="button" class="filter-chip active" title="Todo" aria-label="Todo" data-filter-category="" data-filter-search="" onclick="setCategoryChip(this)">Todo</button>
@@ -343,8 +345,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
         </div>
         <select id="categoryFilter" class="hidden" onchange="renderPublications()"><option value="">Todas las categorías</option><option>Trabajo</option><option>Servicios</option><option>Limpieza</option><option>Reparaciones</option><option>Entregas y mandados</option><option>Movilidad</option><option>Negocios locales</option><option>Alimentos y ventas</option><option>Redes sociales</option></select>
         <input id="chipSearchFilter" type="hidden" value="" />
-        <div id="resultsSummary" class="results-summary-card" aria-live="polite">Mostrando publicaciones disponibles.</div>
-
         <div id="publicationsList" class="compact-list publicaciones-results"></div>
       </section>
 
@@ -415,25 +415,18 @@ Todo uso requiere autorización expresa y por escrito del titular.
       </section>
 
       <section id="actualizarme" class="section info-section update-article-section">
-        <div class="learn-hero update-hero">
-          <span class="learn-badge">Contexto y futuro laboral</span>
-          <h2>¿Por qué actualizarme en oportunidades y servicios?</h2>
-          <p>El trabajo, los servicios y la forma de conseguir ingresos están cambiando. Conecta Servicios busca ordenar oportunidades locales para que no se pierdan entre publicaciones sueltas.</p>
-        </div>
-        <div class="article-card">
-          <h3>El problema</h3>
-          <p>Muchas oportunidades existen, pero están dispersas: grupos de Facebook, mensajes de WhatsApp, recomendaciones, publicaciones que se pierden y personas que no saben dónde ofrecer lo que hacen.</p>
+        <div class="article-card article-card-clean">
           <h3>Lo que está cambiando</h3>
           <p>La economía exige adaptarse: aprender habilidades útiles, ofrecer servicios de forma clara, aprovechar la cercanía, conectar negocios con mensajeros, y convertir oficios o productos en ingresos reales.</p>
           <h3>Qué propone Conecta Servicios</h3>
           <p>No se trata solo de publicar. La idea es ordenar necesidades, servicios, negocios, trabajo, aprendizaje y colaboración por zona e interés para que cada persona encuentre algo que pueda ayudarle hoy o prepararle para mañana.</p>
           <div class="article-points">
-            <span>✅ Publica lo que necesitas u ofreces.</span>
-            <span>✅ Encuentra oportunidades según tu zona.</span>
-            <span>✅ Aprende rutas para generar ingresos.</span>
-            <span>✅ Conecta negocios, servicios, entregas y comunidad.</span>
+            <span>✅ <strong>Publica</strong> lo que necesitas u ofreces.</span>
+            <span>✅ <strong>Encuentra</strong> oportunidades según tu zona.</span>
+            <span>✅ <strong>Aprende</strong> rutas para generar ingresos.</span>
+            <span>✅ <strong>Conecta</strong> negocios, servicios, entregas y comunidad.</span>
           </div>
-          <p class="muted small">Nota: esta sección es informativa y busca orientar. Los enlaces o recursos externos deben revisarse directamente en su fuente original.</p>
+          <p class="muted small article-note">Nota: esta sección es informativa y busca orientar. Los enlaces o recursos externos deben revisarse directamente en su fuente original.</p>
           <button class="btn-big btn-purple" type="button" onclick="showSection('oportunidades')">Configurar mis oportunidades</button>
           <button class="btn-big btn-green" type="button" onclick="showSection('aprende')">Ver Aprende y emprende</button>
         </div>
@@ -634,7 +627,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
     <nav class="bottom-nav system-nav" aria-label="Navegación principal">
       <button type="button" onclick="showSection('inicio')">🏠<span>Inicio</span></button>
       <button type="button" onclick="startOpportunityGuide()">🔖<span>Para ti</span></button>
-      <button type="button" class="publish-nav-action" onclick="showSection('registro')">＋<span>Publica</span></button>
+      <button type="button" class="publish-nav-action" onclick="showSection('registro')" aria-label="Publicar">＋</button>
       <button type="button" onclick="showSection('mensajes')">💬<span>Mensajes</span></button>
       <button type="button" onclick="showSection('aprende')">🎓<span>Aprendizaje</span></button>
     </nav>
