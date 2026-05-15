@@ -1,38 +1,15 @@
-{
-  "name": "Conecta Servicios",
-  "short_name": "Conecta",
-  "description": "Sistema local de oportunidades: publica, encuentra y recibe opciones según tu zona e intereses.",
-  "start_url": "/?source=pwa&v=4.7.19",
-  "scope": "/",
-  "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#ffffff",
-  "theme_color": "#19004f",
-  "lang": "es-MX",
-  "categories": [
-    "business",
-    "productivity",
-    "social",
-    "utilities"
-  ],
-  "icons": [
-    {
-      "src": "assets/icon-v4718-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "assets/icon-v4718-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "assets/maskable-v4718-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
-  ]
-}
+# Conecta Servicios v4.7.21 — Filtros seguros
+
+Corrección urgente para estabilizar presentación pública:
+
+- Logo único `logo-conecta-v4718.svg` usado en header, instalación y PWA.
+- Iconos PWA regenerados: `icon-v4718-192.png`, `icon-v4718-512.png`, `maskable-v4718-512.png`, `apple-touch-v4718.png`.
+- Hero reconstruido con `hero-scene-v4718.webp`, aclarado y con mejor encuadre para recuperar la mujer con celular.
+- Iconos del hero como SVG reales: maletín, bici, caja y personas.
+- Publicaciones inicia en `Todo México` y `Todos los municipios`.
+- Municipios por desplegable con carga local + CDN de catálogo estados/municipios + actualización progresiva.
+- Pantalla de publicaciones limpia: filtros compactos, buscador con lupa y listado como protagonista.
+
+Subir a GitHub: `index.html`, `styles.css`, `app.js`, `README.md`, `LICENSE`, `manifest.json`, `service-worker.js` y carpeta `assets/`.
+
+Tras publicar en Vercel, desinstalar y reinstalar la PWA para refrescar icono.
