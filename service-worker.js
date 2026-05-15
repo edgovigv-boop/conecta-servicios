@@ -1,43 +1,24 @@
-// ------------------------------------------------------------------
-// PROPIEDAD EXCLUSIVA - DERECHOS RESERVADOS © 2026
-// Proyecto: Conecta Servicios
-// Titular del proyecto: Conecta Servicios
-// ------------------------------------------------------------------
+# Conecta Servicios v4.7.20 — Todo activo en publicaciones
 
-const CACHE_NAME = "conecta-servicios-v4.7.18-rescate-socios";
-const ASSETS = [
-  "./",
-  "index.html",
-  "styles.css",
-  "app.js",
-  "manifest.json",
-  "assets/hero-scene-bright-v4716.webp",
-  "assets/logo-nodos.svg",
-  "assets/municipios-mx-base.json",
-  "assets/icon-192.png",
-  "assets/icon-512.png",
-  "assets/apple-touch-icon.png",
-  "assets/maskable-512.png"
-];
+Corrección puntual sobre v4.7.19.
 
-self.addEventListener("install", event => {
-  self.skipWaiting();
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS).catch(() => null)));
-});
+- Conserva el home correcto.
+- En “Publicaciones cerca de mí”, el filtro flotante “Todo” queda activo por default.
+- Al entrar sin categoría elegida se muestran todas las publicaciones disponibles según Estado/Municipio/búsqueda.
+- Si el usuario toca otro icono, se aplica ese filtro; al limpiar categoría vuelve a quedar activo “Todo”.
 
-self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim())
-  );
-});
+# Conecta Servicios v4.7.20 — filtros publicaciones ajustados
 
-self.addEventListener("fetch", event => {
-  if (event.request.method !== "GET") return;
-  event.respondWith(
-    fetch(event.request).then(response => {
-      const copy = response.clone();
-      caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy)).catch(() => null);
-      return response;
-    }).catch(() => caches.match(event.request).then(cached => cached || caches.match("index.html")))
-  );
-});
+Corrección urgente para estabilizar presentación pública:
+
+- Logo único `logo-conecta-v4718.svg` usado en header, instalación y PWA.
+- Iconos PWA regenerados: `icon-v4718-192.png`, `icon-v4718-512.png`, `maskable-v4718-512.png`, `apple-touch-v4718.png`.
+- Hero reconstruido con `hero-scene-v4718.webp`, aclarado y con mejor encuadre para recuperar la mujer con celular.
+- Iconos del hero como SVG reales: maletín, bici, caja y personas.
+- Publicaciones inicia en `Todo México` y `Todos los municipios`.
+- Municipios por desplegable con carga local + CDN de catálogo estados/municipios + actualización progresiva.
+- Pantalla de publicaciones limpia: filtros compactos, buscador con lupa y listado como protagonista.
+
+Subir a GitHub: `index.html`, `styles.css`, `app.js`, `README.md`, `LICENSE`, `manifest.json`, `service-worker.js` y carpeta `assets/`.
+
+Tras publicar en Vercel, desinstalar y reinstalar la PWA para refrescar icono.

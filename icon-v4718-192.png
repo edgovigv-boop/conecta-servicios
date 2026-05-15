@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Conecta Servicios">
+  <defs>
+    <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#softGlow)">
+    <path d="M92 170A178 178 0 0 1 372 98" stroke="#ffffff" stroke-width="34"/>
+    <path d="M421 174A178 178 0 0 1 334 394" stroke="#ffffff" stroke-width="34"/>
+    <path d="M126 346A178 178 0 0 0 264 421" stroke="#ffffff" stroke-width="34"/>
+    <path d="M151 317L255 258L374 236" stroke="#69c63f" stroke-width="36"/>
+  </g>
+  <circle cx="255" cy="258" r="42" fill="#69c63f"/>
+  <circle cx="92" cy="170" r="33" fill="#ffffff"/>
+  <circle cx="388" cy="99" r="30" fill="#ffffff"/>
+  <circle cx="421" cy="174" r="29" fill="#ffffff"/>
+  <circle cx="126" cy="346" r="30" fill="#ffffff"/>
+</svg>
