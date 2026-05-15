@@ -2487,3 +2487,83 @@ section#publicaciones{background:#f7f4ff!important;}
     margin-right:44px!important;
   }
 }
+
+
+/* v4.8 — buscador seguro, sin lupa duplicada y home preparado para módulos inteligentes */
+#publicaciones .search-box::before,
+#publicaciones .search-box:before{
+  content:'🔎'!important;
+  position:absolute!important;
+  left:17px!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  z-index:1!important;
+  font-size:1.08rem!important;
+  opacity:.72!important;
+  pointer-events:none!important;
+}
+#publicaciones .fixed-search-box{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  min-height:56px!important;
+  margin:0 48px 12px 0!important;
+  padding:0!important;
+  background:#fff!important;
+  border:1.5px solid #ded6ee!important;
+  border-radius:18px!important;
+  box-shadow:0 10px 24px rgba(89,51,138,.08)!important;
+  cursor:text!important;
+  overflow:hidden!important;
+}
+#publicaciones .fixed-search-box:focus-within{
+  border-color:#6f42c1!important;
+  box-shadow:0 0 0 3px rgba(111,66,193,.12),0 10px 24px rgba(89,51,138,.08)!important;
+}
+#publicaciones .fixed-search-box input#mainSearch{
+  display:block!important;
+  width:100%!important;
+  min-height:54px!important;
+  margin:0!important;
+  padding:0 16px 0 48px!important;
+  border:0!important;
+  border-radius:18px!important;
+  background:transparent!important;
+  color:#241936!important;
+  font-size:1rem!important;
+  font-weight:750!important;
+  line-height:1.2!important;
+  outline:0!important;
+  position:relative!important;
+  z-index:2!important;
+  pointer-events:auto!important;
+  -webkit-appearance:none!important;
+  appearance:none!important;
+}
+#publicaciones .fixed-search-box input#mainSearch::placeholder{
+  color:#8b819e!important;
+  font-weight:650!important;
+}
+#publicaciones input[type="search"]::-webkit-search-decoration,
+#publicaciones input[type="search"]::-webkit-search-cancel-button,
+#publicaciones input[type="search"]::-webkit-search-results-button,
+#publicaciones input[type="search"]::-webkit-search-results-decoration{
+  -webkit-appearance:none!important;
+}
+.app-shell.home-mode .future-card-v477{
+  cursor:pointer!important;
+  transition:transform .16s ease, box-shadow .16s ease!important;
+}
+.app-shell.home-mode .future-card-v477:active{
+  transform:scale(.98)!important;
+}
+.app-shell.home-mode .future-card-v477 small{
+  background:#efe6ff!important;
+  color:#6f42c1!important;
+  border-radius:999px!important;
+  padding:4px 9px!important;
+  font-weight:850!important;
+}
+@media(max-width:380px){
+  #publicaciones .fixed-search-box{margin-right:44px!important;}
+}

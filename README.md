@@ -13,3 +13,11 @@ Corrección urgente para estabilizar presentación pública:
 Subir a GitHub: `index.html`, `styles.css`, `app.js`, `README.md`, `LICENSE`, `manifest.json`, `service-worker.js` y carpeta `assets/`.
 
 Tras publicar en Vercel, desinstalar y reinstalar la PWA para refrescar icono.
+
+
+## v4.8 — Home + buscador inteligente ligero
+- Corrige el buscador principal de Publicaciones.
+- Elimina la lupa duplicada.
+- El campo acepta texto correctamente en móvil.
+- Prepara accesos de Mensajes inteligentes y Aprendizaje como módulos visibles.
+- Mantiene la barra lateral de filtros y el Home visual estable.

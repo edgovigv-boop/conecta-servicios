@@ -28,7 +28,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="icon" href="assets/icon-v4718-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-v4718.png" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=4.7.21-filtros-seguros" />
+  <link rel="stylesheet" href="styles.css?v=4.8-home-buscador-inteligente" />
 </head>
 <body>
   <div class="app-shell home-mode">
@@ -83,12 +83,12 @@ Todo uso requiere autorización expresa y por escrito del titular.
           </button>
 
           <div class="future-grid-v477">
-            <button type="button" class="future-card-v477" onclick="showToast('Mensajes inteligentes estará disponible próximamente.')">
+            <button type="button" class="future-card-v477" onclick="showSection('mensajes')">
               <span class="future-emoji">💬</span>
               <strong>Mensajes<br>inteligentes</strong>
               <small>◷ Próximamente</small>
             </button>
-            <button type="button" class="future-card-v477" onclick="showToast('Aprendizaje estará disponible próximamente.')">
+            <button type="button" class="future-card-v477" onclick="showSection('aprendizaje')">
               <span class="future-emoji">🎓</span>
               <strong>Aprendizaje</strong>
               <small>◷ Próximamente</small>
@@ -326,9 +326,8 @@ Todo uso requiere autorización expresa y por escrito del titular.
           </select>
         </div>
 
-        <label class="search-box clean-search-box publicaciones-search icon-only-search" aria-label="Buscar por palabra clave">
-          <span aria-hidden="true">🔎</span>
-          <input id="mainSearch" type="search" placeholder="Buscar: limpieza, empleo, mandado..." oninput="renderPublications()" />
+        <label class="search-box clean-search-box publicaciones-search fixed-search-box" aria-label="Buscar por palabra clave">
+          <input id="mainSearch" type="search" placeholder="Buscar servicios, productos, viajes o ayuda..." autocomplete="off" inputmode="search" oninput="renderPublications()" />
         </label>
 
         <div class="floating-category-dock" aria-label="Filtros rápidos de categoría">
@@ -582,8 +581,8 @@ Todo uso requiere autorización expresa y por escrito del titular.
     <nav class="bottom-nav system-nav">
       <button onclick="showSection('inicio')">🏠<span>Inicio</span></button>
       <button onclick="startOpportunityGuide()">🔖<span>Para ti</span></button>
-      <button onclick="showToast('Mensajes inteligentes estará disponible próximamente.')">💬<span>Mensajes</span></button>
-      <button onclick="showToast('Aprendizaje estará disponible próximamente.')">🎓<span>Aprendizaje</span></button>
+      <button onclick="showSection('mensajes')">💬<span>Mensajes</span></button>
+      <button onclick="showSection('aprendizaje')">🎓<span>Aprendizaje</span></button>
     </nav>
   </div>
 
