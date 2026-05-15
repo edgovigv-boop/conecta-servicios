@@ -1,23 +1,19 @@
-# Conecta Servicios v4.7.21 — Filtros seguros
+# Conecta Servicios v4.8.1 — Plataforma profesional
 
-Corrección urgente para estabilizar presentación pública:
+Paquete listo para GitHub/Vercel o Netlify.
 
-- Logo único `logo-conecta-v4718.svg` usado en header, instalación y PWA.
-- Iconos PWA regenerados: `icon-v4718-192.png`, `icon-v4718-512.png`, `maskable-v4718-512.png`, `apple-touch-v4718.png`.
-- Hero reconstruido con `hero-scene-v4718.webp`, aclarado y con mejor encuadre para recuperar la mujer con celular.
-- Iconos del hero como SVG reales: maletín, bici, caja y personas.
-- Publicaciones inicia en `Todo México` y `Todos los municipios`.
-- Municipios por desplegable con carga local + CDN de catálogo estados/municipios + actualización progresiva.
-- Pantalla de publicaciones limpia: filtros compactos, buscador con lupa y listado como protagonista.
+## Incluye
+- Buscador reparado con un solo icono y campo editable.
+- Cache/PWA actualizado para evitar que el celular conserve la versión anterior.
+- Home con diseño de plataforma: oportunidades, publicaciones cercanas, mensajes inteligentes y aprendizaje.
+- Módulo piloto de Mensajes inteligentes: guía conversacional sin IA pesada.
+- Enlace correcto al módulo de Aprendizaje.
 
-Subir a GitHub: `index.html`, `styles.css`, `app.js`, `README.md`, `LICENSE`, `manifest.json`, `service-worker.js` y carpeta `assets/`.
+## Validación rápida
+1. Abrir Publicaciones.
+2. Escribir en el buscador: `paquete`, `viaje`, `servicio`.
+3. Entrar a Mensajes inteligentes y probar un ejemplo.
+4. Entrar a Aprendizaje desde el home o la barra inferior.
 
-Tras publicar en Vercel, desinstalar y reinstalar la PWA para refrescar icono.
-
-
-## v4.8 — Home + buscador inteligente ligero
-- Corrige el buscador principal de Publicaciones.
-- Elimina la lupa duplicada.
-- El campo acepta texto correctamente en móvil.
-- Prepara accesos de Mensajes inteligentes y Aprendizaje como módulos visibles.
-- Mantiene la barra lateral de filtros y el Home visual estable.
+## Nota de despliegue
+Después de subir a Vercel, abrir en modo incógnito o borrar caché/PWA instalada si el dispositivo todavía muestra una versión vieja.

@@ -28,7 +28,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="icon" href="assets/icon-v4718-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-v4718.png" />
   <title>Conecta Servicios</title>
-  <link rel="stylesheet" href="styles.css?v=4.8-home-buscador-inteligente" />
+  <link rel="stylesheet" href="styles.css?v=4.8.1-plataforma-profesional" />
 </head>
 <body>
   <div class="app-shell home-mode">
@@ -86,12 +86,12 @@ Todo uso requiere autorización expresa y por escrito del titular.
             <button type="button" class="future-card-v477" onclick="showSection('mensajes')">
               <span class="future-emoji">💬</span>
               <strong>Mensajes<br>inteligentes</strong>
-              <small>◷ Próximamente</small>
+              <small>◷ Piloto</small>
             </button>
-            <button type="button" class="future-card-v477" onclick="showSection('aprendizaje')">
+            <button type="button" class="future-card-v477" onclick="showSection('aprende')">
               <span class="future-emoji">🎓</span>
               <strong>Aprendizaje</strong>
-              <small>◷ Próximamente</small>
+              <small>◷ Piloto</small>
             </button>
           </div>
 
@@ -326,8 +326,9 @@ Todo uso requiere autorización expresa y por escrito del titular.
           </select>
         </div>
 
-        <label class="search-box clean-search-box publicaciones-search fixed-search-box" aria-label="Buscar por palabra clave">
-          <input id="mainSearch" type="search" placeholder="Buscar servicios, productos, viajes o ayuda..." autocomplete="off" inputmode="search" oninput="renderPublications()" />
+        <label class="search-box clean-search-box publicaciones-search fixed-search-box" aria-label="Buscar por palabra clave" onclick="document.getElementById('mainSearch')?.focus()">
+          <span class="search-icon-safe" aria-hidden="true">🔎</span>
+          <input id="mainSearch" type="search" placeholder="Buscar servicios, productos, viajes o ayuda..." autocomplete="off" inputmode="search" enterkeyhint="search" oninput="renderPublications()" />
         </label>
 
         <div class="floating-category-dock" aria-label="Filtros rápidos de categoría">
@@ -533,6 +534,44 @@ Todo uso requiere autorización expresa y por escrito del titular.
       </section>
 
 
+      <section id="mensajes" class="section info-section smart-messages-section">
+        <div class="simple-section-title smart-title-block">
+          <span class="pilot-badge">Piloto inteligente ligero</span>
+          <h2>Mensajes inteligentes</h2>
+          <p>Un asistente local para entender lo que la persona necesita, sugerir una categoría y llevarla a buscar o publicar sin perderse.</p>
+        </div>
+
+        <div class="smart-assistant-card">
+          <div class="smart-assistant-head">
+            <span class="smart-bot-icon">🤖</span>
+            <div>
+              <strong>Asistente Conecta</strong>
+              <small>Funciona sin IA pesada: primero guía, filtra y recomienda con reglas seguras.</small>
+            </div>
+          </div>
+          <label class="smart-input-label">Escribe lo que necesitas o quieres ofrecer
+            <textarea id="smartMessageInput" rows="4" placeholder="Ej. Necesito enviar un paquete a Pachuca hoy / Busco viaje a Toluca / Quiero aprender a ofrecer mis servicios"></textarea>
+          </label>
+          <div class="smart-quick-row" aria-label="Ejemplos rápidos">
+            <button type="button" onclick="fillSmartMessage('Necesito enviar un paquete dentro del municipio')">Enviar paquete</button>
+            <button type="button" onclick="fillSmartMessage('Busco viaje compartido a Toluca')">Viaje compartido</button>
+            <button type="button" onclick="fillSmartMessage('Quiero ofrecer mi servicio y conseguir clientes')">Ofrecer servicio</button>
+            <button type="button" onclick="fillSmartMessage('Quiero aprender algo para mejorar mis ingresos')">Aprendizaje</button>
+          </div>
+          <button type="button" class="btn-big btn-purple" onclick="handleSmartMessage()">Analizar mensaje</button>
+          <div id="smartMessageResult" class="smart-result-panel" aria-live="polite">
+            <strong>Ejemplo de valor:</strong>
+            <p>El usuario escribe una frase normal y Conecta la convierte en una ruta clara: buscar, publicar o aprender.</p>
+          </div>
+        </div>
+
+        <div class="smart-roadmap-grid">
+          <article class="smart-roadmap-card"><span>1</span><strong>Hoy</strong><p>Guía y filtros inteligentes sin costos altos.</p></article>
+          <article class="smart-roadmap-card"><span>2</span><strong>Siguiente</strong><p>Recomendaciones por municipio, categoría e intención.</p></article>
+          <article class="smart-roadmap-card"><span>3</span><strong>Futuro</strong><p>Chatbot con pagos, seguimiento y capacitación integrada.</p></article>
+        </div>
+      </section>
+
       <section id="aprende" class="section info-section learn-section clean-learn-section">
         <div class="simple-section-title">
           <h2>Guías para publicar mejor</h2>
@@ -582,7 +621,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
       <button onclick="showSection('inicio')">🏠<span>Inicio</span></button>
       <button onclick="startOpportunityGuide()">🔖<span>Para ti</span></button>
       <button onclick="showSection('mensajes')">💬<span>Mensajes</span></button>
-      <button onclick="showSection('aprendizaje')">🎓<span>Aprendizaje</span></button>
+      <button onclick="showSection('aprende')">🎓<span>Aprendizaje</span></button>
     </nav>
   </div>
 
@@ -655,6 +694,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.7.12-ajuste-definitivo"></script>
+  <script src="app.js?v=4.8.1-plataforma-profesional"></script>
 </body>
 </html>

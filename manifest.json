@@ -1,8 +1,8 @@
 {
   "name": "Conecta Servicios",
   "short_name": "Conecta",
-  "description": "Sistema local de oportunidades: publica, encuentra y recibe opciones según tu zona e intereses.",
-  "start_url": "/?source=pwa&v=4.7.18",
+  "description": "Plataforma local de oportunidades, publicaciones cercanas, mensajes inteligentes ligeros y aprendizaje práctico.",
+  "start_url": "/?source=pwa&v=4.8.1",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

@@ -4,14 +4,14 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.7.21-filtros-seguros";
+const CACHE_NAME = "conecta-servicios-v4.8.1-plataforma-profesional";
 const ASSETS = [
   "./",
   "index.html",
   "styles.css",
   "app.js",
   "manifest.json",
-  "assets/hero-scene-bright-v4716.webp",
+  "assets/hero-scene-v4718.webp",
   "assets/logo-nodos.svg",
   "assets/municipios-mx-base.json",
   "assets/icon-192.png",

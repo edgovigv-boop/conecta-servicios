@@ -59,7 +59,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v41";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.7.18-rescate-socios";
+const PWA_VERSION = "v4.8.1-plataforma-profesional";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -399,6 +399,8 @@ function routeUrlForSection(id) {
   return `${base}#${id}`;
 }
 function showSection(id, push = true) {
+  const sectionAliases = { aprendizaje: "aprende", aprender: "aprende", chat: "mensajes" };
+  id = sectionAliases[id] || id;
   if (id === "admin" && !adminRouteEnabled) { showToast("Acceso de administración oculto"); id = "inicio"; }
   const target = document.getElementById(id);
   if (!target) return;
@@ -407,7 +409,7 @@ function showSection(id, push = true) {
   document.querySelector(".app-shell")?.classList.toggle("home-mode", id === "inicio");
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   target.classList.add("active");
-  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme" };
+  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme", mensajes:"Mensajes inteligentes" };
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
@@ -1915,3 +1917,79 @@ function init() {
   setInterval(() => loadRemoteData({ silent: true }), 60000);
 }
 document.addEventListener("DOMContentLoaded", init);
+
+
+// v4.8.1 — Mensajes inteligentes ligeros: guía conversacional sin IA pesada
+let smartLastSuggestion = { query: "", category: "" };
+
+function fillSmartMessage(text) {
+  const input = document.getElementById("smartMessageInput");
+  if (!input) return;
+  input.value = text;
+  input.focus();
+  handleSmartMessage();
+}
+
+function detectSmartIntent(rawText) {
+  const text = normalize(rawText);
+  if (/paquete|mandado|enviar|entrega|documento|reparto|llevar|traer|moto|bicicleta/.test(text)) {
+    return { category: "Mensajería y envíos", query: "paquete entrega mandado", label: "Mensajería y envíos", action: "buscar" };
+  }
+  if (/viaje|viajar|ruta|traslado|ride|avent[oó]n|pasaje|llevarme|toluca|cdmx|pachuca|cuernavaca/.test(text)) {
+    return { category: "Viajes compartidos", query: "viaje ruta traslado", label: "Viajes compartidos", action: "buscar" };
+  }
+  if (/aprend|curso|capacita|clase|enseña|enseñar|mejorar|especializar|ingresos|oficio/.test(text)) {
+    return { category: "", query: "aprendizaje", label: "Aprendizaje", action: "aprender" };
+  }
+  if (/ofrezco|servicio|trabajo|clientes|vendo|reparo|limpio|hago|negocio|publicar/.test(text)) {
+    return { category: "Servicios", query: "servicio trabajo clientes", label: "Publicar servicio", action: "publicar" };
+  }
+  return { category: "", query: text.split(/\s+/).slice(0, 4).join(" "), label: "Búsqueda general", action: "buscar" };
+}
+
+function handleSmartMessage() {
+  const input = document.getElementById("smartMessageInput");
+  const panel = document.getElementById("smartMessageResult");
+  if (!input || !panel) return;
+  const raw = input.value.trim();
+  if (!raw) {
+    panel.innerHTML = `<strong>Escribe una necesidad primero.</strong><p>Ejemplo: “Necesito enviar un paquete hoy” o “Busco viaje compartido a Toluca”.</p>`;
+    return;
+  }
+  const intent = detectSmartIntent(raw);
+  smartLastSuggestion = { query: intent.query, category: intent.category };
+
+  if (intent.action === "aprender") {
+    panel.innerHTML = `<strong>Ruta sugerida: ${escapeHtml(intent.label)}</strong><p>Esto encaja con capacitación breve desde el celular. Puedes entrar al módulo de aprendizaje para guías prácticas antes de publicar.</p><div class="smart-actions"><button type="button" onclick="showSection('aprende')">Abrir aprendizaje</button><button type="button" class="secondary" onclick="startOpportunityGuide()">Crear oportunidad</button></div>`;
+    trackEvent("mensaje_inteligente_aprendizaje");
+    return;
+  }
+
+  if (intent.action === "publicar") {
+    panel.innerHTML = `<strong>Ruta sugerida: publicar una oportunidad</strong><p>El asistente detectó que quieres ofrecer algo o conseguir clientes. Lo mejor es guiarte para crear una publicación clara, con municipio, categoría y WhatsApp protegido.</p><div class="smart-actions"><button type="button" onclick="startOpportunityGuide()">Crear publicación guiada</button><button type="button" class="secondary" onclick="smartShowSuggested()">Ver publicaciones relacionadas</button></div>`;
+    trackEvent("mensaje_inteligente_publicar");
+    return;
+  }
+
+  panel.innerHTML = `<strong>Ruta sugerida: ${escapeHtml(intent.label)}</strong><p>Conecta puede buscar opciones relacionadas y, si no hay resultados, llevarte a publicar tu necesidad para que personas cercanas la vean.</p><div class="smart-actions"><button type="button" onclick="smartShowSuggested()">Buscar coincidencias</button><button type="button" class="secondary" onclick="startOpportunityGuide()">Publicar necesidad</button></div>`;
+  trackEvent("mensaje_inteligente_busqueda", null, { categoria: intent.category || "general" });
+}
+
+function smartShowSuggested() {
+  showSection("publicaciones");
+  setTimeout(() => {
+    const search = document.getElementById("mainSearch");
+    const category = document.getElementById("categoryFilter");
+    const chipSearch = document.getElementById("chipSearchFilter");
+    if (search) search.value = smartLastSuggestion.query || "";
+    if (category) category.value = smartLastSuggestion.category || "";
+    if (chipSearch) chipSearch.value = "";
+    document.querySelectorAll(".filter-chip").forEach(button => {
+      const isAll = !smartLastSuggestion.category && !button.dataset.filterCategory && !button.dataset.filterSearch && button.textContent.trim().toLowerCase() === "todo";
+      const isCategory = smartLastSuggestion.category && button.dataset.filterCategory === smartLastSuggestion.category;
+      button.classList.toggle("active", Boolean(isAll || isCategory));
+    });
+    renderPublications();
+    search?.focus();
+  }, 60);
+}
