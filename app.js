@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.8.6-presentacion-inversionistas";
+const PWA_VERSION = "v4.8.7-publicacion-visible-hotfix";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -79,7 +79,7 @@ let analyticsCache = [];
 let deferredInstallPrompt = null;
 const TOTAL_STEPS = 7;
 const APP_VERSION_KEY = "conecta_servicios_app_version";
-const CHAT_STORAGE_KEY = "conecta_smart_chat_v486";
+const CHAT_STORAGE_KEY = "conecta_smart_chat_v487";
 
 
 function cleanPhone(phone) { return String(phone || "").replace(/\D/g, ""); }
@@ -239,21 +239,28 @@ async function loadRemoteData(options = {}) {
     renderLoading();
   }
   try {
-    const rows = await supabaseRequest("publicaciones?select=*&estado=eq.activo&order=creado_en.desc");
-    const mapped = (rows || []).map(mapPublication);
+    // v4.8.7: no usamos estado=eq.activo en la URL para evitar que una diferencia
+    // de mayúsculas, espacios o normalización en Supabase oculte publicaciones activas.
+    // Traemos las publicaciones y filtramos en cliente de forma tolerante.
+    const rows = await supabaseRequest("publicaciones?select=*&order=creado_en.desc");
+    const mappedAll = (rows || []).map(mapPublication);
+    const mapped = mappedAll.filter(item => normalize(item.status) === "activo");
     handleNotificationCheck(mapped);
     publicationsCache = mapped;
     updateMunicipalityFilterOptions();
     renderCourseCards?.();
     renderSmartChat?.();
     setSyncStatus("", "ok");
+    isLoading = false;
     renderAll();
   } catch (error) {
     console.error(error);
+    isLoading = false;
     setSyncStatus("No se pudo conectar. Revisa internet o Supabase.", "error");
     renderAll();
-  } finally { isLoading = false; }
+  }
 }
+
 async function loadAdminData() {
   if (!adminUnlocked) return;
   const list = document.getElementById("adminList");
@@ -446,6 +453,12 @@ function showSection(id, push = true) {
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
+  if (id === "publicaciones") {
+    // v4.8.7: cada entrada a Publicaciones inicia limpia en Todo México / Todo.
+    // Esto evita que búsquedas o chips anteriores oculten una publicación recién creada.
+    resetPublicationFiltersToAllMexico();
+    clearNearbyMode();
+  }
   renderAll();
   trackEvent("vista_seccion", null, { seccion: id });
   if (id === "analitica" && adminUnlocked) loadAnalyticsData();
@@ -734,8 +747,18 @@ async function submitPublication(event) {
       openOfficeWhatsApp(`Nuevo registro en revisión\n\nFolio: ${folio(item)}\nNombre: ${item.name}\nTítulo: ${item.title}\nCategoría: ${item.category}\nMunicipio: ${item.municipality}, ${item.state}\nTeléfono: ${maskPhone(item.phone)} / últimos 4: ${last4(item.phone)}\nMotivo: ${payload.referencia}`);
     }
     resetWizardForm();
-    showSection(active ? "publicaciones" : "inicio");
-    loadRemoteData();
+    if (active) {
+      // v4.8.7: mostrar la nueva publicación de inmediato y luego sincronizar con Supabase.
+      publicationsCache = [item, ...publicationsCache.filter(p => p.id !== item.id)];
+      resetPublicationFiltersToAllMexico();
+      showSection("publicaciones");
+      await loadRemoteData({ silent: true });
+      resetPublicationFiltersToAllMexico();
+      renderPublications();
+    } else {
+      showSection("inicio");
+      loadRemoteData({ silent: true });
+    }
   } catch (error) { console.error(error); showToast("No se pudo guardar. Revisa Supabase o internet."); }
 }
 function resetWizardForm() {
@@ -1989,7 +2012,7 @@ function init() {
 document.addEventListener("DOMContentLoaded", init);
 
 
-// v4.8.6 — Presentación inversionistas: home limpio, filtros simples, chat piloto y cursos
+// v4.8.7 — Hotfix: publicación activa visible de inmediato y filtros limpios
 let smartLastSuggestion = { query: "", category: "" };
 
 const DEFAULT_CHAT_MESSAGES = [];

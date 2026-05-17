@@ -44,3 +44,13 @@ Esta versión estabiliza la experiencia visual y deja la app lista para revisió
    - Buscador acepta texto.
    - Barra lateral no tapa filtros.
    - Chat y Aprendizaje abren correctamente.
+
+
+## v4.8.7 — Hotfix publicación visible
+
+Correcciones:
+- La pantalla Publicaciones inicia limpia en Todo México / Todo al entrar.
+- Después de publicar, si la publicación queda activa, se muestra inmediatamente en Publicaciones.
+- La carga de publicaciones ya no depende de `estado=eq.activo` en la URL; filtra activo de forma tolerante en cliente para evitar ocultar registros por espacios/mayúsculas.
+- Se corrigió el orden de `isLoading` para que la lista se renderice después de sincronizar.
+- Cache/PWA actualizado a v4.8.7.

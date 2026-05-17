@@ -4,12 +4,12 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.8.6-presentacion-inversionistas";
+const CACHE_NAME = "conecta-servicios-v4.8.7-publicacion-visible-hotfix";
 const ASSETS = [
   "./",
   "index.html",
-  "styles.css?v=4.8.6-presentacion-inversionistas-presentacion-inversionistas",
-  "app.js?v=4.8.6-presentacion-inversionistas-presentacion-inversionistas",
+  "styles.css?v=4.8.7-publicacion-visible-hotfix",
+  "app.js?v=4.8.7-publicacion-visible-hotfix",
   "manifest.json",
   "assets/hero-scene-v4718.webp",
   "assets/hero-scene-clean-v4711.png",
