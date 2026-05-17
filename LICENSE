@@ -1,3 +1,747 @@
-© 2026 Conecta Servicios. Todos los derechos reservados.
+<!--
+------------------------------------------------------------------
+PROPIEDAD EXCLUSIVA - DERECHOS RESERVADOS © 2026
+Proyecto: Conecta Servicios
+Titular del proyecto: Conecta Servicios
 
-Este proyecto, sus archivos, estructura, diseño, textos, interfaz y elementos originales forman parte de un desarrollo privado. Queda prohibida su copia, reproducción, distribución, modificación, explotación comercial o uso no autorizado, total o parcial, sin autorización expresa y por escrito del titular.
+Este archivo, su estructura, diseño, textos, interfaz y elementos
+originales forman parte de un proyecto privado. Queda prohibida
+su copia, reproducción, distribución, modificación, explotación
+comercial o uso no autorizado, total o parcial, por cualquier medio.
+
+El acceso a este archivo no concede licencia de uso.
+Todo uso requiere autorización expresa y por escrito del titular.
+------------------------------------------------------------------
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#6f42c1" />
+  <meta name="description" content="Conecta Servicios: publica, explora y conecta con servicios, negocios, viajes y envíos cerca de ti." />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Conecta Servicios" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
+  <title>Conecta Servicios v4.8.8</title>
+  <link rel="stylesheet" href="styles.css?v=4.8.8-agentes-crecimiento" />
+</head>
+<body data-version="4.8.8-agentes-crecimiento">
+  <div class="app-shell home-mode">
+    <header class="app-header">
+      <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
+      <div class="title-wrap">
+        <span id="mainTitle">Conecta Servicios</span>
+        <small id="subtitle">Publicaciones locales</small>
+      </div>
+      <button class="help-button" aria-label="Oficina" onclick="showSection('oficina')">☎</button>
+    </header>
+
+    <main class="content">
+      <section id="inicio" class="section active home-integrated-section">
+        <div class="home-v477" aria-label="Inicio de Conecta Servicios">
+          <div class="home-v477-top">
+            <div class="home-v477-brand text-brand-only">
+              <div><strong>Conecta Servicios</strong></div>
+            </div>
+            <div class="home-v477-top-actions">
+              <button class="home-round-action" type="button" onclick="showSection('notificaciones')" aria-label="Notificaciones">🔔<b></b></button>
+              <button class="home-round-action" type="button" onclick="showSection('misPublicaciones')" aria-label="Mis publicaciones">👤</button>
+              <button class="office-pill" type="button" onclick="showSection('oficina')" aria-label="Oficina y contacto">⌂ Oficina / Contacto</button>
+            </div>
+          </div>
+
+          <div class="home-v477-hero">
+            <div class="hero-copy">
+              <h1>Tu comunidad,<br><span>más conectada</span><br>que nunca.</h1>
+              <em></em>
+              <p>Servicios locales, movilidad,<br>entregas y apoyo entre<br>vecinos.</p>
+            </div>
+            <div class="hero-scene" aria-hidden="true"></div>
+            <div class="hero-chips" aria-label="Categorías destacadas">
+              <span><b class="chip-briefcase" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 7V5.8C9 4.8 9.8 4 10.8 4h2.4C14.2 4 15 4.8 15 5.8V7"/><rect x="4" y="7" width="16" height="12" rx="2"/><path d="M4 12h16M10 12v2h4v-2"/></svg></b>Trabajos</span>
+              <span><b class="chip-bike" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M8.5 17 12 10h3l3 7M12 10 9 7h-2M12 10l3.5 7M14 7h3"/></svg></b>Movilidad</span>
+              <span><b class="chip-box" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4.5 7.2 12 11.5l7.5-4.3L12 3Z"/><path d="M4.5 7.2v9.2L12 21l7.5-4.6V7.2M12 11.5V21"/></svg></b>Entregas</span>
+              <span><b class="chip-people" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3.8 19c.6-3.1 2.5-5 5.2-5s4.6 1.9 5.2 5"/><path d="M13.8 15.5c.8-.8 1.8-1.2 3.1-1.2 2.2 0 3.7 1.5 4.2 4.4"/></svg></b>Vecinos</span>
+            </div>
+          </div>
+
+          <button class="opportunity-orb" type="button" onclick="startOpportunityGuide()" aria-label="Oportunidades para ti">
+            <span class="orb-plus">＋</span>
+            <strong>Oportunidades<br>para ti</strong>
+          </button>
+
+          <button class="nearby-cta-pulse" type="button" onclick="requestNearbyPublications()" aria-label="Publicaciones cerca de mí">
+            <span class="pin-icon">📍</span>
+            <strong>Publicaciones cerca de mí</strong>
+            <b>›</b>
+          </button>
+
+          <div class="future-grid-v477">
+            <button type="button" class="future-card-v477" onclick="showSection('mensajes')">
+              <span class="future-emoji">💬</span>
+              <strong>Mensajes<br>inteligentes</strong>
+              <small>Chat</small>
+            </button>
+            <button type="button" class="future-card-v477" onclick="showSection('aprende')">
+              <span class="future-emoji">🎓</span>
+              <strong>Aprendizaje</strong>
+              <small>Cursos gratuitos</small>
+            </button>
+            <button type="button" class="future-card-v477 agent-growth-card" onclick="showSection('agentes')">
+              <span class="future-emoji">📈</span>
+              <strong>Agentes de<br>crecimiento</strong>
+              <small>Por comisión</small>
+            </button>
+          </div>
+
+          <div class="home-stat-v477">
+            <span class="stat-people">👥</span>
+            <div><strong><span id="publicationsCount">0</span> <small>registros</small></strong><p id="growthMessage">Tu servicio puede estar más cerca de quien lo necesita</p></div>
+            <span class="trend-icon">↗</span>
+          </div>
+
+          <div class="install-card-v477">
+            <span class="install-logo cs-node-logo" aria-hidden="true"><img src="assets/pwa-plus-icon-192.png" alt="" loading="eager"></span>
+            <div><strong>Instala <span>Conecta Servicios</span></strong><p>Añade la app a tu pantalla de inicio y accede más rápido.</p></div>
+            <button type="button" onclick="installApp()">Instalar ↓</button>
+          </div>
+
+          <p class="sync-status visually-hidden" id="syncStatus" aria-live="polite">Conectando con la base de datos...</p>
+        </div>
+      </section>
+
+      <section id="oportunidades" class="section info-section opportunities-section clean-opportunities opportunity-guide-start">
+        <div class="simple-section-title compact-title">
+          <h2>Oportunidades para ti</h2>
+          <p>Elige lo que quieres lograr. Enseguida iniciamos una guía corta para crear tu primera publicación bien dirigida.</p>
+        </div>
+
+        <div class="route-button-list v47-route-list">
+          <button type="button" class="route-start-card" onclick="openOpportunityWizard('ingresos')">
+            <span class="route-start-icon">🚀</span>
+            <span><strong>Quiero generar ingresos</strong><small>Servicios, limpieza, mandados, comida, reparaciones u otro apoyo que puedas ofrecer.</small></span>
+            <b>›</b>
+          </button>
+          <button type="button" class="route-start-card" onclick="openOpportunityWizard('negocio')">
+            <span class="route-start-icon">🏪</span>
+            <span><strong>Tengo un negocio</strong><small>Publica tu negocio, lo que vendes, tu zona y si necesitas mensajeros locales.</small></span>
+            <b>›</b>
+          </button>
+          <button type="button" class="route-start-card" onclick="openOpportunityWizard('necesito')">
+            <span class="route-start-icon">🔎</span>
+            <span><strong>Necesito publicar algo</strong><small>Pide apoyo, busca personal, solicita un mandado, movilidad o comparte una oportunidad.</small></span>
+            <b>›</b>
+          </button>
+        </div>
+
+        <button class="btn-small btn-outline why-update" type="button" onclick="showSection('actualizarme')">📘 ¿Por qué actualizarme en oportunidades y servicios?</button>
+      </section>
+
+      <section id="rutaGuiada" class="section info-section guided-route-section">
+        <div id="guidedRouteContent"></div>
+      </section>
+
+      <section id="registro" class="section">
+        <div class="section-header compact">
+          <div>
+            <h2>Publica paso a paso</h2>
+            <p>Te guiamos con preguntas cortas para que publicar no sea pesado.</p>
+          </div>
+        </div>
+
+        <form id="publicationForm" class="wizard-card">
+          <div class="wizard-progress">
+            <div><strong id="wizardStepLabel">Paso 1 de 7</strong><span id="wizardStepTitle">¿Qué quieres publicar?</span></div>
+            <div class="progress-track"><span id="wizardProgressBar"></span></div>
+          </div>
+
+          <div class="wizard-step active" data-step="1">
+            <h3>¿Qué quieres publicar?</h3>
+            <p class="muted">Elige una opción. Después podrás explicarlo con tus palabras.</p>
+            <div class="notice-card slim classification-tip">
+              <strong>La app te ayuda a clasificar mejor.</strong>
+              <p>Escribe natural usando frases como <b>Busco...</b>, <b>Ofrezco...</b>, <b>Necesito...</b>, <b>Tengo...</b> o <b>Vendo...</b>. Con eso el sistema acomoda tu publicación en la oportunidad correcta.</p>
+            </div>
+            <div class="choice-grid">
+              <button type="button" class="choice-card" data-category="Servicios" data-intent="Ofrezco / Tengo disponible" onclick="selectPublishType(this)"><span>🛠</span><strong>Ofrezco un servicio</strong><small>Oficios, limpieza, comida, apoyo o trabajo por cuenta propia.</small></button>
+              <button type="button" class="choice-card" data-category="Servicios" data-intent="Busco / Necesito" onclick="selectPublishType(this)"><span>🔎</span><strong>Busco ayuda o necesito algo</strong><small>Personal, limpieza, reparación, mandado o apoyo local.</small></button>
+              <button type="button" class="choice-card" data-category="Movilidad" data-intent="Ofrezco / Tengo disponible" onclick="selectPublishType(this)"><span>🚘</span><strong>Movilidad o viaje</strong><small>Ruta, horario, salida, traslado o espacios.</small></button>
+              <button type="button" class="choice-card" data-category="Entregas y mandados" data-intent="Ofrezco / Tengo disponible" onclick="selectPublishType(this)"><span>📦</span><strong>Entregas o mandados</strong><small>A pie, bici, moto, auto o camioneta.</small></button>
+            </div>
+            <input type="hidden" id="pubCategory" />
+            <input type="hidden" id="pubIntent" />
+          </div>
+
+          <div class="wizard-step" data-step="2">
+            <h3>¿Cómo quieres aparecer?</h3>
+            <label>Nombre, negocio o referencia
+              <input id="pubName" type="text" placeholder="Ej. Don Pedro Carpintería / Taquería El Centro / María mandados" />
+            </label>
+          </div>
+
+          <div class="wizard-step" data-step="3">
+            <h3>¿Dónde aplica?</h3>
+            <div class="form-grid">
+              <label>Estado
+                <select id="pubState" data-state-select data-default=""></select>
+              </label>
+              <label>Municipio
+                <select id="pubMunicipality"><option value="">Selecciona municipio</option></select>
+              </label>
+            </div>
+            <label>Colonia o localidad
+              <input id="pubLocality" type="text" value="Chapultepec Centro" placeholder="Ej. El Ameyal, Centro, Cuernavaca" />
+            </label>
+            <div class="location-consent-card">
+              <strong>Ubicación aproximada opcional</strong>
+              <p>Sirve para que otras personas encuentren tu publicación por cercanía. No se mostrará tu ubicación exacta.</p>
+              <button type="button" class="btn-small btn-outline" onclick="capturePublicationLocation()">📍 Usar mi ubicación actual</button>
+              <small id="pubLocationStatus" class="field-help">Puedes publicar sin activar ubicación.</small>
+              <input id="pubLat" type="hidden" />
+              <input id="pubLng" type="hidden" />
+            </div>
+          </div>
+
+          <div class="wizard-step" data-step="4">
+            <h3>Título de tu publicación</h3>
+            <p class="muted" id="titleHint">Ej. Busco trabajo en limpieza / Ofrezco mandados en moto / Necesito quien lave mis autos / Tengo una panadería.</p>
+            <label>Título
+              <input id="pubTitle" type="text" placeholder="Escríbelo claro y corto" />
+            </label>
+          </div>
+
+          <div class="wizard-step" data-step="5">
+            <h3>Detalles</h3>
+            <div id="generalDetails" class="dynamic-detail">
+              <label>Descripción
+                <textarea id="pubDescription" rows="5" placeholder="Cuéntalo de forma natural. Ej. Busco..., Ofrezco..., Necesito..., Tengo..., Vendo... Puedes pegar links de Facebook, TikTok, Instagram, Waze o Google Maps."></textarea>
+              </label>
+              <div class="description-helper" aria-label="Asistente de descripción">
+                <strong>✨ Asistente de descripción</strong>
+                <p>Usa estas ayudas para redactar mejor. Puedes editar el texto antes de publicar.</p>
+                <div class="helper-actions">
+                  <button type="button" onclick="assistDescription('draft')">Ayúdame a redactar</button>
+                  <button type="button" onclick="assistDescription('clear')">Más claro</button>
+                  <button type="button" onclick="assistDescription('friendly')">Más amable</button>
+                  <button type="button" onclick="assistDescription('short')">Más corto</button>
+                  <button type="button" onclick="assistDescription('details')">Agregar detalles útiles</button>
+                </div>
+              </div>
+              <label>Pago, costo o presupuesto sugerido
+                <input id="pubBudget" type="number" min="0" placeholder="Opcional. Ej. 100" />
+              </label>
+            </div>
+            <div id="rideDetails" class="dynamic-detail hidden">
+              <label>Descripción del viaje
+                <textarea id="pubDescriptionRide" rows="4" placeholder="Ej. Viajo de Chapultepec a Toluca de lunes a viernes. Comparto espacio si vas por la ruta." ></textarea>
+              </label>
+              <div class="description-helper" aria-label="Asistente de descripción para viaje">
+                <strong>✨ Asistente de descripción</strong>
+                <p>Te ayuda a explicar ruta, horario y condiciones de forma clara.</p>
+                <div class="helper-actions">
+                  <button type="button" onclick="assistDescription('draft')">Ayúdame a redactar</button>
+                  <button type="button" onclick="assistDescription('clear')">Más claro</button>
+                  <button type="button" onclick="assistDescription('friendly')">Más amable</button>
+                  <button type="button" onclick="assistDescription('short')">Más corto</button>
+                  <button type="button" onclick="assistDescription('details')">Agregar detalles útiles</button>
+                </div>
+              </div>
+              <label>Ruta o destino
+                <input id="pubRoute" type="text" placeholder="Ej. Chapultepec → Toluca / link de Waze" />
+              </label>
+              <div class="form-grid">
+                <label>Hora / días
+                  <input id="pubTime" type="text" placeholder="Ej. 7:00 am / lunes a viernes" />
+                </label>
+                <label>Lugar de salida
+                  <input id="pubDeparture" type="text" placeholder="Ej. Centro de Chapultepec" />
+                </label>
+              </div>
+              <label>Cooperación o costo sugerido
+                <input id="pubBudgetRide" type="number" min="0" placeholder="Opcional" />
+              </label>
+            </div>
+            <div id="deliveryDetails" class="dynamic-detail hidden">
+              <label>Descripción del servicio o necesidad
+                <textarea id="pubDescriptionDelivery" rows="4" placeholder="Ej. Hago entregas locales en moto / Busco quien lleve documentos." ></textarea>
+              </label>
+              <div class="description-helper" aria-label="Asistente de descripción para envíos">
+                <strong>✨ Asistente de descripción</strong>
+                <p>Te ayuda a explicar qué transportas, zona y horario sin hacerlo largo.</p>
+                <div class="helper-actions">
+                  <button type="button" onclick="assistDescription('draft')">Ayúdame a redactar</button>
+                  <button type="button" onclick="assistDescription('clear')">Más claro</button>
+                  <button type="button" onclick="assistDescription('friendly')">Más amable</button>
+                  <button type="button" onclick="assistDescription('short')">Más corto</button>
+                  <button type="button" onclick="assistDescription('details')">Agregar detalles útiles</button>
+                </div>
+              </div>
+              <label>Medio disponible o requerido
+                <select id="pubTransport">
+                  <option value="">Selecciona si aplica</option>
+                  <option>A pie</option><option>Bicicleta</option><option>Moto</option><option>Auto</option><option>Camioneta</option><option>Mudanza / Carga</option>
+                </select>
+              </label>
+              <label>Costo o presupuesto sugerido
+                <input id="pubBudgetDelivery" type="number" min="0" placeholder="Opcional" />
+              </label>
+            </div>
+          </div>
+
+          <div class="wizard-step" data-step="6">
+            <h3>Contacto</h3>
+            <label>WhatsApp
+              <input id="pubPhone" type="tel" inputmode="numeric" placeholder="Ej. 7225703145" />
+              <small class="field-help">Tu número se mostrará parcialmente oculto como xxxxxx3145.</small>
+            </label>
+            <label class="checkbox-line">
+              <input id="pubPrivacyAccept" type="checkbox" />
+              <span>Acepto el <button type="button" class="link-button" onclick="showSection('avisoPrivacidad')">Aviso de Privacidad</button> y los <button type="button" class="link-button" onclick="showSection('terminos')">Términos y Condiciones</button>.</span>
+            </label>
+          </div>
+
+          <div class="wizard-step" data-step="7">
+            <h3>Revisa antes de publicar</h3>
+            <div id="publicationPreview" class="preview-card"></div>
+            <div class="notice-card auto-note">
+              <strong>Publicación automática con cuidado</strong>
+              <p>Si tu registro está completo y claro, se activará de inmediato. Si detectamos algo incompleto o dudoso, quedará en revisión.</p>
+            </div>
+          </div>
+
+          <div class="wizard-actions">
+            <button type="button" class="btn-small btn-ghost" id="wizardBackBtn" onclick="prevWizardStep()">Atrás</button>
+            <button type="button" class="btn-small btn-purple" id="wizardNextBtn" onclick="nextWizardStep()">Continuar</button>
+            <button type="submit" class="btn-small btn-green hidden" id="wizardSubmitBtn">Publicar</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="publicaciones" class="section publicaciones-clean-section">
+        <div class="publicaciones-sticky-controls" aria-label="Filtros de publicaciones">
+          <div class="publicaciones-location-card ultra-clean-filters">
+            <select id="stateFilter" class="filter-select-main" data-state-select data-blank="true" data-default="" autocomplete="off" onchange="handleStateFilterChange()"></select>
+            <select id="municipalityFilter" class="filter-select-main" autocomplete="off" onchange="renderPublications()">
+              <option value="">Todos los municipios</option>
+            </select>
+          </div>
+
+          <label class="search-box clean-search-box publicaciones-search fixed-search-box" aria-label="Buscar por palabra clave" onclick="document.getElementById('mainSearch')?.focus()">
+            <span class="search-icon-safe" aria-hidden="true">🔎</span>
+            <input id="mainSearch" type="search" placeholder="limpieza, viajes, comida..." autocomplete="off" inputmode="search" enterkeyhint="search" oninput="renderPublications()" />
+          </label>
+        </div>
+
+        <div class="floating-category-dock" aria-label="Filtros rápidos de categoría">
+          <button type="button" class="filter-chip active" title="Todo" aria-label="Todo" data-filter-category="" data-filter-search="" onclick="setCategoryChip(this)">Todo</button>
+          <button type="button" class="filter-chip" title="Trabajo" aria-label="Trabajo" data-filter-category="" data-filter-search="trabajo empleo vacante chamba ayudante personal" onclick="setCategoryChip(this)">💼</button>
+          <button type="button" class="filter-chip" title="Limpieza" aria-label="Limpieza" data-filter-category="" data-filter-search="limpieza limpiar lava lavado aseo" onclick="setCategoryChip(this)">🧹</button>
+          <button type="button" class="filter-chip" title="Reparaciones" aria-label="Reparaciones" data-filter-category="" data-filter-search="reparacion reparar plomero electricidad albañil mantenimiento carpintero" onclick="setCategoryChip(this)">🛠</button>
+          <button type="button" class="filter-chip" title="Entregas y mandados" aria-label="Entregas y mandados" data-filter-category="Mensajería y envíos" data-filter-search="mandado entrega documento paquete moto bicicleta camioneta" onclick="setCategoryChip(this)">📦</button>
+          <button type="button" class="filter-chip" title="Movilidad" aria-label="Movilidad" data-filter-category="Viajes compartidos" data-filter-search="ruta viaje traslado movilidad" onclick="setCategoryChip(this)">🚲</button>
+          <button type="button" class="filter-chip" title="Negocios" aria-label="Negocios" data-filter-category="" data-filter-search="tienda negocio panaderia estetica papeleria ferreteria tortilleria comida vendo ventas" onclick="setCategoryChip(this)">🏪</button>
+          <button type="button" class="filter-chip" title="Redes" aria-label="Redes" data-filter-category="Redes sociales" data-filter-search="" onclick="setCategoryChip(this)">🔗</button>
+        </div>
+        <select id="categoryFilter" class="hidden" onchange="renderPublications()"><option value="">Todas las categorías</option><option>Trabajo</option><option>Servicios</option><option>Limpieza</option><option>Reparaciones</option><option>Entregas y mandados</option><option>Movilidad</option><option>Negocios locales</option><option>Alimentos y ventas</option><option>Redes sociales</option><option>Agentes de crecimiento</option></select>
+        <input id="chipSearchFilter" type="hidden" value="" />
+        <div id="publicationsList" class="compact-list publicaciones-results"></div>
+      </section>
+
+      <section id="oficina" class="section">
+        <h2>Oficina de registro</h2>
+        <div class="office-card">
+          <p>Atención solamente por WhatsApp para dudas, registros asistidos, modificaciones y seguimiento de publicaciones.</p>
+          <button class="btn-big btn-green" onclick="openOfficeWhatsApp('Hola, necesito atención de la oficina de Conecta Servicios.')">💬 Escribir por WhatsApp</button>
+        </div>
+        <div class="info-grid">
+          <button class="mini-card" onclick="showSection('comoFunciona')"><strong>¿Cómo funciona?</strong><small>Explicación corta</small></button>
+          <button class="mini-card" onclick="showSection('reglas')"><strong>Reglas y seguridad</strong><small>Antes de contactar</small></button>
+          <button class="mini-card" onclick="showSection('planes')"><strong>Planes y destacados</strong><small>Solicitar por WhatsApp</small></button>
+          <button class="mini-card" onclick="showSection('notificaciones')"><strong>Notificaciones</strong><small>Elige avisos útiles</small></button>
+          <button class="mini-card" onclick="showSection('aprende')"><strong>Aprende y emprende</strong><small>Rutas para generar ingresos</small></button>
+          <button class="mini-card" onclick="showSection('oportunidades')"><strong>Oportunidades para ti</strong><small>Coincidencias según tus intereses</small></button>
+          <button class="mini-card" onclick="showSection('agentes')"><strong>Agentes de crecimiento</strong><small>Clientes y comisiones</small></button>
+        </div>
+        <div id="adminEntry" class="admin-entry hidden">
+          <hr />
+          <h3>Modo administrador</h3>
+          <input id="adminPin" type="password" placeholder="PIN de administrador" />
+          <button class="btn-big btn-purple" onclick="unlockAdmin()">Entrar</button>
+        </div>
+      </section>
+
+      <section id="admin" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Administración</h2>
+            <p>Controla publicaciones, estados, edición, revisión y reclasificación del sistema de oportunidades.</p>
+          </div>
+          <div class="admin-top-actions"><button class="btn-small btn-outline" onclick="loadAdminData()">Actualizar</button><button class="btn-small btn-outline" onclick="showSection('analitica')">📊 Analítica</button><button class="btn-small btn-purple" onclick="showSection('enlaceExterno')">+ Enlace externo</button></div>
+        </div>
+        <div class="admin-summary" id="adminSummary"></div>
+        <label class="search-box">Buscar en admin
+          <input id="adminSearch" type="search" placeholder="Folio, teléfono, título, nombre, municipio, categoría o necesidad" oninput="renderAdminPublications()" />
+        </label>
+        <div id="adminList" class="list"></div>
+      </section>
+
+      <section id="analitica" class="section info-section">
+        <div class="section-header">
+          <div>
+            <h2>Analítica</h2>
+            <p>Datos anónimos para saber si la promoción genera tráfico e interés real.</p>
+          </div>
+          <button class="btn-small btn-outline" onclick="loadAnalyticsData()">Actualizar</button>
+        </div>
+        <div class="notice-card">
+          <strong>Qué se mide</strong>
+          <p>Visitas, clics en PUBLICA, publicaciones abiertas, WhatsApp, compartidos, uso de “cerca de mí” y entradas a Aprende y emprende. No se guardan nombres, teléfonos ni ubicación exacta de visitantes.</p>
+        </div>
+        <div id="analyticsPanel"></div>
+      </section>
+
+      <section id="comoFunciona" class="section info-section">
+        <h2>¿Cómo funciona?</h2>
+        <div class="step-card"><strong>1. Publica paso a paso</strong><p>La app te guía con preguntas cortas.</p></div>
+        <div class="step-card"><strong>2. Activación automática o revisión</strong><p>Si está claro y completo, aparece de inmediato. Si algo es dudoso, queda en revisión.</p></div>
+        <div class="step-card"><strong>3. Notificaciones útiles</strong><p>Las personas pueden activar avisos por categoría, zona y horario.</p></div>
+        <div class="step-card"><strong>4. Contacto directo</strong><p>Las personas se comunican por WhatsApp y acuerdan condiciones directamente.</p></div>
+      </section>
+
+      <section id="reglas" class="section info-section">
+        <h2>Reglas y seguridad</h2>
+        <div class="notice-card"><strong>Conecta Servicios es un puente</strong><p>No somos empleadores ni intermediarios de pago. Los acuerdos son directos entre las personas.</p></div>
+        <p>Confirma lugar, horario, costo y condiciones antes de aceptar. Si algo parece extraño, repórtalo a la oficina por WhatsApp.</p>
+      </section>
+
+      <section id="actualizarme" class="section info-section update-article-section">
+        <div class="article-card article-card-clean">
+          <h3>Lo que está cambiando</h3>
+          <p>La economía exige adaptarse: aprender habilidades útiles, ofrecer servicios de forma clara, aprovechar la cercanía, conectar negocios con mensajeros, y convertir oficios o productos en ingresos reales.</p>
+          <h3>Qué propone Conecta Servicios</h3>
+          <p>No se trata solo de publicar. La idea es ordenar necesidades, servicios, negocios, trabajo, aprendizaje y colaboración por zona e interés para que cada persona encuentre algo que pueda ayudarle hoy o prepararle para mañana.</p>
+          <div class="article-points">
+            <span>✅ <strong>Publica</strong> lo que necesitas u ofreces.</span>
+            <span>✅ <strong>Encuentra</strong> oportunidades según tu zona.</span>
+            <span>✅ <strong>Aprende</strong> rutas para generar ingresos.</span>
+            <span>✅ <strong>Conecta</strong> negocios, servicios, entregas y comunidad.</span>
+          </div>
+          <p class="muted small article-note">Nota: esta sección es informativa y busca orientar. Los enlaces o recursos externos deben revisarse directamente en su fuente original.</p>
+          <button class="btn-big btn-purple" type="button" onclick="showSection('oportunidades')">Configurar mis oportunidades</button>
+          <button class="btn-big btn-green" type="button" onclick="showSection('aprende')">Ver Aprende y emprende</button>
+        </div>
+      </section>
+
+      <section id="planes" class="section info-section">
+        <h2>Planes y destacados</h2>
+        <p class="muted">Por ahora los pagos son manuales por WhatsApp. No hay cobro automático dentro de la app.</p>
+        <div class="plan-card"><strong>⭐ Publicación destacada</strong><p>Mayor visibilidad en tu municipio.</p><button class="btn-small btn-green" onclick="openOfficeWhatsApp('Hola, quiero solicitar una publicación destacada en Conecta Servicios.')">Solicitar</button></div>
+        <div class="plan-card"><strong>🧾 Registro asistido</strong><p>La oficina te ayuda a crear o corregir tu publicación.</p><button class="btn-small btn-green" onclick="openOfficeWhatsApp('Hola, quiero solicitar registro asistido en Conecta Servicios.')">Solicitar</button></div>
+      </section>
+
+
+      <section id="misPublicaciones" class="section info-section my-publications-section">
+        <h2>Mis publicaciones</h2>
+        <div class="notice-card">
+          <strong>Control de tus registros</strong>
+          <p>Escribe tu WhatsApp completo o los últimos 4 dígitos para encontrar tus publicaciones activas y solicitar cambios.</p>
+        </div>
+        <div class="form-card">
+          <label>WhatsApp o últimos 4 dígitos
+            <input id="myPhoneSearch" type="tel" placeholder="Ej. 3145" oninput="renderMyPublications()" />
+          </label>
+          <button class="btn-big btn-purple" type="button" onclick="renderMyPublications()">Buscar mis publicaciones</button>
+        </div>
+        <div id="myPublicationsList" class="compact-list"></div>
+      </section>
+
+      <section id="notificaciones" class="section info-section">
+        <h2>Notificaciones</h2>
+        <div class="notice-card">
+          <strong>Avisos útiles, sin saturarte</strong>
+          <p>Elige qué tipo de publicaciones quieres recibir en este dispositivo. Cuando la app esté abierta o en segundo plano compatible, te avisará de registros nuevos que coincidan con tus preferencias.</p>
+        </div>
+        <div class="form-card notification-card">
+          <button class="btn-big btn-purple" type="button" onclick="enableNotifications()">🔔 Activar notificaciones</button>
+          <p id="notificationStatus" class="filter-summary">Estado: pendiente de activar</p>
+          <label>Categorías que me interesan
+            <div class="checkbox-stack">
+              <label><input type="checkbox" name="notifCategory" value="General" checked /> Servicios / general</label>
+              <label><input type="checkbox" name="notifCategory" value="Mensajería y envíos" checked /> Mensajería y envíos</label>
+              <label><input type="checkbox" name="notifCategory" value="Viajes compartidos" checked /> Viajes compartidos</label>
+              <label><input type="checkbox" name="notifCategory" value="Redes sociales" checked /> Enlaces de redes sociales</label>
+            </div>
+          </label>
+          <div class="form-grid">
+            <label>Estado
+              <select id="notifState" data-state-select data-blank="true" data-default=""></select>
+            </label>
+            <label>Municipio
+              <select id="notifMunicipality"><option value="">Todos los municipios</option></select>
+            </label>
+          </div>
+          <div class="form-grid">
+            <label>No avisar antes de
+              <input id="notifFrom" type="time" value="07:00" />
+            </label>
+            <label>No avisar después de
+              <input id="notifTo" type="time" value="22:00" />
+            </label>
+          </div>
+          <button class="btn-big btn-green" type="button" onclick="saveNotificationPreferences()">Guardar preferencias</button>
+          <p class="small muted">Nota: las notificaciones web dependen del permiso del navegador. Para avisos totalmente automáticos aun con la app cerrada, más adelante conviene integrar un servicio formal de push.</p>
+        </div>
+      </section>
+
+      <section id="enlaceExterno" class="section info-section">
+        <h2>Agregar enlace externo de redes</h2>
+        <div class="notice-card">
+          <strong>Uso responsable de redes sociales</strong>
+          <p>No copiamos publicaciones ajenas. Solo escribimos un aviso breve y enlazamos al contenido original para respetar privacidad, autoría y contexto. Aparecerá como “Redes sociales” y tendrá botón para abrir el enlace original.</p>
+        </div>
+        <form id="externalLinkForm" class="form-card">
+          <label>Título del aviso
+            <input id="externalTitle" type="text" placeholder="Ej. Solicitan mensajero para entrega local" />
+          </label>
+          <label>Resumen breve
+            <textarea id="externalSummary" rows="5" placeholder="Explica de qué trata sin copiar datos personales ni texto completo de la publicación original."></textarea>
+          </label>
+          <label>Enlace original
+            <input id="externalUrl" type="url" placeholder="https://facebook.com/..." />
+          </label>
+          <div class="form-grid">
+            <label>Estado
+              <select id="externalState" data-state-select data-default=""></select>
+            </label>
+            <label>Municipio
+              <select id="externalMunicipality"><option value="">Selecciona municipio</option></select>
+            </label>
+          </div>
+          <label>Localidad o zona
+            <input id="externalLocality" type="text" value="Chapultepec Centro" />
+          </label>
+          <div class="dialog-actions">
+            <button type="button" class="btn-small btn-ghost" onclick="showSection('admin')">Cancelar</button>
+            <button type="submit" class="btn-small btn-purple">Publicar enlace</button>
+          </div>
+        </form>
+      </section>
+
+
+      <section id="mensajes" class="section info-section smart-messages-section chat-live-section">
+        <div class="chat-shell-card">
+          <div class="chat-head clean-chat-head">
+            <span class="smart-bot-icon">🤖</span>
+            <div>
+              <strong>Asistente Conecta</strong>
+            </div>
+          </div>
+          <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
+          <div class="smart-quick-row chat-quick-row" aria-label="Ejemplos rápidos">
+            <button type="button" onclick="fillSmartMessage('Necesito enviar un paquete dentro del municipio')">Enviar paquete</button>
+            <button type="button" onclick="fillSmartMessage('Busco viaje compartido a Toluca')">Viaje</button>
+            <button type="button" onclick="fillSmartMessage('Quiero ofrecer mi servicio')">Ofrecer</button>
+            <button type="button" onclick="fillSmartMessage('Quiero tomar cursos gratuitos')">Cursos</button>
+            <button type="button" onclick="showSection('agentes')">Agentes</button>
+          </div>
+          <label class="chat-input-row" aria-label="Escribe tu mensaje">
+            <textarea id="smartMessageInput" rows="2" placeholder="Escribe tu mensaje... Ej. Busco quien entregue un paquete hoy"></textarea>
+            <button type="button" onclick="sendSmartChatMessage()" aria-label="Enviar mensaje">➤</button>
+          </label>
+          <div class="chat-actions-row">
+            <button type="button" class="btn-small btn-purple" onclick="startOpportunityGuide()">Publicar algo</button>
+            <button type="button" class="btn-small btn-outline" onclick="smartShowSuggested()">Buscar coincidencias</button>
+            <button type="button" class="btn-small btn-green" onclick="showSection('aprende')">Ver cursos</button>
+          </div>
+        </div>
+
+        <div id="smartMessageResult" class="smart-result-panel hidden" aria-live="polite"></div>
+      </section>
+
+      <section id="aprende" class="section info-section learn-section clean-learn-section courses-section">
+        <div class="learn-hero courses-hero">
+          <span class="learn-badge">Cursos básicos gratuitos</span>
+          <h2>Aprendizaje para generar ingresos</h2>
+          <p>Encuentra rutas de capacitación gratuitas por oficio, negocio, tecnología o ventas. Cada botón abre la plataforma educativa original.</p>
+        </div>
+
+        <div class="course-search-card">
+          <label>Buscar curso o habilidad
+            <input id="courseSearch" type="search" placeholder="Ej. ventas, electricidad, marketing, tecnología, negocio" oninput="renderCourseCards()" />
+          </label>
+          
+        </div>
+
+        <div id="courseList" class="course-list"></div>
+
+        <div class="notice-card slim">
+          <strong>Importante</strong>
+          <p>Conecta Servicios no cobra por estos enlaces ni sustituye a las plataformas educativas. La idea es acercar rutas de capacitación útiles para que la gente mejore su servicio o negocio.</p>
+        </div>
+      </section>
+
+
+      <section id="agentes" class="section info-section growth-agents-section">
+        <div class="growth-hero-card">
+          <span class="growth-kicker">Nuevo piloto</span>
+          <h2>Agentes de crecimiento</h2>
+          <p>Conecta negocios que necesitan clientes con personas que pueden promocionar, recomendar o conseguir contactos por comisión.</p>
+          <div class="growth-hero-actions">
+            <button type="button" class="btn-small btn-orange" onclick="showAgentPanel('negocio')">Quiero conseguir clientes</button>
+            <button type="button" class="btn-small btn-purple" onclick="showAgentPanel('agente')">Quiero trabajar por comisión</button>
+          </div>
+        </div>
+
+        <div class="growth-path-grid">
+          <button type="button" class="growth-path-card business-path" onclick="showAgentPanel('negocio')">
+            <span>🏪</span>
+            <strong>Para negocios</strong>
+            <p>Publica una campaña, define qué resultado necesitas y ofrece una comisión clara.</p>
+            <b>Publicar campaña ›</b>
+          </button>
+          <button type="button" class="growth-path-card agent-path" onclick="showAgentPanel('agente')">
+            <span>🧑‍🎓</span>
+            <strong>Para agentes</strong>
+            <p>Usa tus redes, contactos o habilidades para generar ingresos por resultados.</p>
+            <b>Registrarme como agente ›</b>
+          </button>
+        </div>
+
+        <div class="growth-trust-row" aria-label="Reglas básicas">
+          <span>🛡️ Seguro y claro</span>
+          <span>🤝 Acuerdos visibles</span>
+          <span>💰 Pago por resultado</span>
+        </div>
+
+        <div id="growthPanel" class="growth-panel hidden"></div>
+
+        <div class="growth-lists-tabs" aria-label="Listas del piloto">
+          <button type="button" class="active" onclick="setGrowthTab('campanas')" data-growth-tab="campanas">Campañas</button>
+          <button type="button" onclick="setGrowthTab('agentes')" data-growth-tab="agentes">Agentes</button>
+        </div>
+
+        <div id="growthCampaignList" class="growth-list"></div>
+        <div id="growthAgentList" class="growth-list hidden"></div>
+
+        <div class="notice-card slim growth-note">
+          <strong>Etapa piloto</strong>
+          <p>Conecta Servicios facilita el contacto. Las condiciones, comisiones, validación de resultados y pagos se acuerdan directamente entre negocio y agente. No se deben prometer resultados falsos ni pedir anticipos indebidos a clientes finales.</p>
+        </div>
+      </section>
+
+      <section id="instalarApp" class="section info-section">
+        <h2>Instalar Conecta Servicios</h2>
+        <div class="install-help-card">
+          <strong>En Android</strong>
+          <p>Abre la app en Chrome y toca <b>Instalar app</b>. Si no aparece, abre el menú ⋮ y elige <b>Agregar a pantalla principal</b>.</p>
+        </div>
+        <div class="install-help-card">
+          <strong>En iPhone</strong>
+          <p>Abre la app en Safari, toca el botón de compartir y elige <b>Agregar a pantalla de inicio</b>.</p>
+        </div>
+        <p class="small muted">La app seguirá usando los mismos datos de Supabase y funcionará como acceso directo instalado en tu celular.</p>
+      </section>
+
+      <section id="avisoPrivacidad" class="section info-section">
+        <h2>Aviso de Privacidad</h2>
+        <p>Conecta Servicios recopila nombre público, teléfono, ubicación general y descripción de la publicación para mostrar registros locales y facilitar contacto por WhatsApp. El teléfono se muestra parcialmente oculto dentro de la app.</p>
+        <p>Si el usuario autoriza la ubicación, se usa de forma aproximada para ordenar publicaciones cercanas. No se muestra la ubicación exacta de usuarios a otras personas y puede publicarse sin activar GPS.</p>
+        <p>Este aviso es una base para prueba pública. Antes de operación masiva conviene revisión legal formal.</p>
+      </section>
+
+      <section id="terminos" class="section info-section">
+        <h2>Términos y Condiciones</h2>
+        <p>La aplicación conecta personas de forma local. Cada usuario es responsable de verificar condiciones, pagos, horarios y seguridad antes de realizar cualquier acuerdo.</p>
+      </section>
+    </main>
+    <footer class="legal-footer" aria-label="Derechos reservados">
+      © 2026 Conecta Servicios. Todos los derechos reservados.
+    </footer>
+
+
+    <nav class="bottom-nav system-nav" aria-label="Navegación principal">
+      <button type="button" onclick="showSection('inicio')">🏠<span>Inicio</span></button>
+      <button type="button" onclick="startOpportunityGuide()">🔖<span>Para ti</span></button>
+      <button type="button" class="publish-nav-action" onclick="showSection('registro')" aria-label="Publicar">＋</button>
+      <button type="button" onclick="showSection('mensajes')">💬<span>Mensajes</span></button>
+      <button type="button" onclick="showSection('aprende')">🎓<span>Aprendizaje</span></button>
+    </nav>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <dialog id="reclassDialog" class="edit-dialog reclass-dialog">
+    <form id="reclassForm" method="dialog" class="form-card dialog-form">
+      <h2>Reclasificar publicación</h2>
+      <p id="reclassTitle" class="muted"></p>
+      <input type="hidden" id="reclassId" />
+      <label>Tipo de publicación
+        <select id="reclassNeed" onchange="applyReclassificationPreset()"></select>
+      </label>
+      <p id="reclassHelp" class="field-help"></p>
+      <label>Categoría operativa
+        <select id="reclassCategory">
+          <option>Trabajo</option>
+          <option>Servicios</option>
+          <option>Limpieza</option>
+          <option>Reparaciones</option>
+          <option>Entregas y mandados</option>
+          <option>Movilidad</option>
+          <option>Negocios locales</option>
+          <option>Alimentos y ventas</option>
+          <option>Redes sociales</option>
+          <option>Colaboración general</option>
+        </select>
+      </label>
+      <label>Subcategoría visible / interna
+        <input id="reclassSubcategory" type="text" placeholder="Ej. Limpieza, tienda local, busco trabajo, entrega en moto" />
+      </label>
+      <label>Intención
+        <select id="reclassIntent">
+          <option>Busco / Necesito</option>
+          <option>Ofrezco / Tengo disponible</option>
+          <option>Información o acuerdo local</option>
+        </select>
+      </label>
+      <label>Estado después de reclasificar
+        <select id="reclassStatus">
+          <option value="revision">revision</option>
+          <option value="activo">activo</option>
+          <option value="oculto">oculto</option>
+          <option value="atendido">atendido</option>
+        </select>
+      </label>
+      <div class="notice-card slim">
+        <strong>Uso recomendado</strong>
+        <p>Para limpiar registros antiguos, reclasifica los que sí sirvan y deja en “oculto” los que no estén claros. No se borra historial.</p>
+      </div>
+      <div class="dialog-actions"><button type="button" class="btn-small btn-ghost" onclick="closeReclassifyDialog()">Cancelar</button><button type="submit" class="btn-small btn-purple">Guardar reclasificación</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="editDialog" class="edit-dialog">
+    <form id="editForm" method="dialog" class="form-card dialog-form">
+      <h2>Editar publicación</h2>
+      <input type="hidden" id="editId" />
+      <label>Nombre público<input id="editName" type="text" /></label>
+      <label>Título<input id="editTitle" type="text" /></label>
+      <label>Categoría<select id="editCategory"><option>Trabajo</option><option>Servicios</option><option>Limpieza</option><option>Reparaciones</option><option>Entregas y mandados</option><option>Movilidad</option><option>Negocios locales</option><option>Alimentos y ventas</option><option>Redes sociales</option><option>Colaboración general</option></select></label>
+      <label>Intención<select id="editIntent"><option>Busco / Necesito</option><option>Ofrezco / Tengo disponible</option><option>Información o acuerdo local</option></select></label>
+      <div class="form-grid"><label>Estado<input id="editStateName" type="text" /></label><label>Municipio<input id="editMunicipality" type="text" /></label></div>
+      <label>Localidad<input id="editLocality" type="text" /></label>
+      <label>Teléfono<input id="editPhone" type="tel" /></label>
+      <label>Ruta / detalle extra<input id="editRoute" type="text" /></label>
+      <label>Estado de publicación<select id="editStatus"><option value="revision">revision</option><option value="activo">activo</option><option value="oculto">oculto</option><option value="atendido">atendido</option></select></label>
+      <label>Descripción<textarea id="editDescription" rows="4"></textarea></label>
+      <div class="dialog-actions"><button type="button" class="btn-small btn-ghost" onclick="closeEditDialog()">Cancelar</button><button type="submit" class="btn-small btn-purple">Guardar cambios</button></div>
+    </form>
+  </dialog>
+
+  <script src="app.js?v=4.8.8-agentes-crecimiento"></script>
+</body>
+</html>

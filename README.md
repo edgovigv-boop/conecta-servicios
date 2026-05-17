@@ -1,56 +1,38 @@
-# Conecta Servicios v4.8.6 — Presentación inversionistas
-
-Versión preparada para subir a GitHub/Vercel sin tocar Supabase.
-
-## Enfoque
-
-Esta versión estabiliza la experiencia visual y deja la app lista para revisión de usuarios e inversionistas.
-
-## Cambios incluidos
-
-- Home más limpio y orientado a presentación.
-- Hero aclarado para que la escena sea más visible y no se vea como captura pegada.
-- Header del Home simplificado: solo texto “Conecta Servicios”.
-- CTA “Oportunidades para ti” conservado con glow y protagonismo.
-- Botón “Publicaciones cerca de mí” con movimiento sutil.
-- Pantalla de publicaciones más limpia:
-  - Estado,
-  - Municipio,
-  - buscador compacto,
-  - barra lateral flotante.
-- Al entrar a publicaciones, “Todo” queda activo por defecto.
-- Estado default: “Todo México”.
-- Municipio queda deshabilitado cuando está seleccionado “Todo México”.
-- Buscador con una sola lupa y placeholder corto.
-- Se quitó texto pesado de resultados para que las publicaciones sean protagonistas.
-- Barra lateral de categorías queda más baja y sin riel blanco.
-- Se actualizó el catálogo local de municipios para que Hidalgo no quede vacío.
-- Mensajes inteligentes queda como chat piloto limpio.
-- Aprendizaje queda como rutas/cursos gratuitos en botones.
-- PWA mantiene ícono simple azul con símbolo +.
-- Cache/manifest/service worker actualizados a v4.8.6.
-
-## Validación rápida
-
-1. Subir estos archivos al repositorio conectado a Vercel.
-2. Esperar el despliegue automático.
-3. Probar en incógnito o borrar caché del navegador.
-4. Revisar:
-   - Home visualmente limpio.
-   - Publicaciones muestra registros al entrar.
-   - Estado inicia en Todo México.
-   - Municipio queda desactivado hasta elegir estado.
-   - Hidalgo muestra municipios reales al seleccionarlo.
-   - Buscador acepta texto.
-   - Barra lateral no tapa filtros.
-   - Chat y Aprendizaje abren correctamente.
-
-
-## v4.8.7 — Hotfix publicación visible
-
-Correcciones:
-- La pantalla Publicaciones inicia limpia en Todo México / Todo al entrar.
-- Después de publicar, si la publicación queda activa, se muestra inmediatamente en Publicaciones.
-- La carga de publicaciones ya no depende de `estado=eq.activo` en la URL; filtra activo de forma tolerante en cliente para evitar ocultar registros por espacios/mayúsculas.
-- Se corrigió el orden de `isLoading` para que la lista se renderice después de sincronizar.
-- Cache/PWA actualizado a v4.8.7.
+{
+  "name": "Conecta Servicios",
+  "short_name": "Conecta",
+  "description": "Plataforma local de oportunidades, publicaciones cercanas, mensajes inteligentes, cursos gratuitos y agentes de crecimiento por comisión.",
+  "start_url": "/?source=pwa&v=4.8.8",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#0e5bff",
+  "lang": "es-MX",
+  "categories": [
+    "business",
+    "productivity",
+    "social",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "assets/pwa-plus-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/pwa-plus-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/pwa-plus-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
