@@ -1,34 +1,46 @@
-# Conecta Servicios v4.8.5 — ajustes finales para revisión
+# Conecta Servicios v4.8.6 — Presentación inversionistas
 
-Versión preparada para subir a GitHub/Vercel.
+Versión preparada para subir a GitHub/Vercel sin tocar Supabase.
+
+## Enfoque
+
+Esta versión estabiliza la experiencia visual y deja la app lista para revisión de usuarios e inversionistas.
 
 ## Cambios incluidos
 
-- Se descongelaron los tres controles superiores de Publicaciones:
-  - Estado
-  - Municipio
-  - Buscador
-- Se mantuvo la barra de categorías del lado derecho más abajo.
-- Los íconos de categorías ahora flotan como botones independientes, sin riel blanco de fondo.
-- El botón central inferior quedó solo con el símbolo +, sin texto debajo.
-- Mensajes inteligentes quedó más limpio:
-  - sin texto introductorio largo,
-  - sin panel informativo final,
-  - solo chat, opciones rápidas y acciones.
-- Aprendizaje ahora muestra cursos/rutas como botones, no solo guías internas.
-- Se quitaron los botones genéricos debajo del buscador de cursos.
-- En el Home se quitó el ícono de Conecta que no estaba quedando bien y se dejó solo el texto “Conecta Servicios”.
-- El PWA ahora usa un ícono simple: círculo azul con símbolo +.
-- Caché/versión actualizados a v4.8.5 para evitar que el teléfono conserve la versión anterior.
+- Home más limpio y orientado a presentación.
+- Hero aclarado para que la escena sea más visible y no se vea como captura pegada.
+- Header del Home simplificado: solo texto “Conecta Servicios”.
+- CTA “Oportunidades para ti” conservado con glow y protagonismo.
+- Botón “Publicaciones cerca de mí” con movimiento sutil.
+- Pantalla de publicaciones más limpia:
+  - Estado,
+  - Municipio,
+  - buscador compacto,
+  - barra lateral flotante.
+- Al entrar a publicaciones, “Todo” queda activo por defecto.
+- Estado default: “Todo México”.
+- Municipio queda deshabilitado cuando está seleccionado “Todo México”.
+- Buscador con una sola lupa y placeholder corto.
+- Se quitó texto pesado de resultados para que las publicaciones sean protagonistas.
+- Barra lateral de categorías queda más baja y sin riel blanco.
+- Se actualizó el catálogo local de municipios para que Hidalgo no quede vacío.
+- Mensajes inteligentes queda como chat piloto limpio.
+- Aprendizaje queda como rutas/cursos gratuitos en botones.
+- PWA mantiene ícono simple azul con símbolo +.
+- Cache/manifest/service worker actualizados a v4.8.6.
 
 ## Validación rápida
 
-1. Subir los archivos al repositorio conectado a Vercel.
-2. Esperar el despliegue.
-3. Probar en modo incógnito o borrar caché.
+1. Subir estos archivos al repositorio conectado a Vercel.
+2. Esperar el despliegue automático.
+3. Probar en incógnito o borrar caché del navegador.
 4. Revisar:
-   - Publicaciones: los filtros ya no quedan fijos al hacer scroll.
-   - Barra derecha: íconos flotantes sin fondo tipo riel.
-   - Mensajes: pantalla limpia de chat.
-   - Aprendizaje: cursos mostrados como botones.
-   - Home/PWA: texto Conecta Servicios y nuevo ícono azul con +.
+   - Home visualmente limpio.
+   - Publicaciones muestra registros al entrar.
+   - Estado inicia en Todo México.
+   - Municipio queda desactivado hasta elegir estado.
+   - Hidalgo muestra municipios reales al seleccionarlo.
+   - Buscador acepta texto.
+   - Barra lateral no tapa filtros.
+   - Chat y Aprendizaje abren correctamente.

@@ -25,9 +25,10 @@ const DEFAULT_MUNICIPALITY = "";
 const DEFAULT_LOCALITY = "";
 const STATES = ["Aguascalientes","Baja California","Baja California Sur","Campeche","Chiapas","Chihuahua","Ciudad de México","Coahuila","Colima","Durango","Guanajuato","Guerrero","Hidalgo","Jalisco","México","Michoacán","Morelos","Nayarit","Nuevo León","Oaxaca","Puebla","Querétaro","Quintana Roo","San Luis Potosí","Sinaloa","Sonora","Tabasco","Tamaulipas","Tlaxcala","Veracruz","Yucatán","Zacatecas"];
 const KNOWN_MUNICIPALITIES = {
+  "Hidalgo": ["Acatlán", "Acaxochitlán", "Actopan", "Agua Blanca de Iturbide", "Ajacuba", "Alfajayucan", "Almoloya", "Apan", "El Arenal", "Atitalaquia", "Atlapexco", "Atotonilco el Grande", "Atotonilco de Tula", "Calnali", "Cardonal", "Chapantongo", "Chapulhuacán", "Chilcuautla", "Cuautepec de Hinojosa", "Eloxochitlán", "Emiliano Zapata", "Epazoyucan", "Francisco I. Madero", "Huasca de Ocampo", "Huautla", "Huazalingo", "Huehuetla", "Huejutla de Reyes", "Huichapan", "Ixmiquilpan", "Jacala de Ledezma", "Jaltocán", "Juárez Hidalgo", "Lolotla", "Metepec", "San Agustín Metzquititlán", "Metztitlán", "Mineral del Chico", "Mineral del Monte", "La Misión", "Mixquiahuala de Juárez", "Molango de Escamilla", "Nicolás Flores", "Nopala de Villagrán", "Omitlán de Juárez", "San Felipe Orizatlán", "Pacula", "Pachuca de Soto", "Pisaflores", "Progreso de Obregón", "Mineral de la Reforma", "San Agustín Tlaxiaca", "San Bartolo Tutotepec", "San Salvador", "Santiago de Anaya", "Santiago Tulantepec de Lugo Guerrero", "Singuilucan", "Tasquillo", "Tecozautla", "Tenango de Doria", "Tepeapulco", "Tepehuacán de Guerrero", "Tepeji del Río de Ocampo", "Tepetitlán", "Tetepango", "Villa de Tezontepec", "Tezontepec de Aldama", "Tianguistengo", "Tizayuca", "Tlahuelilpan", "Tlahuiltepa", "Tlanalapa", "Tlanchinol", "Tlaxcoapan", "Tolcayuca", "Tula de Allende", "Tulancingo de Bravo", "Xochiatipan", "Xochicoatlán", "Yahualica", "Zacualtipán de Ángeles", "Zapotlán de Juárez", "Zempoala", "Zimapán"],
   "México": ["Calimaya","Chapultepec","Mexicaltzingo","Metepec","Toluca","Tenango del Valle","Tianguistenco","San Mateo Atenco","Lerma","Ocoyoacac","Zinacantepec","Almoloya de Juárez","Rayón","Atizapán","Capulhuac","Xalatlaco","Santiago Tianguistenco"],
   "Morelos": ["Cuernavaca","Jiutepec","Temixco","Emiliano Zapata","Yautepec","Cuautla","Jojutla","Xochitepec","Tepoztlán","Zacatepec"],
-  "Ciudad de México": ["Álvaro Obregón","Azcapotzalco","Benito Juárez","Coyoacán","Cuajimalpa de Morelos","Cuauhtémoc","Gustavo A. Madero","Iztacalco","Iztapalapa","Magdalena Contreras","Miguel Hidalgo","Milpa Alta","Tláhuac","Tlalpan","Venustiano Carranza","Xochimilco"]
+  "Ciudad de México": ["Álvaro Obregón","Azcapotzalco","Benito Juárez","Coyoacán","Cuajimalpa de Morelos","Cuauhtémoc","Gustavo A. Madero","Iztacalco","Iztapalapa","La Magdalena Contreras","Miguel Hidalgo","Milpa Alta","Tláhuac","Tlalpan","Venustiano Carranza","Xochimilco"]
 };
 const MUNICIPIOS_MX_URLS = [
   "assets/municipios-mx-completo.json",
@@ -36,7 +37,7 @@ const MUNICIPIOS_MX_URLS = [
 ];
 const MUNICIPIOS_MX_LOCAL_URL = "assets/municipios-mx-base.json";
 const INEGI_MGEM_URL = "https://gaia.inegi.org.mx/wscatgeo/v2/mgem";
-const MUNICIPIOS_MX_CACHE_KEY = "conecta_municipios_mx_v485";
+const MUNICIPIOS_MX_CACHE_KEY = "conecta_municipios_mx_v486";
 let municipiosMx = { ...KNOWN_MUNICIPALITIES };
 const STATE_ALIASES = {
   "Coahuila": "Coahuila de Zaragoza",
@@ -59,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.8.5-ajustes-finales-inversionistas";
+const PWA_VERSION = "v4.8.6-presentacion-inversionistas";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -78,7 +79,7 @@ let analyticsCache = [];
 let deferredInstallPrompt = null;
 const TOTAL_STEPS = 7;
 const APP_VERSION_KEY = "conecta_servicios_app_version";
-const CHAT_STORAGE_KEY = "conecta_smart_chat_v485";
+const CHAT_STORAGE_KEY = "conecta_smart_chat_v486";
 
 
 function cleanPhone(phone) { return String(phone || "").replace(/\D/g, ""); }
@@ -272,6 +273,7 @@ function normalizeMunicipiosCatalog(data) {
     if (!Array.isArray(list)) return;
     const cleanList = Array.from(new Set(list.map(v => String(v || "").trim()).filter(Boolean)))
       .sort((a,b) => a.localeCompare(b, "es", { sensitivity: "base" }));
+    if (!cleanList.length) return;
     out[state] = cleanList;
     const shortName = Object.entries(STATE_ALIASES).find(([, official]) => normalize(official) === normalize(state))?.[0];
     if (shortName) out[shortName] = cleanList;
@@ -1987,7 +1989,7 @@ function init() {
 document.addEventListener("DOMContentLoaded", init);
 
 
-// v4.8.5 — Ajustes finales: filtros no congelados, chat limpio, cursos como botones y PWA plus
+// v4.8.6 — Presentación inversionistas: home limpio, filtros simples, chat piloto y cursos
 let smartLastSuggestion = { query: "", category: "" };
 
 const DEFAULT_CHAT_MESSAGES = [];
