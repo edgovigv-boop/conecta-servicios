@@ -15,3 +15,11 @@ Versión piloto para presentación con inversionistas.
 ## Importante
 
 Esta versión no automatiza pagos ni comisiones. Es un piloto visual/funcional para validar interés y explicar el modelo de negocio sin romper producción.
+
+
+## v4.8.8.2 — Guías para campañas y agentes
+- Mejora el formulario de campañas de Agentes de crecimiento.
+- Agrega guía editable para la descripción de campaña.
+- Mejora el campo de habilidades del agente con botones sugeridos.
+- Normaliza pegado en campos largos para evitar que el formato se descomponga.
+- Actualiza caché/PWA a v4.8.8.2.

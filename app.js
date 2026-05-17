@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.8.8-agentes-crecimiento";
+const PWA_VERSION = "v4.8.8.2-guias-agentes";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -2338,6 +2338,46 @@ function setGrowthTab(tab, scroll = true) {
   document.getElementById("growthAgentList")?.classList.toggle("hidden", growthActiveTab !== "agentes");
   if (scroll) document.querySelector(".growth-lists-tabs")?.scrollIntoView({ behavior:"smooth", block:"start" });
 }
+function normalizeTextareaPaste(event) {
+  const target = event?.target;
+  if (!target || target.tagName !== "TEXTAREA") return;
+  event.preventDefault();
+  const raw = (event.clipboardData || window.clipboardData)?.getData("text/plain") || "";
+  const clean = raw
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/[ \t]{2,}/g, " ")
+    .trim();
+  const start = target.selectionStart || 0;
+  const end = target.selectionEnd || 0;
+  const before = target.value.slice(0, start);
+  const after = target.value.slice(end);
+  target.value = `${before}${clean}${after}`;
+  target.selectionStart = target.selectionEnd = start + clean.length;
+  autoSizeTextarea(target);
+}
+function autoSizeTextarea(el) {
+  if (!el) return;
+  el.style.height = "auto";
+  el.style.height = `${Math.min(Math.max(el.scrollHeight, 116), 260)}px`;
+}
+function insertGrowthTemplate(id, template) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.value = template.replace(/\\n/g, "\n").trim();
+  autoSizeTextarea(el);
+  el.focus();
+}
+function addGrowthSkill(skill) {
+  const el = document.getElementById("growthAgentSkills");
+  if (!el) return;
+  const current = el.value.split(",").map(s => s.trim()).filter(Boolean);
+  if (!current.some(item => item.toLowerCase() === skill.toLowerCase())) current.push(skill);
+  el.value = current.join(", ");
+  autoSizeTextarea(el);
+  el.focus();
+}
 function showAgentPanel(type) {
   const panel = document.getElementById("growthPanel");
   if (!panel) return;
@@ -2347,7 +2387,22 @@ function showAgentPanel(type) {
     <h3>Quiero trabajar por comisión</h3>
     <label>Nombre público<input id="growthAgentName" required placeholder="Ej. Ana Martínez"></label>
     <label>Municipio o zona<input id="growthAgentZone" required placeholder="Ej. Toluca, Estado de México"></label>
-    <label>Habilidades<input id="growthAgentSkills" required placeholder="Redes sociales, diseño, ventas, WhatsApp..."></label>
+    <label>Habilidades
+      <textarea id="growthAgentSkills" rows="4" required oninput="autoSizeTextarea(this)" onpaste="normalizeTextareaPaste(event)" placeholder="Ej. Redes sociales, diseño de flyers, ventas por WhatsApp, captación de clientes..."></textarea>
+    </label>
+    <div class="field-guide-card compact-guide">
+      <strong>Guía rápida para escribir tus habilidades</strong>
+      <p>Elige lo que sabes hacer. Puedes tocar botones y completar con tu experiencia.</p>
+      <div class="guide-chip-row">
+        <button type="button" onclick="addGrowthSkill('Redes sociales')">Redes sociales</button>
+        <button type="button" onclick="addGrowthSkill('Diseño de flyers')">Diseño de flyers</button>
+        <button type="button" onclick="addGrowthSkill('Ventas por WhatsApp')">Ventas por WhatsApp</button>
+        <button type="button" onclick="addGrowthSkill('Captación de clientes')">Captación de clientes</button>
+        <button type="button" onclick="addGrowthSkill('Atención a clientes')">Atención a clientes</button>
+        <button type="button" onclick="addGrowthSkill('Videos cortos')">Videos cortos</button>
+      </div>
+      <button type="button" class="guide-fill-btn" onclick="insertGrowthTemplate('growthAgentSkills','Redes sociales, ventas por WhatsApp, diseño básico de publicaciones, atención a clientes y seguimiento de interesados. Puedo apoyar por comisión según resultado acordado.')">Usar ejemplo editable</button>
+    </div>
     <label>WhatsApp<input id="growthAgentPhone" type="tel" required placeholder="10 dígitos"></label>
     <button class="btn-big btn-purple" type="submit">Guardar perfil piloto</button>
   </form>` : `<form class="growth-form" onsubmit="saveGrowthLead(event,'negocio')">
@@ -2356,10 +2411,25 @@ function showAgentPanel(type) {
     <label>Zona<input id="growthCampaignZone" required placeholder="Ej. Estado de México"></label>
     <label>Resultado que pagarás<select id="growthCampaignResult" required><option>Contacto interesado</option><option>Cita agendada</option><option>Cliente aprobado</option><option>Venta cerrada</option></select></label>
     <label>Comisión ofrecida<input id="growthCampaignCommission" required placeholder="Ej. $300 por cliente aprobado o 10% por venta"></label>
-    <label>Descripción<textarea id="growthCampaignDescription" rows="3" required placeholder="Explica requisitos, condiciones y qué debe considerarse resultado válido"></textarea></label>
+    <label>Descripción
+      <textarea id="growthCampaignDescription" rows="5" required oninput="autoSizeTextarea(this)" onpaste="normalizeTextareaPaste(event)" placeholder="Describe qué vendes, qué resultado pagarás y cómo se valida."></textarea>
+    </label>
+    <div class="field-guide-card compact-guide">
+      <strong>Guía para una campaña clara</strong>
+      <p>Usa esta estructura para evitar confusiones y facilitar que un agente te consiga clientes reales.</p>
+      <div class="guide-template-list">
+        <span>1. Qué ofreces</span>
+        <span>2. A quién buscas</span>
+        <span>3. Resultado válido</span>
+        <span>4. Comisión y pago</span>
+        <span>5. Zona y condiciones</span>
+      </div>
+      <button type="button" class="guide-fill-btn" onclick="insertGrowthTemplate('growthCampaignDescription','Ofrezco: [producto o servicio].\nBusco: personas interesadas que cumplan estos requisitos: [requisitos básicos].\nResultado válido: [contacto interesado / cita agendada / cliente aprobado / venta cerrada].\nComisión: [monto o porcentaje] por cada resultado válido.\nZona: [municipio/estado].\nCondiciones: no se piden anticipos indebidos y la información se confirma por WhatsApp.')">Llenar guía editable</button>
+    </div>
     <label>WhatsApp<input id="growthCampaignPhone" type="tel" required placeholder="10 dígitos"></label>
     <button class="btn-big btn-orange" type="submit">Guardar campaña piloto</button>
   </form>`;
+  panel.querySelectorAll("textarea").forEach(autoSizeTextarea);
   panel.scrollIntoView({ behavior:"smooth", block:"start" });
 }
 function saveGrowthLead(event, type) {

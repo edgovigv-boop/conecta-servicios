@@ -1,0 +1,14 @@
+Conecta Servicios v4.8.8.2 — Guías para campañas y agentes
+
+Correcciones incluidas:
+- El campo Descripción de campañas ahora tiene guía clara y plantilla editable.
+- El pegado en descripciones se normaliza como texto limpio para evitar que se rompa el formato.
+- El campo Habilidades del agente ahora es un área más cómoda con botones sugeridos.
+- Los textos largos guardados en campañas/agentes respetan saltos y no rompen las tarjetas.
+- Actualización de caché/PWA a v4.8.8.2.
+
+Subida a Vercel:
+1. Descomprimir.
+2. Subir el CONTENIDO de esta carpeta a la raíz del repo.
+3. Verificar que index.html esté en la raíz y empiece con <!DOCTYPE html>.
+4. Commit sugerido: Actualización v4.8.8.2 - guías campañas agentes.
