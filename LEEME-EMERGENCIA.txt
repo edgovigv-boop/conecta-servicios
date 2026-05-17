@@ -1,0 +1,21 @@
+CONEXIÓN SERVICIOS v4.8.8.1 - EMERGENCIA INDEX ROOT
+
+IMPORTANTE:
+Este ZIP está preparado con los archivos directamente en la raíz, no dentro de una carpeta.
+
+Problema corregido:
+La app se estaba mostrando como código en pantalla. Eso normalmente sucede cuando el archivo index.html de producción quedó reemplazado por contenido de JavaScript o cuando los archivos se subieron dentro de una subcarpeta y Vercel no está encontrando el index correcto.
+
+Cómo subir:
+1. Descomprime este ZIP.
+2. En GitHub, entra al repositorio conecta-servicios.
+3. Selecciona todos los archivos y carpetas que están DENTRO del ZIP descomprimido.
+4. Súbelos en la raíz del repositorio, donde están index.html, app.js y styles.css.
+5. No subas la carpeta contenedora; sube su contenido.
+6. Commit: Hotfix v4.8.8.1 - recuperar index visual.
+7. Espera Vercel y prueba en incógnito.
+
+Validación:
+- index.html debe empezar con <!DOCTYPE html>
+- app.js debe empezar con //
+- styles.css debe empezar con /*

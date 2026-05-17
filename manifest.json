@@ -1,3 +1,38 @@
-© 2026 Conecta Servicios. Todos los derechos reservados.
-
-Este proyecto, sus archivos, estructura, diseño, textos, interfaz y elementos originales forman parte de un desarrollo privado. Queda prohibida su copia, reproducción, distribución, modificación, explotación comercial o uso no autorizado, total o parcial, sin autorización expresa y por escrito del titular.
+{
+  "name": "Conecta Servicios",
+  "short_name": "Conecta",
+  "description": "Plataforma local de oportunidades, publicaciones cercanas, mensajes inteligentes, cursos gratuitos y agentes de crecimiento por comisión.",
+  "start_url": "/?source=pwa&v=4.8.8.1",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#0e5bff",
+  "lang": "es-MX",
+  "categories": [
+    "business",
+    "productivity",
+    "social",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "assets/pwa-plus-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/pwa-plus-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/pwa-plus-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
