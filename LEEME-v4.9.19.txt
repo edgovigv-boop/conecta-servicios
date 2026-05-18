@@ -1,0 +1,10 @@
+Conecta Servicios v4.9.19 — Feed con pilotos limpios
+
+Cambios:
+- Se limpiaron las publicaciones piloto del Home Feed.
+- Se sustituyeron imágenes incrustadas con texto por imágenes limpias sin overlays ni botones internos.
+- Se agregaron 21 ejemplos piloto: solicitantes, agentes, negocios, servicios, crecimiento, embajadores y aprendizaje.
+- Cada publicación usa Hacerlo real con ruta hacia su flujo correspondiente.
+- Mantiene membresía para publicar según la lógica vigente.
+- No toca Supabase.
+- Cache/PWA actualizado a v4.9.19.

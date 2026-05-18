@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.18-home-feed-social-real";
+const PWA_VERSION = "v4.9.19-feed-pilotos-limpios";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -2275,133 +2275,406 @@ function initMobileFormComfort() {
 
 
 
-// v4.9.18 — Feed social real de inicio limpio, aislado y filtrable
+// v4.9.19 — Feed social real con publicaciones piloto limpias, sin texto incrustado en imágenes
 const HOME_FEED_POSTS_V4918 = [
   {
-    id: "feed-solicitante-barista",
+    id: "feed4919-solicitante-barista",
     tipo: "solicitantes",
     nombre: "María González",
     rol: "Solicitante",
     ubicacion: "Roma, CDMX",
     titulo: "Busco barista para fines de semana",
-    descripcion: "Apoyo por evento · pago acordado directo",
-    hashtags: ["Servicio", "Hospitalidad", "TiempoParcial"],
-    imagen: "assets/social-post-solicitante.webp",
-    posicion: "center 34%",
-    accion: "Hacerlo real (Solicitar)",
-    detalle: "Explorar solicitantes",
+    descripcion: "Ejemplo piloto: una persona solicita apoyo por evento y puede hacerlo real con una publicación.",
+    hashtags: ["Solicitante", "Trabajo", "TiempoParcial"],
+    imagen: "assets/feed4919-solicitante-barista.webp",
+    posicion: "center 38%",
+    accion: "Hacerlo real",
+    detalle: "Ver solicitantes",
     destino: "solicitantes",
+    flujo: "publicarNecesidad",
     likes: 24,
     comentarios: 5,
     compartidos: 12
   },
   {
-    id: "feed-agente-redes",
+    id: "feed4919-solicitante-mandado",
+    tipo: "solicitantes",
+    nombre: "Laura Martínez",
+    rol: "Solicitante",
+    ubicacion: "Chapultepec, México",
+    titulo: "Necesito mandado al mercado",
+    descripcion: "Ejemplo piloto: pide una compra con evidencia de precio, cantidad, ticket y entrega.",
+    hashtags: ["Mandados", "Evidencia", "Local"],
+    imagen: "assets/feed4919-solicitante-mandado.webp",
+    posicion: "center 42%",
+    accion: "Solicitar mandado",
+    detalle: "Ver mandados",
+    destino: "solicitantes",
+    flujo: "mandadoSolicitud",
+    likes: 38,
+    comentarios: 7,
+    compartidos: 16
+  },
+  {
+    id: "feed4919-solicitante-mudanza",
+    tipo: "solicitantes",
+    nombre: "Rafael Soto",
+    rol: "Solicitante",
+    ubicacion: "Metepec, México",
+    titulo: "Busco apoyo para mover muebles",
+    descripcion: "Ejemplo piloto: solicita ayuda local, acuerda trato directo y publica con membresía.",
+    hashtags: ["Solicitante", "Apoyo", "Mudanza"],
+    imagen: "assets/feed4919-solicitante-mudanza.webp",
+    posicion: "center 42%",
+    accion: "Publicar solicitud",
+    detalle: "Ver solicitudes",
+    destino: "solicitantes",
+    flujo: "publicarNecesidad",
+    likes: 19,
+    comentarios: 3,
+    compartidos: 8
+  },
+  {
+    id: "feed4919-agente-entregas",
     tipo: "agentes",
     nombre: "Carlos Méndez",
     rol: "Agente",
-    ubicacion: "Guadalajara",
-    titulo: "Te consigo más clientes por comisión",
-    descripcion: "Redes sociales · WhatsApp · promoción local",
-    hashtags: ["Agente", "Comisión", "Ventas"],
-    imagen: "assets/social-post-agente.webp",
-    posicion: "center 38%",
-    accion: "Hacerlo real (Trabajar)",
-    detalle: "Explorar agentes",
+    ubicacion: "Guadalajara, Jalisco",
+    titulo: "Hago entregas y mandados locales",
+    descripcion: "Ejemplo piloto: un agente ofrece movilidad, entrega y apoyo por zona.",
+    hashtags: ["Agente", "Entregas", "Moto"],
+    imagen: "assets/feed4919-agente-entregas.webp",
+    posicion: "center 40%",
+    accion: "Trabajar como agente",
+    detalle: "Ver agentes",
     destino: "agentes",
+    flujo: "mandadoAgente",
     likes: 31,
     comentarios: 8,
     compartidos: 15
   },
   {
-    id: "feed-negocio-panaderia",
+    id: "feed4919-agente-redes",
+    tipo: "agentes",
+    nombre: "Ana Torres",
+    rol: "Agente",
+    ubicacion: "Toluca, México",
+    titulo: "Promociono negocios por comisión",
+    descripcion: "Ejemplo piloto: convierte redes, WhatsApp y contenido en oportunidades por resultado.",
+    hashtags: ["Agente", "Comisión", "Redes"],
+    imagen: "assets/feed4919-agente-redes.webp",
+    posicion: "center 38%",
+    accion: "Ganar comisión",
+    detalle: "Ver oportunidades",
+    destino: "agentes",
+    flujo: "crecimientoAgente",
+    likes: 45,
+    comentarios: 10,
+    compartidos: 22
+  },
+  {
+    id: "feed4919-agente-mandados",
+    tipo: "agentes",
+    nombre: "Pedro Luna",
+    rol: "Agente",
+    ubicacion: "Mexicaltzingo, México",
+    titulo: "Puedo hacer compras con evidencia",
+    descripcion: "Ejemplo piloto: agente de mandados verificados con disponibilidad local.",
+    hashtags: ["Agente", "Mandados", "Confianza"],
+    imagen: "assets/feed4919-agente-mandados.webp",
+    posicion: "center 42%",
+    accion: "Registrarme",
+    detalle: "Ver mandados",
+    destino: "agentes",
+    flujo: "mandadoAgente",
+    likes: 28,
+    comentarios: 4,
+    compartidos: 9
+  },
+  {
+    id: "feed4919-negocio-panaderia",
     tipo: "negocios",
     nombre: "Panadería La Esquina",
     rol: "Negocio local",
-    ubicacion: "Toluca",
-    titulo: "Recibe pedidos por chat y pickup",
-    descripcion: "Catálogo simple · pedidos · entrega local futura",
+    ubicacion: "Toluca, México",
+    titulo: "Pedidos por chat y pickup",
+    descripcion: "Ejemplo piloto: negocio local con catálogo, pedidos, pickup y contacto directo futuro.",
     hashtags: ["Negocio", "Pedidos", "Pickup"],
-    imagen: "assets/social-post-negocio.webp",
+    imagen: "assets/feed4919-negocio-panaderia.webp",
     posicion: "center 42%",
-    accion: "Hacerlo real (Activar negocio)",
+    accion: "Activar negocio",
     detalle: "Ver negocios",
     destino: "negocios",
+    flujo: "chatNegocio",
     likes: 18,
     comentarios: 4,
     compartidos: 9
   },
   {
-    id: "feed-servicio-reparacion",
+    id: "feed4919-negocio-estetica",
+    tipo: "negocios",
+    nombre: "Estética Bella Zona",
+    rol: "Negocio local",
+    ubicacion: "Metepec, México",
+    titulo: "Citas y servicios por chat",
+    descripcion: "Ejemplo piloto: agenda citas, muestra servicios y atiende clientes desde Conecta.",
+    hashtags: ["Negocio", "Citas", "Belleza"],
+    imagen: "assets/feed4919-negocio-estetica.webp",
+    posicion: "center 42%",
+    accion: "Activar citas",
+    detalle: "Ver negocios",
+    destino: "negocios",
+    flujo: "chatNegocio",
+    likes: 26,
+    comentarios: 6,
+    compartidos: 10
+  },
+  {
+    id: "feed4919-negocio-ferreteria",
+    tipo: "negocios",
+    nombre: "Ferretería San José",
+    rol: "Negocio local",
+    ubicacion: "Chapultepec, México",
+    titulo: "Cotizaciones rápidas por chat",
+    descripcion: "Ejemplo piloto: muestra inventario básico, cotiza y coordina entrega o pickup.",
+    hashtags: ["Negocio", "Cotización", "Herramientas"],
+    imagen: "assets/feed4919-negocio-ferreteria.webp",
+    posicion: "center 42%",
+    accion: "Activar negocio",
+    detalle: "Ver negocios",
+    destino: "negocios",
+    flujo: "chatNegocio",
+    likes: 22,
+    comentarios: 5,
+    compartidos: 8
+  },
+  {
+    id: "feed4919-servicio-reparacion",
     tipo: "servicios",
     nombre: "Luis Hernández",
     rol: "Servicio",
-    ubicacion: "Metepec",
+    ubicacion: "Metepec, México",
     titulo: "Reparación de electrodomésticos",
-    descripcion: "Lavadoras · refrigeradores · diagnóstico local",
+    descripcion: "Ejemplo piloto: ofrece servicio local y permite que las personas te contacten directo.",
     hashtags: ["Servicio", "Reparación", "Hogar"],
-    imagen: "assets/social-post-servicio.webp",
-    posicion: "center 38%",
-    accion: "Hacerlo real (Contactar)",
+    imagen: "assets/feed4919-servicio-reparacion.webp",
+    posicion: "center 40%",
+    accion: "Publicar servicio",
     detalle: "Ver servicios",
     destino: "servicios",
+    flujo: "publicarOferta",
     likes: 21,
     comentarios: 3,
     compartidos: 7
   },
   {
-    id: "feed-crecimiento-clientes",
+    id: "feed4919-servicio-limpieza",
+    tipo: "servicios",
+    nombre: "Claudia Reyes",
+    rol: "Servicio",
+    ubicacion: "Toluca, México",
+    titulo: "Limpieza por día o por zona",
+    descripcion: "Ejemplo piloto: publica disponibilidad, zona y tipo de servicio para trato directo.",
+    hashtags: ["Servicio", "Limpieza", "Disponible"],
+    imagen: "assets/feed4919-servicio-limpieza.webp",
+    posicion: "center 42%",
+    accion: "Ofrecer servicio",
+    detalle: "Ver servicios",
+    destino: "servicios",
+    flujo: "publicarOferta",
+    likes: 33,
+    comentarios: 6,
+    compartidos: 11
+  },
+  {
+    id: "feed4919-servicio-mascotas",
+    tipo: "servicios",
+    nombre: "Paseos Caninos Leo",
+    rol: "Servicio",
+    ubicacion: "CDMX",
+    titulo: "Paseos y cuidado de mascotas",
+    descripcion: "Ejemplo piloto: servicio de confianza para vecinos, mascotas y horarios locales.",
+    hashtags: ["Servicio", "Mascotas", "Vecinos"],
+    imagen: "assets/feed4919-servicio-mascotas.webp",
+    posicion: "center 42%",
+    accion: "Publicar servicio",
+    detalle: "Ver servicios",
+    destino: "servicios",
+    flujo: "publicarOferta",
+    likes: 40,
+    comentarios: 9,
+    compartidos: 14
+  },
+  {
+    id: "feed4919-crecimiento-creditos",
     tipo: "crecimiento",
-    nombre: "Mónica Ruiz",
+    nombre: "Campaña local",
     rol: "Crecimiento",
     ubicacion: "Estado de México",
-    titulo: "Busco agentes para conseguir clientes",
-    descripcion: "Campaña por resultado · comisión clara",
+    titulo: "Busco clientes para servicio financiero",
+    descripcion: "Ejemplo piloto: campaña por resultado con reglas claras y comisión acordada.",
     hashtags: ["Crecimiento", "Clientes", "Comisión"],
-    imagen: "assets/social-post-crecimiento.webp",
-    posicion: "center 36%",
-    accion: "Hacerlo real (Crear campaña)",
+    imagen: "assets/feed4919-crecimiento-creditos.webp",
+    posicion: "center 42%",
+    accion: "Crear campaña",
     detalle: "Ver crecimiento",
     destino: "crecimiento",
+    flujo: "crecimientoCampana",
     likes: 42,
     comentarios: 11,
     compartidos: 18
   },
   {
-    id: "feed-embajadores",
+    id: "feed4919-crecimiento-campana",
+    tipo: "crecimiento",
+    nombre: "Negocio en promoción",
+    rol: "Crecimiento",
+    ubicacion: "Todo México",
+    titulo: "Necesito promotores digitales",
+    descripcion: "Ejemplo piloto: conecta con agentes que pueden mover campañas por comisión.",
+    hashtags: ["Crecimiento", "Promoción", "Resultados"],
+    imagen: "assets/feed4919-crecimiento-campana.webp",
+    posicion: "center 42%",
+    accion: "Conseguir clientes",
+    detalle: "Ver campañas",
+    destino: "crecimiento",
+    flujo: "crecimientoCampana",
+    likes: 35,
+    comentarios: 8,
+    compartidos: 13
+  },
+  {
+    id: "feed4919-crecimiento-clientes",
+    tipo: "crecimiento",
+    nombre: "Emprendedor local",
+    rol: "Crecimiento",
+    ubicacion: "Toluca, México",
+    titulo: "Pago comisión por cada venta",
+    descripcion: "Ejemplo piloto: acuerda resultado válido, zona, comisión y seguimiento.",
+    hashtags: ["Crecimiento", "Ventas", "TratoDirecto"],
+    imagen: "assets/feed4919-crecimiento-clientes.webp",
+    posicion: "center 42%",
+    accion: "Publicar campaña",
+    detalle: "Ver crecimiento",
+    destino: "crecimiento",
+    flujo: "crecimientoCampana",
+    likes: 47,
+    comentarios: 12,
+    compartidos: 19
+  },
+  {
+    id: "feed4919-embajadores-recomienda",
     tipo: "embajadores",
     nombre: "Embajadores Conecta",
     rol: "Embajadores",
     ubicacion: "Todo México",
-    titulo: "Gana $50 por membresía anual referida",
-    descripcion: "Membresía $98 MXN · promoción local directa",
+    titulo: "Gana $50 por membresía referida",
+    descripcion: "Ejemplo piloto: membresía anual $98 MXN, comisión clara para activar comunidad.",
     hashtags: ["Embajadores", "Membresía", "Ingresos"],
-    imagen: "assets/social-post-embajadores.webp",
-    posicion: "center 40%",
-    accion: "Hacerlo real (Ser embajador)",
+    imagen: "assets/feed4919-embajadores-recomienda.webp",
+    posicion: "center 42%",
+    accion: "Ser embajador",
     detalle: "Ver manual",
     destino: "embajadores",
+    flujo: "embajadores",
     likes: 57,
     comentarios: 14,
     compartidos: 21
   },
   {
-    id: "feed-aprendizaje",
+    id: "feed4919-embajadores-comision",
+    tipo: "embajadores",
+    nombre: "Comisión Conecta",
+    rol: "Embajadores",
+    ubicacion: "México",
+    titulo: "Promueve membresías anuales",
+    descripcion: "Ejemplo piloto: comparte tu código, registra referido y revisa cortes manuales.",
+    hashtags: ["Embajadores", "Comisión", "Referidos"],
+    imagen: "assets/feed4919-embajadores-comision.webp",
+    posicion: "center 42%",
+    accion: "Cobrar membresía",
+    detalle: "Ver membresía",
+    destino: "embajadores",
+    flujo: "embajadoresPagos",
+    likes: 61,
+    comentarios: 15,
+    compartidos: 24
+  },
+  {
+    id: "feed4919-embajadores-comunidad",
+    tipo: "embajadores",
+    nombre: "Activación local",
+    rol: "Embajadores",
+    ubicacion: "Municipios",
+    titulo: "Invita negocios, agentes y vecinos",
+    descripcion: "Ejemplo piloto: ayuda a crecer la red local y gana por membresías activadas.",
+    hashtags: ["Embajadores", "Comunidad", "Municipios"],
+    imagen: "assets/feed4919-embajadores-comunidad.webp",
+    posicion: "center 42%",
+    accion: "Registrarme",
+    detalle: "Ver embajadores",
+    destino: "embajadores",
+    flujo: "embajadores",
+    likes: 44,
+    comentarios: 10,
+    compartidos: 16
+  },
+  {
+    id: "feed4919-aprendizaje-computacion",
     tipo: "aprendizaje",
     nombre: "Aprendizaje Conecta",
     rol: "Aprendizaje",
     ubicacion: "Desde tu celular",
-    titulo: "Aprende una habilidad para generar ingresos",
-    descripcion: "Cursos gratuitos · rutas útiles · crecimiento personal",
-    hashtags: ["Aprendizaje", "Cursos", "Ingresos"],
-    imagen: "assets/social-post-aprendizaje.webp",
+    titulo: "Computación básica para trabajar",
+    descripcion: "Ejemplo piloto: aprende habilidades prácticas para generar más oportunidades.",
+    hashtags: ["Aprendizaje", "Computación", "Ingresos"],
+    imagen: "assets/feed4919-aprendizaje-computacion.webp",
     posicion: "center 42%",
-    accion: "Hacerlo real (Aprender)",
+    accion: "Aprender",
     detalle: "Ver cursos",
     destino: "aprendizaje",
+    flujo: "aprendizaje",
     likes: 36,
     comentarios: 6,
     compartidos: 13
+  },
+  {
+    id: "feed4919-aprendizaje-oficios",
+    tipo: "aprendizaje",
+    nombre: "Oficios útiles",
+    rol: "Aprendizaje",
+    ubicacion: "Online",
+    titulo: "Aprende un oficio y ofrece servicio",
+    descripcion: "Ejemplo piloto: rutas de aprendizaje para conectar capacitación con ingresos.",
+    hashtags: ["Aprendizaje", "Oficios", "Servicio"],
+    imagen: "assets/feed4919-aprendizaje-oficios.webp",
+    posicion: "center 42%",
+    accion: "Ver rutas",
+    detalle: "Ver aprendizaje",
+    destino: "aprendizaje",
+    flujo: "aprendizaje",
+    likes: 39,
+    comentarios: 7,
+    compartidos: 15
+  },
+  {
+    id: "feed4919-aprendizaje-ventas",
+    tipo: "aprendizaje",
+    nombre: "Ventas y negocio",
+    rol: "Aprendizaje",
+    ubicacion: "Online",
+    titulo: "Mejora ventas y atención al cliente",
+    descripcion: "Ejemplo piloto: aprende para vender mejor, atender clientes y crecer tu negocio.",
+    hashtags: ["Aprendizaje", "Ventas", "Negocio"],
+    imagen: "assets/feed4919-aprendizaje-ventas.webp",
+    posicion: "center 42%",
+    accion: "Empezar ruta",
+    detalle: "Ver cursos",
+    destino: "aprendizaje",
+    flujo: "aprendizaje",
+    likes: 52,
+    comentarios: 9,
+    compartidos: 17
   }
 ];
 
@@ -2464,7 +2737,7 @@ function homeFeedPostCardV4918(post) {
         <p>${escapeHtml(post.descripcion)}</p>
         <div class="v4918-tags">${tags}</div>
         <div class="v4918-cta-row">
-          <button type="button" class="v4918-primary-cta" onclick="makePilotReal('${escapeHtml(post.tipo)}')">${escapeHtml(post.accion)}</button>
+          <button type="button" class="v4918-primary-cta" onclick="makePilotReal('${escapeHtml(post.id || post.tipo)}')">${escapeHtml(post.accion)}</button>
           <button type="button" class="v4918-secondary-cta" onclick="openPilotType('${escapeHtml(post.tipo)}')">${escapeHtml(post.detalle || 'Ver detalles')}</button>
         </div>
       </div>
@@ -2505,8 +2778,21 @@ function sharePilotSocial(type = "") {
   }
 }
 
-function makePilotReal(type = "") {
-  trackEvent("home_social_hacerlo_real", null, { tipo: type });
+function makePilotReal(target = "") {
+  const post = HOME_FEED_POSTS_V4918.find(item => item.id === target) || HOME_FEED_POSTS_V4918.find(item => item.tipo === target);
+  const type = post?.tipo || target || "";
+  const flow = post?.flujo || "";
+  trackEvent("home_social_hacerlo_real", null, { tipo: type, post: post?.id || target, flujo: flow });
+  if (flow === "publicarNecesidad") return openOpportunityWizard("necesito");
+  if (flow === "publicarOferta") return openOpportunityWizard("ingresos");
+  if (flow === "mandadoSolicitud") return startSurveyFlow("mandadoSolicitud");
+  if (flow === "mandadoAgente") return startSurveyFlow("mandadoAgente");
+  if (flow === "chatNegocio") return startSurveyFlow("chatNegocio");
+  if (flow === "crecimientoAgente") return startSurveyFlow("crecimientoMenu");
+  if (flow === "crecimientoCampana") return startSurveyFlow("crecimientoMenu");
+  if (flow === "embajadores") return showSection("embajadores");
+  if (flow === "embajadoresPagos") { showSection("embajadores"); setTimeout(() => showAmbassadorPanel?.("pagos"), 80); return; }
+  if (flow === "aprendizaje") return showSection("aprende");
   if (type === "solicitantes") return openOpportunityWizard("necesito");
   if (type === "agentes") return startSurveyFlow("mandadoAgente");
   if (type === "negocios") return startSurveyFlow("chatNegocio");
@@ -2516,7 +2802,6 @@ function makePilotReal(type = "") {
   if (type === "aprendizaje") return showSection("aprende");
   return startOpportunityGuide();
 }
-
 function init() {
   const params = new URLSearchParams(location.search);
   pendingSharedPublicationId = params.get("pub") || params.get("publicacion");

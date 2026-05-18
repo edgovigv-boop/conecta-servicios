@@ -1,4 +1,4 @@
-# Conecta Servicios v4.9.18 — Feed social limpio
+# Conecta Servicios v4.9.19 — Feed con pilotos limpios
 
 Esta versión convierte el Home en una experiencia tipo red social / marketplace con publicaciones piloto protagonistas, imágenes visuales, acciones rápidas, transición de piloto a real y barra inferior más clara.
 
