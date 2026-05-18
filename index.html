@@ -28,10 +28,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
-  <title>Conecta Servicios v4.9.24</title>
-  <link rel="stylesheet" href="styles.css?v=4.9.24-plus-asistente-templates" />
+  <title>Conecta Servicios v4.9.25</title>
+  <link rel="stylesheet" href="styles.css?v=4.9.25-feed-hotfix-encuestas" />
 </head>
-<body data-version="4.9.24-plus-asistente-templates">
+<body data-version="4.9.25-feed-hotfix-encuestas">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -51,6 +51,8 @@ Todo uso requiere autorización expresa y por escrito del titular.
               <span><strong>Conecta Servicios</strong><small>INSTALAR APP</small></span>
             </button>
             <div class="v4918-header-actions">
+              <button type="button" aria-label="Oficina Conecta" title="Oficina" onclick="showSection('oficina')">☎</button>
+              <button type="button" id="homeAdminEntry" class="hidden" aria-label="Administración" title="Administración" onclick="showSection('admin')">⚙</button>
               <button type="button" aria-label="Buscar publicaciones" onclick="requestNearbyPublications()">⌕</button>
               <button type="button" class="v4918-bell" aria-label="Notificaciones" onclick="showSection('notificaciones')">🔔<b>7</b></button>
             </div>

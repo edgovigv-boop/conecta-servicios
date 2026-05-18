@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.22-feed-validado-sin-vercel";
+const PWA_VERSION = "v4.9.25-feed-hotfix-encuestas";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -85,7 +85,7 @@ const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v492";
 // v4.9.18 — Home Feed Social Real con publicaciones piloto limpias
 // Muestra publicaciones curadas y oculta los registros reales de Supabase en la vista pública.
 // Supabase sigue intacto; administración y futuras versiones pueden volver a producción cambiando esta bandera.
-const PRESENTATION_PILOT_MODE = true;
+const PRESENTATION_PILOT_MODE = false; // v4.9.25: Explorar vuelve a mostrar registros reales; el Home conserva pilotos tipo feed.
 let pilotTypeFilter = "";
 
 const PILOT_PUBLICATIONS = [
@@ -3209,6 +3209,19 @@ function renderSocialHomeFeed() {
   feed.innerHTML = posts.map(post => homeFeedPostCardV4918(post)).join("");
 }
 
+
+function ensureInitialHomeFeedVisible() {
+  const inicio = document.getElementById("inicio");
+  const feed = document.getElementById("homeSocialFeed");
+  if (!inicio || !feed) return;
+  homeFeedFilterV4918 = "";
+  document.querySelectorAll("[data-feed-filter]").forEach(btn => btn.classList.toggle("active", (btn.dataset.feedFilter || "") === ""));
+  renderSocialHomeFeed();
+  if (!feed.children.length) {
+    feed.innerHTML = HOME_FEED_POSTS_V4918.map(post => homeFeedPostCardV4918(post)).join("");
+  }
+}
+
 function setHomeFeedFilter(type = "") {
   homeFeedFilterV4918 = type || "";
   renderSocialHomeFeed();
@@ -3280,21 +3293,44 @@ function sharePilotSocial(type = "") {
   }
 }
 
+function postTemplateRouteType(post, type = "") {
+  const normalized = String(type || post?.tipo || post?.destino || "").toLowerCase();
+  if (normalized.includes("solicit")) return "necesito";
+  if (normalized.includes("agent")) return "agente";
+  if (normalized.includes("negocio")) return "negocio";
+  if (normalized.includes("servicio")) return "servicio";
+  if (normalized.includes("crecimiento")) return "crecimiento";
+  return "necesito";
+}
+
 function makePilotReal(target = "") {
   const post = HOME_FEED_POSTS_V4918.find(item => item.id === target) || HOME_FEED_POSTS_V4918.find(item => item.tipo === target);
   const type = post?.tipo || target || "";
   trackEvent("home_social_hacerlo_real", null, { tipo: type, post: post?.id || target, flujo: post?.flujo || "" });
-  const publishRoutes = {
-    solicitantes: "necesito",
-    agentes: "agente",
-    negocios: "negocio",
-    servicios: "servicio",
-    crecimiento: "crecimiento"
-  };
-  if (publishRoutes[type]) return openOpportunityWizard(publishRoutes[type], post);
-  if (type === "embajadores") return showSection("embajadores");
-  if (type === "aprendizaje") return showSection("aprende");
-  return openOpportunityWizard("necesito", post || null);
+  if (type === "embajadores") { showSection("embajadores"); return; }
+  if (type === "aprendizaje") { showSection("aprende"); return; }
+  try {
+    const route = postTemplateRouteType(post, type);
+    openOpportunityWizard(route, post || null);
+    setTimeout(() => {
+      const registro = document.getElementById("registro");
+      if (!registro?.classList.contains("active")) {
+        showSection("registro");
+        applyHomeFeedTemplateToWizard(post || null);
+        updateWizard?.();
+      }
+    }, 30);
+  } catch (error) {
+    console.error("No se pudo abrir la plantilla desde Hacerlo real", error);
+    showToast("Abrimos el formulario guiado para crear una publicación similar.");
+    showSection("registro");
+    wizardStep = 2;
+    setTimeout(() => {
+      setWizardPublishType("Servicios", "Busco / Necesito");
+      applyHomeFeedTemplateToWizard(post || null);
+      updateWizard?.();
+    }, 0);
+  }
 }
 
 function openPilotMessage(target = "") {
@@ -3347,7 +3383,8 @@ function init() {
   const params = new URLSearchParams(location.search);
   pendingSharedPublicationId = params.get("pub") || params.get("publicacion");
   adminRouteEnabled = params.get("admin") === "1" || params.get("admin") === "true";
-  document.getElementById("adminEntry").classList.toggle("hidden", !adminRouteEnabled);
+  document.getElementById("adminEntry")?.classList.toggle("hidden", !adminRouteEnabled);
+  document.getElementById("homeAdminEntry")?.classList.toggle("hidden", !adminRouteEnabled);
   populateStateSelects();
   loadMunicipiosMx();
   document.getElementById("publicationForm").addEventListener("submit", submitPublication);
@@ -3364,7 +3401,7 @@ function init() {
   initMobileFormComfort();
   refreshAppCacheIfNeeded().finally(registerServiceWorker);
   updateInstallCard();
-  renderSocialHomeFeed();
+  ensureInitialHomeFeedVisible();
   renderNotificationSettings();
   renderOpportunitySettings();
   trackEvent("visita_home");
@@ -3372,6 +3409,8 @@ function init() {
   setInterval(() => loadRemoteData({ silent: true }), 60000);
 }
 document.addEventListener("DOMContentLoaded", init);
+window.addEventListener("pageshow", () => { if (document.getElementById("inicio")?.classList.contains("active")) setTimeout(ensureInitialHomeFeedVisible, 80); });
+window.addEventListener("load", () => { if (document.getElementById("inicio")?.classList.contains("active")) setTimeout(ensureInitialHomeFeedVisible, 160); });
 
 
 // v4.8.7 — Hotfix: publicación activa visible de inmediato y filtros limpios
