@@ -28,10 +28,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
-  <title>Conecta Servicios v4.9.4</title>
-  <link rel="stylesheet" href="styles.css?v=4.9.4-lenguaje-plataforma-home" />
+  <title>Conecta Servicios v4.9.5</title>
+  <link rel="stylesheet" href="styles.css?v=4.9.5-home-limpio-publicaciones" />
 </head>
-<body data-version="4.9.4-lenguaje-plataforma-home">
+<body data-version="4.9.5-home-limpio-publicaciones">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -63,13 +63,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
               <p>Servicios locales, movilidad,<br>entregas y apoyo entre<br>vecinos.</p>
             </div>
             <div class="hero-scene" aria-hidden="true"></div>
-            <div class="hero-chips hero-language-chips" aria-label="Lenguaje principal de la app">
-              <span><b class="chip-solicitantes" aria-hidden="true">🙋</b>Solicitantes</span>
-              <span><b class="chip-agentes" aria-hidden="true">🧑‍🔧</b>Agentes</span>
-              <span><b class="chip-negocios" aria-hidden="true">🏪</b>Negocios</span>
-              <span><b class="chip-servicios" aria-hidden="true">🛠</b>Servicios</span>
-              <span><b class="chip-crecimiento" aria-hidden="true">📈</b>Crecimiento</span>
-            </div>
           </div>
 
           <button class="opportunity-orb" type="button" onclick="startOpportunityGuide()" aria-label="Oportunidades para ti">
@@ -83,40 +76,32 @@ Todo uso requiere autorización expresa y por escrito del titular.
             <b>›</b>
           </button>
 
+          <div class="home-section-heading compact-home-question"><strong>¿Qué quieres hacer hoy?</strong></div>
+
+          <div class="home-primary-actions" aria-label="Accesos principales">
+            <button type="button" class="home-primary-card chat-card-clean" onclick="showSection('mensajes')">
+              <span class="home-primary-icon">💬</span>
+              <div><strong>Chat de negocios</strong><small>Conecta, cotiza y concreta.</small></div>
+              <b>›</b>
+            </button>
+            <button type="button" class="home-primary-card learn-card-clean" onclick="showSection('aprende')">
+              <span class="home-primary-icon">🎓</span>
+              <div><strong>Aprendizaje</strong><small>Aprende, crece y mejora cada día.</small></div>
+              <b>›</b>
+            </button>
+          </div>
+
+          <div class="home-publications-heading">
+            <div><strong>Publicaciones cerca de mí</strong><small>Todo México y todas las categorías</small></div>
+            <button type="button" onclick="requestNearbyPublications()">Ver todas</button>
+          </div>
+
           <div class="platform-language-grid" aria-label="Organización principal de Conecta Servicios">
             <button type="button" onclick="openPilotType('solicitantes')"><span>🙋</span><strong>Solicitantes</strong></button>
             <button type="button" onclick="openPilotType('agentes')"><span>🧑‍🔧</span><strong>Agentes</strong></button>
             <button type="button" onclick="openPilotType('negocios')"><span>🏪</span><strong>Negocios</strong></button>
             <button type="button" onclick="openPilotType('servicios')"><span>🛠</span><strong>Servicios</strong></button>
             <button type="button" onclick="openPilotType('crecimiento')"><span>📈</span><strong>Crecimiento</strong></button>
-          </div>
-
-          <div class="future-grid-v477 home-module-grid-v494">
-            <button type="button" class="future-card-v477 business-chat-home-card" onclick="showSection('mensajes')">
-              <span class="future-emoji">💬</span>
-              <strong>Chat de<br>negocios</strong>
-              <small>Catálogo + pedidos</small>
-            </button>
-            <button type="button" class="future-card-v477 learning-home-card" onclick="showSection('aprende')">
-              <span class="future-emoji">🎓</span>
-              <strong>Aprendizaje</strong>
-              <small>Crecimiento</small>
-            </button>
-            <button type="button" class="future-card-v477 agent-growth-card" onclick="showSection('agentes')">
-              <span class="future-emoji">📈</span>
-              <strong>Agentes de<br>crecimiento</strong>
-              <small>Por comisión</small>
-            </button>
-            <button type="button" class="future-card-v477 local-business-home-card" onclick="showSection('negocios')">
-              <span class="future-emoji">🏪</span>
-              <strong>Negocios<br>locales</strong>
-              <small>Chat + catálogo</small>
-            </button>
-            <button type="button" class="future-card-v477 verified-errand-card" onclick="showSection('mandados')">
-              <span class="future-emoji">🧺</span>
-              <strong>Mandados<br>verificados</strong>
-              <small>Evidencia + fondo</small>
-            </button>
           </div>
 
           <button class="home-stat-v477 home-stat-button" type="button" onclick="requestNearbyPublications()" aria-label="Ver publicaciones cerca de mí">
@@ -754,12 +739,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
             <strong>Para agentes</strong>
             <p>Usa tus redes, contactos o habilidades para generar ingresos por resultados.</p>
             <b>Registrarme como agente ›</b>
-          </button>
-          <button type="button" class="growth-path-card learn-path" onclick="showSection('aprende')">
-            <span>🎓</span>
-            <strong>Aprendizaje</strong>
-            <p>Rutas gratuitas para mejorar ventas, atención, tecnología, oficios y habilidades para generar ingresos.</p>
-            <b>Ver cursos ›</b>
           </button>
         </div>
 

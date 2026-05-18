@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.4-lenguaje-plataforma-home";
+const PWA_VERSION = "v4.9.5-home-limpio-publicaciones";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -82,7 +82,7 @@ const APP_VERSION_KEY = "conecta_servicios_app_version";
 const CHAT_STORAGE_KEY = "conecta_business_chat_v494";
 const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v492";
 
-// v4.9.4 — Lenguaje de plataforma + home ordenado + barra libre
+// v4.9.5 — Home limpio + publicaciones como lenguaje principal + barra libre
 // Muestra publicaciones curadas y oculta los registros reales de Supabase en la vista pública.
 // Supabase sigue intacto; administración y futuras versiones pueden volver a producción cambiando esta bandera.
 const PRESENTATION_PILOT_MODE = true;

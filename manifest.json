@@ -1,8 +1,8 @@
 {
   "name": "Conecta Servicios",
   "short_name": "Conecta",
-  "description": "Plataforma local de oportunidades, mandados verificados con evidencia, modo piloto para inversionistas, Fondo Protegido Conecta, mandados verificados, negocios locales, chat de negocios, aprendizaje, agentes de crecimiento y lenguaje de plataforma por solicitantes, agentes, negocios, servicios y crecimiento.",
-  "start_url": "/?source=pwa&v=4.9.4",
+  "description": "Plataforma local de oportunidades, mandados verificados con evidencia, modo piloto para inversionistas, Fondo Protegido Conecta, mandados verificados, negocios locales, chat de negocios, aprendizaje, agentes de crecimiento y home limpio, lenguaje de plataforma por solicitantes, agentes, negocios, servicios y crecimiento, y publicaciones por Todo México.",
+  "start_url": "/?source=pwa&v=4.9.5",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

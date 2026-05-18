@@ -4,12 +4,12 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.9.4-lenguaje-plataforma-home";
+const CACHE_NAME = "conecta-servicios-v4.9.5-home-limpio-publicaciones";
 const ASSETS = [
   "./",
   "index.html",
-  "styles.css?v=4.9.4-lenguaje-plataforma-home",
-  "app.js?v=4.9.4-lenguaje-plataforma-home",
+  "styles.css?v=4.9.5-home-limpio-publicaciones",
+  "app.js?v=4.9.5-home-limpio-publicaciones",
   "manifest.json",
   "assets/hero-scene-v4718.webp",
   "assets/hero-scene-clean-v4711.png",

@@ -1,0 +1,13 @@
+Conecta Servicios v4.9.5 — Home limpio y publicaciones como lenguaje principal
+
+Cambios principales:
+- Hero del Home más limpio: se retiraron los íconos repetidos del hero para dejar visible la imagen.
+- Home simplificado: se conservaron Chat de negocios y Aprendizaje como accesos principales.
+- Se retiraron accesos redundantes del Home: Agentes de crecimiento, Negocios locales y Mandados verificados, porque ahora viven dentro de la lógica de Publicaciones / Solicitantes / Agentes / Negocios / Servicios / Crecimiento.
+- Publicaciones cerca de mí entra en Todo México y todas las categorías por default.
+- El lenguaje de plataforma queda reforzado en Publicaciones: Solicitantes, Agentes, Negocios, Servicios y Crecimiento.
+- Se retiró Aprendizaje de Agentes de crecimiento para mantenerlo como sección independiente.
+- Barra lateral dinámica en Publicaciones ajustada para tener recorrido más libre sin invadir los campos superiores.
+- PWA/cache actualizado a v4.9.5.
+
+No toca Supabase.
