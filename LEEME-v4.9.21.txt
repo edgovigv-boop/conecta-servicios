@@ -1,0 +1,20 @@
+# Conecta Servicios v4.9.21 — Home Feed de oportunidades reales
+
+Esta versión regresa la portada al enfoque de feed social: ejemplos humanos, visuales y accionables.
+
+## Cambios principales
+- Home basado en publicaciones piloto tipo red social.
+- 35 plantillas vivas: 5 por cada categoría principal.
+- Categorías: Solicitantes, Agentes, Negocios, Servicios, Crecimiento, Embajadores y Aprendizaje.
+- Botón principal “Hacerlo real” como acción protagonista.
+- En publicaciones de solicitud/servicio, el flujo de publicar recibe título y descripción como plantilla editable.
+- Explorar sigue siendo gratis; publicar conserva el flujo hacia membresía anual.
+- No toca Supabase.
+- Cache/PWA actualizado a v4.9.21.
+
+## Validación rápida
+1. Abrir Home.
+2. Desplazar el feed vertical.
+3. Probar filtros superiores por categoría.
+4. Tocar “Hacerlo real” en solicitantes y servicios para verificar plantilla editable.
+5. Probar “Hacerlo real” en Embajadores, Crecimiento, Negocios y Aprendizaje.

@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.20-home-publica-demo";
+const PWA_VERSION = "v4.9.21-home-feed-plantillas-reales";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -519,13 +519,11 @@ function handlePairedStateChange(stateId, municipalityId, placeholder) {
 function routeUrlForSection(id) {
   const params = new URLSearchParams(location.search);
   const adminMode = adminRouteEnabled || params.get("admin") === "1";
-  const cleanPath = location.pathname.replace(/\/demo-inversionistas\/?$/, "/") || "/";
-  if (id === "demoInversionistas") return adminMode ? `${cleanPath}?admin=1#demoInversionistas` : "/demo-inversionistas";
-  const base = adminMode ? `${cleanPath}?admin=1` : cleanPath;
-  return id === "inicio" ? base : `${base}#${id}`;
+  const base = adminMode ? `${location.pathname}?admin=1` : location.pathname;
+  return `${base}#${id}`;
 }
 function showSection(id, push = true) {
-  const sectionAliases = { aprendizaje: "aprende", aprender: "aprende", chat: "mensajes", embajador: "embajadores", embajadores: "embajadores", referidos: "embajadores", demo: "demoInversionistas", "demo-inversionistas": "demoInversionistas", inversionistas: "demoInversionistas" };
+  const sectionAliases = { aprendizaje: "aprende", aprender: "aprende", chat: "mensajes", embajador: "embajadores", embajadores: "embajadores", referidos: "embajadores" };
   id = sectionAliases[id] || id;
   if (id === "admin" && !adminRouteEnabled) { showToast("Acceso de administración oculto"); id = "inicio"; }
   const target = document.getElementById(id);
@@ -535,12 +533,11 @@ function showSection(id, push = true) {
   document.querySelector(".app-shell")?.classList.toggle("home-mode", id === "inicio");
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   target.classList.add("active");
-  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme", mensajes:"Centro de orientación", agentes:"Agentes de crecimiento", mandados:"Mandados Verificados", negocios:"Negocios locales", embajadores:"Embajadores Conecta", encuesta:"Encuesta guiada", demoInversionistas:"Demo inversionistas" };
+  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme", mensajes:"Centro de orientación", agentes:"Agentes de crecimiento", mandados:"Mandados Verificados", negocios:"Negocios locales", embajadores:"Embajadores Conecta", encuesta:"Encuesta guiada" };
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
-  if (id === "inicio") { renderPublicHomeV4920?.(); renderSocialHomeFeed(); }
-  if (id === "demoInversionistas") renderDemoInvestorFeedV4920?.();
+  if (id === "inicio") renderSocialHomeFeed();
   if (id === "publicaciones") {
     // v4.8.7: cada entrada a Publicaciones inicia limpia en Todo México / Todo.
     // Esto evita que búsquedas o chips anteriores oculten una publicación recién creada.
@@ -598,7 +595,25 @@ function setWizardPublishType(category, intent) {
   updateCategoryDetails();
 }
 
-function openOpportunityWizard(type) {
+
+function applyHomeFeedTemplateToWizard(template) {
+  if (!template) return;
+  const safeTemplate = typeof template === "object" ? template : {};
+  const titleEl = document.getElementById("pubTitle");
+  const descEl = activeDescriptionElement?.();
+  const titleHint = document.getElementById("titleHint");
+  if (titleEl && safeTemplate.titulo) titleEl.value = safeTemplate.titulo;
+  if (descEl) {
+    const text = safeTemplate.plantilla || safeTemplate.descripcion || "";
+    if (text) {
+      descEl.value = text;
+      descEl.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  }
+  if (titleHint) titleHint.textContent = "Usa este ejemplo como plantilla. Ajusta texto, zona, datos y contacto antes de publicar.";
+}
+
+function openOpportunityWizard(type, template = null) {
   resetWizardForm();
   const titleHint = document.getElementById("titleHint");
   const routeConfig = {
@@ -633,8 +648,9 @@ function openOpportunityWizard(type) {
   wizardStep = 2;
   showSection("registro");
   updateWizard();
-  showToast(cfg.toast);
-  trackEvent("oportunidad_guia_iniciada", null, { tipo: type });
+  applyHomeFeedTemplateToWizard(template);
+  showToast(template ? "Tomamos este ejemplo como plantilla. Puedes ajustarlo antes de publicar." : cfg.toast);
+  trackEvent("oportunidad_guia_iniciada", null, { tipo: type, plantilla: template?.id || "" });
 }
 function selectPublishType(button) {
   document.querySelectorAll(".choice-card").forEach(b => b.classList.remove("selected"));
@@ -2278,406 +2294,847 @@ function initMobileFormComfort() {
 
 
 
-// v4.9.20 — Feed social real con publicaciones piloto limpias, sin texto incrustado en imágenes
+// v4.9.21 — Home Feed de oportunidades con plantillas reales por categoría
 const HOME_FEED_POSTS_V4918 = [
   {
-    id: "feed4919-solicitante-barista",
-    tipo: "solicitantes",
-    nombre: "María González",
-    rol: "Solicitante",
-    ubicacion: "Roma, CDMX",
-    titulo: "Busco barista para fines de semana",
-    descripcion: "Ejemplo piloto: una persona solicita apoyo por evento y puede hacerlo real con una publicación.",
-    hashtags: ["Solicitante", "Trabajo", "TiempoParcial"],
-    imagen: "assets/feed4919-solicitante-barista.webp",
-    posicion: "center 38%",
-    accion: "Hacerlo real",
-    detalle: "Ver solicitantes",
-    destino: "solicitantes",
-    flujo: "publicarNecesidad",
-    likes: 24,
-    comentarios: 5,
-    compartidos: 12
+    "id": "v4921-solicitante-barista",
+    "tipo": "solicitantes",
+    "nombre": "María González",
+    "rol": "Solicitante",
+    "ubicacion": "Roma, CDMX",
+    "titulo": "Busco barista para fines de semana",
+    "descripcion": "Necesito apoyo para atender barra de café en un evento pequeño. Pago por día y busco alguien responsable.",
+    "hashtags": [
+      "Solicitante",
+      "Trabajo",
+      "Evento"
+    ],
+    "imagen": "assets/feed4919-solicitante-barista.webp",
+    "posicion": "center 38%",
+    "accion": "Hacerlo real",
+    "detalle": "Usar plantilla",
+    "destino": "solicitantes",
+    "flujo": "publicarNecesidad",
+    "likes": 24,
+    "comentarios": 5,
+    "compartidos": 12,
+    "plantilla": "Necesito apoyo para atender barra de café en un evento pequeño. Busco una persona responsable, puntual y con buen trato. La idea es acordar horario, pago y detalles por contacto directo."
   },
   {
-    id: "feed4919-solicitante-mandado",
-    tipo: "solicitantes",
-    nombre: "Laura Martínez",
-    rol: "Solicitante",
-    ubicacion: "Chapultepec, México",
-    titulo: "Necesito mandado al mercado",
-    descripcion: "Ejemplo piloto: pide una compra con evidencia de precio, cantidad, ticket y entrega.",
-    hashtags: ["Mandados", "Evidencia", "Local"],
-    imagen: "assets/feed4919-solicitante-mandado.webp",
-    posicion: "center 42%",
-    accion: "Solicitar mandado",
-    detalle: "Ver mandados",
-    destino: "solicitantes",
-    flujo: "mandadoSolicitud",
-    likes: 38,
-    comentarios: 7,
-    compartidos: 16
+    "id": "v4921-solicitante-medicamento",
+    "tipo": "solicitantes",
+    "nombre": "Doña Carmen",
+    "rol": "Solicitante",
+    "ubicacion": "Chapultepec, México",
+    "titulo": "Necesito que compren medicamento",
+    "descripcion": "Busco alguien de confianza que pueda ir a la farmacia y entregar en mi domicilio.",
+    "hashtags": [
+      "Mandado",
+      "Farmacia",
+      "Ayuda"
+    ],
+    "imagen": "assets/social-post-solicitante.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Solicitar mandado",
+    "destino": "solicitantes",
+    "flujo": "mandadoSolicitud",
+    "likes": 36,
+    "comentarios": 8,
+    "compartidos": 16,
+    "plantilla": "Necesito que alguien me apoye comprando medicamento en farmacia y lo entregue en mi domicilio. Quiero acordar precio, horario y evidencia de compra antes de confirmar."
   },
   {
-    id: "feed4919-solicitante-mudanza",
-    tipo: "solicitantes",
-    nombre: "Rafael Soto",
-    rol: "Solicitante",
-    ubicacion: "Metepec, México",
-    titulo: "Busco apoyo para mover muebles",
-    descripcion: "Ejemplo piloto: solicita ayuda local, acuerda trato directo y publica con membresía.",
-    hashtags: ["Solicitante", "Apoyo", "Mudanza"],
-    imagen: "assets/feed4919-solicitante-mudanza.webp",
-    posicion: "center 42%",
-    accion: "Publicar solicitud",
-    detalle: "Ver solicitudes",
-    destino: "solicitantes",
-    flujo: "publicarNecesidad",
-    likes: 19,
-    comentarios: 3,
-    compartidos: 8
+    "id": "v4921-solicitante-paquete",
+    "tipo": "solicitantes",
+    "nombre": "Javier Ruiz",
+    "rol": "Solicitante",
+    "ubicacion": "Toluca, México",
+    "titulo": "Necesito enviar un paquete pequeño",
+    "descripcion": "Busco quien lleve un paquete ligero de Toluca a Metepec hoy por la tarde.",
+    "hashtags": [
+      "Envío",
+      "Paquete",
+      "Local"
+    ],
+    "imagen": "assets/feed4919-solicitante-mandado.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Publicar envío",
+    "destino": "solicitantes",
+    "flujo": "publicarNecesidad",
+    "likes": 28,
+    "comentarios": 4,
+    "compartidos": 10,
+    "plantilla": "Necesito enviar un paquete pequeño dentro de la zona. Busco una persona disponible, con trato directo y confirmación de entrega."
   },
   {
-    id: "feed4919-agente-entregas",
-    tipo: "agentes",
-    nombre: "Carlos Méndez",
-    rol: "Agente",
-    ubicacion: "Guadalajara, Jalisco",
-    titulo: "Hago entregas y mandados locales",
-    descripcion: "Ejemplo piloto: un agente ofrece movilidad, entrega y apoyo por zona.",
-    hashtags: ["Agente", "Entregas", "Moto"],
-    imagen: "assets/feed4919-agente-entregas.webp",
-    posicion: "center 40%",
-    accion: "Trabajar como agente",
-    detalle: "Ver agentes",
-    destino: "agentes",
-    flujo: "mandadoAgente",
-    likes: 31,
-    comentarios: 8,
-    compartidos: 15
+    "id": "v4921-solicitante-viaje",
+    "tipo": "solicitantes",
+    "nombre": "Patricia Vega",
+    "rol": "Solicitante",
+    "ubicacion": "Metepec, México",
+    "titulo": "Busco viaje compartido mañana",
+    "descripcion": "Necesito traslado temprano hacia Toluca. Puedo cooperar con gasolina o cuota acordada.",
+    "hashtags": [
+      "Viaje",
+      "Movilidad",
+      "Compartido"
+    ],
+    "imagen": "assets/feed4919-solicitante-mudanza.webp",
+    "posicion": "center 44%",
+    "accion": "Hacerlo real",
+    "detalle": "Publicar viaje",
+    "destino": "solicitantes",
+    "flujo": "publicarNecesidad",
+    "likes": 31,
+    "comentarios": 6,
+    "compartidos": 11,
+    "plantilla": "Busco viaje compartido hacia mi destino. Me interesa acordar punto de salida, horario, cooperación y trato seguro con la persona que viaje por la misma ruta."
   },
   {
-    id: "feed4919-agente-redes",
-    tipo: "agentes",
-    nombre: "Ana Torres",
-    rol: "Agente",
-    ubicacion: "Toluca, México",
-    titulo: "Promociono negocios por comisión",
-    descripcion: "Ejemplo piloto: convierte redes, WhatsApp y contenido en oportunidades por resultado.",
-    hashtags: ["Agente", "Comisión", "Redes"],
-    imagen: "assets/feed4919-agente-redes.webp",
-    posicion: "center 38%",
-    accion: "Ganar comisión",
-    detalle: "Ver oportunidades",
-    destino: "agentes",
-    flujo: "crecimientoAgente",
-    likes: 45,
-    comentarios: 10,
-    compartidos: 22
+    "id": "v4921-solicitante-muebles",
+    "tipo": "solicitantes",
+    "nombre": "Rafael Soto",
+    "rol": "Solicitante",
+    "ubicacion": "Metepec, México",
+    "titulo": "Busco apoyo para mover muebles",
+    "descripcion": "Necesito ayuda para mover dos muebles chicos dentro de la misma colonia.",
+    "hashtags": [
+      "Apoyo",
+      "Mudanza",
+      "Vecinos"
+    ],
+    "imagen": "assets/feed4919-solicitante-mudanza.webp",
+    "posicion": "center 41%",
+    "accion": "Hacerlo real",
+    "detalle": "Publicar solicitud",
+    "destino": "solicitantes",
+    "flujo": "publicarNecesidad",
+    "likes": 19,
+    "comentarios": 3,
+    "compartidos": 8,
+    "plantilla": "Necesito apoyo para mover algunos muebles dentro de mi zona. Busco acordar horario, costo y condiciones directamente con alguien disponible."
   },
   {
-    id: "feed4919-agente-mandados",
-    tipo: "agentes",
-    nombre: "Pedro Luna",
-    rol: "Agente",
-    ubicacion: "Mexicaltzingo, México",
-    titulo: "Puedo hacer compras con evidencia",
-    descripcion: "Ejemplo piloto: agente de mandados verificados con disponibilidad local.",
-    hashtags: ["Agente", "Mandados", "Confianza"],
-    imagen: "assets/feed4919-agente-mandados.webp",
-    posicion: "center 42%",
-    accion: "Registrarme",
-    detalle: "Ver mandados",
-    destino: "agentes",
-    flujo: "mandadoAgente",
-    likes: 28,
-    comentarios: 4,
-    compartidos: 9
+    "id": "v4921-agente-entregas",
+    "tipo": "agentes",
+    "nombre": "Carlos Méndez",
+    "rol": "Agente",
+    "ubicacion": "Guadalajara, Jalisco",
+    "titulo": "Hago entregas locales por la tarde",
+    "descripcion": "Tengo moto y puedo apoyar con paquetes pequeños, documentos y mandados cercanos.",
+    "hashtags": [
+      "Agente",
+      "Entregas",
+      "Moto"
+    ],
+    "imagen": "assets/feed4919-agente-entregas.webp",
+    "posicion": "center 40%",
+    "accion": "Hacerlo real",
+    "detalle": "Trabajar como agente",
+    "destino": "agentes",
+    "flujo": "mandadoAgente",
+    "likes": 31,
+    "comentarios": 8,
+    "compartidos": 15,
+    "plantilla": "Ofrezco apoyo para entregas locales por la tarde. Puedo llevar paquetes pequeños, documentos o pedidos en zonas cercanas con trato directo."
   },
   {
-    id: "feed4919-negocio-panaderia",
-    tipo: "negocios",
-    nombre: "Panadería La Esquina",
-    rol: "Negocio local",
-    ubicacion: "Toluca, México",
-    titulo: "Pedidos por chat y pickup",
-    descripcion: "Ejemplo piloto: negocio local con catálogo, pedidos, pickup y contacto directo futuro.",
-    hashtags: ["Negocio", "Pedidos", "Pickup"],
-    imagen: "assets/feed4919-negocio-panaderia.webp",
-    posicion: "center 42%",
-    accion: "Activar negocio",
-    detalle: "Ver negocios",
-    destino: "negocios",
-    flujo: "chatNegocio",
-    likes: 18,
-    comentarios: 4,
-    compartidos: 9
+    "id": "v4921-agente-mandados",
+    "tipo": "agentes",
+    "nombre": "Pedro Luna",
+    "rol": "Agente",
+    "ubicacion": "Mexicaltzingo, México",
+    "titulo": "Puedo hacer mandados verificados",
+    "descripcion": "Realizo compras con evidencia de precio, ticket, cambio y entrega final.",
+    "hashtags": [
+      "Agente",
+      "Mandados",
+      "Evidencia"
+    ],
+    "imagen": "assets/feed4919-agente-mandados.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Ser agente",
+    "destino": "agentes",
+    "flujo": "mandadoAgente",
+    "likes": 28,
+    "comentarios": 4,
+    "compartidos": 9,
+    "plantilla": "Puedo realizar mandados verificados en mi zona. Registro evidencia del precio, compra, ticket, cambio y entrega para reducir dudas."
   },
   {
-    id: "feed4919-negocio-estetica",
-    tipo: "negocios",
-    nombre: "Estética Bella Zona",
-    rol: "Negocio local",
-    ubicacion: "Metepec, México",
-    titulo: "Citas y servicios por chat",
-    descripcion: "Ejemplo piloto: agenda citas, muestra servicios y atiende clientes desde Conecta.",
-    hashtags: ["Negocio", "Citas", "Belleza"],
-    imagen: "assets/feed4919-negocio-estetica.webp",
-    posicion: "center 42%",
-    accion: "Activar citas",
-    detalle: "Ver negocios",
-    destino: "negocios",
-    flujo: "chatNegocio",
-    likes: 26,
-    comentarios: 6,
-    compartidos: 10
+    "id": "v4921-agente-redes",
+    "tipo": "agentes",
+    "nombre": "Ana Torres",
+    "rol": "Agente",
+    "ubicacion": "Toluca, México",
+    "titulo": "Apoyo negocios en redes sociales",
+    "descripcion": "Puedo crear publicaciones, estados de WhatsApp y contenido básico por comisión.",
+    "hashtags": [
+      "Agente",
+      "Redes",
+      "Comisión"
+    ],
+    "imagen": "assets/feed4919-agente-redes.webp",
+    "posicion": "center 38%",
+    "accion": "Hacerlo real",
+    "detalle": "Ganar comisión",
+    "destino": "agentes",
+    "flujo": "crecimientoAgente",
+    "likes": 45,
+    "comentarios": 10,
+    "compartidos": 22,
+    "plantilla": "Puedo ayudar a negocios locales con publicaciones, estados de WhatsApp y promoción sencilla. Me interesa trabajar por comisión o resultado acordado."
   },
   {
-    id: "feed4919-negocio-ferreteria",
-    tipo: "negocios",
-    nombre: "Ferretería San José",
-    rol: "Negocio local",
-    ubicacion: "Chapultepec, México",
-    titulo: "Cotizaciones rápidas por chat",
-    descripcion: "Ejemplo piloto: muestra inventario básico, cotiza y coordina entrega o pickup.",
-    hashtags: ["Negocio", "Cotización", "Herramientas"],
-    imagen: "assets/feed4919-negocio-ferreteria.webp",
-    posicion: "center 42%",
-    accion: "Activar negocio",
-    detalle: "Ver negocios",
-    destino: "negocios",
-    flujo: "chatNegocio",
-    likes: 22,
-    comentarios: 5,
-    compartidos: 8
+    "id": "v4921-agente-auto",
+    "tipo": "agentes",
+    "nombre": "Miguel Ángel",
+    "rol": "Agente",
+    "ubicacion": "Atizapán, México",
+    "titulo": "Tengo auto y apoyo con traslados",
+    "descripcion": "Puedo mover compras, paquetes medianos o acompañar entregas locales.",
+    "hashtags": [
+      "Agente",
+      "Auto",
+      "Traslados"
+    ],
+    "imagen": "assets/social-post-agente.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Ofrecer apoyo",
+    "destino": "agentes",
+    "flujo": "mandadoAgente",
+    "likes": 34,
+    "comentarios": 7,
+    "compartidos": 13,
+    "plantilla": "Tengo auto y puedo apoyar con traslados, paquetes medianos o compras dentro de la zona. Busco acuerdos claros y trato directo."
   },
   {
-    id: "feed4919-servicio-reparacion",
-    tipo: "servicios",
-    nombre: "Luis Hernández",
-    rol: "Servicio",
-    ubicacion: "Metepec, México",
-    titulo: "Reparación de electrodomésticos",
-    descripcion: "Ejemplo piloto: ofrece servicio local y permite que las personas te contacten directo.",
-    hashtags: ["Servicio", "Reparación", "Hogar"],
-    imagen: "assets/feed4919-servicio-reparacion.webp",
-    posicion: "center 40%",
-    accion: "Publicar servicio",
-    detalle: "Ver servicios",
-    destino: "servicios",
-    flujo: "publicarOferta",
-    likes: 21,
-    comentarios: 3,
-    compartidos: 7
+    "id": "v4921-agente-acompanamiento",
+    "tipo": "agentes",
+    "nombre": "Elena Cruz",
+    "rol": "Agente",
+    "ubicacion": "CDMX",
+    "titulo": "Acompaño a adultos mayores",
+    "descripcion": "Ofrezco apoyo para citas, compras sencillas y acompañamiento por zona.",
+    "hashtags": [
+      "Agente",
+      "Apoyo",
+      "Confianza"
+    ],
+    "imagen": "assets/feed4919-agente-entregas.webp",
+    "posicion": "center 37%",
+    "accion": "Hacerlo real",
+    "detalle": "Publicar apoyo",
+    "destino": "agentes",
+    "flujo": "publicarOferta",
+    "likes": 27,
+    "comentarios": 5,
+    "compartidos": 10,
+    "plantilla": "Ofrezco apoyo y acompañamiento para adultos mayores en compras, citas o trámites sencillos. Trabajo por zona y con horarios acordados."
   },
   {
-    id: "feed4919-servicio-limpieza",
-    tipo: "servicios",
-    nombre: "Claudia Reyes",
-    rol: "Servicio",
-    ubicacion: "Toluca, México",
-    titulo: "Limpieza por día o por zona",
-    descripcion: "Ejemplo piloto: publica disponibilidad, zona y tipo de servicio para trato directo.",
-    hashtags: ["Servicio", "Limpieza", "Disponible"],
-    imagen: "assets/feed4919-servicio-limpieza.webp",
-    posicion: "center 42%",
-    accion: "Ofrecer servicio",
-    detalle: "Ver servicios",
-    destino: "servicios",
-    flujo: "publicarOferta",
-    likes: 33,
-    comentarios: 6,
-    compartidos: 11
+    "id": "v4921-negocio-panaderia",
+    "tipo": "negocios",
+    "nombre": "Panadería La Esquina",
+    "rol": "Negocio local",
+    "ubicacion": "Toluca, México",
+    "titulo": "Panadería recibe pedidos por chat",
+    "descripcion": "Pan dulce, bolillo y pedidos para recoger. Atención directa y horarios claros.",
+    "hashtags": [
+      "Negocio",
+      "Panadería",
+      "Pickup"
+    ],
+    "imagen": "assets/feed4919-negocio-panaderia.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Activar negocio",
+    "destino": "negocios",
+    "flujo": "chatNegocio",
+    "likes": 18,
+    "comentarios": 4,
+    "compartidos": 9,
+    "plantilla": "Tengo una panadería local y quiero recibir pedidos por chat, mostrar productos, horarios y coordinar pickup o entrega cercana."
   },
   {
-    id: "feed4919-servicio-mascotas",
-    tipo: "servicios",
-    nombre: "Paseos Caninos Leo",
-    rol: "Servicio",
-    ubicacion: "CDMX",
-    titulo: "Paseos y cuidado de mascotas",
-    descripcion: "Ejemplo piloto: servicio de confianza para vecinos, mascotas y horarios locales.",
-    hashtags: ["Servicio", "Mascotas", "Vecinos"],
-    imagen: "assets/feed4919-servicio-mascotas.webp",
-    posicion: "center 42%",
-    accion: "Publicar servicio",
-    detalle: "Ver servicios",
-    destino: "servicios",
-    flujo: "publicarOferta",
-    likes: 40,
-    comentarios: 9,
-    compartidos: 14
+    "id": "v4921-negocio-estetica",
+    "tipo": "negocios",
+    "nombre": "Estética Bella Zona",
+    "rol": "Negocio local",
+    "ubicacion": "Metepec, México",
+    "titulo": "Estética agenda citas por WhatsApp",
+    "descripcion": "Servicios de corte, uñas y peinado con disponibilidad por horario.",
+    "hashtags": [
+      "Negocio",
+      "Citas",
+      "Belleza"
+    ],
+    "imagen": "assets/feed4919-negocio-estetica.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Activar citas",
+    "destino": "negocios",
+    "flujo": "chatNegocio",
+    "likes": 26,
+    "comentarios": 6,
+    "compartidos": 10,
+    "plantilla": "Tengo una estética y quiero organizar citas, servicios, horarios y contacto por chat para que mis clientes puedan agendar fácilmente."
   },
   {
-    id: "feed4919-crecimiento-creditos",
-    tipo: "crecimiento",
-    nombre: "Campaña local",
-    rol: "Crecimiento",
-    ubicacion: "Estado de México",
-    titulo: "Busco clientes para servicio financiero",
-    descripcion: "Ejemplo piloto: campaña por resultado con reglas claras y comisión acordada.",
-    hashtags: ["Crecimiento", "Clientes", "Comisión"],
-    imagen: "assets/feed4919-crecimiento-creditos.webp",
-    posicion: "center 42%",
-    accion: "Crear campaña",
-    detalle: "Ver crecimiento",
-    destino: "crecimiento",
-    flujo: "crecimientoCampana",
-    likes: 42,
-    comentarios: 11,
-    compartidos: 18
+    "id": "v4921-negocio-ferreteria",
+    "tipo": "negocios",
+    "nombre": "Ferretería San José",
+    "rol": "Negocio local",
+    "ubicacion": "Chapultepec, México",
+    "titulo": "Ferretería cotiza y entrega cerca",
+    "descripcion": "Herramientas, material básico y cotizaciones rápidas para vecinos.",
+    "hashtags": [
+      "Negocio",
+      "Cotización",
+      "Herramientas"
+    ],
+    "imagen": "assets/feed4919-negocio-ferreteria.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Activar negocio",
+    "destino": "negocios",
+    "flujo": "chatNegocio",
+    "likes": 22,
+    "comentarios": 5,
+    "compartidos": 8,
+    "plantilla": "Tengo una ferretería y quiero recibir consultas de productos, cotizaciones y pedidos para entrega cercana o pickup."
   },
   {
-    id: "feed4919-crecimiento-campana",
-    tipo: "crecimiento",
-    nombre: "Negocio en promoción",
-    rol: "Crecimiento",
-    ubicacion: "Todo México",
-    titulo: "Necesito promotores digitales",
-    descripcion: "Ejemplo piloto: conecta con agentes que pueden mover campañas por comisión.",
-    hashtags: ["Crecimiento", "Promoción", "Resultados"],
-    imagen: "assets/feed4919-crecimiento-campana.webp",
-    posicion: "center 42%",
-    accion: "Conseguir clientes",
-    detalle: "Ver campañas",
-    destino: "crecimiento",
-    flujo: "crecimientoCampana",
-    likes: 35,
-    comentarios: 8,
-    compartidos: 13
+    "id": "v4921-negocio-carpinteria",
+    "tipo": "negocios",
+    "nombre": "Carpintería Los Pinos",
+    "rol": "Negocio local",
+    "ubicacion": "San Mateo, México",
+    "titulo": "Carpintería acepta cotizaciones",
+    "descripcion": "Fabricación y reparación sencilla de muebles con revisión por zona.",
+    "hashtags": [
+      "Negocio",
+      "Carpintería",
+      "Cotización"
+    ],
+    "imagen": "assets/social-post-negocio.webp",
+    "posicion": "center 44%",
+    "accion": "Hacerlo real",
+    "detalle": "Activar cotizaciones",
+    "destino": "negocios",
+    "flujo": "chatNegocio",
+    "likes": 29,
+    "comentarios": 6,
+    "compartidos": 12,
+    "plantilla": "Tengo una carpintería y quiero recibir solicitudes de cotización, fotos de referencia y datos de contacto para acordar trabajos."
   },
   {
-    id: "feed4919-crecimiento-clientes",
-    tipo: "crecimiento",
-    nombre: "Emprendedor local",
-    rol: "Crecimiento",
-    ubicacion: "Toluca, México",
-    titulo: "Pago comisión por cada venta",
-    descripcion: "Ejemplo piloto: acuerda resultado válido, zona, comisión y seguimiento.",
-    hashtags: ["Crecimiento", "Ventas", "TratoDirecto"],
-    imagen: "assets/feed4919-crecimiento-clientes.webp",
-    posicion: "center 42%",
-    accion: "Publicar campaña",
-    detalle: "Ver crecimiento",
-    destino: "crecimiento",
-    flujo: "crecimientoCampana",
-    likes: 47,
-    comentarios: 12,
-    compartidos: 19
+    "id": "v4921-negocio-restaurante",
+    "tipo": "negocios",
+    "nombre": "Cocina Doña Lety",
+    "rol": "Negocio local",
+    "ubicacion": "Toluca, México",
+    "titulo": "Comida casera para recoger",
+    "descripcion": "Menú del día, pedidos por chat y opción de recoger en el local.",
+    "hashtags": [
+      "Negocio",
+      "Comida",
+      "Pickup"
+    ],
+    "imagen": "assets/feed4919-negocio-panaderia.webp",
+    "posicion": "center 48%",
+    "accion": "Hacerlo real",
+    "detalle": "Activar pedidos",
+    "destino": "negocios",
+    "flujo": "chatNegocio",
+    "likes": 33,
+    "comentarios": 9,
+    "compartidos": 16,
+    "plantilla": "Tengo un negocio de comida y quiero mostrar menú, recibir pedidos por chat y coordinar pickup o entrega local."
   },
   {
-    id: "feed4919-embajadores-recomienda",
-    tipo: "embajadores",
-    nombre: "Embajadores Conecta",
-    rol: "Embajadores",
-    ubicacion: "Todo México",
-    titulo: "Gana $50 por membresía referida",
-    descripcion: "Ejemplo piloto: membresía anual $98 MXN, comisión clara para activar comunidad.",
-    hashtags: ["Embajadores", "Membresía", "Ingresos"],
-    imagen: "assets/feed4919-embajadores-recomienda.webp",
-    posicion: "center 42%",
-    accion: "Ser embajador",
-    detalle: "Ver manual",
-    destino: "embajadores",
-    flujo: "embajadores",
-    likes: 57,
-    comentarios: 14,
-    compartidos: 21
+    "id": "v4921-servicio-reparacion",
+    "tipo": "servicios",
+    "nombre": "Luis Hernández",
+    "rol": "Servicio",
+    "ubicacion": "Metepec, México",
+    "titulo": "Reparación de electrodomésticos",
+    "descripcion": "Reviso lavadoras, licuadoras, hornos y fallas sencillas a domicilio.",
+    "hashtags": [
+      "Servicio",
+      "Reparación",
+      "Hogar"
+    ],
+    "imagen": "assets/feed4919-servicio-reparacion.webp",
+    "posicion": "center 40%",
+    "accion": "Hacerlo real",
+    "detalle": "Publicar servicio",
+    "destino": "servicios",
+    "flujo": "publicarOferta",
+    "likes": 21,
+    "comentarios": 3,
+    "compartidos": 7,
+    "plantilla": "Ofrezco revisión y reparación básica de electrodomésticos a domicilio. Indico zona, horarios y condiciones para trato directo."
   },
   {
-    id: "feed4919-embajadores-comision",
-    tipo: "embajadores",
-    nombre: "Comisión Conecta",
-    rol: "Embajadores",
-    ubicacion: "México",
-    titulo: "Promueve membresías anuales",
-    descripcion: "Ejemplo piloto: comparte tu código, registra referido y revisa cortes manuales.",
-    hashtags: ["Embajadores", "Comisión", "Referidos"],
-    imagen: "assets/feed4919-embajadores-comision.webp",
-    posicion: "center 42%",
-    accion: "Cobrar membresía",
-    detalle: "Ver membresía",
-    destino: "embajadores",
-    flujo: "embajadoresPagos",
-    likes: 61,
-    comentarios: 15,
-    compartidos: 24
+    "id": "v4921-servicio-limpieza",
+    "tipo": "servicios",
+    "nombre": "Claudia Reyes",
+    "rol": "Servicio",
+    "ubicacion": "Toluca, México",
+    "titulo": "Limpieza por día o por horas",
+    "descripcion": "Apoyo en limpieza de casa, oficina o local con horario acordado.",
+    "hashtags": [
+      "Servicio",
+      "Limpieza",
+      "Disponible"
+    ],
+    "imagen": "assets/feed4919-servicio-limpieza.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Ofrecer servicio",
+    "destino": "servicios",
+    "flujo": "publicarOferta",
+    "likes": 33,
+    "comentarios": 6,
+    "compartidos": 11,
+    "plantilla": "Ofrezco servicio de limpieza por día o por horas. Puedo trabajar por zona, con horario acordado y trato directo."
   },
   {
-    id: "feed4919-embajadores-comunidad",
-    tipo: "embajadores",
-    nombre: "Activación local",
-    rol: "Embajadores",
-    ubicacion: "Municipios",
-    titulo: "Invita negocios, agentes y vecinos",
-    descripcion: "Ejemplo piloto: ayuda a crecer la red local y gana por membresías activadas.",
-    hashtags: ["Embajadores", "Comunidad", "Municipios"],
-    imagen: "assets/feed4919-embajadores-comunidad.webp",
-    posicion: "center 42%",
-    accion: "Registrarme",
-    detalle: "Ver embajadores",
-    destino: "embajadores",
-    flujo: "embajadores",
-    likes: 44,
-    comentarios: 10,
-    compartidos: 16
+    "id": "v4921-servicio-computacion",
+    "tipo": "servicios",
+    "nombre": "Mónica Salas",
+    "rol": "Servicio",
+    "ubicacion": "Chapultepec, México",
+    "titulo": "Clases de computación para adultos",
+    "descripcion": "Enseño uso básico de celular, computadora, redes sociales y aplicaciones.",
+    "hashtags": [
+      "Servicio",
+      "Computación",
+      "Aprendizaje"
+    ],
+    "imagen": "assets/social-post-servicio.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Publicar clase",
+    "destino": "servicios",
+    "flujo": "publicarOferta",
+    "likes": 39,
+    "comentarios": 7,
+    "compartidos": 15,
+    "plantilla": "Ofrezco clases básicas de celular y computadora para adultos. Enseño paso a paso redes sociales, aplicaciones y herramientas útiles."
   },
   {
-    id: "feed4919-aprendizaje-computacion",
-    tipo: "aprendizaje",
-    nombre: "Aprendizaje Conecta",
-    rol: "Aprendizaje",
-    ubicacion: "Desde tu celular",
-    titulo: "Computación básica para trabajar",
-    descripcion: "Ejemplo piloto: aprende habilidades prácticas para generar más oportunidades.",
-    hashtags: ["Aprendizaje", "Computación", "Ingresos"],
-    imagen: "assets/feed4919-aprendizaje-computacion.webp",
-    posicion: "center 42%",
-    accion: "Aprender",
-    detalle: "Ver cursos",
-    destino: "aprendizaje",
-    flujo: "aprendizaje",
-    likes: 36,
-    comentarios: 6,
-    compartidos: 13
+    "id": "v4921-servicio-electricidad",
+    "tipo": "servicios",
+    "nombre": "Raúl Ortega",
+    "rol": "Servicio",
+    "ubicacion": "Mexicaltzingo, México",
+    "titulo": "Instalación eléctrica sencilla",
+    "descripcion": "Cambio contactos, apagadores, lámparas y reparaciones básicas por zona.",
+    "hashtags": [
+      "Servicio",
+      "Electricidad",
+      "Hogar"
+    ],
+    "imagen": "assets/feed4919-servicio-reparacion.webp",
+    "posicion": "center 45%",
+    "accion": "Hacerlo real",
+    "detalle": "Ofrecer reparación",
+    "destino": "servicios",
+    "flujo": "publicarOferta",
+    "likes": 24,
+    "comentarios": 5,
+    "compartidos": 10,
+    "plantilla": "Ofrezco instalación eléctrica sencilla: contactos, apagadores, lámparas y revisiones básicas. Trabajo por zona y con presupuesto acordado."
   },
   {
-    id: "feed4919-aprendizaje-oficios",
-    tipo: "aprendizaje",
-    nombre: "Oficios útiles",
-    rol: "Aprendizaje",
-    ubicacion: "Online",
-    titulo: "Aprende un oficio y ofrece servicio",
-    descripcion: "Ejemplo piloto: rutas de aprendizaje para conectar capacitación con ingresos.",
-    hashtags: ["Aprendizaje", "Oficios", "Servicio"],
-    imagen: "assets/feed4919-aprendizaje-oficios.webp",
-    posicion: "center 42%",
-    accion: "Ver rutas",
-    detalle: "Ver aprendizaje",
-    destino: "aprendizaje",
-    flujo: "aprendizaje",
-    likes: 39,
-    comentarios: 7,
-    compartidos: 15
+    "id": "v4921-servicio-mascotas",
+    "tipo": "servicios",
+    "nombre": "Paseos Caninos Leo",
+    "rol": "Servicio",
+    "ubicacion": "CDMX",
+    "titulo": "Paseos y cuidado de mascotas",
+    "descripcion": "Paseos por horario, cuidado temporal y apoyo a vecinos con mascotas.",
+    "hashtags": [
+      "Servicio",
+      "Mascotas",
+      "Vecinos"
+    ],
+    "imagen": "assets/feed4919-servicio-mascotas.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Publicar servicio",
+    "destino": "servicios",
+    "flujo": "publicarOferta",
+    "likes": 40,
+    "comentarios": 9,
+    "compartidos": 14,
+    "plantilla": "Ofrezco paseos y cuidado de mascotas por horario. Puedo coordinar zona, frecuencia y condiciones directamente con el dueño."
   },
   {
-    id: "feed4919-aprendizaje-ventas",
-    tipo: "aprendizaje",
-    nombre: "Ventas y negocio",
-    rol: "Aprendizaje",
-    ubicacion: "Online",
-    titulo: "Mejora ventas y atención al cliente",
-    descripcion: "Ejemplo piloto: aprende para vender mejor, atender clientes y crecer tu negocio.",
-    hashtags: ["Aprendizaje", "Ventas", "Negocio"],
-    imagen: "assets/feed4919-aprendizaje-ventas.webp",
-    posicion: "center 42%",
-    accion: "Empezar ruta",
-    detalle: "Ver cursos",
-    destino: "aprendizaje",
-    flujo: "aprendizaje",
-    likes: 52,
-    comentarios: 9,
-    compartidos: 17
+    "id": "v4921-crecimiento-creditos",
+    "tipo": "crecimiento",
+    "nombre": "Campaña local",
+    "rol": "Crecimiento",
+    "ubicacion": "Estado de México",
+    "titulo": "Busco clientes para servicio financiero",
+    "descripcion": "Campaña por resultado con reglas claras, contacto válido y comisión acordada.",
+    "hashtags": [
+      "Crecimiento",
+      "Clientes",
+      "Comisión"
+    ],
+    "imagen": "assets/feed4919-crecimiento-creditos.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Crear campaña",
+    "destino": "crecimiento",
+    "flujo": "crecimientoCampana",
+    "likes": 42,
+    "comentarios": 11,
+    "compartidos": 18,
+    "plantilla": "Busco personas que me ayuden a conseguir clientes interesados para un servicio. Quiero definir resultado válido, comisión, zona y condiciones claras."
+  },
+  {
+    "id": "v4921-crecimiento-restaurante",
+    "tipo": "crecimiento",
+    "nombre": "Restaurante en crecimiento",
+    "rol": "Crecimiento",
+    "ubicacion": "Toluca, México",
+    "titulo": "Necesito más pedidos por semana",
+    "descripcion": "Busco promotores digitales que ayuden a mover menú y pedidos por comisión.",
+    "hashtags": [
+      "Crecimiento",
+      "Pedidos",
+      "Promoción"
+    ],
+    "imagen": "assets/feed4919-crecimiento-campana.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Conseguir clientes",
+    "destino": "crecimiento",
+    "flujo": "crecimientoCampana",
+    "likes": 35,
+    "comentarios": 8,
+    "compartidos": 13,
+    "plantilla": "Tengo un negocio y quiero conseguir más pedidos por semana. Busco agentes o promotores que ayuden con difusión por resultado."
+  },
+  {
+    "id": "v4921-crecimiento-redes",
+    "tipo": "crecimiento",
+    "nombre": "Marca local",
+    "rol": "Crecimiento",
+    "ubicacion": "Metepec, México",
+    "titulo": "Busco quien publique mi negocio",
+    "descripcion": "Necesito apoyo con flyers, estados de WhatsApp y publicaciones locales.",
+    "hashtags": [
+      "Crecimiento",
+      "Redes",
+      "Marketing"
+    ],
+    "imagen": "assets/social-post-crecimiento.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Publicar campaña",
+    "destino": "crecimiento",
+    "flujo": "crecimientoCampana",
+    "likes": 47,
+    "comentarios": 12,
+    "compartidos": 19,
+    "plantilla": "Necesito apoyo para promocionar mi negocio en redes, estados de WhatsApp y grupos locales. Quiero pagar por resultado o acuerdo claro."
+  },
+  {
+    "id": "v4921-crecimiento-ventas",
+    "tipo": "crecimiento",
+    "nombre": "Tienda local",
+    "rol": "Crecimiento",
+    "ubicacion": "Chapultepec, México",
+    "titulo": "Pago comisión por cada venta",
+    "descripcion": "Busco personas que recomienden productos y ganen por venta concretada.",
+    "hashtags": [
+      "Crecimiento",
+      "Ventas",
+      "Referidos"
+    ],
+    "imagen": "assets/feed4919-crecimiento-clientes.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Crear comisión",
+    "destino": "crecimiento",
+    "flujo": "crecimientoCampana",
+    "likes": 44,
+    "comentarios": 10,
+    "compartidos": 18,
+    "plantilla": "Busco personas que recomienden mis productos y ganen comisión por cada venta concretada. Quiero registrar condiciones y seguimiento."
+  },
+  {
+    "id": "v4921-crecimiento-citas",
+    "tipo": "crecimiento",
+    "nombre": "Consultorio local",
+    "rol": "Crecimiento",
+    "ubicacion": "CDMX",
+    "titulo": "Necesito citas reales para mi servicio",
+    "descripcion": "Pago por cita válida y cliente interesado, con reglas claras de validación.",
+    "hashtags": [
+      "Crecimiento",
+      "Citas",
+      "Resultado"
+    ],
+    "imagen": "assets/feed4919-crecimiento-creditos.webp",
+    "posicion": "center 39%",
+    "accion": "Hacerlo real",
+    "detalle": "Captar citas",
+    "destino": "crecimiento",
+    "flujo": "crecimientoCampana",
+    "likes": 38,
+    "comentarios": 8,
+    "compartidos": 14,
+    "plantilla": "Necesito generar citas reales para mi servicio. Quiero acordar pago por cita válida, zona, requisitos y forma de validación."
+  },
+  {
+    "id": "v4921-embajador-comision",
+    "tipo": "embajadores",
+    "nombre": "Embajadores Conecta",
+    "rol": "Embajadores",
+    "ubicacion": "Todo México",
+    "titulo": "Gana $50 por membresía referida",
+    "descripcion": "Membresía anual $98 MXN. Recomienda Conecta y gana por activación pagada.",
+    "hashtags": [
+      "Embajadores",
+      "Membresía",
+      "Ingresos"
+    ],
+    "imagen": "assets/feed4919-embajadores-recomienda.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Ser embajador",
+    "destino": "embajadores",
+    "flujo": "embajadores",
+    "likes": 57,
+    "comentarios": 14,
+    "compartidos": 21,
+    "plantilla": "Quiero ser embajador Conecta para recomendar la app, registrar referidos y ganar comisión por membresías anuales pagadas."
+  },
+  {
+    "id": "v4921-embajador-negocios",
+    "tipo": "embajadores",
+    "nombre": "Activación de negocios",
+    "rol": "Embajadores",
+    "ubicacion": "Municipios",
+    "titulo": "Invita negocios de tu colonia",
+    "descripcion": "Ayuda a negocios locales a entrar a Conecta y gana por membresía activada.",
+    "hashtags": [
+      "Embajadores",
+      "Negocios",
+      "Comisión"
+    ],
+    "imagen": "assets/social-post-embajadores.webp",
+    "posicion": "center 43%",
+    "accion": "Hacerlo real",
+    "detalle": "Invitar negocios",
+    "destino": "embajadores",
+    "flujo": "embajadores",
+    "likes": 49,
+    "comentarios": 12,
+    "compartidos": 20,
+    "plantilla": "Quiero invitar negocios locales a Conecta Servicios y explicarles cómo publicar, aparecer y contactar clientes."
+  },
+  {
+    "id": "v4921-embajador-vecinos",
+    "tipo": "embajadores",
+    "nombre": "Comunidad Conecta",
+    "rol": "Embajadores",
+    "ubicacion": "Estado de México",
+    "titulo": "Ayuda a vecinos a publicar",
+    "descripcion": "Orienta a personas que necesitan ayuda, servicios o ingresos locales.",
+    "hashtags": [
+      "Embajadores",
+      "Vecinos",
+      "Comunidad"
+    ],
+    "imagen": "assets/feed4919-embajadores-comunidad.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Registrar referido",
+    "destino": "embajadores",
+    "flujo": "embajadores",
+    "likes": 44,
+    "comentarios": 10,
+    "compartidos": 16,
+    "plantilla": "Quiero ayudar a vecinos a publicar necesidades, servicios o negocios dentro de Conecta Servicios y registrar mis referidos."
+  },
+  {
+    "id": "v4921-embajador-municipio",
+    "tipo": "embajadores",
+    "nombre": "Embajador municipal",
+    "rol": "Embajadores",
+    "ubicacion": "Chapultepec, México",
+    "titulo": "Activa tu municipio con Conecta",
+    "descripcion": "Comparte la app, registra miembros y ayuda a crear movimiento local.",
+    "hashtags": [
+      "Embajadores",
+      "Municipio",
+      "Activación"
+    ],
+    "imagen": "assets/feed4919-embajadores-comision.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Activar municipio",
+    "destino": "embajadores",
+    "flujo": "embajadores",
+    "likes": 61,
+    "comentarios": 15,
+    "compartidos": 24,
+    "plantilla": "Quiero activar mi municipio como embajador, invitar comercios, agentes, servicios y personas que quieran publicar."
+  },
+  {
+    "id": "v4921-embajador-manual",
+    "tipo": "embajadores",
+    "nombre": "Manual Conecta",
+    "rol": "Embajadores",
+    "ubicacion": "Desde tu celular",
+    "titulo": "Aprende a explicar la app",
+    "descripcion": "Guía rápida para entender publicaciones, membresías, referidos y comisiones.",
+    "hashtags": [
+      "Embajadores",
+      "Manual",
+      "Aprender"
+    ],
+    "imagen": "assets/feed4919-embajadores-recomienda.webp",
+    "posicion": "center 45%",
+    "accion": "Hacerlo real",
+    "detalle": "Ver manual",
+    "destino": "embajadores",
+    "flujo": "embajadores",
+    "likes": 37,
+    "comentarios": 7,
+    "compartidos": 12,
+    "plantilla": "Quiero aprender cómo explicar Conecta Servicios, cómo registrar referidos y cómo orientar a nuevos miembros."
+  },
+  {
+    "id": "v4921-aprendizaje-computacion",
+    "tipo": "aprendizaje",
+    "nombre": "Aprendizaje Conecta",
+    "rol": "Aprendizaje",
+    "ubicacion": "Desde tu celular",
+    "titulo": "Computación básica para trabajar",
+    "descripcion": "Aprende celular, computadora, documentos y redes para mejorar tus oportunidades.",
+    "hashtags": [
+      "Aprendizaje",
+      "Computación",
+      "Ingresos"
+    ],
+    "imagen": "assets/feed4919-aprendizaje-computacion.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Aprender",
+    "destino": "aprendizaje",
+    "flujo": "aprendizaje",
+    "likes": 36,
+    "comentarios": 6,
+    "compartidos": 13,
+    "plantilla": "Quiero aprender computación básica para usar celular, documentos, aplicaciones y redes sociales de forma útil para trabajar o emprender."
+  },
+  {
+    "id": "v4921-aprendizaje-whatsapp",
+    "tipo": "aprendizaje",
+    "nombre": "Ventas por WhatsApp",
+    "rol": "Aprendizaje",
+    "ubicacion": "Online",
+    "titulo": "Aprende a vender por WhatsApp",
+    "descripcion": "Organiza mensajes, catálogo, seguimiento y trato con clientes.",
+    "hashtags": [
+      "Aprendizaje",
+      "Ventas",
+      "WhatsApp"
+    ],
+    "imagen": "assets/feed4919-aprendizaje-ventas.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Ver ruta",
+    "destino": "aprendizaje",
+    "flujo": "aprendizaje",
+    "likes": 52,
+    "comentarios": 9,
+    "compartidos": 17,
+    "plantilla": "Quiero aprender a vender por WhatsApp: responder clientes, organizar pedidos, dar seguimiento y cerrar ventas con mejor comunicación."
+  },
+  {
+    "id": "v4921-aprendizaje-oficios",
+    "tipo": "aprendizaje",
+    "nombre": "Oficios útiles",
+    "rol": "Aprendizaje",
+    "ubicacion": "Online",
+    "titulo": "Aprende un oficio y ofrece servicio",
+    "descripcion": "Conecta capacitación con servicios locales que puedas publicar después.",
+    "hashtags": [
+      "Aprendizaje",
+      "Oficios",
+      "Servicio"
+    ],
+    "imagen": "assets/feed4919-aprendizaje-oficios.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Ver cursos",
+    "destino": "aprendizaje",
+    "flujo": "aprendizaje",
+    "likes": 39,
+    "comentarios": 7,
+    "compartidos": 15,
+    "plantilla": "Quiero aprender un oficio útil para después ofrecerlo como servicio local dentro de Conecta Servicios."
+  },
+  {
+    "id": "v4921-aprendizaje-fotos",
+    "tipo": "aprendizaje",
+    "nombre": "Mejora tus publicaciones",
+    "rol": "Aprendizaje",
+    "ubicacion": "Desde tu celular",
+    "titulo": "Toma mejores fotos para vender",
+    "descripcion": "Aprende a mostrar productos, servicios o negocios con imágenes más claras.",
+    "hashtags": [
+      "Aprendizaje",
+      "Fotos",
+      "Negocio"
+    ],
+    "imagen": "assets/social-post-aprendizaje.webp",
+    "posicion": "center 42%",
+    "accion": "Hacerlo real",
+    "detalle": "Mejorar fotos",
+    "destino": "aprendizaje",
+    "flujo": "aprendizaje",
+    "likes": 41,
+    "comentarios": 6,
+    "compartidos": 14,
+    "plantilla": "Quiero aprender a tomar mejores fotos de productos, servicios o negocios para que mis publicaciones generen más confianza."
+  },
+  {
+    "id": "v4921-aprendizaje-atencion",
+    "tipo": "aprendizaje",
+    "nombre": "Atención al cliente",
+    "rol": "Aprendizaje",
+    "ubicacion": "Online",
+    "titulo": "Aprende a tratar mejor al cliente",
+    "descripcion": "Mensajes claros, seguimiento, confianza y cierre de acuerdos.",
+    "hashtags": [
+      "Aprendizaje",
+      "Cliente",
+      "Confianza"
+    ],
+    "imagen": "assets/feed4919-aprendizaje-ventas.webp",
+    "posicion": "center 45%",
+    "accion": "Hacerlo real",
+    "detalle": "Aprender atención",
+    "destino": "aprendizaje",
+    "flujo": "aprendizaje",
+    "likes": 46,
+    "comentarios": 8,
+    "compartidos": 16,
+    "plantilla": "Quiero aprender atención al cliente para responder mejor, dar seguimiento y generar confianza en servicios, negocios o ventas."
   }
 ];
 
@@ -2703,7 +3160,7 @@ function renderSocialHomeFeed() {
   const title = document.getElementById("homeFeedTitle");
   const hint = document.getElementById("homeFeedHint");
   if (title) title.textContent = homeFeedLabelV4918(homeFeedFilterV4918);
-  if (hint) hint.textContent = homeFeedFilterV4918 ? "Desliza ejemplos de esta categoría y toca Hacerlo real." : "Desliza oportunidades piloto y conviértelas en acciones reales.";
+  if (hint) hint.textContent = homeFeedFilterV4918 ? "Elige una plantilla y toca Hacerlo real." : "Explora plantillas vivas y conviértelas en tu publicación.";
   document.querySelectorAll("[data-feed-filter]").forEach(btn => {
     btn.classList.toggle("active", (btn.dataset.feedFilter || "") === homeFeedFilterV4918);
   });
@@ -2724,7 +3181,7 @@ function homeFeedPostCardV4918(post) {
     <div class="v4918-feed-media">
       <img src="${escapeHtml(post.imagen)}" alt="${escapeHtml(post.titulo)}" loading="lazy" style="object-position:${escapeHtml(post.posicion || 'center center')}" />
       <div class="v4918-media-gradient" aria-hidden="true"></div>
-      <div class="v4918-post-badge">PILOTO</div>
+      <div class="v4918-post-badge">EJEMPLO</div>
       <div class="v4918-post-author">
         <span class="v4918-avatar">${escapeHtml(initials)}</span>
         <span><strong>${escapeHtml(post.nombre)}</strong><small>${escapeHtml(post.rol)} · ${escapeHtml(post.ubicacion)}</small></span>
@@ -2786,8 +3243,8 @@ function makePilotReal(target = "") {
   const type = post?.tipo || target || "";
   const flow = post?.flujo || "";
   trackEvent("home_social_hacerlo_real", null, { tipo: type, post: post?.id || target, flujo: flow });
-  if (flow === "publicarNecesidad") return openOpportunityWizard("necesito");
-  if (flow === "publicarOferta") return openOpportunityWizard("ingresos");
+  if (flow === "publicarNecesidad") return openOpportunityWizard("necesito", post);
+  if (flow === "publicarOferta") return openOpportunityWizard("ingresos", post);
   if (flow === "mandadoSolicitud") return startSurveyFlow("mandadoSolicitud");
   if (flow === "mandadoAgente") return startSurveyFlow("mandadoAgente");
   if (flow === "chatNegocio") return startSurveyFlow("chatNegocio");
@@ -2796,83 +3253,14 @@ function makePilotReal(target = "") {
   if (flow === "embajadores") return showSection("embajadores");
   if (flow === "embajadoresPagos") { showSection("embajadores"); setTimeout(() => showAmbassadorPanel?.("pagos"), 80); return; }
   if (flow === "aprendizaje") return showSection("aprende");
-  if (type === "solicitantes") return openOpportunityWizard("necesito");
+  if (type === "solicitantes") return openOpportunityWizard("necesito", post);
   if (type === "agentes") return startSurveyFlow("mandadoAgente");
   if (type === "negocios") return startSurveyFlow("chatNegocio");
-  if (type === "servicios") return openOpportunityWizard("ingresos");
+  if (type === "servicios") return openOpportunityWizard("ingresos", post);
   if (type === "crecimiento") return startSurveyFlow("crecimientoMenu");
   if (type === "embajadores") return showSection("embajadores");
   if (type === "aprendizaje") return showSection("aprende");
   return startOpportunityGuide();
-}
-
-
-// v4.9.20 — Home pública clara + demo para inversionistas separada
-let demoFeedFilterV4920 = "";
-
-function publicHomeStoriesV4920() {
-  const preferred = [
-    "feed4919-solicitante-mandado",
-    "feed4919-servicio-reparacion",
-    "feed4919-negocio-panaderia",
-    "feed4919-agente-redes",
-    "feed4919-embajadores-comision",
-    "feed4919-aprendizaje-computacion"
-  ];
-  const selected = preferred.map(id => HOME_FEED_POSTS_V4918.find(post => post.id === id)).filter(Boolean);
-  return selected.length ? selected : HOME_FEED_POSTS_V4918.slice(0, 6);
-}
-
-function renderPublicHomeV4920() {
-  const target = document.getElementById("publicHomeStories");
-  if (!target) return;
-  const stories = publicHomeStoriesV4920();
-  target.innerHTML = stories.map(publicHomeStoryCardV4920).join("");
-}
-
-function publicHomeStoryCardV4920(post) {
-  const typeLabel = homeFeedLabelV4918(post.tipo);
-  const action = post.tipo === "embajadores" ? "Activar membresía" : post.tipo === "aprendizaje" ? "Empezar" : "Hacerlo real";
-  return `<article class="v4920-story-card" data-type="${escapeHtml(post.tipo)}">
-    <button type="button" class="v4920-story-media" onclick="makePilotReal('${escapeHtml(post.id)}')" aria-label="${escapeHtml(action)}: ${escapeHtml(post.titulo)}">
-      <img src="${escapeHtml(post.imagen)}" alt="${escapeHtml(post.titulo)}" loading="lazy" style="object-position:${escapeHtml(post.posicion || 'center center')}" />
-      <span>${escapeHtml(typeLabel)}</span>
-    </button>
-    <div class="v4920-story-body">
-      <strong>${escapeHtml(post.titulo)}</strong>
-      <small>${escapeHtml(post.ubicacion)} · ${escapeHtml(post.rol)}</small>
-      <p>${escapeHtml((post.descripcion || '').replace(/^Ejemplo piloto:\s*/i, ''))}</p>
-      <button type="button" onclick="makePilotReal('${escapeHtml(post.id)}')">${escapeHtml(action)}</button>
-    </div>
-  </article>`;
-}
-
-function renderDemoInvestorFeedV4920() {
-  const feed = document.getElementById("demoSocialFeed");
-  if (!feed) return;
-  const posts = demoFeedFilterV4920 ? HOME_FEED_POSTS_V4918.filter(post => post.tipo === demoFeedFilterV4920) : HOME_FEED_POSTS_V4918;
-  const title = document.getElementById("demoFeedTitle");
-  const hint = document.getElementById("demoFeedHint");
-  if (title) title.textContent = homeFeedLabelV4918(demoFeedFilterV4920);
-  if (hint) hint.textContent = demoFeedFilterV4920 ? "Módulo filtrado para revisión de inversionistas." : "Demo completa con pilotos, módulos y visión escalable.";
-  document.querySelectorAll("[data-demo-feed-filter]").forEach(btn => {
-    btn.classList.toggle("active", (btn.dataset.demoFeedFilter || "") === demoFeedFilterV4920);
-  });
-  feed.innerHTML = posts.map(post => homeFeedPostCardV4918(post)).join("");
-}
-
-function setDemoFeedFilterV4920(type = "") {
-  demoFeedFilterV4920 = type || "";
-  renderDemoInvestorFeedV4920();
-  const feed = document.getElementById("demoSocialFeed");
-  if (feed) feed.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function initialSectionV4920() {
-  const path = String(location.pathname || "").replace(/\/+$/, "");
-  const hash = String(location.hash || "").replace("#", "");
-  if (path.endsWith("/demo-inversionistas") || hash === "demoInversionistas" || hash === "demo-inversionistas") return "demoInversionistas";
-  return hash || "inicio";
 }
 function init() {
   const params = new URLSearchParams(location.search);
@@ -2888,18 +3276,14 @@ function init() {
   document.getElementById("pubState")?.addEventListener("change", () => handlePairedStateChange("pubState", "pubMunicipality", "Selecciona municipio"));
   document.getElementById("notifState")?.addEventListener("change", () => handlePairedStateChange("notifState", "notifMunicipality", "Todos los municipios"));
   document.getElementById("externalState")?.addEventListener("change", () => handlePairedStateChange("externalState", "externalMunicipality", "Selecciona municipio"));
-  const initialSection = initialSectionV4920();
-  history.replaceState({ section: initialSection }, "", routeUrlForSection(initialSection));
-  document.querySelector(".app-shell")?.classList.toggle("home-mode", initialSection === "inicio");
+  history.replaceState({ section: "inicio" }, "", routeUrlForSection("inicio"));
+  document.querySelector(".app-shell")?.classList.add("home-mode");
   updateWizard();
   updateCategoryDetails();
   initMobileFormComfort();
   refreshAppCacheIfNeeded().finally(registerServiceWorker);
   updateInstallCard();
-  renderPublicHomeV4920?.();
   renderSocialHomeFeed();
-  renderDemoInvestorFeedV4920?.();
-  if (initialSection !== "inicio") showSection(initialSection, false);
   renderNotificationSettings();
   renderOpportunitySettings();
   trackEvent("visita_home");
