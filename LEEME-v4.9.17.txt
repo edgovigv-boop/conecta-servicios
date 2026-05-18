@@ -1,0 +1,12 @@
+Conecta Servicios v4.9.17 — Feed social limpio
+
+Incluye:
+- Home feed corregido para evitar encimados.
+- Publicación piloto protagonista con proporción controlada.
+- Texto y CTA dentro de la tarjeta sin quedar tapados por la barra inferior.
+- Botones laterales con margen y sin cortarse.
+- Imagen mejor encuadrada.
+- Categorías superiores compactas y desplazables.
+- Conserva Embajadores, Centro, Oportunidades, Publicaciones, Mandados, Agentes y Aprendizaje.
+- No toca Supabase.
+- PWA/cache actualizado a v4.9.17.

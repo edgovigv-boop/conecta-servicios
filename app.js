@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.16-home-social";
+const PWA_VERSION = "v4.9.17-feed-social-limpio";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -82,7 +82,7 @@ const APP_VERSION_KEY = "conecta_servicios_app_version";
 const CHAT_STORAGE_KEY = "conecta_business_chat_v494";
 const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v492";
 
-// v4.9.16 — Home tipo red social / marketplace con publicaciones piloto protagonistas
+// v4.9.17 — Feed social limpio con publicaciones piloto protagonistas
 // Muestra publicaciones curadas y oculta los registros reales de Supabase en la vista pública.
 // Supabase sigue intacto; administración y futuras versiones pueden volver a producción cambiando esta bandera.
 const PRESENTATION_PILOT_MODE = true;
@@ -2273,7 +2273,7 @@ function initMobileFormComfort() {
 }
 
 
-// v4.9.16 — Acciones del Home tipo red social / marketplace
+// v4.9.17 — Acciones del Feed social limpio
 function socialLike(button) {
   if (!button) return;
   button.classList.toggle("liked");
