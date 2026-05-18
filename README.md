@@ -1,22 +1,17 @@
-# Conecta Servicios v4.9.0 — Fondo Protegido Conecta
+# Conecta Servicios v4.9.1 — Fondo Protegido con acuerdo directo
 
-Versión piloto conceptual para presentación y validación con inversionistas.
+Versión de ajuste sobre v4.9.0 para mejorar el módulo **Fondo Protegido Conecta** sin tocar Supabase.
 
-## Incluye
+## Cambios principales
 
-- Mantiene el módulo **Mandados Verificados**.
-- Nueva tarjeta **Fondo Protegido Conecta** dentro de Mandados Verificados.
-- Simulador de fondo sugerido para un encargo.
-- Ejemplo de cierre y liquidación: compra real, servicio del agente, comisión plataforma y devolución al solicitante.
-- Estados de operación: solicitado, fondo protegido, agente asignado, en compra, evidencia cargada, entregado, pago liberado y sobrante devuelto.
-- Lenguaje responsable: no mueve dinero real y no crea wallet propia.
-- No toca Supabase.
-- PWA/cache actualizado a `v4.9.0`.
+- El simulador ya no presenta una tarifa rígida tipo plataforma grande.
+- La app calcula una **referencia flexible** para iniciar el acuerdo.
+- El pago final queda como **trato directo entre solicitante y agente**.
+- Se reducen porcentajes/cargos sugeridos para evitar que el servicio se perciba caro.
+- Se corrige la sección “Cómo funcionaría” para que el texto quede centrado y equilibrado.
+- Se mantiene el aviso responsable: no hay manejo real de dinero ni wallet interna.
+- PWA/cache actualizado a `v4.9.1`.
 
 ## Importante
 
-Esta versión muestra el funcionamiento conceptual de Fondo Protegido Conecta. La operación con dinero real debe implementarse en una etapa posterior mediante proveedor de pagos autorizado y reglas claras.
-
-## Despliegue
-
-Subir el contenido de esta carpeta a la raíz del repositorio conectado a Vercel.
+Conecta Servicios orienta el cálculo, registra evidencia y ayuda a reducir dudas. El acuerdo final debe confirmarse entre las partes.

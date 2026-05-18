@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.0-fondo-protegido-conecta";
+const PWA_VERSION = "v4.9.1-acuerdo-directo-fondo-protegido";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -80,7 +80,7 @@ let deferredInstallPrompt = null;
 const TOTAL_STEPS = 7;
 const APP_VERSION_KEY = "conecta_servicios_app_version";
 const CHAT_STORAGE_KEY = "conecta_smart_chat_v489";
-const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v490";
+const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v491";
 
 
 function cleanPhone(phone) { return String(phone || "").replace(/\D/g, ""); }
@@ -2532,21 +2532,22 @@ function errandMoney(value) {
   return `$${n.toLocaleString("es-MX", { maximumFractionDigits: 2 })}`;
 }
 function calculateErrandEstimate(values = {}) {
-  const base = 35;
+  const base = 20;
   const distance = Math.max(0, Number(values.distance || 0));
   const weight = Math.max(0, Number(values.weight || 0));
   const amount = Math.max(0, Number(values.amount || 0));
   const schedule = String(values.schedule || "normal").toLowerCase();
-  const distanceFee = distance * 8;
-  const weightFee = weight * 4;
-  const purchaseFee = amount * 0.05;
+  const distanceFee = distance * 5;
+  const weightFee = weight * 2.5;
+  const purchaseFee = amount * 0.02;
   let multiplier = 1;
-  if (/pico|noche|lluvia|festivo|urgente/.test(schedule)) multiplier = 1.2;
-  const subtotal = base + distanceFee + weightFee + purchaseFee;
-  const total = Math.max(45, subtotal * multiplier);
-  const platform = total * 0.12;
-  const agent = total - platform;
-  return { base, distanceFee, weightFee, purchaseFee, multiplier, total, platform, agent };
+  if (/pico|noche|lluvia|festivo|urgente/.test(schedule)) multiplier = 1.12;
+  const reference = Math.max(35, (base + distanceFee + weightFee + purchaseFee) * multiplier);
+  const min = Math.max(30, reference * 0.85);
+  const max = Math.max(min + 10, reference * 1.25);
+  const platform = Math.max(5, reference * 0.08);
+  const agent = Math.max(0, reference - platform);
+  return { base, distanceFee, weightFee, purchaseFee, multiplier, total: reference, min, max, platform, agent };
 }
 function readErrandQuoteForm() {
   return {
@@ -2560,15 +2561,17 @@ function renderErrandQuote(targetId = "errandQuotePreview") {
   const target = document.getElementById(targetId);
   if (!target) return;
   const q = calculateErrandEstimate(readErrandQuoteForm());
-  target.innerHTML = `<div class="errand-quote-card">
-    <div><span>Tarifa base</span><strong>${errandMoney(q.base)}</strong></div>
+  target.innerHTML = `<div class="errand-quote-card direct-agreement-card">
+    <div class="quote-total"><span>Referencia sugerida por la app</span><strong>${errandMoney(q.min)} - ${errandMoney(q.max)}</strong></div>
+    <small>Esta referencia ayuda a iniciar un trato justo, pero el pago final se acuerda directamente entre solicitante y agente antes de aceptar.</small>
+    <div><span>Base local</span><strong>${errandMoney(q.base)}</strong></div>
     <div><span>Distancia</span><strong>${errandMoney(q.distanceFee)}</strong></div>
     <div><span>Peso estimado</span><strong>${errandMoney(q.weightFee)}</strong></div>
-    <div><span>Monto de compra</span><strong>${errandMoney(q.purchaseFee)}</strong></div>
-    <div><span>Horario</span><strong>${q.multiplier > 1 ? "+20%" : "Normal"}</strong></div>
+    <div><span>Referencia por compra</span><strong>${errandMoney(q.purchaseFee)}</strong></div>
+    <div><span>Horario</span><strong>${q.multiplier > 1 ? "Ajuste ligero" : "Normal"}</strong></div>
     <hr>
-    <div class="quote-total"><span>Total estimado</span><strong>${errandMoney(q.total)}</strong></div>
-    <small>Ganancia estimada del agente: ${errandMoney(q.agent)}. La tarifa puede ajustarse por condiciones reales.</small>
+    <div><span>Apoyo sugerido Conecta</span><strong>${errandMoney(q.platform)}</strong></div>
+    <small>Conecta Servicios no impone tarifas como plataforma grande: orienta, muestra evidencia y deja el acuerdo final a las personas.</small>
   </div>`;
 }
 function errandWhatsAppMessage(type, item) {
@@ -2588,7 +2591,7 @@ function renderErrandRequestCard(item, local = false) {
       <div><dt>Monto aprox.</dt><dd>${errandMoney(item.amount || 0)}</dd></div>
       <div><dt>Distancia</dt><dd>${escapeHtml(item.distance || "0")} km</dd></div>
       <div><dt>Horario</dt><dd>${escapeHtml(item.schedule || "Normal")}</dd></div>
-      <div><dt>Tarifa estimada</dt><dd>${errandMoney(total)}</dd></div>
+      <div><dt>Referencia</dt><dd>${errandMoney(q.min)} - ${errandMoney(q.max)}</dd></div>
     </dl>
     <div class="errand-card-actions">
       <button type="button" class="btn-small btn-green" onclick="openWhatsApp('${cleanPhone(item.contact || OFFICE_PHONE)}','${encodeURIComponent(errandWhatsAppMessage("request", item))}')">Contactar</button>
@@ -2662,41 +2665,46 @@ function calculateProtectedFund(values = {}) {
   const amount = Math.max(0, Number(values.amount ?? document.getElementById("protectedAmount")?.value ?? 850));
   const distance = Math.max(0, Number(values.distance ?? document.getElementById("protectedDistance")?.value ?? 4.2));
   const weight = Math.max(0, Number(values.weight ?? document.getElementById("protectedWeight")?.value ?? 5));
-  const schedule = String(values.schedule ?? document.getElementById("protectedSchedule")?.value ?? "Hora pico");
+  const schedule = String(values.schedule ?? document.getElementById("protectedSchedule")?.value ?? "Normal");
   const quote = calculateErrandEstimate({ amount, distance, weight, schedule });
-  const platform = Math.max(15, quote.total * 0.18);
-  const agentService = Math.max(45, quote.agent);
-  const safetyMargin = Math.max(80, amount * 0.22);
-  const suggestedFund = Math.ceil((amount + agentService + platform + safetyMargin) / 10) * 10;
-  const sampleRealPurchase = Math.max(0, Math.round(amount * 1.02));
-  const refund = Math.max(0, suggestedFund - sampleRealPurchase - agentService - platform);
-  return { amount, distance, weight, schedule, agentService, platform, safetyMargin, suggestedFund, sampleRealPurchase, refund };
+  const suggestedService = Math.round(quote.total / 5) * 5;
+  const agreedService = Math.max(30, suggestedService);
+  const platformSupport = Math.max(5, Math.round((agreedService * 0.08) / 5) * 5);
+  const safetyMargin = Math.max(40, Math.round((amount * 0.10) / 10) * 10);
+  const suggestedFund = Math.ceil((amount + agreedService + platformSupport + safetyMargin) / 10) * 10;
+  const sampleRealPurchase = Math.max(0, Math.round(amount * 0.97));
+  const refund = Math.max(0, suggestedFund - sampleRealPurchase - agreedService - platformSupport);
+  return { amount, distance, weight, schedule, quote, agreedService, platformSupport, safetyMargin, suggestedFund, sampleRealPurchase, refund };
 }
 function renderProtectedFundSimulator() {
   const target = document.getElementById("protectedFundPreview");
   if (!target) return;
   const f = calculateProtectedFund();
-  target.innerHTML = `<div class="protected-result-card">
-    <span>Fondo sugerido para apartar</span>
+  target.innerHTML = `<div class="protected-result-card direct-agreement-result">
+    <span>Fondo de referencia, no tarifa impuesta</span>
     <strong>${errandMoney(f.suggestedFund)}</strong>
-    <small>Incluye compra estimada, servicio del agente, comisión de plataforma y margen de seguridad.</small>
+    <small>La app calcula una base para conversar. Solicitante y agente pueden acordar un pago menor, mayor o diferente según la realidad del mandado.</small>
   </div>
   <div class="protected-breakdown">
     <div><span>Compra estimada</span><b>${errandMoney(f.amount)}</b></div>
-    <div><span>Servicio del agente</span><b>${errandMoney(f.agentService)}</b></div>
-    <div><span>Comisión Conecta</span><b>${errandMoney(f.platform)}</b></div>
-    <div><span>Margen de seguridad</span><b>${errandMoney(f.safetyMargin)}</b></div>
+    <div><span>Pago sugerido al agente</span><b>${errandMoney(f.agreedService)}</b></div>
+    <div><span>Apoyo Conecta sugerido</span><b>${errandMoney(f.platformSupport)}</b></div>
+    <div><span>Margen opcional</span><b>${errandMoney(f.safetyMargin)}</b></div>
+  </div>
+  <div class="direct-agreement-note">
+    <strong>Acuerdo directo</strong>
+    <p>Conecta Servicios orienta el cálculo, pero no busca copiar tarifas rígidas de plataformas grandes. El trato final debe confirmarse entre las personas antes de iniciar.</p>
   </div>`;
   const close = document.getElementById("protectedCloseExample");
   if (close) {
     close.innerHTML = `<div class="protected-liquidation-card">
-      <h4>Ejemplo de cierre y liquidación</h4>
+      <h4>Ejemplo de cierre con acuerdo directo</h4>
       <div><span>Fondo apartado</span><b>${errandMoney(f.suggestedFund)}</b></div>
-      <div><span>Compra real comprobada</span><b>${errandMoney(f.sampleRealPurchase)}</b></div>
-      <div><span>Pago al agente</span><b>${errandMoney(f.agentService)}</b></div>
-      <div><span>Comisión plataforma</span><b>${errandMoney(f.platform)}</b></div>
+      <div><span>Compra real con evidencia</span><b>${errandMoney(f.sampleRealPurchase)}</b></div>
+      <div><span>Pago acordado al agente</span><b>${errandMoney(f.agreedService)}</b></div>
+      <div><span>Apoyo plataforma</span><b>${errandMoney(f.platformSupport)}</b></div>
       <div class="refund"><span>Devolución al solicitante</span><b>${errandMoney(f.refund)}</b></div>
-      <small>Valores de ejemplo. Esta versión no mueve dinero real dentro de la app.</small>
+      <small>Valores de ejemplo. Esta versión no mueve dinero real dentro de la app y el pago final se acuerda directamente.</small>
     </div>`;
   }
 }
@@ -2708,21 +2716,21 @@ function showProtectedFundPanel() {
     <div class="protected-module-hero">
       <span class="protected-kicker">Módulo conceptual</span>
       <h3>Fondo Protegido Conecta</h3>
-      <p>Apartar dinero por encargo, liberar pago con evidencia y devolver sobrantes mediante proveedor autorizado en una etapa posterior.</p>
+      <p>Un modelo flexible para apartar un fondo por operación, usar evidencia y permitir que solicitante y agente acuerden el pago final de forma directa.</p>
     </div>
     <div class="protected-flow-card">
       <h4>¿Cómo funcionaría?</h4>
       <ol>
-        <li><b>Solicitud y estimación</b><span>La app calcula un fondo sugerido para el encargo.</span></li>
-        <li><b>Fondo protegido</b><span>El solicitante aparta el dinero. No se entrega adelantado al agente.</span></li>
-        <li><b>Agente realiza el encargo</b><span>Compra con efectivo propio y registra evidencia paso a paso.</span></li>
-        <li><b>Evidencia y entrega</b><span>Sube precio, peso o cantidad, ticket, cambio y entrega final.</span></li>
-        <li><b>Revisión y liberación</b><span>Se revisa evidencia y se libera reembolso + servicio al agente.</span></li>
-        <li><b>Sobrante devuelto</b><span>El dinero no usado vuelve al solicitante.</span></li>
+        <li><b>Solicitud y referencia</b><span>La app sugiere un rango para iniciar el acuerdo.</span></li>
+        <li><b>Fondo por operación</b><span>El solicitante apartaría un monto ligado al mandado, no un saldo abierto.</span></li>
+        <li><b>Trato directo</b><span>Agente y solicitante confirman condiciones, pago y evidencia antes de iniciar.</span></li>
+        <li><b>Compra con evidencia</b><span>Se registra precio, peso o cantidad, ticket, cambio y entrega final.</span></li>
+        <li><b>Revisión y pago</b><span>Con evidencia suficiente, se liquida lo acordado y se evita discusión.</span></li>
+        <li><b>Sobrante devuelto</b><span>Lo no utilizado vuelve al solicitante según el cierre del mandado.</span></li>
       </ol>
     </div>
     <form class="protected-simulator" oninput="renderProtectedFundSimulator()">
-      <h4>Simulador de fondo protegido</h4>
+      <h4>Simulador de referencia flexible</h4>
       <label>Compra estimada<input id="protectedAmount" type="number" min="0" step="10" value="850"></label>
       <div class="form-grid"><label>Distancia km<input id="protectedDistance" type="number" min="0" step="0.1" value="4.2"></label><label>Peso kg<input id="protectedWeight" type="number" min="0" step="0.1" value="5"></label></div>
       <label>Horario<select id="protectedSchedule"><option>Normal</option><option selected>Hora pico</option><option>Noche</option><option>Lluvia o festivo</option><option>Urgente</option></select></label>
@@ -2731,11 +2739,11 @@ function showProtectedFundPanel() {
     </form>
     <div class="protected-status-card">
       <h4>Estados de la operación</h4>
-      <div class="protected-status-row"><span>Solicitado</span><span>Fondo protegido</span><span>Agente asignado</span><span>En compra</span><span>Evidencia cargada</span><span>Entregado</span><span>Pago liberado</span><span>Sobrante devuelto</span></div>
+      <div class="protected-status-row"><span>Solicitado</span><span>Referencia calculada</span><span>Acuerdo directo</span><span>En compra</span><span>Evidencia cargada</span><span>Entregado</span><span>Pago acordado</span><span>Sobrante devuelto</span></div>
     </div>
     <div class="notice-card slim protected-warning">
       <strong>Importante</strong>
-      <p>Esta versión muestra el funcionamiento conceptual de Fondo Protegido Conecta. No implica manejo real de dinero en la app. La operación real se implementará posteriormente mediante proveedor de pagos autorizado y reglas claras.</p>
+      <p>Esta versión muestra el funcionamiento conceptual de Fondo Protegido Conecta. No implica manejo real de dinero en la app. La operación real se implementará posteriormente mediante proveedor de pagos autorizado, reglas claras y acuerdos directos entre las partes.</p>
     </div>
   </div>`;
   renderProtectedFundSimulator();

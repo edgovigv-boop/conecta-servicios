@@ -1,0 +1,9 @@
+Conecta Servicios v4.9.1 — Fondo Protegido con acuerdo directo
+
+Esta versión ajusta Fondo Protegido Conecta para diferenciarlo de plataformas grandes:
+- referencia sugerida, no tarifa impuesta;
+- acuerdo directo entre solicitante y agente;
+- simulador más ligero;
+- sección “Cómo funcionaría” centrada y más limpia;
+- sin tocar Supabase;
+- PWA/cache v4.9.1.
