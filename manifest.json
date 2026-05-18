@@ -1,8 +1,8 @@
 {
   "name": "Conecta Servicios",
   "short_name": "Conecta",
-  "description": "Plataforma local de oportunidades, mandados verificados con evidencia, Fondo Protegido Conecta conceptual con acuerdo directo, mensajes inteligentes, aprendizaje y agentes de crecimiento.",
-  "start_url": "/?source=pwa&v=4.9.1",
+  "description": "Plataforma local de oportunidades, mandados verificados con evidencia, modo piloto para inversionistas, Fondo Protegido Conecta, mandados verificados, negocios locales, mensajes inteligentes, aprendizaje y agentes de crecimiento.",
+  "start_url": "/?source=pwa&v=4.9.2",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

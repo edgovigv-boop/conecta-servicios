@@ -28,10 +28,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
-  <title>Conecta Servicios v4.8.9</title>
-  <link rel="stylesheet" href="styles.css?v=4.9.0-fondo-protegido" />
+  <title>Conecta Servicios v4.9.2</title>
+  <link rel="stylesheet" href="styles.css?v=4.9.2-modo-piloto" />
 </head>
-<body data-version="4.9.0-fondo-protegido">
+<body data-version="4.9.2-modo-piloto">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -97,6 +97,11 @@ Todo uso requiere autorización expresa y por escrito del titular.
               <span class="future-emoji">📈</span>
               <strong>Agentes de<br>crecimiento</strong>
               <small>Por comisión</small>
+            </button>
+            <button type="button" class="future-card-v477 local-business-home-card" onclick="showSection('negocios')">
+              <span class="future-emoji">🏪</span>
+              <strong>Negocios<br>locales</strong>
+              <small>Chat + catálogo</small>
             </button>
             <button type="button" class="future-card-v477 verified-errand-card" onclick="showSection('mandados')">
               <span class="future-emoji">🧺</span>
@@ -343,6 +348,21 @@ Todo uso requiere autorización expresa y por escrito del titular.
           </label>
         </div>
 
+        <div id="pilotModeBanner" class="pilot-mode-banner hidden">
+          <span>Modo piloto</span>
+          <strong>Ejemplos curados para presentación</strong>
+          <small>Los registros reales quedan ocultos en esta vista para mostrar el potencial de la plataforma.</small>
+        </div>
+
+        <div id="pilotTypeTabs" class="pilot-type-tabs hidden" aria-label="Organizar ejemplos piloto">
+          <button type="button" class="active" data-pilot-type="" onclick="setPilotTypeFilter('')">Todos</button>
+          <button type="button" data-pilot-type="solicitantes" onclick="setPilotTypeFilter('solicitantes')">Solicitantes</button>
+          <button type="button" data-pilot-type="agentes" onclick="setPilotTypeFilter('agentes')">Agentes</button>
+          <button type="button" data-pilot-type="negocios" onclick="setPilotTypeFilter('negocios')">Negocios</button>
+          <button type="button" data-pilot-type="servicios" onclick="setPilotTypeFilter('servicios')">Servicios</button>
+          <button type="button" data-pilot-type="crecimiento" onclick="setPilotTypeFilter('crecimiento')">Crecimiento</button>
+        </div>
+
         <div class="floating-category-dock" aria-label="Filtros rápidos de categoría">
           <button type="button" class="filter-chip active" title="Todo" aria-label="Todo" data-filter-category="" data-filter-search="" onclick="setCategoryChip(this)">Todo</button>
           <button type="button" class="filter-chip" title="Trabajo" aria-label="Trabajo" data-filter-category="" data-filter-search="trabajo empleo vacante chamba ayudante personal" onclick="setCategoryChip(this)">💼</button>
@@ -372,6 +392,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <button class="mini-card" onclick="showSection('aprende')"><strong>Aprende y emprende</strong><small>Rutas para generar ingresos</small></button>
           <button class="mini-card" onclick="showSection('oportunidades')"><strong>Oportunidades para ti</strong><small>Coincidencias según tus intereses</small></button>
           <button class="mini-card" onclick="showSection('agentes')"><strong>Agentes de crecimiento</strong><small>Clientes y comisiones</small></button>
+          <button class="mini-card" onclick="showSection('negocios')"><strong>Negocios locales</strong><small>Chat, catálogo y agenda</small></button>
           <button class="mini-card" onclick="showSection('mandados')"><strong>Mandados Verificados</strong><small>Compra con evidencia</small></button>
         </div>
         <div id="adminEntry" class="admin-entry hidden">
@@ -593,6 +614,38 @@ Todo uso requiere autorización expresa y por escrito del titular.
         </div>
       </section>
 
+
+      <section id="negocios" class="section info-section local-business-section">
+        <div class="business-hero-card">
+          <span class="growth-kicker">Modo piloto para inversionistas</span>
+          <h2>Negocios locales</h2>
+          <p>Separar panaderías, estéticas, ferreterías, carpinterías y otros comercios permite preparar un chat propio que después evolucione a catálogo, carrito, pago, envío, pickup o agenda de citas.</p>
+          <div class="growth-hero-actions">
+            <button type="button" class="btn-small btn-purple" onclick="showBusinessFutureTerminal('Negocio local')">Ver chat futuro</button>
+            <button type="button" class="btn-small btn-outline" onclick="applyCategoryAndShow('Negocios locales')">Ver publicaciones piloto</button>
+          </div>
+        </div>
+
+        <div class="business-category-grid">
+          <button type="button" onclick="showBusinessFutureTerminal('Panadería')">🥐<strong>Panaderías</strong><small>Pedidos y pickup</small></button>
+          <button type="button" onclick="showBusinessFutureTerminal('Estética')">💇<strong>Estéticas</strong><small>Servicios por cita</small></button>
+          <button type="button" onclick="showBusinessFutureTerminal('Ferretería')">🔩<strong>Ferreterías</strong><small>Catálogo y entrega</small></button>
+          <button type="button" onclick="showBusinessFutureTerminal('Carpintería')">🪚<strong>Carpinterías</strong><small>Cotización y agenda</small></button>
+        </div>
+
+        <div id="businessTerminalPanel" class="business-terminal-panel hidden"></div>
+
+        <div class="pilot-section-title">
+          <h3>Ejemplos piloto</h3>
+          <p>Estos negocios son demostrativos. Sirven para enseñar cómo se vería la app organizada por comercio local antes de conectar pagos o inventarios.</p>
+        </div>
+        <div id="localBusinessPilotList" class="local-business-list"></div>
+
+        <div class="notice-card slim">
+          <strong>Próxima evolución</strong>
+          <p>La primera etapa es chat y solicitud directa. Después podrán agregarse catálogo, carrito, pago por proveedor autorizado, envío, pickup o agenda según el tipo de negocio.</p>
+        </div>
+      </section>
 
       <section id="mandados" class="section info-section verified-errands-section">
         <div class="errand-hero-card">
@@ -819,6 +872,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.9.0-fondo-protegido"></script>
+  <script src="app.js?v=4.9.2-modo-piloto"></script>
 </body>
 </html>

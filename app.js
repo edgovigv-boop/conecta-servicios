@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.1-acuerdo-directo-fondo-protegido";
+const PWA_VERSION = "v4.9.2-modo-piloto-inversionistas";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -80,7 +80,84 @@ let deferredInstallPrompt = null;
 const TOTAL_STEPS = 7;
 const APP_VERSION_KEY = "conecta_servicios_app_version";
 const CHAT_STORAGE_KEY = "conecta_smart_chat_v489";
-const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v491";
+const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v492";
+
+// v4.9.2 — Modo piloto para inversionistas
+// Muestra publicaciones curadas y oculta los registros reales de Supabase en la vista pública.
+// Supabase sigue intacto; administración y futuras versiones pueden volver a producción cambiando esta bandera.
+const PRESENTATION_PILOT_MODE = true;
+let pilotTypeFilter = "";
+
+const PILOT_PUBLICATIONS = [
+  {
+    id: "PILOTO-SOL-001", pilotType: "solicitantes", roleLabel: "Solicitante", relationLabel: "Necesita apoyo",
+    name: "María G.", title: "Necesito mandado a la Central de Abastos", category: "Mandados Verificados", subcategory: "Compra con evidencia",
+    description: "Solicito compra de frutas y verduras para la semana. Busco agente que pueda registrar precio, peso, ticket, cambio y entrega final.",
+    state: "México", municipality: "Chapultepec", locality: "Centro", phone: OFFICE_PHONE, budget: 150, status: "activo", createdAt: "2026-05-18T10:00:00Z", nextStep: "Solicitar mandado verificado"
+  },
+  {
+    id: "PILOTO-AGE-001", pilotType: "agentes", roleLabel: "Agente", relationLabel: "Ofrece apoyo",
+    name: "Carlos R.", title: "Hago mandados en moto con evidencia", category: "Mandados Verificados", subcategory: "Agente de compras",
+    description: "Disponible para compras locales, farmacia, mercado y entregas pequeñas. Puedo subir evidencia del mandado paso a paso.",
+    state: "México", municipality: "Mexicaltzingo", locality: "Centro", phone: OFFICE_PHONE, budget: 0, status: "activo", createdAt: "2026-05-18T09:40:00Z", nextStep: "Contactar agente"
+  },
+  {
+    id: "PILOTO-NEG-001", pilotType: "negocios", roleLabel: "Negocio local", relationLabel: "Catálogo futuro",
+    name: "Panadería San Miguel", title: "Pan dulce y pedidos por WhatsApp", category: "Negocios locales", subcategory: "Panadería",
+    description: "Negocio local con pedidos por encargo. En una siguiente etapa podrá mostrar catálogo, carrito, pago y entrega o pickup.",
+    state: "México", municipality: "Chapultepec", locality: "El Ameyal", phone: OFFICE_PHONE, budget: 0, status: "activo", createdAt: "2026-05-18T09:20:00Z", nextStep: "Abrir chat del negocio"
+  },
+  {
+    id: "PILOTO-NEG-002", pilotType: "negocios", roleLabel: "Negocio local", relationLabel: "Agenda futura",
+    name: "Estética Bella", title: "Cortes, uñas y citas por agenda", category: "Negocios locales", subcategory: "Estética",
+    description: "Servicio por cita. La visión es que el cliente pueda chatear, elegir servicio, pagar cita y agendar horario desde la app.",
+    state: "México", municipality: "Metepec", locality: "Centro", phone: OFFICE_PHONE, budget: 0, status: "activo", createdAt: "2026-05-18T09:10:00Z", nextStep: "Ver agenda futura"
+  },
+  {
+    id: "PILOTO-NEG-003", pilotType: "negocios", roleLabel: "Negocio local", relationLabel: "Inventario futuro",
+    name: "Ferretería La Esquina", title: "Herramientas, material y entrega local", category: "Negocios locales", subcategory: "Ferretería",
+    description: "Ideal para catálogo por productos, pedido a carrito, pago y envío local o recolección en tienda.",
+    state: "México", municipality: "Toluca", locality: "Centro", phone: OFFICE_PHONE, budget: 0, status: "activo", createdAt: "2026-05-18T09:00:00Z", nextStep: "Ver catálogo futuro"
+  },
+  {
+    id: "PILOTO-SER-001", pilotType: "servicios", roleLabel: "Agente / prestador", relationLabel: "Ofrece servicio",
+    name: "Don Luis Carpintería", title: "Reparaciones sencillas de madera", category: "Servicios", subcategory: "Carpintería",
+    description: "Reparo puertas, cajones, bisagras y muebles pequeños. Trato directo, presupuesto claro y evidencia del trabajo si se requiere.",
+    state: "México", municipality: "Calimaya", locality: "Centro", phone: OFFICE_PHONE, budget: 250, status: "activo", createdAt: "2026-05-18T08:50:00Z", nextStep: "Pedir cotización"
+  },
+  {
+    id: "PILOTO-SOL-002", pilotType: "solicitantes", roleLabel: "Solicitante", relationLabel: "Busca servicio",
+    name: "Oficina local", title: "Busco quien limpie un local pequeño", category: "Servicios", subcategory: "Limpieza",
+    description: "Necesito limpieza por la mañana, una o dos veces por semana. Busco persona responsable de la zona para acordar directo.",
+    state: "México", municipality: "Mexicaltzingo", locality: "Centro", phone: OFFICE_PHONE, budget: 180, status: "activo", createdAt: "2026-05-18T08:40:00Z", nextStep: "Ofrecer servicio"
+  },
+  {
+    id: "PILOTO-CRE-001", pilotType: "crecimiento", roleLabel: "Campaña", relationLabel: "Por comisión",
+    name: "Créditos para pensionados", title: "Busco agentes que consigan clientes interesados", category: "Agentes de crecimiento", subcategory: "Campaña por resultado",
+    description: "Campaña piloto: el negocio paga comisión solo por contacto válido o cliente aprobado, con condiciones claras y trato directo.",
+    state: "México", municipality: "Toluca", locality: "Zona centro", phone: OFFICE_PHONE, budget: 300, status: "activo", createdAt: "2026-05-18T08:30:00Z", nextStep: "Ver campaña"
+  },
+  {
+    id: "PILOTO-MOV-001", pilotType: "servicios", roleLabel: "Agente", relationLabel: "Movilidad",
+    name: "Ruta compartida Toluca", title: "Comparto viaje Chapultepec a Toluca", category: "Movilidad", subcategory: "Viaje compartido",
+    description: "Salida por la mañana entre semana. Cooperación directa, puntos claros de encuentro y trato respetuoso.",
+    state: "México", municipality: "Chapultepec", locality: "Avenida principal", phone: OFFICE_PHONE, budget: 50, status: "activo", createdAt: "2026-05-18T08:20:00Z", nextStep: "Contactar viaje"
+  },
+  {
+    id: "PILOTO-APR-001", pilotType: "aprendizaje", roleLabel: "Aprendizaje", relationLabel: "Curso útil",
+    name: "Rutas gratuitas", title: "Aprende ventas, computación u oficio básico", category: "Aprendizaje", subcategory: "Cursos gratuitos",
+    description: "Ruta piloto para mostrar cursos gratuitos que ayudan a mejorar servicios, negocios y oportunidades de ingreso.",
+    state: "México", municipality: "Todo México", locality: "En línea", phone: OFFICE_PHONE, budget: 0, status: "activo", createdAt: "2026-05-18T08:10:00Z", nextStep: "Ver cursos"
+  }
+];
+
+function getPilotPublications() {
+  return PILOT_PUBLICATIONS.map(item => ({
+    highlighted: true, approximateLocation: true, serviceRadiusKm: 10, lat: null, lng: null, route: "", departure: "", time: "", transport: "",
+    ...item,
+    isPilot: true
+  }));
+}
 
 
 function cleanPhone(phone) { return String(phone || "").replace(/\D/g, ""); }
@@ -247,7 +324,7 @@ async function loadRemoteData(options = {}) {
     const mappedAll = (rows || []).map(mapPublication);
     const mapped = mappedAll.filter(item => normalize(item.status) === "activo");
     handleNotificationCheck(mapped);
-    publicationsCache = mapped;
+    publicationsCache = PRESENTATION_PILOT_MODE ? getPilotPublications() : mapped;
     updateMunicipalityFilterOptions();
     renderCourseCards?.();
     renderSmartChat?.();
@@ -450,7 +527,7 @@ function showSection(id, push = true) {
   document.querySelector(".app-shell")?.classList.toggle("home-mode", id === "inicio");
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   target.classList.add("active");
-  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme", mensajes:"Mensajes inteligentes", agentes:"Agentes de crecimiento", mandados:"Mandados Verificados" };
+  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme", mensajes:"Mensajes inteligentes", agentes:"Agentes de crecimiento", mandados:"Mandados Verificados", negocios:"Negocios locales" };
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
@@ -902,7 +979,7 @@ function filterPublications(list) {
   const nearbySummary = document.getElementById("nearbySummary");
   if (nearbySummary) nearbySummary.classList.toggle("hidden", !nearbyMode || !userLocation);
 
-  const baseFiltered = list.filter(item => {
+  let baseFiltered = list.filter(item => {
     const matchesCategory = !category || item.category === category;
     const haystack = normalize([folio(item), item.name, item.title, item.description, item.category, item.subcategory, item.state, item.municipality, item.locality, item.route, item.transport].join(" "));
     const matchesText = !search || haystack.includes(search);
@@ -910,6 +987,10 @@ function filterPublications(list) {
     const matchesChip = !chipWords.length || chipWords.some(word => haystack.includes(word));
     return matchesCategory && matchesText && matchesChip;
   });
+
+  if (PRESENTATION_PILOT_MODE && pilotTypeFilter) {
+    baseFiltered = baseFiltered.filter(item => item.pilotType === pilotTypeFilter);
+  }
 
   if (nearbyMode) {
     const annotated = baseFiltered.map(item => {
@@ -964,7 +1045,69 @@ function categoryIcon(category) {
   };
   return icons[category] || "📌";
 }
+function pilotPublicationCard(item) {
+  const icon = categoryIcon(item.category);
+  const role = item.roleLabel || (normalize(item.intent || item.title).includes("busco") ? "Solicitante" : "Agente");
+  const type = item.pilotType || "general";
+  const meta = [item.locality, item.municipality, item.state].filter(Boolean).join(" · ");
+  const amount = Number(item.budget || 0) > 0 ? money(item.budget) : "A tratar";
+  const action = type === "negocios" ? "Ver negocio" : (type === "aprendizaje" ? "Ver cursos" : "Chat piloto");
+  return `<article class="pilot-publication-card pilot-${escapeHtml(type)}" id="pub-${escapeHtml(item.id)}">
+    <div class="pilot-card-head">
+      <span class="pilot-main-icon">${icon}</span>
+      <div><small>${escapeHtml(role)}</small><strong>${escapeHtml(item.category)}</strong></div>
+      <span class="pilot-mode-pill">Modo piloto</span>
+    </div>
+    <h3>${escapeHtml(item.title)}</h3>
+    <p class="pilot-description">${linkify(item.description)}</p>
+    <div class="pilot-duo-grid">
+      <div class="pilot-duo-box">
+        <small>${escapeHtml(role)}</small>
+        <strong>${escapeHtml(item.name)}</strong>
+        <span>${escapeHtml(meta)}</span>
+      </div>
+      <div class="pilot-duo-box">
+        <small>${escapeHtml(item.relationLabel || "Trato directo")}</small>
+        <strong>${escapeHtml(item.nextStep || "Acordar por chat")}</strong>
+        <span>Referencia: ${escapeHtml(amount)}</span>
+      </div>
+    </div>
+    <div class="pilot-card-actions">
+      <button class="btn-small btn-purple" type="button" onclick="openPilotFlow('${escapeHtml(item.id)}')">${action}</button>
+      <button class="btn-small btn-outline" type="button" onclick="sharePublication('${escapeHtml(item.id)}')">Compartir</button>
+    </div>
+  </article>`;
+}
+
+function openPilotFlow(id) {
+  const item = publicationsCache.find(p => p.id === id);
+  if (!item) return;
+  trackEvent("modo_piloto_publicacion", item, { tipo: item.pilotType || "general" });
+  if (item.pilotType === "negocios") {
+    showSection("negocios");
+    setTimeout(() => showBusinessFutureTerminal(item.subcategory || item.name), 80);
+    return;
+  }
+  if (item.pilotType === "aprendizaje") { showSection("aprende"); return; }
+  if (item.category === "Mandados Verificados") { showSection("mandados"); return; }
+  if (item.category === "Agentes de crecimiento") { showSection("agentes"); return; }
+  showSection("mensajes");
+  const input = document.getElementById("smartMessageInput");
+  if (input) {
+    input.value = `Quiero información sobre: ${item.title}`;
+    input.focus();
+  }
+  showToast("Chat piloto listo para iniciar el trato directo");
+}
+
+function setPilotTypeFilter(type) {
+  pilotTypeFilter = type || "";
+  document.querySelectorAll("[data-pilot-type]").forEach(btn => btn.classList.toggle("active", (btn.dataset.pilotType || "") === pilotTypeFilter));
+  renderPublications();
+}
+
 function compactPublicationCard(item) {
+  if (PRESENTATION_PILOT_MODE && item.isPilot) return pilotPublicationCard(item);
   const icon = categoryIcon(item.category);
   const distanceText = nearbyMode && userLocation && Number.isFinite(item.distanceKm) ? ` · 📍 ${distanceLabel(item.distanceKm)}` : (nearbyMode && item.matchType === "municipio" ? " · 📍 mismo municipio" : "");
   const meta = [item.municipality, item.state, folio(item)].filter(Boolean).join(" · ") + distanceText;
@@ -1005,6 +1148,10 @@ function togglePublicationDetail(id) {
 }
 function renderPublications() {
   const list = document.getElementById("publicationsList");
+  const banner = document.getElementById("pilotModeBanner");
+  const tabs = document.getElementById("pilotTypeTabs");
+  if (banner) banner.classList.toggle("hidden", !PRESENTATION_PILOT_MODE);
+  if (tabs) tabs.classList.toggle("hidden", !PRESENTATION_PILOT_MODE);
   if (!list) return;
   if (isLoading) { renderLoading(); return; }
   const filtered = filterPublications(publicationsCache);
@@ -1018,7 +1165,9 @@ function renderPublications() {
     const municipality = document.getElementById("municipalityFilter")?.value || "";
     const scope = !state ? "Todo México" : (municipality ? `${municipality}, ${state}` : `${state} · todos los municipios`);
     const mode = nearbyMode ? " · vista general, cercanos primero si hay ubicación" : "";
-    summary.textContent = `${filtered.length} resultado${filtered.length === 1 ? "" : "s"} encontrados · ${scope}${mode}`;
+    summary.textContent = PRESENTATION_PILOT_MODE
+      ? `${filtered.length} ejemplo${filtered.length === 1 ? "" : "s"} piloto · ${pilotTypeFilter ? "vista curada" : "todas las oportunidades"}`
+      : `${filtered.length} resultado${filtered.length === 1 ? "" : "s"} encontrados · ${scope}${mode}`;
   }
   const count = document.getElementById("publicationsCount");
   if (count) count.textContent = publicationsCache.length;
@@ -1067,8 +1216,46 @@ function renderMyPublications() {
   list.innerHTML = matches.length ? matches.map(myPublicationCard).join("") : `<div class="empty-state">No encontramos publicaciones activas con esos dígitos. Si tu publicación está en revisión, revisa con Oficina / Contacto.</div>`;
 }
 
-function renderAll() { renderPublications(); updateHomeCounts(); renderOpportunities(false); renderMyPublications(); if (adminUnlocked) renderAdminPublications(); }
+function renderAll() { renderPublications(); updateHomeCounts(); renderOpportunities(false); renderMyPublications(); renderBusinessPilotList?.(); if (adminUnlocked) renderAdminPublications(); }
 setInterval(updateHomeCounts, 3500);
+const LOCAL_BUSINESS_PILOT = [
+  { type:"Panadería", icon:"🥐", name:"Panadería San Miguel", zone:"Chapultepec", features:["Catálogo de pan", "Pedido a carrito", "Pickup o envío"] },
+  { type:"Estética", icon:"💇", name:"Estética Bella", zone:"Metepec", features:["Servicios por cita", "Agenda", "Anticipo futuro"] },
+  { type:"Ferretería", icon:"🔩", name:"Ferretería La Esquina", zone:"Toluca", features:["Inventario", "Entrega local", "Cotización por chat"] },
+  { type:"Carpintería", icon:"🪚", name:"Carpintería Don Luis", zone:"Calimaya", features:["Cotización", "Agenda visita", "Evidencia del avance"] }
+];
+
+function renderBusinessPilotList() {
+  const list = document.getElementById("localBusinessPilotList");
+  if (!list) return;
+  list.innerHTML = LOCAL_BUSINESS_PILOT.map((biz, idx) => `<article class="local-business-card">
+    <span class="business-card-icon">${biz.icon}</span>
+    <div>
+      <small>${escapeHtml(biz.type)} · ${escapeHtml(biz.zone)}</small>
+      <strong>${escapeHtml(biz.name)}</strong>
+      <p>${biz.features.map(escapeHtml).join(" · ")}</p>
+    </div>
+    <button type="button" class="btn-small btn-outline" onclick="showBusinessFutureTerminal('${escapeHtml(biz.type)}')">Ver flujo</button>
+  </article>`).join("");
+}
+
+function showBusinessFutureTerminal(type = "Negocio local") {
+  const panel = document.getElementById("businessTerminalPanel");
+  if (!panel) return;
+  panel.classList.remove("hidden");
+  panel.innerHTML = `<div class="business-terminal-card">
+    <span class="growth-kicker">Piloto visual</span>
+    <h3>Chat + terminal para ${escapeHtml(type)}</h3>
+    <p>Primero será un chat simple para pedir información. Después podrá crecer a catálogo, carrito, agenda, pago, envío o pickup según el tipo de negocio.</p>
+    <div class="terminal-flow-grid">
+      <span>💬 Chat</span><span>🛍 Catálogo</span><span>🛒 Carrito</span><span>💳 Pago futuro</span><span>📦 Envío / pickup</span><span>📅 Cita</span>
+    </div>
+    <div class="chat-preview-box"><b>Cliente:</b> ¿Tienes disponible este producto o servicio?<br><b>Negocio:</b> Sí, puedo mostrarte opciones, precio y forma de entrega.</div>
+  </div>`;
+  panel.scrollIntoView({ behavior:"smooth", block:"start" });
+  trackEvent("negocio_terminal_piloto", null, { tipo: type });
+}
+
 function updateHomeCounts() {
   const count = document.getElementById("publicationsCount");
   const growth = document.getElementById("growthMessage");
@@ -2828,4 +3015,5 @@ document.addEventListener("DOMContentLoaded", () => {
   renderCourseCards();
   renderErrandPilotLists?.();
   renderProtectedFundSimulator?.();
+  renderBusinessPilotList?.();
 });

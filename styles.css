@@ -658,3 +658,220 @@ input,select,textarea{width:100%;border:1px solid #ded6ee;border-radius:17px;bac
 .protected-breakdown div,.protected-liquidation-card div{align-items:flex-start}.protected-breakdown span,.protected-liquidation-card span{max-width:58%;line-height:1.22}
 .protected-warning{text-align:center}.protected-warning p{margin-top:6px;line-height:1.35}
 @media(max-width:380px){.protected-flow-card li{padding:11px 8px}.protected-flow-card span{font-size:.76rem}.direct-agreement-result strong{font-size:1.35rem}}
+
+/* v4.9.2 — Modo piloto para inversionistas */
+.pilot-mode-banner{
+  margin: 12px 0 10px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(94,45,209,.10), rgba(36,168,41,.08));
+  border: 1px solid rgba(94,45,209,.16);
+  box-shadow: 0 10px 24px rgba(32,22,72,.06);
+  display: grid;
+  gap: 3px;
+}
+.pilot-mode-banner span{
+  width: max-content;
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: #fff;
+  background: #21a321;
+  border-radius: 999px;
+  padding: 4px 8px;
+}
+.pilot-mode-banner strong{ color:#24183d; font-size:.98rem; }
+.pilot-mode-banner small{ color:#706982; line-height:1.35; }
+.pilot-type-tabs{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding: 2px 2px 10px;
+  scrollbar-width:none;
+}
+.pilot-type-tabs::-webkit-scrollbar{ display:none; }
+.pilot-type-tabs button{
+  flex:0 0 auto;
+  border:1px solid rgba(85,54,174,.15);
+  background:#fff;
+  color:#6b6377;
+  border-radius:999px;
+  padding:9px 13px;
+  font-weight:800;
+  box-shadow:0 8px 18px rgba(20,13,50,.05);
+}
+.pilot-type-tabs button.active{
+  background:linear-gradient(135deg,#5e2dd1,#34118d);
+  color:#fff;
+  box-shadow:0 10px 22px rgba(94,45,209,.25);
+}
+.pilot-publication-card{
+  background:#fff;
+  border-radius:24px;
+  padding:16px;
+  margin:0 0 14px;
+  border:1px solid rgba(75,47,149,.09);
+  box-shadow:0 14px 32px rgba(21,14,53,.08);
+}
+.pilot-card-head{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+}
+.pilot-main-icon{
+  width:46px;
+  height:46px;
+  display:grid;
+  place-items:center;
+  border-radius:16px;
+  background:#f3edff;
+  font-size:1.45rem;
+  flex:0 0 auto;
+}
+.pilot-card-head div{ display:grid; gap:1px; min-width:0; }
+.pilot-card-head small{ color:#746a85; font-weight:800; }
+.pilot-card-head strong{ color:#201735; font-size:.95rem; }
+.pilot-mode-pill{
+  margin-left:auto;
+  border-radius:999px;
+  background:#eef8ee;
+  color:#208a20;
+  font-weight:900;
+  font-size:.72rem;
+  padding:6px 8px;
+  white-space:nowrap;
+}
+.pilot-publication-card h3{
+  margin:4px 0 8px;
+  font-size:1.12rem;
+  color:#1e1830;
+  line-height:1.18;
+}
+.pilot-description{
+  color:#4f475e;
+  line-height:1.36;
+  margin:0 0 12px;
+}
+.pilot-duo-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin:10px 0 13px;
+}
+.pilot-duo-box{
+  border-radius:18px;
+  background:#faf8ff;
+  border:1px solid rgba(88,49,181,.10);
+  padding:11px;
+  display:grid;
+  gap:3px;
+  min-width:0;
+}
+.pilot-duo-box small{ color:#736a84; font-weight:800; }
+.pilot-duo-box strong{ color:#211637; line-height:1.15; }
+.pilot-duo-box span{ color:#6d6578; font-size:.86rem; line-height:1.25; }
+.pilot-card-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.pilot-negocios .pilot-main-icon{ background:#fff2e7; }
+.pilot-solicitantes .pilot-main-icon{ background:#eef5ff; }
+.pilot-agentes .pilot-main-icon{ background:#edfbea; }
+.pilot-crecimiento .pilot-main-icon{ background:#fff0e4; }
+.local-business-home-card{
+  background:linear-gradient(135deg,rgba(255,122,24,.10),rgba(94,45,209,.05));
+}
+.local-business-section .business-hero-card{
+  background:linear-gradient(135deg,#ffffff,#f6f0ff);
+  border:1px solid rgba(94,45,209,.12);
+  border-radius:26px;
+  padding:20px;
+  box-shadow:0 14px 34px rgba(28,17,65,.08);
+  margin-bottom:14px;
+}
+.business-hero-card h2{ margin:6px 0 8px; color:#211637; font-size:1.55rem; }
+.business-hero-card p{ color:#534a61; line-height:1.42; }
+.business-category-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  margin:14px 0;
+}
+.business-category-grid button{
+  border:1px solid rgba(94,45,209,.10);
+  background:#fff;
+  border-radius:20px;
+  padding:14px 12px;
+  display:grid;
+  gap:5px;
+  text-align:left;
+  box-shadow:0 10px 24px rgba(30,20,70,.06);
+  color:#221737;
+}
+.business-category-grid button{ font-size:1.45rem; }
+.business-category-grid strong{ font-size:.98rem; }
+.business-category-grid small{ color:#71687d; font-size:.8rem; }
+.business-terminal-panel{ margin:12px 0; }
+.business-terminal-card{
+  border-radius:24px;
+  padding:16px;
+  background:linear-gradient(135deg,#21105f,#5e2dd1);
+  color:#fff;
+  box-shadow:0 14px 34px rgba(82,40,185,.22);
+}
+.business-terminal-card h3{ margin:6px 0; font-size:1.2rem; }
+.business-terminal-card p{ color:rgba(255,255,255,.84); line-height:1.4; }
+.terminal-flow-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  margin:12px 0;
+}
+.terminal-flow-grid span{
+  border-radius:14px;
+  padding:10px;
+  background:rgba(255,255,255,.12);
+  font-weight:800;
+}
+.chat-preview-box{
+  background:#fff;
+  color:#24183d;
+  border-radius:18px;
+  padding:12px;
+  line-height:1.45;
+}
+.pilot-section-title{ margin:14px 0 8px; }
+.pilot-section-title h3{ margin:0; color:#24183d; }
+.pilot-section-title p{ margin:4px 0 0; color:#746b82; line-height:1.35; }
+.local-business-list{ display:grid; gap:10px; margin-bottom:14px; }
+.local-business-card{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:12px;
+  align-items:center;
+  background:#fff;
+  border:1px solid rgba(75,47,149,.09);
+  border-radius:22px;
+  padding:12px;
+  box-shadow:0 12px 26px rgba(21,14,53,.06);
+}
+.business-card-icon{
+  width:46px;
+  height:46px;
+  border-radius:16px;
+  background:#f3edff;
+  display:grid;
+  place-items:center;
+  font-size:1.35rem;
+}
+.local-business-card small{ color:#71687d; font-weight:800; }
+.local-business-card strong{ display:block; color:#211637; margin:2px 0; }
+.local-business-card p{ margin:0; color:#5f566d; font-size:.84rem; line-height:1.25; }
+@media (max-width:420px){
+  .pilot-duo-grid{ grid-template-columns:1fr; }
+  .local-business-card{ grid-template-columns:auto 1fr; }
+  .local-business-card button{ grid-column:1 / -1; width:100%; }
+}

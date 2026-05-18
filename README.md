@@ -1,17 +1,20 @@
-# Conecta Servicios v4.9.1 — Fondo Protegido con acuerdo directo
+# Conecta Servicios v4.9.2 — Modo piloto para inversionistas
 
-Versión de ajuste sobre v4.9.0 para mejorar el módulo **Fondo Protegido Conecta** sin tocar Supabase.
+Esta versión prepara una vista controlada para presentar la aplicación a inversionistas.
 
-## Cambios principales
+## Incluye
 
-- El simulador ya no presenta una tarifa rígida tipo plataforma grande.
-- La app calcula una **referencia flexible** para iniciar el acuerdo.
-- El pago final queda como **trato directo entre solicitante y agente**.
-- Se reducen porcentajes/cargos sugeridos para evitar que el servicio se perciba caro.
-- Se corrige la sección “Cómo funcionaría” para que el texto quede centrado y equilibrado.
-- Se mantiene el aviso responsable: no hay manejo real de dinero ni wallet interna.
-- PWA/cache actualizado a `v4.9.1`.
+- Modo piloto en Publicaciones.
+- Ejemplos curados tipo solicitante / agente / negocio.
+- Registros reales ocultos en la vista pública sin modificar Supabase.
+- Nueva sección de Negocios locales.
+- Visión de chat + catálogo + carrito + agenda + pago futuro.
+- Mantiene Mandados Verificados, Fondo Protegido, Agentes de crecimiento, Mensajes y Aprendizaje.
 
 ## Importante
 
-Conecta Servicios orienta el cálculo, registra evidencia y ayuda a reducir dudas. El acuerdo final debe confirmarse entre las partes.
+No se implementan pagos reales ni wallet. Fondo Protegido sigue como simulador conceptual y la app mantiene trato directo entre las partes.
+
+## Subida a Vercel
+
+Sube el contenido del ZIP en la raíz del repositorio: `index.html`, `styles.css`, `app.js`, `manifest.json`, `service-worker.js`, `assets/` y `vercel.json`.

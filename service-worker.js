@@ -4,12 +4,12 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.9.1-acuerdo-directo";
+const CACHE_NAME = "conecta-servicios-v4.9.2-modo-piloto";
 const ASSETS = [
   "./",
   "index.html",
-  "styles.css?v=4.9.1-acuerdo-directo",
-  "app.js?v=4.9.1-acuerdo-directo",
+  "styles.css?v=4.9.2-modo-piloto",
+  "app.js?v=4.9.2-modo-piloto",
   "manifest.json",
   "assets/hero-scene-v4718.webp",
   "assets/hero-scene-clean-v4711.png",

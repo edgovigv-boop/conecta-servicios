@@ -1,0 +1,8 @@
+Conecta Servicios v4.9.2 — Modo piloto para inversionistas
+
+Cambios principales:
+- Modo piloto visible en Publicaciones con ejemplos curados.
+- Registros reales ocultos en vista pública de presentación, sin tocar Supabase.
+- Tarjetas organizadas por Solicitantes, Agentes, Negocios, Servicios y Crecimiento.
+- Nueva sección Negocios locales con visión de chat, catálogo, carrito, agenda, pago futuro, envío o pickup.
+- Mantiene Mandados Verificados y Fondo Protegido con acuerdo directo.
