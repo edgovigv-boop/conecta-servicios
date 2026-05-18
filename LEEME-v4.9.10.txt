@@ -1,0 +1,10 @@
+Conecta Servicios v4.9.10 — Flujos funcionales
+
+Cambios:
+- Oportunidades para ti ahora incluye Publicar una oportunidad.
+- Ver publicaciones queda separado de publicar.
+- Embajadores Conecta: Cobrar membresía abre el panel de pagos y Manual rápido abre la guía real.
+- Panel de pagos con botón Abrir link de cobro de Mercado Pago y Copiar resumen.
+- Membresía anual $98 MXN y comisión embajador $50 MXN.
+- No toca Supabase.
+- PWA/cache actualizado a v4.9.10.

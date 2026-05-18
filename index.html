@@ -28,10 +28,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
-  <title>Conecta Servicios v4.9.9</title>
-  <link rel="stylesheet" href="styles.css?v=4.9.9-home-carrusel-oportunidades" />
+  <title>Conecta Servicios v4.9.10</title>
+  <link rel="stylesheet" href="styles.css?v=4.9.10-flujos-funcionales" />
 </head>
-<body data-version="4.9.9-home-carrusel-oportunidades">
+<body data-version="4.9.10-flujos-funcionales">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -142,9 +142,14 @@ Todo uso requiere autorización expresa y por escrito del titular.
         </div>
 
         <div class="opportunity-action-grid" aria-label="Acciones principales de oportunidades">
+          <button type="button" class="opportunity-action-card primary-action" onclick="startWizard()">
+            <span>＋</span>
+            <div><strong>Publicar una oportunidad</strong><small>Crear solicitud, servicio, negocio, mandado o campaña en la app.</small></div>
+            <b>›</b>
+          </button>
           <button type="button" class="opportunity-action-card" onclick="requestNearbyPublications()">
             <span>📍</span>
-            <div><strong>Publicaciones</strong><small>Explora solicitantes, agentes, negocios, servicios y crecimiento.</small></div>
+            <div><strong>Ver publicaciones</strong><small>Explora solicitantes, agentes, negocios, servicios y crecimiento.</small></div>
             <b>›</b>
           </button>
           <button type="button" class="opportunity-action-card" onclick="showSection('mandados')">
@@ -794,7 +799,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <div class="growth-hero-actions">
             <button type="button" class="btn-small btn-purple" onclick="showAmbassadorPanel('embajador')">Quiero ser embajador</button>
             <button type="button" class="btn-small btn-orange" onclick="showAmbassadorPanel('referido')">Registrar referido</button>
-            <button type="button" class="btn-small btn-ghost" onclick="setAmbassadorTab('pagos')">Cobrar membresía</button>
+            <button type="button" class="btn-small btn-ghost" onclick="openAmbassadorPayments()">Cobrar membresía</button>
           </div>
         </div>
 
@@ -818,13 +823,13 @@ Todo uso requiere autorización expresa y por escrito del titular.
             <p>Vincula negocios, agentes o solicitantes al código del embajador.</p>
             <b>Agregar referido ›</b>
           </button>
-          <button type="button" class="ambassador-path-card" onclick="setAmbassadorTab('pagos')">
+          <button type="button" class="ambassador-path-card" onclick="openAmbassadorPayments()">
             <span>💳</span>
             <strong>Cobrar membresía</strong>
             <p>Genera un cobro con Mercado Pago o registra pago manual para corte.</p>
             <b>Ver pagos ›</b>
           </button>
-          <button type="button" class="ambassador-path-card" onclick="setAmbassadorTab('manual')">
+          <button type="button" class="ambassador-path-card" onclick="openAmbassadorManual()">
             <span>📘</span>
             <strong>Manual rápido</strong>
             <p>Guía para explicar la app y acercarse a posibles miembros.</p>
@@ -962,6 +967,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.9.9-home-carrusel-oportunidades"></script>
+  <script src="app.js?v=4.9.10-flujos-funcionales"></script>
 </body>
 </html>

@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.9-home-carrusel-oportunidades";
+const PWA_VERSION = "v4.9.10-flujos-funcionales";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -82,7 +82,7 @@ const APP_VERSION_KEY = "conecta_servicios_app_version";
 const CHAT_STORAGE_KEY = "conecta_business_chat_v494";
 const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v492";
 
-// v4.9.9 — Home carrusel, oportunidades reorganizadas y embajadores destacados
+// v4.9.10 — Home carrusel, oportunidades reorganizadas y flujos funcionales
 // Muestra publicaciones curadas y oculta los registros reales de Supabase en la vista pública.
 // Supabase sigue intacto; administración y futuras versiones pueden volver a producción cambiando esta bandera.
 const PRESENTATION_PILOT_MODE = true;
@@ -3036,7 +3036,7 @@ function saveErrandLead(event, type) {
 }
 
 
-// v4.9.9 — Embajadores Conecta: membresía anual, comisión $50 y Mercado Pago piloto
+// v4.9.10 — Flujos funcionales: publicar, cobro embajadores y manual
 const AMBASSADOR_STORAGE_KEY = "conecta_embajadores_v498";
 const AMBASSADOR_LEGACY_KEY = "conecta_embajadores_piloto_v497";
 const AMBASSADOR_SETTINGS_KEY = "conecta_embajadores_mp_settings_v498";
@@ -3210,6 +3210,38 @@ function renderAmbassadorManual() {
   </div>
   <div class="notice-card slim"><strong>Guía para embajadores</strong><p>El objetivo no es vender humo: es explicar con claridad cómo Conecta puede ayudar a la comunidad, negocios y personas que quieren generar ingresos.</p></div>`;
 }
+function scrollToAmbassadorPanel(panelId, toastMessage) {
+  setTimeout(() => {
+    const target = document.getElementById(panelId) || document.getElementById("embajadores");
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (toastMessage) showToast(toastMessage);
+  }, 90);
+}
+function openAmbassadorPayments() {
+  showSection("embajadores");
+  setAmbassadorTab("pagos", false);
+  scrollToAmbassadorPanel("ambassadorPaymentPanel", "Cobro de membresía listo para usar");
+}
+function openAmbassadorManual() {
+  showSection("embajadores");
+  setAmbassadorTab("manual", false);
+  scrollToAmbassadorPanel("ambassadorManualPanel", "Manual rápido para embajadores");
+}
+function openAmbassadorManualPaymentLink() {
+  const settings = getAmbassadorSettings();
+  if (settings.manualPaymentLink) {
+    showToast("Abriendo link de cobro Mercado Pago");
+    window.open(settings.manualPaymentLink, "_blank", "noopener");
+  } else {
+    showToast("Primero guarda tu link de cobro de Mercado Pago");
+    document.getElementById("ambassadorManualPaymentLink")?.focus();
+  }
+}
+function copyAmbassadorPaymentSummary() {
+  const payload = getAmbassadorPaymentPayload();
+  const text = `Conecta Servicios\nMembresía anual: $${payload.amount} MXN\nCódigo embajador: ${payload.ambassadorCode}\nReferido: ${payload.referralName}\nComisión embajador: $${payload.commission} MXN`;
+  navigator.clipboard?.writeText(text).then(() => showToast("Resumen de cobro copiado")).catch(() => showToast(text));
+}
 function renderAmbassadorPaymentPanel() {
   const panel = document.getElementById("ambassadorPaymentPanel");
   if (!panel) return;
@@ -3228,6 +3260,11 @@ function renderAmbassadorPaymentPanel() {
     </div>
     <label>Tipo de membresía<select id="ambassadorPaymentPlan" onchange="updateAmbassadorPaymentPreview()">${MEMBERSHIP_PLANS.map(plan => `<option value="${plan.id}">${plan.name} · $${plan.amount}</option>`).join("")}</select></label>
     <div id="ambassadorPaymentPreview" class="payment-preview-card"></div>
+    <div class="mp-direct-card">
+      <strong>Cobro rápido con Mercado Pago</strong>
+      <p>Usa el link guardado para cobrar la membresía anual de $98 MXN y conserva el código del embajador para el corte de comisión de $50.</p>
+      <div class="dialog-actions"><button type="button" class="btn-small btn-purple" onclick="openAmbassadorManualPaymentLink()">Abrir link de cobro</button><button type="button" class="btn-small btn-ghost" onclick="copyAmbassadorPaymentSummary()">Copiar resumen</button></div>
+    </div>
     <label>Notas del pago<input id="ambassadorPaymentNotes" type="text" placeholder="Ej. pago de negocio local de Chapultepec"></label>
     <div class="dialog-actions"><button type="button" class="btn-small btn-ghost" onclick="registerManualAmbassadorPayment()">Registrar pago manual</button><button type="submit" class="btn-small btn-purple">Generar cobro Mercado Pago</button></div>
   </form>

@@ -4,12 +4,12 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.9.9-home-carrusel-oportunidades";
+const CACHE_NAME = "conecta-servicios-v4.9.10-flujos-funcionales";
 const ASSETS = [
   "./",
   "index.html",
-  "styles.css?v=4.9.9-home-carrusel-oportunidades",
-  "app.js?v=4.9.9-home-carrusel-oportunidades",
+  "styles.css?v=4.9.10-flujos-funcionales",
+  "app.js?v=4.9.10-flujos-funcionales",
   "manifest.json",
   "assets/hero-scene-v4718.webp",
   "assets/hero-scene-clean-v4711.png",

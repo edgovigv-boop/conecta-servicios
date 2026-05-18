@@ -1610,3 +1610,14 @@ input,select,textarea{width:100%;border:1px solid #ded6ee;border-radius:17px;bac
 @media (max-width:430px){
   .home-pilot-card{flex-basis:165px;min-height:150px;padding:12px}.home-pilot-card strong{font-size:.88rem}.home-pilot-card p{font-size:.7rem}.ambassador-home-card{padding:12px;border-radius:22px}.ambassador-home-icon{width:48px;height:48px}.ambassador-home-card strong{font-size:.98rem}.ambassador-home-card small{font-size:.72rem}.opportunity-action-card{padding:13px;border-radius:22px}.opportunity-action-card span{width:48px;height:48px}.orientation-quick-row button{min-width:96px;font-size:.75rem;}
 }
+
+
+/* v4.9.10 — flujos funcionales */
+.opportunity-action-card.primary-action{background:linear-gradient(135deg,#0e5bff,#17b978);color:#fff;border-color:transparent;box-shadow:0 18px 34px rgba(14,91,255,.20)}
+.opportunity-action-card.primary-action span{background:rgba(255,255,255,.22);color:#fff}
+.opportunity-action-card.primary-action small,.opportunity-action-card.primary-action b{color:rgba(255,255,255,.90)}
+.mp-direct-card{border:1px solid #dbeafe;background:linear-gradient(135deg,#f8fbff,#eff6ff);border-radius:20px;padding:14px;display:grid;gap:8px;text-align:center}
+.mp-direct-card strong{color:#0f172a;font-size:1rem}
+.mp-direct-card p{margin:0;color:#475569;font-size:.86rem;line-height:1.42}
+.mp-direct-card .dialog-actions{justify-content:center}
+.ambassador-payment-form h3,.ambassador-settings-form h3{text-align:center}
