@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.8.8.2-guias-agentes";
+const PWA_VERSION = "v4.8.9-mandados-verificados";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -79,7 +79,8 @@ let analyticsCache = [];
 let deferredInstallPrompt = null;
 const TOTAL_STEPS = 7;
 const APP_VERSION_KEY = "conecta_servicios_app_version";
-const CHAT_STORAGE_KEY = "conecta_smart_chat_v488";
+const CHAT_STORAGE_KEY = "conecta_smart_chat_v489";
+const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v489";
 
 
 function cleanPhone(phone) { return String(phone || "").replace(/\D/g, ""); }
@@ -449,7 +450,7 @@ function showSection(id, push = true) {
   document.querySelector(".app-shell")?.classList.toggle("home-mode", id === "inicio");
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   target.classList.add("active");
-  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme", mensajes:"Mensajes inteligentes", agentes:"Agentes de crecimiento" };
+  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme", mensajes:"Mensajes inteligentes", agentes:"Agentes de crecimiento", mandados:"Mandados Verificados" };
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
@@ -472,6 +473,7 @@ function showSection(id, push = true) {
   if (id === "mensajes") renderSmartChat?.();
   if (id === "aprende") renderCourseCards?.();
   if (id === "agentes") renderGrowthPilotLists?.();
+  if (id === "mandados") renderErrandPilotLists?.();
 }
 function goBack() {
   if (currentSection === "inicio") {
@@ -957,6 +959,7 @@ function categoryIcon(category) {
     "Alimentos y ventas": "🍲",
     "Redes sociales": "🔗",
     "Agentes de crecimiento": "📈",
+    "Mandados Verificados": "🧺",
     "Colaboración general": "🤝"
   };
   return icons[category] || "📌";
@@ -2126,6 +2129,9 @@ function fillSmartMessage(text) {
 }
 function detectSmartIntent(rawText) {
   const text = normalize(rawText);
+  if (/mandado verificado|mandados verificados|compra verificada|compras verificadas|precio|peso|bascula|báscula|ticket|cambio|mercado|mandado con evidencia/.test(text)) {
+    return { category: "Mandados Verificados", query: "mandado verificado evidencia compra", label: "Mandados Verificados", action: "mandados" };
+  }
   if (/paquete|mandado|enviar|entrega|documento|reparto|llevar|traer|moto|bicicleta/.test(text)) {
     return { category: "Mensajería y envíos", query: "paquete entrega mandado", label: "Mensajería y envíos", action: "buscar" };
   }
@@ -2145,10 +2151,11 @@ function detectSmartIntent(rawText) {
 }
 function smartReplyFor(raw) {
   const intent = detectSmartIntent(raw);
-  smartLastSuggestion = { query: intent.query, category: intent.category };
+  smartLastSuggestion = { query: intent.query, category: intent.category, action: intent.action };
   if (intent.action === "aprender") return "Te conviene entrar a Aprendizaje. Ahí agregué cursos gratuitos como Fundación Carlos Slim, Google Actívate e IBM SkillsBuild para mejorar habilidades desde el celular.";
   if (intent.action === "publicar") return "Esto parece una oportunidad para publicar. Puedo llevarte al registro guiado para crear una publicación clara con municipio, categoría y WhatsApp protegido.";
   if (intent.action === "agentes") return "Te conviene revisar Agentes de crecimiento. Ahí un negocio puede publicar campañas por comisión y una persona puede registrarse para conseguir clientes o contactos por resultado.";
+  if (intent.action === "mandados") return "Te conviene revisar Mandados Verificados. Ahí puedes solicitar una compra con evidencia de precio, peso, pago, cambio y entrega, o registrarte como agente.";
   return `Encontré una ruta posible: ${intent.label}. Puedo buscar coincidencias o ayudarte a publicar la necesidad si no aparece una opción adecuada.`;
 }
 function sendSmartChatMessage() {
@@ -2166,6 +2173,9 @@ function sendSmartChatMessage() {
 }
 function handleSmartMessage() { sendSmartChatMessage(); }
 function smartShowSuggested() {
+  if (smartLastSuggestion?.action === "mandados") { showSection("mandados"); return; }
+  if (smartLastSuggestion?.action === "agentes") { showSection("agentes"); return; }
+  if (smartLastSuggestion?.action === "aprender") { showSection("aprende"); return; }
   showSection("publicaciones");
   setTimeout(() => {
     const search = document.getElementById("mainSearch");
@@ -2465,7 +2475,262 @@ function saveGrowthLead(event, type) {
   trackEvent("agentes_crecimiento_piloto", null, { tipo: type });
 }
 
+
+
+// v4.8.9 — Mandados Verificados piloto
+let errandActiveTab = "solicitudes";
+const ERRAND_DEFAULT_REQUESTS = [
+  {
+    id: "MV-1025",
+    item: "Verdura para la semana",
+    buyAt: "Mercado de San Pedro",
+    deliverTo: "Col. Centro, Toluca",
+    weight: 5,
+    amount: 400,
+    distance: 4.2,
+    schedule: "Hora pico",
+    estimate: 130.6,
+    status: "Buscando agente",
+    contact: OFFICE_PHONE
+  },
+  {
+    id: "MV-1026",
+    item: "Abarrotes y productos básicos",
+    buyAt: "Central de Abastos",
+    deliverTo: "Metepec, Estado de México",
+    weight: 8,
+    amount: 650,
+    distance: 6.1,
+    schedule: "Mañana",
+    estimate: 160.3,
+    status: "Disponible",
+    contact: OFFICE_PHONE
+  }
+];
+const ERRAND_DEFAULT_AGENTS = [
+  { name:"Juan Pérez", zone:"Toluca, Estado de México", transport:"Moto", capacity:"Hasta 12 kg", skills:"Mercados, abarrotes, compras rápidas", rating:"4.8", contact:OFFICE_PHONE },
+  { name:"María López", zone:"Metepec, Estado de México", transport:"Auto", capacity:"Hasta 25 kg", skills:"Compras familiares, supermercado, entrega cuidadosa", rating:"4.7", contact:OFFICE_PHONE },
+  { name:"Carlos R.", zone:"Chapultepec y Mexicaltzingo", transport:"Bicicleta / moto", capacity:"Hasta 8 kg", skills:"Mandados locales, farmacia, productos pequeños", rating:"Nuevo", contact:OFFICE_PHONE }
+];
+function getErrandPilotData() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(ERRAND_STORAGE_KEY) || "{}");
+    return {
+      requests: Array.isArray(saved.requests) ? saved.requests : [],
+      agents: Array.isArray(saved.agents) ? saved.agents : [],
+      reports: Array.isArray(saved.reports) ? saved.reports : []
+    };
+  } catch {
+    return { requests: [], agents: [], reports: [] };
+  }
+}
+function saveErrandPilotData(data) {
+  try { localStorage.setItem(ERRAND_STORAGE_KEY, JSON.stringify(data)); } catch {}
+}
+function errandMoney(value) {
+  const n = Number(value || 0);
+  return `$${n.toLocaleString("es-MX", { maximumFractionDigits: 2 })}`;
+}
+function calculateErrandEstimate(values = {}) {
+  const base = 35;
+  const distance = Math.max(0, Number(values.distance || 0));
+  const weight = Math.max(0, Number(values.weight || 0));
+  const amount = Math.max(0, Number(values.amount || 0));
+  const schedule = String(values.schedule || "normal").toLowerCase();
+  const distanceFee = distance * 8;
+  const weightFee = weight * 4;
+  const purchaseFee = amount * 0.05;
+  let multiplier = 1;
+  if (/pico|noche|lluvia|festivo|urgente/.test(schedule)) multiplier = 1.2;
+  const subtotal = base + distanceFee + weightFee + purchaseFee;
+  const total = Math.max(45, subtotal * multiplier);
+  const platform = total * 0.12;
+  const agent = total - platform;
+  return { base, distanceFee, weightFee, purchaseFee, multiplier, total, platform, agent };
+}
+function readErrandQuoteForm() {
+  return {
+    distance: document.getElementById("errandDistance")?.value || 0,
+    weight: document.getElementById("errandWeight")?.value || 0,
+    amount: document.getElementById("errandAmount")?.value || 0,
+    schedule: document.getElementById("errandSchedule")?.value || "Normal"
+  };
+}
+function renderErrandQuote(targetId = "errandQuotePreview") {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  const q = calculateErrandEstimate(readErrandQuoteForm());
+  target.innerHTML = `<div class="errand-quote-card">
+    <div><span>Tarifa base</span><strong>${errandMoney(q.base)}</strong></div>
+    <div><span>Distancia</span><strong>${errandMoney(q.distanceFee)}</strong></div>
+    <div><span>Peso estimado</span><strong>${errandMoney(q.weightFee)}</strong></div>
+    <div><span>Monto de compra</span><strong>${errandMoney(q.purchaseFee)}</strong></div>
+    <div><span>Horario</span><strong>${q.multiplier > 1 ? "+20%" : "Normal"}</strong></div>
+    <hr>
+    <div class="quote-total"><span>Total estimado</span><strong>${errandMoney(q.total)}</strong></div>
+    <small>Ganancia estimada del agente: ${errandMoney(q.agent)}. La tarifa puede ajustarse por condiciones reales.</small>
+  </div>`;
+}
+function errandWhatsAppMessage(type, item) {
+  if (type === "request") return `Hola, vi el mandado verificado ${item.id || ""} en Conecta Servicios: ${item.item}. Me interesa aceptar o conocer detalles.`;
+  if (type === "agent") return `Hola, vi tu perfil como agente de Mandados Verificados en Conecta Servicios. Me interesa solicitar un mandado con evidencia.`;
+  return "Hola, quiero información sobre Mandados Verificados en Conecta Servicios.";
+}
+function renderErrandRequestCard(item, local = false) {
+  const q = calculateErrandEstimate(item);
+  const total = Number(item.estimate || q.total);
+  return `<article class="errand-item-card">
+    <span class="errand-tag">${escapeHtml(item.status || "Disponible")}</span>
+    <strong>${escapeHtml(item.item || "Mandado verificado")}</strong>
+    <p>Compra en <b>${escapeHtml(item.buyAt || "por definir")}</b> y entrega en <b>${escapeHtml(item.deliverTo || "por definir")}</b>.</p>
+    <dl>
+      <div><dt>Peso</dt><dd>${escapeHtml(item.weight || "0")} kg</dd></div>
+      <div><dt>Monto aprox.</dt><dd>${errandMoney(item.amount || 0)}</dd></div>
+      <div><dt>Distancia</dt><dd>${escapeHtml(item.distance || "0")} km</dd></div>
+      <div><dt>Horario</dt><dd>${escapeHtml(item.schedule || "Normal")}</dd></div>
+      <div><dt>Tarifa estimada</dt><dd>${errandMoney(total)}</dd></div>
+    </dl>
+    <div class="errand-card-actions">
+      <button type="button" class="btn-small btn-green" onclick="openWhatsApp('${cleanPhone(item.contact || OFFICE_PHONE)}','${encodeURIComponent(errandWhatsAppMessage("request", item))}')">Contactar</button>
+      <button type="button" class="btn-small btn-outline" onclick="showErrandReport('${escapeHtml(item.id || "MV")}', '${escapeHtml(item.item || "Mandado verificado")}')">Ver reporte</button>
+      ${local ? '<small>Guardado en este dispositivo</small>' : ''}
+    </div>
+  </article>`;
+}
+function renderErrandAgentCard(item, local = false) {
+  return `<article class="errand-item-card errand-agent-item">
+    <span class="errand-avatar">${escapeHtml((item.name || "A").slice(0,1).toUpperCase())}</span>
+    <strong>${escapeHtml(item.name || "Agente de compras")}</strong>
+    <p>${escapeHtml(item.skills || "Mandados, compras y entregas locales")}</p>
+    <dl>
+      <div><dt>Zona</dt><dd>${escapeHtml(item.zone || "Por definir")}</dd></div>
+      <div><dt>Transporte</dt><dd>${escapeHtml(item.transport || "Por definir")}</dd></div>
+      <div><dt>Capacidad</dt><dd>${escapeHtml(item.capacity || "Por definir")}</dd></div>
+      <div><dt>Perfil</dt><dd>${escapeHtml(item.rating || "Nuevo")}</dd></div>
+    </dl>
+    <div class="errand-card-actions">
+      <button type="button" class="btn-small btn-purple" onclick="openWhatsApp('${cleanPhone(item.contact || OFFICE_PHONE)}','${encodeURIComponent(errandWhatsAppMessage("agent", item))}')">Contactar</button>
+      ${local ? '<small>Guardado en este dispositivo</small>' : ''}
+    </div>
+  </article>`;
+}
+function renderErrandReport(id = "MV-1025", item = "Mandado verificado") {
+  const panel = document.getElementById("errandReportPanel");
+  if (!panel) return;
+  panel.innerHTML = `<article class="errand-report-card">
+    <span class="errand-tag purple">Reporte de evidencia</span>
+    <h3>${escapeHtml(id)}</h3>
+    <p><strong>${escapeHtml(item)}</strong></p>
+    <div class="evidence-checklist">
+      <label><input type="checkbox" checked disabled> Precio del producto o etiqueta</label>
+      <label><input type="checkbox" checked disabled> Producto en báscula o cantidad</label>
+      <label><input type="checkbox" checked disabled> Ticket, total o monto pagado</label>
+      <label><input type="checkbox" checked disabled> Cambio recibido</label>
+      <label><input type="checkbox" checked disabled> Entrega final</label>
+    </div>
+    <div class="report-summary-box">
+      <strong>Validación asistida</strong>
+      <p>Al terminar el mandado, la evidencia se organiza en un reporte para que comprador y agente revisen precio, peso, pago, cambio y entrega.</p>
+    </div>
+  </article>`;
+}
+function showErrandReport(id, item) {
+  renderErrandReport(id, item);
+  setErrandTab("reporte");
+}
+function renderErrandPilotLists() {
+  const data = getErrandPilotData();
+  const requests = [...data.requests, ...ERRAND_DEFAULT_REQUESTS];
+  const agents = [...data.agents, ...ERRAND_DEFAULT_AGENTS];
+  const requestList = document.getElementById("errandRequestList");
+  const agentList = document.getElementById("errandAgentList");
+  if (requestList) requestList.innerHTML = requests.map((item, index) => renderErrandRequestCard(item, index < data.requests.length)).join("");
+  if (agentList) agentList.innerHTML = agents.map((item, index) => renderErrandAgentCard(item, index < data.agents.length)).join("");
+  renderErrandReport();
+  setErrandTab(errandActiveTab, false);
+}
+function setErrandTab(tab, scroll = true) {
+  errandActiveTab = ["agentes", "reporte"].includes(tab) ? tab : "solicitudes";
+  document.querySelectorAll("[data-errand-tab]").forEach(button => button.classList.toggle("active", button.dataset.errandTab === errandActiveTab));
+  document.getElementById("errandRequestList")?.classList.toggle("hidden", errandActiveTab !== "solicitudes");
+  document.getElementById("errandAgentList")?.classList.toggle("hidden", errandActiveTab !== "agentes");
+  document.getElementById("errandReportPanel")?.classList.toggle("hidden", errandActiveTab !== "reporte");
+  if (scroll) document.querySelector(".errand-tabs")?.scrollIntoView({ behavior:"smooth", block:"start" });
+}
+function showErrandPanel(type) {
+  const panel = document.getElementById("errandPanel");
+  if (!panel) return;
+  const isAgent = type === "agente";
+  panel.classList.remove("hidden");
+  panel.innerHTML = isAgent ? `<form class="errand-form" onsubmit="saveErrandLead(event,'agente')">
+    <h3>Trabajar como agente</h3>
+    <label>Nombre público<input id="errandAgentName" required placeholder="Ej. Juan Pérez"></label>
+    <label>Municipio o zona<input id="errandAgentZone" required placeholder="Ej. Toluca, Estado de México"></label>
+    <div class="form-grid"><label>Transporte<select id="errandAgentTransport" required><option>Moto</option><option>Auto</option><option>Bicicleta</option><option>A pie</option><option>Camioneta</option></select></label><label>Capacidad aproximada<input id="errandAgentCapacity" required placeholder="Ej. hasta 10 kg"></label></div>
+    <label>Habilidades o zonas que conoces<textarea id="errandAgentSkills" rows="4" required oninput="autoSizeTextarea(this)" onpaste="normalizeTextareaPaste(event)" placeholder="Ej. compras en mercado, central, abarrotes, farmacia, entrega cuidadosa..."></textarea></label>
+    <div class="field-guide-card compact-guide"><strong>Guía para agente</strong><p>Explica qué compras puedes hacer, cuánto puedes cargar, tu medio de transporte y zonas que conoces.</p><button type="button" class="guide-fill-btn" onclick="insertGrowthTemplate('errandAgentSkills','Puedo hacer mandados en mercado, tienda y farmacia. Conozco rutas locales, puedo tomar evidencia de precio, peso, ticket, cambio y entrega. Capacidad aproximada: [kg]. Zonas: [municipios o colonias].')">Usar ejemplo editable</button></div>
+    <label>WhatsApp<input id="errandAgentPhone" type="tel" required placeholder="10 dígitos"></label>
+    <button class="btn-big btn-green" type="submit">Guardar agente piloto</button>
+  </form>` : `<form class="errand-form" onsubmit="saveErrandLead(event,'solicitud')">
+    <h3>Solicitar mandado verificado</h3>
+    <label>¿Qué necesitas comprar?<input id="errandItem" required placeholder="Ej. frutas, verduras, pollo, abarrotes..."></label>
+    <label>¿Dónde se compra?<input id="errandBuyAt" required placeholder="Ej. Mercado de San Pedro, Central de Abastos..."></label>
+    <label>¿Dónde se entrega?<input id="errandDeliverTo" required placeholder="Colonia, municipio o referencia"></label>
+    <div class="form-grid"><label>Peso estimado kg<input id="errandWeight" type="number" min="0" step="0.1" value="5" oninput="renderErrandQuote()"></label><label>Monto aprox. compra<input id="errandAmount" type="number" min="0" step="10" value="400" oninput="renderErrandQuote()"></label></div>
+    <div class="form-grid"><label>Distancia estimada km<input id="errandDistance" type="number" min="0" step="0.1" value="4" oninput="renderErrandQuote()"></label><label>Horario<select id="errandSchedule" onchange="renderErrandQuote()"><option>Normal</option><option>Hora pico</option><option>Noche</option><option>Lluvia o festivo</option><option>Urgente</option></select></label></div>
+    <label>Observaciones<textarea id="errandNotes" rows="3" oninput="autoSizeTextarea(this)" onpaste="normalizeTextareaPaste(event)" placeholder="Calidad deseada, marcas, sustituciones permitidas o instrucciones importantes."></textarea></label>
+    <div class="field-guide-card compact-guide"><strong>Checklist de evidencia</strong><p>El agente deberá registrar precio, peso o cantidad, ticket o total pagado, cambio recibido y entrega final.</p></div>
+    <div id="errandQuotePreview"></div>
+    <label>WhatsApp<input id="errandPhone" type="tel" required placeholder="10 dígitos"></label>
+    <button class="btn-big btn-purple" type="submit">Publicar solicitud piloto</button>
+  </form>`;
+  panel.querySelectorAll("textarea").forEach(autoSizeTextarea);
+  if (!isAgent) renderErrandQuote();
+  panel.scrollIntoView({ behavior:"smooth", block:"start" });
+}
+function saveErrandLead(event, type) {
+  event.preventDefault();
+  const data = getErrandPilotData();
+  if (type === "agente") {
+    data.agents.unshift({
+      name: document.getElementById("errandAgentName")?.value.trim(),
+      zone: document.getElementById("errandAgentZone")?.value.trim(),
+      transport: document.getElementById("errandAgentTransport")?.value,
+      capacity: document.getElementById("errandAgentCapacity")?.value.trim(),
+      skills: document.getElementById("errandAgentSkills")?.value.trim(),
+      rating: "Nuevo",
+      contact: cleanPhone(document.getElementById("errandAgentPhone")?.value)
+    });
+    errandActiveTab = "agentes";
+    showToast("Agente de mandados guardado en piloto");
+  } else {
+    const quote = calculateErrandEstimate(readErrandQuoteForm());
+    data.requests.unshift({
+      id: `MV-${String(Date.now()).slice(-5)}`,
+      item: document.getElementById("errandItem")?.value.trim(),
+      buyAt: document.getElementById("errandBuyAt")?.value.trim(),
+      deliverTo: document.getElementById("errandDeliverTo")?.value.trim(),
+      weight: document.getElementById("errandWeight")?.value,
+      amount: document.getElementById("errandAmount")?.value,
+      distance: document.getElementById("errandDistance")?.value,
+      schedule: document.getElementById("errandSchedule")?.value,
+      notes: document.getElementById("errandNotes")?.value.trim(),
+      estimate: quote.total,
+      status: "Buscando agente",
+      contact: cleanPhone(document.getElementById("errandPhone")?.value)
+    });
+    errandActiveTab = "solicitudes";
+    showToast("Solicitud de mandado guardada en piloto");
+  }
+  saveErrandPilotData(data);
+  renderErrandPilotLists();
+  document.getElementById("errandPanel")?.classList.add("hidden");
+  trackEvent("mandados_verificados_piloto", null, { tipo: type });
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
   renderSmartChat();
   renderCourseCards();
+  renderErrandPilotLists?.();
 });

@@ -1,25 +1,24 @@
-# Conecta Servicios v4.8.8 — Agentes de crecimiento
+# Conecta Servicios v4.8.9 — Mandados Verificados
 
-Versión piloto para presentación con inversionistas.
+Versión piloto para presentación y validación.
 
 ## Incluye
 
-- Nueva sección **Agentes de crecimiento**.
+- Nuevo módulo **Mandados Verificados**.
 - Acceso visible desde Home.
-- Dos caminos: **Quiero conseguir clientes** y **Quiero trabajar por comisión**.
-- Campañas piloto con resultado, comisión y zona.
-- Agentes disponibles con habilidades, zona y contacto.
-- Formularios piloto guardados localmente en el dispositivo, sin tocar Supabase.
-- Mantiene correcciones de v4.8.7: publicaciones visibles, filtros limpios, PWA/cache actualizado.
+- Dos caminos: **Solicitar mandado** y **Trabajar como agente**.
+- Formulario para comprador con calculadora de tarifa estimada.
+- Formulario para agente de compras y entregas.
+- Checklist de evidencia: precio, peso/cantidad, ticket o total, cambio y entrega final.
+- Reporte visual simple de evidencia del mandado.
+- Guardado local en el dispositivo para pruebas, sin tocar Supabase.
+- Mensajes inteligentes reconoce consultas sobre mandados verificados.
+- PWA/cache actualizado a `v4.8.9`.
 
 ## Importante
 
-Esta versión no automatiza pagos ni comisiones. Es un piloto visual/funcional para validar interés y explicar el modelo de negocio sin romper producción.
+Esta versión usa lenguaje responsable: evidencia del mandado, validación asistida, mayor confianza y reduce dudas. No promete certificación total, garantía absoluta ni pagos automáticos.
 
+## Despliegue
 
-## v4.8.8.2 — Guías para campañas y agentes
-- Mejora el formulario de campañas de Agentes de crecimiento.
-- Agrega guía editable para la descripción de campaña.
-- Mejora el campo de habilidades del agente con botones sugeridos.
-- Normaliza pegado en campos largos para evitar que el formato se descomponga.
-- Actualiza caché/PWA a v4.8.8.2.
+Subir el contenido de esta carpeta a la raíz del repositorio conectado a Vercel.

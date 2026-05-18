@@ -1,0 +1,20 @@
+Conecta Servicios v4.8.9 — Mandados Verificados
+
+Cambios principales:
+- Nuevo módulo piloto Mandados Verificados.
+- Acceso desde Home.
+- Solicitar mandado con tarifa estimada.
+- Registro de agentes de compra.
+- Checklist de evidencia paso a paso.
+- Reporte visual del mandado.
+- Sin cambios en Supabase.
+- Cache/PWA actualizado a v4.8.9.
+
+Prueba sugerida:
+1. Abrir Home.
+2. Entrar a Mandados Verificados.
+3. Probar Solicitar mandado.
+4. Revisar calculadora.
+5. Guardar solicitud piloto.
+6. Probar Trabajar como agente.
+7. Revisar pestañas Solicitudes, Agentes y Reporte.

@@ -28,10 +28,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
-  <title>Conecta Servicios v4.8.8.2</title>
-  <link rel="stylesheet" href="styles.css?v=4.8.8.2-guias" />
+  <title>Conecta Servicios v4.8.9</title>
+  <link rel="stylesheet" href="styles.css?v=4.8.9-mandados" />
 </head>
-<body data-version="4.8.8.2-guias">
+<body data-version="4.8.9-mandados">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -97,6 +97,11 @@ Todo uso requiere autorización expresa y por escrito del titular.
               <span class="future-emoji">📈</span>
               <strong>Agentes de<br>crecimiento</strong>
               <small>Por comisión</small>
+            </button>
+            <button type="button" class="future-card-v477 verified-errand-card" onclick="showSection('mandados')">
+              <span class="future-emoji">🧺</span>
+              <strong>Mandados<br>verificados</strong>
+              <small>Evidencia paso a paso</small>
             </button>
           </div>
 
@@ -348,7 +353,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <button type="button" class="filter-chip" title="Negocios" aria-label="Negocios" data-filter-category="" data-filter-search="tienda negocio panaderia estetica papeleria ferreteria tortilleria comida vendo ventas" onclick="setCategoryChip(this)">🏪</button>
           <button type="button" class="filter-chip" title="Redes" aria-label="Redes" data-filter-category="Redes sociales" data-filter-search="" onclick="setCategoryChip(this)">🔗</button>
         </div>
-        <select id="categoryFilter" class="hidden" onchange="renderPublications()"><option value="">Todas las categorías</option><option>Trabajo</option><option>Servicios</option><option>Limpieza</option><option>Reparaciones</option><option>Entregas y mandados</option><option>Movilidad</option><option>Negocios locales</option><option>Alimentos y ventas</option><option>Redes sociales</option><option>Agentes de crecimiento</option></select>
+        <select id="categoryFilter" class="hidden" onchange="renderPublications()"><option value="">Todas las categorías</option><option>Trabajo</option><option>Servicios</option><option>Limpieza</option><option>Reparaciones</option><option>Entregas y mandados</option><option>Movilidad</option><option>Negocios locales</option><option>Alimentos y ventas</option><option>Redes sociales</option><option>Agentes de crecimiento</option><option>Mandados Verificados</option></select>
         <input id="chipSearchFilter" type="hidden" value="" />
         <div id="publicationsList" class="compact-list publicaciones-results"></div>
       </section>
@@ -367,6 +372,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <button class="mini-card" onclick="showSection('aprende')"><strong>Aprende y emprende</strong><small>Rutas para generar ingresos</small></button>
           <button class="mini-card" onclick="showSection('oportunidades')"><strong>Oportunidades para ti</strong><small>Coincidencias según tus intereses</small></button>
           <button class="mini-card" onclick="showSection('agentes')"><strong>Agentes de crecimiento</strong><small>Clientes y comisiones</small></button>
+          <button class="mini-card" onclick="showSection('mandados')"><strong>Mandados Verificados</strong><small>Compra con evidencia</small></button>
         </div>
         <div id="adminEntry" class="admin-entry hidden">
           <hr />
@@ -549,6 +555,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
             <button type="button" onclick="fillSmartMessage('Quiero ofrecer mi servicio')">Ofrecer</button>
             <button type="button" onclick="fillSmartMessage('Quiero tomar cursos gratuitos')">Cursos</button>
             <button type="button" onclick="showSection('agentes')">Agentes</button>
+            <button type="button" onclick="showSection('mandados')">Mandados</button>
           </div>
           <label class="chat-input-row" aria-label="Escribe tu mensaje">
             <textarea id="smartMessageInput" rows="2" placeholder="Escribe tu mensaje... Ej. Busco quien entregue un paquete hoy"></textarea>
@@ -586,6 +593,66 @@ Todo uso requiere autorización expresa y por escrito del titular.
         </div>
       </section>
 
+
+      <section id="mandados" class="section info-section verified-errands-section">
+        <div class="errand-hero-card">
+          <span class="errand-kicker">Nuevo módulo piloto</span>
+          <h2>Mandados Verificados</h2>
+          <p>Compra, entrega y comprobación con evidencia paso a paso para reducir dudas entre comprador y agente.</p>
+          <div class="errand-hero-actions">
+            <button type="button" class="btn-small btn-purple" onclick="showErrandPanel('solicitud')">Solicitar mandado</button>
+            <button type="button" class="btn-small btn-green" onclick="showErrandPanel('agente')">Trabajar como agente</button>
+          </div>
+        </div>
+
+        <div class="errand-path-grid">
+          <button type="button" class="errand-path-card buyer-path" onclick="showErrandPanel('solicitud')">
+            <span>🛒</span>
+            <strong>Para quien pide el mandado</strong>
+            <p>Describe lo que necesitas comprar, calcula una tarifa estimada y recibe evidencia del proceso.</p>
+            <b>Solicitar mandado ›</b>
+          </button>
+          <button type="button" class="errand-path-card agent-path" onclick="showErrandPanel('agente')">
+            <span>🛵</span>
+            <strong>Para agentes de compra</strong>
+            <p>Acepta mandados, registra evidencia y evita confusiones sobre precio, peso, pago y cambio.</p>
+            <b>Registrarme como agente ›</b>
+          </button>
+        </div>
+
+        <div class="errand-steps-card">
+          <h3>¿Cómo se comprueba?</h3>
+          <div class="errand-steps-row">
+            <span><b>1</b>Precio</span>
+            <span><b>2</b>Peso o cantidad</span>
+            <span><b>3</b>Ticket o total</span>
+            <span><b>4</b>Cambio</span>
+            <span><b>5</b>Entrega</span>
+          </div>
+        </div>
+
+        <div class="errand-estimate-info">
+          <strong>Tarifa estimada</strong>
+          <p>La app calcula una referencia con tarifa base, distancia, peso, horario y monto aproximado de compra. El costo final debe confirmarse entre las partes antes de aceptar.</p>
+        </div>
+
+        <div id="errandPanel" class="errand-panel hidden"></div>
+
+        <div class="errand-tabs" aria-label="Mandados Verificados">
+          <button type="button" class="active" onclick="setErrandTab('solicitudes')" data-errand-tab="solicitudes">Solicitudes</button>
+          <button type="button" onclick="setErrandTab('agentes')" data-errand-tab="agentes">Agentes</button>
+          <button type="button" onclick="setErrandTab('reporte')" data-errand-tab="reporte">Reporte</button>
+        </div>
+
+        <div id="errandRequestList" class="errand-list"></div>
+        <div id="errandAgentList" class="errand-list hidden"></div>
+        <div id="errandReportPanel" class="errand-list hidden"></div>
+
+        <div class="notice-card slim errand-note">
+          <strong>Lenguaje responsable</strong>
+          <p>Conecta Servicios facilita el contacto y la evidencia del mandado. La validación es asistida y debe revisarse por las partes. No es garantía absoluta ni sustituto de acuerdos claros.</p>
+        </div>
+      </section>
 
       <section id="agentes" class="section info-section growth-agents-section">
         <div class="growth-hero-card">
@@ -743,6 +810,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.8.8.2-guias"></script>
+  <script src="app.js?v=4.8.9-mandados"></script>
 </body>
 </html>
