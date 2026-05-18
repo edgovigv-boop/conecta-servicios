@@ -4,12 +4,12 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.9.17-feed-social-limpio";
+const CACHE_NAME = "conecta-servicios-v4.9.18-home-feed-social-real";
 const ASSETS = [
   "./",
   "index.html",
-  "styles.css?v=4.9.17-feed-social-limpio",
-  "app.js?v=4.9.17-feed-social-limpio",
+  "styles.css?v=4.9.18-home-feed-social-real",
+  "app.js?v=4.9.18-home-feed-social-real",
   "manifest.json",
   "assets/hero-scene-v4718.webp",
   "assets/hero-scene-clean-v4711.png",

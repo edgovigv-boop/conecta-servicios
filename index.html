@@ -28,10 +28,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
-  <title>Conecta Servicios v4.9.17</title>
-  <link rel="stylesheet" href="styles.css?v=4.9.17-feed-social-limpio" />
+  <title>Conecta Servicios v4.9.18</title>
+  <link rel="stylesheet" href="styles.css?v=4.9.18-home-feed-social-real" />
 </head>
-<body data-version="4.9.17-feed-social-limpio">
+<body data-version="4.9.18-home-feed-social-real">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -43,338 +43,39 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </header>
 
     <main class="content">
-      <section id="inicio" class="section active home-social-section">
-        <div class="social-home" aria-label="Inicio social de Conecta Servicios">
-          <div class="social-home-top">
-            <div class="social-brand">
-              <span class="social-logo-mark">C</span>
-              <div><strong>Conecta</strong><small>SERVICIOS</small></div>
-            </div>
-            <div class="social-home-actions">
-              <button type="button" aria-label="Buscar publicaciones" onclick="requestNearbyPublications()">⌕</button>
-              <button type="button" class="social-notification-btn" aria-label="Notificaciones" onclick="showSection('notificaciones')">🔔<b>7</b></button>
-            </div>
-          </div>
-
-          <div class="social-category-strip" aria-label="Tipos de oportunidades">
-            <button type="button" class="active" onclick="openPilotType('')"><span>✦</span><small>Para ti</small></button>
-            <button type="button" onclick="openPilotType('solicitantes')"><span>♙</span><small>Solicitantes</small></button>
-            <button type="button" onclick="openPilotType('agentes')"><span>♟</span><small>Agentes</small></button>
-            <button type="button" onclick="openPilotType('negocios')"><span>🏪</span><small>Negocios</small></button>
-            <button type="button" onclick="openPilotType('servicios')"><span>🛠</span><small>Servicios</small></button>
-            <button type="button" onclick="openPilotType('crecimiento')"><span>↗</span><small>Crecimiento</small></button>
-            <button type="button" onclick="showSection('embajadores')"><span>🤝</span><small>Embajadores</small></button>
-            <button type="button" onclick="showSection('aprende')"><span>🎓</span><small>Aprendizaje</small></button>
-          </div>
-
-          <div class="social-feed-title">
-            <div>
-              <strong>Explora oportunidades piloto</strong>
-              <small>Desliza, toca una publicación y conviértela en una acción real.</small>
-            </div>
-            <button type="button" onclick="requestNearbyPublications()">Explorar</button>
-          </div>
-
-          <div class="social-feed-stack" aria-label="Publicaciones piloto tipo red social">
-            <article class="social-post-card" data-type="solicitantes">
-              <img src="assets/social-post-solicitante.webp" alt="Publicación piloto de solicitante" loading="eager">
-              <div class="social-post-shade"></div>
-              <div class="social-post-topline">
-                <span class="avatar mini-avatar">MG</span>
-                <div><strong>María González</strong><small>Solicitante · CDMX</small></div>
-                <b>PILOTO</b>
-              </div>
-              <div class="social-post-side-actions">
-                <button type="button" onclick="socialLike(this)">♡<small>24</small></button>
-                <button type="button" onclick="showSection('mensajes')">💬<small>5</small></button>
-                <button type="button" onclick="sharePilotSocial('solicitantes')">↗<small>12</small></button>
-                <button type="button" onclick="openPilotType('solicitantes')">▣<small>Guardar</small></button>
-              </div>
-              <div class="social-post-content">
-                <h2>Busco barista para fines de semana</h2>
-                <p>Apoyo por evento · Zona Roma, CDMX</p>
-                <div class="hashtag-row"><span>#Servicio</span><span>#Hospitalidad</span><span>#TiempoParcial</span></div>
-                <button type="button" class="social-real-btn" onclick="makePilotReal('solicitantes')">Hacerlo real (Solicitar)</button>
-                <button type="button" class="social-details-btn" onclick="openPilotType('solicitantes')">Ver detalles</button>
-              </div>
-            </article>
-
-            <article class="social-post-card compact-preview" data-type="agentes">
-              <img src="assets/social-post-agente.webp" alt="Publicación piloto de agente" loading="lazy">
-              <div class="social-post-shade"></div>
-              <div class="social-post-topline">
-                <span class="avatar mini-avatar blue">CM</span>
-                <div><strong>Carlos Méndez</strong><small>Agente · Guadalajara</small></div>
-                <b>PILOTO</b>
-              </div>
-              <div class="social-post-content">
-                <h2>Te consigo más clientes por comisión</h2>
-                <p>Redes sociales · WhatsApp · Promoción local</p>
-                <button type="button" class="social-real-btn" onclick="makePilotReal('agentes')">Hacerlo real (Trabajar)</button>
-                <button type="button" class="social-details-btn" onclick="openPilotType('agentes')">Ver detalles</button>
-              </div>
-            </article>
-
-            <div class="social-type-cards" aria-label="Tipos de publicaciones que verás">
-              <button type="button" onclick="openPilotType('solicitantes')" class="social-type-card solicitante" style="--img:url('assets/social-post-solicitante.webp')"><b>SOLICITANTE</b><span>Busco diseñador gráfico</span></button>
-              <button type="button" onclick="openPilotType('agentes')" class="social-type-card agente" style="--img:url('assets/social-post-agente.webp')"><b>AGENTE</b><span>Te consigo más clientes</span></button>
-              <button type="button" onclick="openPilotType('negocios')" class="social-type-card negocio" style="--img:url('assets/social-post-negocio.webp')"><b>NEGOCIO</b><span>Busco personal para mi negocio</span></button>
-              <button type="button" onclick="openPilotType('servicios')" class="social-type-card servicio" style="--img:url('assets/social-post-servicio.webp')"><b>SERVICIO</b><span>Ofrezco servicio de limpieza</span></button>
-              <button type="button" onclick="openPilotType('crecimiento')" class="social-type-card crecimiento" style="--img:url('assets/social-post-crecimiento.webp')"><b>CRECIMIENTO</b><span>Quiero crecer mi empresa</span></button>
-              <button type="button" onclick="showSection('embajadores')" class="social-type-card embajadores" style="--img:url('assets/social-post-embajadores.webp')"><b>EMBAJADORES</b><span>Únete como embajador</span></button>
-              <button type="button" onclick="showSection('aprende')" class="social-type-card aprendizaje" style="--img:url('assets/social-post-aprendizaje.webp')"><b>APRENDIZAJE</b><span>Aprende y crece con nosotros</span></button>
-            </div>
-
-            <section class="social-conversion-path">
-              <strong>De piloto a real</strong>
-              <div>
-                <span>👁️<small>Exploras</small></span>
-                <b>→</b>
-                <span>👆<small>Te interesa</small></span>
-                <b>→</b>
-                <span>📋<small>Sigues guía</small></span>
-                <b>→</b>
-                <span>✅<small>Lo haces real</small></span>
-                <b>→</b>
-                <span>🚀<small>Economía activada</small></span>
-              </div>
-            </section>
-
-            <button class="ambassador-social-card" type="button" onclick="showSection('embajadores')">
-              <span>🤝</span>
-              <div>
-                <strong>Embajadores Conecta</strong>
-                <small>Gana $50 por cada membresía anual referida. Membresía: $98 MXN.</small>
-              </div>
-              <b>›</b>
+      <section id="inicio" class="section active v4918-home-section">
+        <div class="v4918-feed-home" aria-label="Inicio tipo red social de Conecta Servicios">
+          <header class="v4918-feed-header">
+            <button type="button" class="v4918-brand" onclick="setHomeFeedFilter('')" aria-label="Conecta Servicios inicio">
+              <span class="v4918-logo-mark" aria-hidden="true"></span>
+              <span><strong>Conecta</strong><small>SERVICIOS</small></span>
             </button>
+            <div class="v4918-header-actions">
+              <button type="button" aria-label="Buscar publicaciones" onclick="requestNearbyPublications()">⌕</button>
+              <button type="button" class="v4918-bell" aria-label="Notificaciones" onclick="showSection('notificaciones')">🔔<b>7</b></button>
+            </div>
+          </header>
 
-            <p class="sync-status visually-hidden" id="syncStatus" aria-live="polite">Conectando con la base de datos...</p>
+          <nav class="v4918-feed-tabs" aria-label="Filtrar publicaciones piloto">
+            <button type="button" class="active" data-feed-filter="" onclick="setHomeFeedFilter('')"><span>✦</span><small>Para ti</small></button>
+            <button type="button" data-feed-filter="solicitantes" onclick="setHomeFeedFilter('solicitantes')"><span>🙋</span><small>Solicitantes</small></button>
+            <button type="button" data-feed-filter="agentes" onclick="setHomeFeedFilter('agentes')"><span>🧑‍💼</span><small>Agentes</small></button>
+            <button type="button" data-feed-filter="negocios" onclick="setHomeFeedFilter('negocios')"><span>🏪</span><small>Negocios</small></button>
+            <button type="button" data-feed-filter="servicios" onclick="setHomeFeedFilter('servicios')"><span>🛠️</span><small>Servicios</small></button>
+            <button type="button" data-feed-filter="crecimiento" onclick="setHomeFeedFilter('crecimiento')"><span>📈</span><small>Crecimiento</small></button>
+            <button type="button" data-feed-filter="embajadores" onclick="setHomeFeedFilter('embajadores')"><span>🤝</span><small>Embajadores</small></button>
+            <button type="button" data-feed-filter="aprendizaje" onclick="setHomeFeedFilter('aprendizaje')"><span>🎓</span><small>Aprendizaje</small></button>
+          </nav>
+
+          <div class="v4918-feed-intro">
+            <strong id="homeFeedTitle">Para ti</strong>
+            <small id="homeFeedHint">Desliza oportunidades piloto y conviértelas en acciones reales.</small>
           </div>
+
+          <div id="homeSocialFeed" class="v4918-social-feed" aria-live="polite" aria-label="Feed de publicaciones piloto"></div>
+
+          <p class="sync-status visually-hidden" id="syncStatus" aria-live="polite">Conectando con la base de datos...</p>
         </div>
-      </section>
-
-      <section id="oportunidades" class="section info-section opportunities-section clean-opportunities opportunity-guide-start">
-        <div class="simple-section-title compact-title opportunities-clean-title visually-hidden">
-          <h2>Oportunidades para ti</h2>
-        </div>
-
-        <div class="opportunity-action-grid opportunities-icon-first" aria-label="Acciones principales de oportunidades">
-          <button type="button" class="opportunity-action-card primary-action" onclick="startWizard()">
-            <span>＋</span>
-            <div><strong>Publicar una oportunidad</strong></div>
-            <b>›</b>
-          </button>
-          <button type="button" class="opportunity-action-card" onclick="requestNearbyPublications()">
-            <span>📍</span>
-            <div><strong>Ver publicaciones</strong></div>
-            <b>›</b>
-          </button>
-          <button type="button" class="opportunity-action-card" onclick="startSurveyFlow('mandadoSolicitud')">
-            <span>🧺</span>
-            <div><strong>Mandados verificados</strong></div>
-            <b>›</b>
-          </button>
-          <button type="button" class="opportunity-action-card" onclick="startSurveyFlow('crecimientoMenu')">
-            <span>📈</span>
-            <div><strong>Agentes de crecimiento</strong></div>
-            <b>›</b>
-          </button>
-          <button type="button" class="opportunity-action-card" onclick="startSurveyFlow('chatNegocio')">
-            <span>🏪</span>
-            <div><strong>Chat de negocios</strong></div>
-            <b>›</b>
-          </button>
-        </div>
-
-        <div class="notice-card slim opportunities-note-card visually-hidden">
-          <strong>Trato directo y organización clara</strong>
-        </div>
-      </section>
-
-      <section id="rutaGuiada" class="section info-section guided-route-section">
-        <div id="guidedRouteContent"></div>
-      </section>
-
-      <section id="encuesta" class="section info-section survey-section">
-        <div id="surveyFlowContent"></div>
-      </section>
-
-      <section id="registro" class="section">
-        <div class="section-header compact">
-          <div>
-            <h2>Publica paso a paso</h2>
-            <p>Te guiamos con preguntas cortas para que publicar no sea pesado.</p>
-          </div>
-        </div>
-
-        <form id="publicationForm" class="wizard-card">
-          <div class="wizard-progress">
-            <div><strong id="wizardStepLabel">Paso 1 de 7</strong><span id="wizardStepTitle">¿Qué quieres publicar?</span></div>
-            <div class="progress-track"><span id="wizardProgressBar"></span></div>
-          </div>
-
-          <div class="wizard-step active" data-step="1">
-            <h3>¿Qué quieres publicar?</h3>
-            <p class="muted">Elige una opción. Después podrás explicarlo con tus palabras.</p>
-            <div class="notice-card slim classification-tip">
-              <strong>La app te ayuda a clasificar mejor.</strong>
-              <p>Escribe natural usando frases como <b>Busco...</b>, <b>Ofrezco...</b>, <b>Necesito...</b>, <b>Tengo...</b> o <b>Vendo...</b>. Con eso el sistema acomoda tu publicación en la oportunidad correcta.</p>
-            </div>
-            <div class="choice-grid">
-              <button type="button" class="choice-card" data-category="Servicios" data-intent="Ofrezco / Tengo disponible" onclick="selectPublishType(this)"><span>🛠</span><strong>Ofrezco un servicio</strong><small>Oficios, limpieza, comida, apoyo o trabajo por cuenta propia.</small></button>
-              <button type="button" class="choice-card" data-category="Servicios" data-intent="Busco / Necesito" onclick="selectPublishType(this)"><span>🔎</span><strong>Busco ayuda o necesito algo</strong><small>Personal, limpieza, reparación, mandado o apoyo local.</small></button>
-              <button type="button" class="choice-card" data-category="Movilidad" data-intent="Ofrezco / Tengo disponible" onclick="selectPublishType(this)"><span>🚘</span><strong>Movilidad o viaje</strong><small>Ruta, horario, salida, traslado o espacios.</small></button>
-              <button type="button" class="choice-card" data-category="Entregas y mandados" data-intent="Ofrezco / Tengo disponible" onclick="selectPublishType(this)"><span>📦</span><strong>Entregas o mandados</strong><small>A pie, bici, moto, auto o camioneta.</small></button>
-            </div>
-            <input type="hidden" id="pubCategory" />
-            <input type="hidden" id="pubIntent" />
-          </div>
-
-          <div class="wizard-step" data-step="2">
-            <h3>¿Cómo quieres aparecer?</h3>
-            <label>Nombre, negocio o referencia
-              <input id="pubName" type="text" placeholder="Ej. Don Pedro Carpintería / Taquería El Centro / María mandados" />
-            </label>
-          </div>
-
-          <div class="wizard-step" data-step="3">
-            <h3>¿Dónde aplica?</h3>
-            <div class="form-grid">
-              <label>Estado
-                <select id="pubState" data-state-select data-default=""></select>
-              </label>
-              <label>Municipio
-                <select id="pubMunicipality"><option value="">Selecciona municipio</option></select>
-              </label>
-            </div>
-            <label>Colonia o localidad
-              <input id="pubLocality" type="text" value="Chapultepec Centro" placeholder="Ej. El Ameyal, Centro, Cuernavaca" />
-            </label>
-            <div class="location-consent-card">
-              <strong>Ubicación aproximada opcional</strong>
-              <p>Sirve para que otras personas encuentren tu publicación por cercanía. No se mostrará tu ubicación exacta.</p>
-              <button type="button" class="btn-small btn-outline" onclick="capturePublicationLocation()">📍 Usar mi ubicación actual</button>
-              <small id="pubLocationStatus" class="field-help">Puedes publicar sin activar ubicación.</small>
-              <input id="pubLat" type="hidden" />
-              <input id="pubLng" type="hidden" />
-            </div>
-          </div>
-
-          <div class="wizard-step" data-step="4">
-            <h3>Título de tu publicación</h3>
-            <p class="muted" id="titleHint">Ej. Busco trabajo en limpieza / Ofrezco mandados en moto / Necesito quien lave mis autos / Tengo una panadería.</p>
-            <label>Título
-              <input id="pubTitle" type="text" placeholder="Escríbelo claro y corto" />
-            </label>
-          </div>
-
-          <div class="wizard-step" data-step="5">
-            <h3>Detalles</h3>
-            <div id="generalDetails" class="dynamic-detail">
-              <label>Descripción
-                <textarea id="pubDescription" rows="5" placeholder="Cuéntalo de forma natural. Ej. Busco..., Ofrezco..., Necesito..., Tengo..., Vendo... Puedes pegar links de Facebook, TikTok, Instagram, Waze o Google Maps."></textarea>
-              </label>
-              <div class="description-helper" aria-label="Asistente de descripción">
-                <strong>✨ Asistente de descripción</strong>
-                <p>Usa estas ayudas para redactar mejor. Puedes editar el texto antes de publicar.</p>
-                <div class="helper-actions">
-                  <button type="button" onclick="assistDescription('draft')">Ayúdame a redactar</button>
-                  <button type="button" onclick="assistDescription('clear')">Más claro</button>
-                  <button type="button" onclick="assistDescription('friendly')">Más amable</button>
-                  <button type="button" onclick="assistDescription('short')">Más corto</button>
-                  <button type="button" onclick="assistDescription('details')">Agregar detalles útiles</button>
-                </div>
-              </div>
-              <label>Pago, costo o presupuesto sugerido
-                <input id="pubBudget" type="number" min="0" placeholder="Opcional. Ej. 100" />
-              </label>
-            </div>
-            <div id="rideDetails" class="dynamic-detail hidden">
-              <label>Descripción del viaje
-                <textarea id="pubDescriptionRide" rows="4" placeholder="Ej. Viajo de Chapultepec a Toluca de lunes a viernes. Comparto espacio si vas por la ruta." ></textarea>
-              </label>
-              <div class="description-helper" aria-label="Asistente de descripción para viaje">
-                <strong>✨ Asistente de descripción</strong>
-                <p>Te ayuda a explicar ruta, horario y condiciones de forma clara.</p>
-                <div class="helper-actions">
-                  <button type="button" onclick="assistDescription('draft')">Ayúdame a redactar</button>
-                  <button type="button" onclick="assistDescription('clear')">Más claro</button>
-                  <button type="button" onclick="assistDescription('friendly')">Más amable</button>
-                  <button type="button" onclick="assistDescription('short')">Más corto</button>
-                  <button type="button" onclick="assistDescription('details')">Agregar detalles útiles</button>
-                </div>
-              </div>
-              <label>Ruta o destino
-                <input id="pubRoute" type="text" placeholder="Ej. Chapultepec → Toluca / link de Waze" />
-              </label>
-              <div class="form-grid">
-                <label>Hora / días
-                  <input id="pubTime" type="text" placeholder="Ej. 7:00 am / lunes a viernes" />
-                </label>
-                <label>Lugar de salida
-                  <input id="pubDeparture" type="text" placeholder="Ej. Centro de Chapultepec" />
-                </label>
-              </div>
-              <label>Cooperación o costo sugerido
-                <input id="pubBudgetRide" type="number" min="0" placeholder="Opcional" />
-              </label>
-            </div>
-            <div id="deliveryDetails" class="dynamic-detail hidden">
-              <label>Descripción del servicio o necesidad
-                <textarea id="pubDescriptionDelivery" rows="4" placeholder="Ej. Hago entregas locales en moto / Busco quien lleve documentos." ></textarea>
-              </label>
-              <div class="description-helper" aria-label="Asistente de descripción para envíos">
-                <strong>✨ Asistente de descripción</strong>
-                <p>Te ayuda a explicar qué transportas, zona y horario sin hacerlo largo.</p>
-                <div class="helper-actions">
-                  <button type="button" onclick="assistDescription('draft')">Ayúdame a redactar</button>
-                  <button type="button" onclick="assistDescription('clear')">Más claro</button>
-                  <button type="button" onclick="assistDescription('friendly')">Más amable</button>
-                  <button type="button" onclick="assistDescription('short')">Más corto</button>
-                  <button type="button" onclick="assistDescription('details')">Agregar detalles útiles</button>
-                </div>
-              </div>
-              <label>Medio disponible o requerido
-                <select id="pubTransport">
-                  <option value="">Selecciona si aplica</option>
-                  <option>A pie</option><option>Bicicleta</option><option>Moto</option><option>Auto</option><option>Camioneta</option><option>Mudanza / Carga</option>
-                </select>
-              </label>
-              <label>Costo o presupuesto sugerido
-                <input id="pubBudgetDelivery" type="number" min="0" placeholder="Opcional" />
-              </label>
-            </div>
-          </div>
-
-          <div class="wizard-step" data-step="6">
-            <h3>Contacto</h3>
-            <label>WhatsApp
-              <input id="pubPhone" type="tel" inputmode="numeric" placeholder="Ej. 7225703145" />
-              <small class="field-help">Tu número se mostrará parcialmente oculto como xxxxxx3145.</small>
-            </label>
-            <label class="checkbox-line">
-              <input id="pubPrivacyAccept" type="checkbox" />
-              <span>Acepto el <button type="button" class="link-button" onclick="showSection('avisoPrivacidad')">Aviso de Privacidad</button> y los <button type="button" class="link-button" onclick="showSection('terminos')">Términos y Condiciones</button>.</span>
-            </label>
-          </div>
-
-          <div class="wizard-step" data-step="7">
-            <h3>Revisa antes de publicar</h3>
-            <div id="publicationPreview" class="preview-card"></div>
-            <div id="publicationMembershipGate" class="membership-gate-card"></div>
-            <div class="notice-card auto-note">
-              <strong>Publicación automática con cuidado</strong>
-              <p>Si tu registro está completo y claro, se activará de inmediato. Si detectamos algo incompleto o dudoso, quedará en revisión.</p>
-            </div>
-          </div>
-
-          <div class="wizard-actions">
-            <button type="button" class="btn-small btn-ghost" id="wizardBackBtn" onclick="prevWizardStep()">Atrás</button>
-            <button type="button" class="btn-small btn-purple" id="wizardNextBtn" onclick="nextWizardStep()">Continuar</button>
-            <button type="submit" class="btn-small btn-green hidden" id="wizardSubmitBtn">Publicar</button>
-          </div>
-        </form>
       </section>
 
       <section id="publicaciones" class="section publicaciones-clean-section">
@@ -992,6 +693,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.9.17-feed-social-limpio"></script>
+  <script src="app.js?v=4.9.18-home-feed-social-real"></script>
 </body>
 </html>

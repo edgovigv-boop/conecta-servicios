@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.17-feed-social-limpio";
+const PWA_VERSION = "v4.9.18-home-feed-social-real";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -82,7 +82,7 @@ const APP_VERSION_KEY = "conecta_servicios_app_version";
 const CHAT_STORAGE_KEY = "conecta_business_chat_v494";
 const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v492";
 
-// v4.9.17 — Feed social limpio con publicaciones piloto protagonistas
+// v4.9.18 — Home Feed Social Real con publicaciones piloto limpias
 // Muestra publicaciones curadas y oculta los registros reales de Supabase en la vista pública.
 // Supabase sigue intacto; administración y futuras versiones pueden volver a producción cambiando esta bandera.
 const PRESENTATION_PILOT_MODE = true;
@@ -537,6 +537,7 @@ function showSection(id, push = true) {
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
+  if (id === "inicio") renderSocialHomeFeed();
   if (id === "publicaciones") {
     // v4.8.7: cada entrada a Publicaciones inicia limpia en Todo México / Todo.
     // Esto evita que búsquedas o chips anteriores oculten una publicación recién creada.
@@ -2273,7 +2274,205 @@ function initMobileFormComfort() {
 }
 
 
-// v4.9.17 — Acciones del Feed social limpio
+
+// v4.9.18 — Feed social real de inicio limpio, aislado y filtrable
+const HOME_FEED_POSTS_V4918 = [
+  {
+    id: "feed-solicitante-barista",
+    tipo: "solicitantes",
+    nombre: "María González",
+    rol: "Solicitante",
+    ubicacion: "Roma, CDMX",
+    titulo: "Busco barista para fines de semana",
+    descripcion: "Apoyo por evento · pago acordado directo",
+    hashtags: ["Servicio", "Hospitalidad", "TiempoParcial"],
+    imagen: "assets/social-post-solicitante.webp",
+    posicion: "center 34%",
+    accion: "Hacerlo real (Solicitar)",
+    detalle: "Explorar solicitantes",
+    destino: "solicitantes",
+    likes: 24,
+    comentarios: 5,
+    compartidos: 12
+  },
+  {
+    id: "feed-agente-redes",
+    tipo: "agentes",
+    nombre: "Carlos Méndez",
+    rol: "Agente",
+    ubicacion: "Guadalajara",
+    titulo: "Te consigo más clientes por comisión",
+    descripcion: "Redes sociales · WhatsApp · promoción local",
+    hashtags: ["Agente", "Comisión", "Ventas"],
+    imagen: "assets/social-post-agente.webp",
+    posicion: "center 38%",
+    accion: "Hacerlo real (Trabajar)",
+    detalle: "Explorar agentes",
+    destino: "agentes",
+    likes: 31,
+    comentarios: 8,
+    compartidos: 15
+  },
+  {
+    id: "feed-negocio-panaderia",
+    tipo: "negocios",
+    nombre: "Panadería La Esquina",
+    rol: "Negocio local",
+    ubicacion: "Toluca",
+    titulo: "Recibe pedidos por chat y pickup",
+    descripcion: "Catálogo simple · pedidos · entrega local futura",
+    hashtags: ["Negocio", "Pedidos", "Pickup"],
+    imagen: "assets/social-post-negocio.webp",
+    posicion: "center 42%",
+    accion: "Hacerlo real (Activar negocio)",
+    detalle: "Ver negocios",
+    destino: "negocios",
+    likes: 18,
+    comentarios: 4,
+    compartidos: 9
+  },
+  {
+    id: "feed-servicio-reparacion",
+    tipo: "servicios",
+    nombre: "Luis Hernández",
+    rol: "Servicio",
+    ubicacion: "Metepec",
+    titulo: "Reparación de electrodomésticos",
+    descripcion: "Lavadoras · refrigeradores · diagnóstico local",
+    hashtags: ["Servicio", "Reparación", "Hogar"],
+    imagen: "assets/social-post-servicio.webp",
+    posicion: "center 38%",
+    accion: "Hacerlo real (Contactar)",
+    detalle: "Ver servicios",
+    destino: "servicios",
+    likes: 21,
+    comentarios: 3,
+    compartidos: 7
+  },
+  {
+    id: "feed-crecimiento-clientes",
+    tipo: "crecimiento",
+    nombre: "Mónica Ruiz",
+    rol: "Crecimiento",
+    ubicacion: "Estado de México",
+    titulo: "Busco agentes para conseguir clientes",
+    descripcion: "Campaña por resultado · comisión clara",
+    hashtags: ["Crecimiento", "Clientes", "Comisión"],
+    imagen: "assets/social-post-crecimiento.webp",
+    posicion: "center 36%",
+    accion: "Hacerlo real (Crear campaña)",
+    detalle: "Ver crecimiento",
+    destino: "crecimiento",
+    likes: 42,
+    comentarios: 11,
+    compartidos: 18
+  },
+  {
+    id: "feed-embajadores",
+    tipo: "embajadores",
+    nombre: "Embajadores Conecta",
+    rol: "Embajadores",
+    ubicacion: "Todo México",
+    titulo: "Gana $50 por membresía anual referida",
+    descripcion: "Membresía $98 MXN · promoción local directa",
+    hashtags: ["Embajadores", "Membresía", "Ingresos"],
+    imagen: "assets/social-post-embajadores.webp",
+    posicion: "center 40%",
+    accion: "Hacerlo real (Ser embajador)",
+    detalle: "Ver manual",
+    destino: "embajadores",
+    likes: 57,
+    comentarios: 14,
+    compartidos: 21
+  },
+  {
+    id: "feed-aprendizaje",
+    tipo: "aprendizaje",
+    nombre: "Aprendizaje Conecta",
+    rol: "Aprendizaje",
+    ubicacion: "Desde tu celular",
+    titulo: "Aprende una habilidad para generar ingresos",
+    descripcion: "Cursos gratuitos · rutas útiles · crecimiento personal",
+    hashtags: ["Aprendizaje", "Cursos", "Ingresos"],
+    imagen: "assets/social-post-aprendizaje.webp",
+    posicion: "center 42%",
+    accion: "Hacerlo real (Aprender)",
+    detalle: "Ver cursos",
+    destino: "aprendizaje",
+    likes: 36,
+    comentarios: 6,
+    compartidos: 13
+  }
+];
+
+let homeFeedFilterV4918 = "";
+
+function homeFeedLabelV4918(type = "") {
+  const labels = {
+    solicitantes: "Solicitantes",
+    agentes: "Agentes",
+    negocios: "Negocios",
+    servicios: "Servicios",
+    crecimiento: "Crecimiento",
+    embajadores: "Embajadores",
+    aprendizaje: "Aprendizaje"
+  };
+  return labels[type] || "Para ti";
+}
+
+function renderSocialHomeFeed() {
+  const feed = document.getElementById("homeSocialFeed");
+  if (!feed) return;
+  const posts = homeFeedFilterV4918 ? HOME_FEED_POSTS_V4918.filter(post => post.tipo === homeFeedFilterV4918) : HOME_FEED_POSTS_V4918;
+  const title = document.getElementById("homeFeedTitle");
+  const hint = document.getElementById("homeFeedHint");
+  if (title) title.textContent = homeFeedLabelV4918(homeFeedFilterV4918);
+  if (hint) hint.textContent = homeFeedFilterV4918 ? "Desliza ejemplos de esta categoría y toca Hacerlo real." : "Desliza oportunidades piloto y conviértelas en acciones reales.";
+  document.querySelectorAll("[data-feed-filter]").forEach(btn => {
+    btn.classList.toggle("active", (btn.dataset.feedFilter || "") === homeFeedFilterV4918);
+  });
+  feed.innerHTML = posts.map(post => homeFeedPostCardV4918(post)).join("");
+}
+
+function setHomeFeedFilter(type = "") {
+  homeFeedFilterV4918 = type || "";
+  renderSocialHomeFeed();
+  const feed = document.getElementById("homeSocialFeed");
+  if (feed) feed.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function homeFeedPostCardV4918(post) {
+  const tags = (post.hashtags || []).map(tag => `<span>#${escapeHtml(tag)}</span>`).join("");
+  const initials = (post.nombre || "CS").split(/\s+/).map(word => word[0] || "").join("").slice(0,2).toUpperCase() || "CS";
+  return `<article class="v4918-feed-card" data-type="${escapeHtml(post.tipo)}">
+    <div class="v4918-feed-media">
+      <img src="${escapeHtml(post.imagen)}" alt="${escapeHtml(post.titulo)}" loading="lazy" style="object-position:${escapeHtml(post.posicion || 'center center')}" />
+      <div class="v4918-media-gradient" aria-hidden="true"></div>
+      <div class="v4918-post-badge">PILOTO</div>
+      <div class="v4918-post-author">
+        <span class="v4918-avatar">${escapeHtml(initials)}</span>
+        <span><strong>${escapeHtml(post.nombre)}</strong><small>${escapeHtml(post.rol)} · ${escapeHtml(post.ubicacion)}</small></span>
+      </div>
+      <div class="v4918-feed-actions" aria-label="Acciones de publicación">
+        <button type="button" onclick="socialLike(this)" aria-label="Me gusta">♡<small>${Number(post.likes || 0)}</small></button>
+        <button type="button" onclick="showSection('mensajes')" aria-label="Comentarios">💬<small>${Number(post.comentarios || 0)}</small></button>
+        <button type="button" onclick="sharePilotSocial('${escapeHtml(post.tipo)}')" aria-label="Compartir">↗<small>${Number(post.compartidos || 0)}</small></button>
+        <button type="button" onclick="openPilotType('${escapeHtml(post.tipo)}')" aria-label="Guardar">▢<small>Guardar</small></button>
+      </div>
+      <div class="v4918-feed-copy">
+        <h2>${escapeHtml(post.titulo)}</h2>
+        <p>${escapeHtml(post.descripcion)}</p>
+        <div class="v4918-tags">${tags}</div>
+        <div class="v4918-cta-row">
+          <button type="button" class="v4918-primary-cta" onclick="makePilotReal('${escapeHtml(post.tipo)}')">${escapeHtml(post.accion)}</button>
+          <button type="button" class="v4918-secondary-cta" onclick="openPilotType('${escapeHtml(post.tipo)}')">${escapeHtml(post.detalle || 'Ver detalles')}</button>
+        </div>
+      </div>
+    </div>
+  </article>`;
+}
+
+// v4.9.18 — Acciones del Feed social real
 function socialLike(button) {
   if (!button) return;
   button.classList.toggle("liked");
@@ -2291,7 +2490,9 @@ function sharePilotSocial(type = "") {
     agentes: "agentes",
     negocios: "negocios",
     servicios: "servicios",
-    crecimiento: "crecimiento"
+    crecimiento: "crecimiento",
+    embajadores: "embajadores",
+    aprendizaje: "aprendizaje"
   };
   const label = labels[type] || "oportunidades";
   const text = `Conecta Servicios: explora publicaciones piloto de ${label} y hazlas reales.`;
@@ -2337,6 +2538,7 @@ function init() {
   initMobileFormComfort();
   refreshAppCacheIfNeeded().finally(registerServiceWorker);
   updateInstallCard();
+  renderSocialHomeFeed();
   renderNotificationSettings();
   renderOpportunitySettings();
   trackEvent("visita_home");

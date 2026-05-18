@@ -1,0 +1,18 @@
+Conecta Servicios v4.9.18 — Home Feed Social Real
+
+Cambios:
+- Reconstrucción limpia del Home como feed vertical tipo red social/marketplace.
+- Feed aislado con clases propias v4918 para evitar interferencias de CSS viejo.
+- Imágenes protagonistas, texto solo en zona inferior con gradiente y sin duplicados.
+- Botones laterales dentro del área visible.
+- CTA Hacerlo real visible y sin quedar tapado por barra inferior.
+- Categorías horizontales filtrables: Para ti, Solicitantes, Agentes, Negocios, Servicios, Crecimiento, Embajadores y Aprendizaje.
+- PWA/cache actualizado a v4.9.18.
+
+Validación rápida:
+1. Abrir Inicio.
+2. Scrollear verticalmente el feed.
+3. Probar categorías superiores.
+4. Verificar que no haya textos duplicados.
+5. Probar Hacerlo real en varias tarjetas.
+6. Confirmar que la barra inferior no tape botones.
