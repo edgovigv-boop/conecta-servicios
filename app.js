@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.25-feed-hotfix-encuestas";
+const PWA_VERSION = "v4.9.26-rescate-encuestas-chat-negocios";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -5162,3 +5162,137 @@ openAmbassadorPayments = function() {
 openAmbassadorManual = function() {
   renderAmbassadorManualGuidePage();
 };
+
+// v4.9.26 — Rescate funcional: encuestas guiadas + Chat de negocios + feed inicial robusto
+function ensureInitialHomeFeedVisibleV4926() {
+  try {
+    const inicio = document.getElementById("inicio");
+    const feed = document.getElementById("homeSocialFeed");
+    if (!inicio || !feed || !Array.isArray(HOME_FEED_POSTS_V4918)) return;
+    if (inicio.classList.contains("active")) {
+      homeFeedFilterV4918 = homeFeedFilterV4918 || "";
+      document.querySelectorAll("[data-feed-filter]").forEach(btn => {
+        btn.classList.toggle("active", (btn.dataset.feedFilter || "") === homeFeedFilterV4918);
+      });
+      renderSocialHomeFeed();
+      if (!feed.children.length) {
+        homeFeedFilterV4918 = "";
+        feed.innerHTML = HOME_FEED_POSTS_V4918.map(post => homeFeedPostCardV4918(post)).join("");
+      }
+    }
+  } catch (error) {
+    console.error("No se pudo preparar el feed inicial", error);
+    const feed = document.getElementById("homeSocialFeed");
+    if (feed && !feed.children.length && Array.isArray(HOME_FEED_POSTS_V4918)) {
+      feed.innerHTML = HOME_FEED_POSTS_V4918.map(post => homeFeedPostCardV4918(post)).join("");
+    }
+  }
+}
+
+function startSurveyFlowFromPilotV4926(flow, post = null) {
+  startSurveyFlow(flow, post?.rol || post?.titulo || "");
+  if (!post || !surveyState || surveyState.flow !== flow) return;
+  const text = post.plantilla || post.descripcion || post.titulo || "";
+  const title = post.titulo || "";
+  const zone = post.ubicacion || "";
+  const name = post.nombre || "";
+  const values = surveyState.values || {};
+  if (flow === "mandadoSolicitud") {
+    values.item = title || "Mandado verificado";
+    values.notes = text;
+    values.buyAt = values.buyAt || "Por definir";
+    values.deliverTo = zone || "Por definir";
+  }
+  if (flow === "mandadoAgente") {
+    values.name = name || values.name || "";
+    values.zone = zone || values.zone || "";
+    values.skills = text || values.skills || "";
+  }
+  if (flow === "crecimientoNegocio") {
+    values.title = title || values.title || "Campaña por comisión";
+    values.zone = zone || values.zone || "";
+    values.description = text || values.description || "";
+    values.commission = values.commission || "Acordar comisión por resultado";
+  }
+  if (flow === "crecimientoAgente") {
+    values.name = name || values.name || "";
+    values.zone = zone || values.zone || "";
+    values.skills = text || values.skills || "";
+  }
+  if (flow === "chatNegocio") {
+    values.type = post.rol || values.type || "Negocio local";
+    values.name = name || values.name || title || "Negocio local";
+    values.goal = values.goal || "Pedidos por chat";
+    values.zone = zone || values.zone || "";
+    values.message = text || values.message || "Hola, puedo mostrarte productos, precios, disponibilidad, entrega o pickup.";
+  }
+  surveyState.values = values;
+  renderSurveyFlow();
+  showToast("Tomamos este ejemplo como guía. Puedes ajustar los datos antes de guardar.");
+}
+
+function makePilotReal(target = "") {
+  const post = HOME_FEED_POSTS_V4918.find(item => item.id === target) || HOME_FEED_POSTS_V4918.find(item => item.tipo === target);
+  const type = post?.tipo || target || "";
+  const flow = post?.flujo || "";
+  trackEvent("home_social_hacerlo_real", null, { tipo: type, post: post?.id || target, flujo: flow });
+  if (flow === "embajadores" || type === "embajadores") { showSection("embajadores"); return; }
+  if (flow === "aprendizaje" || type === "aprendizaje") { showSection("aprende"); return; }
+  if (flow === "mandadoSolicitud") { startSurveyFlowFromPilotV4926("mandadoSolicitud", post); return; }
+  if (flow === "mandadoAgente") { startSurveyFlowFromPilotV4926("mandadoAgente", post); return; }
+  if (flow === "chatNegocio") { startSurveyFlowFromPilotV4926("chatNegocio", post); return; }
+  if (flow === "crecimientoCampana") { startSurveyFlowFromPilotV4926("crecimientoNegocio", post); return; }
+  if (flow === "crecimientoAgente") { startSurveyFlowFromPilotV4926("crecimientoAgente", post); return; }
+  if (flow === "publicarOferta") {
+    openOpportunityWizard(type === "agentes" ? "agente" : "servicio", post || null);
+    return;
+  }
+  if (flow === "publicarNecesidad") {
+    openOpportunityWizard("necesito", post || null);
+    return;
+  }
+  if (type === "negocios") { startSurveyFlowFromPilotV4926("chatNegocio", post); return; }
+  if (type === "crecimiento") { startSurveyFlowFromPilotV4926("crecimientoNegocio", post); return; }
+  if (type === "agentes") { startSurveyFlowFromPilotV4926("mandadoAgente", post); return; }
+  if (type === "servicios") { openOpportunityWizard("servicio", post || null); return; }
+  openOpportunityWizard("necesito", post || null);
+}
+
+function showIncomeOptionsV4926() {
+  showSection("encuesta");
+  const root = document.getElementById("surveyFlowContent");
+  if (!root) return;
+  root.innerHTML = `<div class="survey-shell income-options-v4926">
+    <button type="button" class="survey-back-link" onclick="showSection('oportunidades')">← Volver</button>
+    <div class="survey-hero compact-hero"><span>💰</span><h2>Quiero ganar dinero</h2><p>Elige una ruta para empezar.</p></div>
+    <div class="survey-path-grid">
+      <button type="button" onclick="showSection('embajadores')"><span>🤝</span><strong>Embajadores Conecta</strong><small>Gana $50 por membresía anual referida.</small></button>
+      <button type="button" onclick="startSurveyFlow('crecimientoAgente')"><span>📈</span><strong>Agente de crecimiento</strong><small>Apoya negocios y gana por comisión.</small></button>
+      <button type="button" onclick="openOpportunityWizard('servicio')"><span>🛠️</span><strong>Ofrecer un servicio</strong><small>Publica lo que sabes hacer.</small></button>
+      <button type="button" onclick="showSection('aprende')"><span>🎓</span><strong>Aprendizaje</strong><small>Aprende habilidades para generar ingresos.</small></button>
+    </div>
+  </div>`;
+}
+
+function openPilotMessage(target = "") {
+  const post = HOME_FEED_POSTS_V4918.find(item => item.id === target) || HOME_FEED_POSTS_V4918.find(item => item.tipo === target);
+  if (post?.tipo === "negocios" || post?.flujo === "chatNegocio") {
+    startSurveyFlowFromPilotV4926("chatNegocio", post);
+    showToast("Abrimos el chat de negocio para esta publicación.");
+    return;
+  }
+  showSection("mensajes");
+  setTimeout(() => {
+    const input = document.getElementById("smartChatInput") || document.querySelector("#mensajes input, #mensajes textarea");
+    if (input && post) {
+      input.value = `Hola, me interesa esta publicación: ${post.titulo}`;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.focus?.();
+    }
+  }, 120);
+  showToast(post ? "Abrimos el asistente de orientación para esta publicación." : "Abrimos el centro de orientación.");
+}
+
+window.addEventListener("DOMContentLoaded", () => setTimeout(ensureInitialHomeFeedVisibleV4926, 80));
+window.addEventListener("load", () => setTimeout(ensureInitialHomeFeedVisibleV4926, 180));
+window.addEventListener("pageshow", () => setTimeout(ensureInitialHomeFeedVisibleV4926, 220));

@@ -28,10 +28,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
-  <title>Conecta Servicios v4.9.25</title>
-  <link rel="stylesheet" href="styles.css?v=4.9.25-feed-hotfix-encuestas" />
+  <title>Conecta Servicios v4.9.26</title>
+  <link rel="stylesheet" href="styles.css?v=4.9.26-rescate-encuestas-chat-negocios" />
 </head>
-<body data-version="4.9.25-feed-hotfix-encuestas">
+<body data-version="4.9.26-rescate-encuestas-chat-negocios">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -605,7 +605,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
             <span>🛠️</span>
             <strong>Ofrezco algo</strong>
           </button>
-          <button type="button" class="v4924-action-card earn" onclick="showSection('embajadores')">
+          <button type="button" class="v4924-action-card earn" onclick="showIncomeOptionsV4926()">
             <span>💰</span>
             <strong>Quiero ganar dinero</strong>
           </button>
@@ -614,6 +614,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <button type="button" onclick="openOpportunityWizard('necesito')">🙋 Solicitante</button>
           <button type="button" onclick="openOpportunityWizard('agente')">🧑‍💼 Agente</button>
           <button type="button" onclick="openOpportunityWizard('negocio')">🏪 Negocio</button>
+          <button type="button" onclick="startSurveyFlow('chatNegocio', 'Negocio local')">💬 Chat negocio</button>
           <button type="button" onclick="openOpportunityWizard('servicio')">🛠️ Servicio</button>
           <button type="button" onclick="startSurveyFlow('mandadoSolicitud')">📦 Mandado</button>
           <button type="button" onclick="openOpportunityWizard('crecimiento')">📈 Crecimiento</button>
@@ -730,6 +731,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.9.24-plus-asistente-templates"></script>
+  <script src="app.js?v=4.9.26-plus-asistente-templates"></script>
 </body>
 </html>
