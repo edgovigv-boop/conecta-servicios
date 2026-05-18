@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.8.9-mandados-verificados";
+const PWA_VERSION = "v4.9.0-fondo-protegido-conecta";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -80,7 +80,7 @@ let deferredInstallPrompt = null;
 const TOTAL_STEPS = 7;
 const APP_VERSION_KEY = "conecta_servicios_app_version";
 const CHAT_STORAGE_KEY = "conecta_smart_chat_v489";
-const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v489";
+const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v490";
 
 
 function cleanPhone(phone) { return String(phone || "").replace(/\D/g, ""); }
@@ -2129,7 +2129,7 @@ function fillSmartMessage(text) {
 }
 function detectSmartIntent(rawText) {
   const text = normalize(rawText);
-  if (/mandado verificado|mandados verificados|compra verificada|compras verificadas|precio|peso|bascula|báscula|ticket|cambio|mercado|mandado con evidencia/.test(text)) {
+  if (/mandado verificado|mandados verificados|compra verificada|compras verificadas|fondo protegido|dinero protegido|escrow|pago protegido|precio|peso|bascula|báscula|ticket|cambio|mercado|mandado con evidencia/.test(text)) {
     return { category: "Mandados Verificados", query: "mandado verificado evidencia compra", label: "Mandados Verificados", action: "mandados" };
   }
   if (/paquete|mandado|enviar|entrega|documento|reparto|llevar|traer|moto|bicicleta/.test(text)) {
@@ -2155,7 +2155,7 @@ function smartReplyFor(raw) {
   if (intent.action === "aprender") return "Te conviene entrar a Aprendizaje. Ahí agregué cursos gratuitos como Fundación Carlos Slim, Google Actívate e IBM SkillsBuild para mejorar habilidades desde el celular.";
   if (intent.action === "publicar") return "Esto parece una oportunidad para publicar. Puedo llevarte al registro guiado para crear una publicación clara con municipio, categoría y WhatsApp protegido.";
   if (intent.action === "agentes") return "Te conviene revisar Agentes de crecimiento. Ahí un negocio puede publicar campañas por comisión y una persona puede registrarse para conseguir clientes o contactos por resultado.";
-  if (intent.action === "mandados") return "Te conviene revisar Mandados Verificados. Ahí puedes solicitar una compra con evidencia de precio, peso, pago, cambio y entrega, o registrarte como agente.";
+  if (intent.action === "mandados") return "Te conviene revisar Mandados Verificados. Ahí puedes solicitar una compra con evidencia de precio, peso, pago, cambio y entrega; además ver el simulador de Fondo Protegido Conecta para entender cómo se apartaría el dinero en una etapa futura.";
   return `Encontré una ruta posible: ${intent.label}. Puedo buscar coincidencias o ayudarte a publicar la necesidad si no aparece una opción adecuada.`;
 }
 function sendSmartChatMessage() {
@@ -2477,7 +2477,7 @@ function saveGrowthLead(event, type) {
 
 
 
-// v4.8.9 — Mandados Verificados piloto
+// v4.9.0 — Mandados Verificados + Fondo Protegido Conecta piloto
 let errandActiveTab = "solicitudes";
 const ERRAND_DEFAULT_REQUESTS = [
   {
@@ -2657,6 +2657,92 @@ function setErrandTab(tab, scroll = true) {
   document.getElementById("errandReportPanel")?.classList.toggle("hidden", errandActiveTab !== "reporte");
   if (scroll) document.querySelector(".errand-tabs")?.scrollIntoView({ behavior:"smooth", block:"start" });
 }
+
+function calculateProtectedFund(values = {}) {
+  const amount = Math.max(0, Number(values.amount ?? document.getElementById("protectedAmount")?.value ?? 850));
+  const distance = Math.max(0, Number(values.distance ?? document.getElementById("protectedDistance")?.value ?? 4.2));
+  const weight = Math.max(0, Number(values.weight ?? document.getElementById("protectedWeight")?.value ?? 5));
+  const schedule = String(values.schedule ?? document.getElementById("protectedSchedule")?.value ?? "Hora pico");
+  const quote = calculateErrandEstimate({ amount, distance, weight, schedule });
+  const platform = Math.max(15, quote.total * 0.18);
+  const agentService = Math.max(45, quote.agent);
+  const safetyMargin = Math.max(80, amount * 0.22);
+  const suggestedFund = Math.ceil((amount + agentService + platform + safetyMargin) / 10) * 10;
+  const sampleRealPurchase = Math.max(0, Math.round(amount * 1.02));
+  const refund = Math.max(0, suggestedFund - sampleRealPurchase - agentService - platform);
+  return { amount, distance, weight, schedule, agentService, platform, safetyMargin, suggestedFund, sampleRealPurchase, refund };
+}
+function renderProtectedFundSimulator() {
+  const target = document.getElementById("protectedFundPreview");
+  if (!target) return;
+  const f = calculateProtectedFund();
+  target.innerHTML = `<div class="protected-result-card">
+    <span>Fondo sugerido para apartar</span>
+    <strong>${errandMoney(f.suggestedFund)}</strong>
+    <small>Incluye compra estimada, servicio del agente, comisión de plataforma y margen de seguridad.</small>
+  </div>
+  <div class="protected-breakdown">
+    <div><span>Compra estimada</span><b>${errandMoney(f.amount)}</b></div>
+    <div><span>Servicio del agente</span><b>${errandMoney(f.agentService)}</b></div>
+    <div><span>Comisión Conecta</span><b>${errandMoney(f.platform)}</b></div>
+    <div><span>Margen de seguridad</span><b>${errandMoney(f.safetyMargin)}</b></div>
+  </div>`;
+  const close = document.getElementById("protectedCloseExample");
+  if (close) {
+    close.innerHTML = `<div class="protected-liquidation-card">
+      <h4>Ejemplo de cierre y liquidación</h4>
+      <div><span>Fondo apartado</span><b>${errandMoney(f.suggestedFund)}</b></div>
+      <div><span>Compra real comprobada</span><b>${errandMoney(f.sampleRealPurchase)}</b></div>
+      <div><span>Pago al agente</span><b>${errandMoney(f.agentService)}</b></div>
+      <div><span>Comisión plataforma</span><b>${errandMoney(f.platform)}</b></div>
+      <div class="refund"><span>Devolución al solicitante</span><b>${errandMoney(f.refund)}</b></div>
+      <small>Valores de ejemplo. Esta versión no mueve dinero real dentro de la app.</small>
+    </div>`;
+  }
+}
+function showProtectedFundPanel() {
+  const panel = document.getElementById("protectedFundPanel");
+  if (!panel) return;
+  panel.classList.remove("hidden");
+  panel.innerHTML = `<div class="protected-module">
+    <div class="protected-module-hero">
+      <span class="protected-kicker">Módulo conceptual</span>
+      <h3>Fondo Protegido Conecta</h3>
+      <p>Apartar dinero por encargo, liberar pago con evidencia y devolver sobrantes mediante proveedor autorizado en una etapa posterior.</p>
+    </div>
+    <div class="protected-flow-card">
+      <h4>¿Cómo funcionaría?</h4>
+      <ol>
+        <li><b>Solicitud y estimación</b><span>La app calcula un fondo sugerido para el encargo.</span></li>
+        <li><b>Fondo protegido</b><span>El solicitante aparta el dinero. No se entrega adelantado al agente.</span></li>
+        <li><b>Agente realiza el encargo</b><span>Compra con efectivo propio y registra evidencia paso a paso.</span></li>
+        <li><b>Evidencia y entrega</b><span>Sube precio, peso o cantidad, ticket, cambio y entrega final.</span></li>
+        <li><b>Revisión y liberación</b><span>Se revisa evidencia y se libera reembolso + servicio al agente.</span></li>
+        <li><b>Sobrante devuelto</b><span>El dinero no usado vuelve al solicitante.</span></li>
+      </ol>
+    </div>
+    <form class="protected-simulator" oninput="renderProtectedFundSimulator()">
+      <h4>Simulador de fondo protegido</h4>
+      <label>Compra estimada<input id="protectedAmount" type="number" min="0" step="10" value="850"></label>
+      <div class="form-grid"><label>Distancia km<input id="protectedDistance" type="number" min="0" step="0.1" value="4.2"></label><label>Peso kg<input id="protectedWeight" type="number" min="0" step="0.1" value="5"></label></div>
+      <label>Horario<select id="protectedSchedule"><option>Normal</option><option selected>Hora pico</option><option>Noche</option><option>Lluvia o festivo</option><option>Urgente</option></select></label>
+      <div id="protectedFundPreview"></div>
+      <div id="protectedCloseExample"></div>
+    </form>
+    <div class="protected-status-card">
+      <h4>Estados de la operación</h4>
+      <div class="protected-status-row"><span>Solicitado</span><span>Fondo protegido</span><span>Agente asignado</span><span>En compra</span><span>Evidencia cargada</span><span>Entregado</span><span>Pago liberado</span><span>Sobrante devuelto</span></div>
+    </div>
+    <div class="notice-card slim protected-warning">
+      <strong>Importante</strong>
+      <p>Esta versión muestra el funcionamiento conceptual de Fondo Protegido Conecta. No implica manejo real de dinero en la app. La operación real se implementará posteriormente mediante proveedor de pagos autorizado y reglas claras.</p>
+    </div>
+  </div>`;
+  renderProtectedFundSimulator();
+  panel.scrollIntoView({ behavior:"smooth", block:"start" });
+  trackEvent("fondo_protegido_conecta", null, { tipo:"simulador" });
+}
+
 function showErrandPanel(type) {
   const panel = document.getElementById("errandPanel");
   if (!panel) return;
@@ -2733,4 +2819,5 @@ document.addEventListener("DOMContentLoaded", () => {
   renderSmartChat();
   renderCourseCards();
   renderErrandPilotLists?.();
+  renderProtectedFundSimulator?.();
 });

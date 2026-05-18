@@ -558,3 +558,82 @@ input,select,textarea{width:100%;border:1px solid #ded6ee;border-radius:17px;bac
 .errand-tabs button{border:1px solid var(--line);border-radius:999px;background:#fff;color:#635975;font-weight:950;padding:10px 7px;font-size:.82rem}.errand-tabs button.active{background:linear-gradient(135deg,#6f34df,#40129b);color:#fff;border-color:transparent;box-shadow:0 10px 18px rgba(86,32,189,.18)}
 .errand-list{display:grid;gap:12px}.errand-item-card,.errand-report-card{padding:15px;position:relative;overflow:hidden}.errand-item-card strong{display:block;font-size:1.07rem;color:var(--ink);margin:6px 0}.errand-item-card p{margin:0 0 12px;color:#5f566f;line-height:1.35;font-weight:650}.errand-tag{display:inline-flex;border-radius:999px;background:#e9ffdf;color:#187f18;padding:5px 10px;font-size:.72rem;font-weight:950}.errand-tag.purple{background:#eee7ff;color:#5520bd}.errand-avatar{width:46px;height:46px;border-radius:16px;background:linear-gradient(135deg,#38b000,#187f18);color:#fff;display:grid;place-items:center;font-weight:950;font-size:1.15rem;margin-bottom:6px}.errand-item-card dl{display:grid;gap:7px;margin:0}.errand-item-card dl div{display:grid;grid-template-columns:102px 1fr;gap:8px}.errand-item-card dt{color:#8a819b;font-size:.74rem;font-weight:900}.errand-item-card dd{margin:0;color:#2d273d;font-size:.86rem;font-weight:850}.errand-card-actions{display:flex;align-items:center;gap:9px;justify-content:space-between;margin-top:13px;flex-wrap:wrap}.errand-card-actions small{color:#8a819b;font-size:.72rem;font-weight:800}.errand-report-card h3{margin:8px 0 4px;color:#211934}.evidence-checklist{display:grid;gap:9px;margin:12px 0}.evidence-checklist label{display:flex;align-items:center;gap:10px;border:1px solid #eee7ff;border-radius:14px;background:#fbf9ff;padding:10px;color:#4e455f;font-weight:850;font-size:.86rem}.evidence-checklist input{accent-color:#5620bd}.report-summary-box{border-radius:17px;background:#ecffe6;border:1px solid #d4f5c8;padding:13px}.report-summary-box strong{display:block;color:#187f18;margin-bottom:4px}.report-summary-box p{margin:0;color:#4c6250;line-height:1.34;font-weight:650}.errand-note{margin-top:14px}
 @media(max-width:380px){.errand-hero-card h2{font-size:1.48rem}.errand-steps-row{gap:4px}.errand-steps-row span{font-size:.58rem}.errand-item-card dl div{grid-template-columns:90px 1fr}.verified-errand-card{min-height:86px}.errand-tabs button{font-size:.76rem}}
+
+
+/* v4.9.0 — Fondo Protegido Conecta */
+.protected-fund-card,
+.protected-fund-panel,
+.protected-flow-card,
+.protected-simulator,
+.protected-status-card{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:22px;
+  box-shadow:var(--shadow-soft);
+}
+.protected-fund-card{
+  position:relative;
+  overflow:hidden;
+  padding:18px;
+  margin:14px 0;
+  background:linear-gradient(135deg,#f8f5ff 0%,#ffffff 55%,#ecffe6 100%);
+}
+.protected-fund-card::after{
+  content:"🔐";
+  position:absolute;
+  right:14px;
+  top:18px;
+  font-size:3.7rem;
+  opacity:.14;
+}
+.protected-kicker{
+  display:inline-flex;
+  border-radius:999px;
+  background:#eaffdf;
+  color:#168116;
+  padding:6px 10px;
+  font-size:.72rem;
+  font-weight:950;
+  letter-spacing:.03em;
+  text-transform:uppercase;
+}
+.protected-fund-card h3,
+.protected-module-hero h3{
+  margin:10px 0 7px;
+  color:#1f1734;
+  line-height:1.05;
+}
+.protected-fund-card p,
+.protected-module-hero p{
+  margin:0 0 14px;
+  color:#62566f;
+  font-weight:700;
+  line-height:1.4;
+}
+.protected-fund-panel{padding:0;margin:14px 0;border:0;box-shadow:none;background:transparent}
+.protected-module{display:grid;gap:14px}
+.protected-module-hero{
+  border:1px solid #eee7ff;
+  border-radius:24px;
+  padding:18px;
+  background:linear-gradient(135deg,#ffffff,#f3edff);
+  box-shadow:0 18px 36px rgba(70,20,150,.12);
+}
+.protected-flow-card,
+.protected-simulator,
+.protected-status-card{padding:16px}
+.protected-flow-card h4,
+.protected-simulator h4,
+.protected-status-card h4,
+.protected-liquidation-card h4{margin:0 0 12px;color:#211934}
+.protected-flow-card ol{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.protected-flow-card li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;color:#5b526b;font-weight:700;line-height:1.32}
+.protected-flow-card li::before{content:counter(list-item);width:28px;height:28px;border-radius:12px;background:#eee7ff;color:#5520bd;display:grid;place-items:center;font-size:.82rem;font-weight:950}
+.protected-flow-card b{display:block;color:#211934;margin-bottom:2px}.protected-flow-card span{font-size:.84rem}
+.protected-simulator{display:grid;gap:11px}.protected-simulator label{font-weight:900;color:#2e2840}.protected-simulator input,.protected-simulator select{margin-top:6px}
+.protected-result-card{border-radius:20px;background:linear-gradient(135deg,#ecffe6,#fff);border:1px solid #d3f4c8;padding:16px;text-align:center;margin-top:3px}
+.protected-result-card span{display:block;color:#406444;font-weight:900;font-size:.82rem}.protected-result-card strong{display:block;margin:7px 0;color:#5520bd;font-size:1.75rem}.protected-result-card small{display:block;color:#5f705f;line-height:1.28;font-weight:700}
+.protected-breakdown,.protected-liquidation-card{display:grid;gap:8px;border:1px solid #eee7ff;border-radius:18px;background:#fbf9ff;padding:13px;margin-top:10px}.protected-breakdown div,.protected-liquidation-card div{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#635975;font-weight:800}.protected-breakdown b,.protected-liquidation-card b{color:#211934}.protected-liquidation-card .refund{background:#ecffe6;border-radius:14px;padding:10px;color:#187f18}.protected-liquidation-card .refund b{color:#187f18}.protected-liquidation-card small{color:#766c86;font-weight:700;line-height:1.3}
+.protected-status-row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.protected-status-row span{border:1px solid #eee7ff;background:#fbf9ff;border-radius:15px;padding:10px;text-align:center;color:#4c4260;font-size:.76rem;font-weight:950}
+.protected-warning{background:#fff8e8;border-color:#ffe5b2}.protected-warning strong{color:#c06000}.protected-warning p{color:#695745}
+@media(max-width:380px){.protected-result-card strong{font-size:1.48rem}.protected-status-row span{font-size:.7rem;padding:9px 6px}}

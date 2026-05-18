@@ -1,23 +1,21 @@
-# Conecta Servicios v4.8.9 — Mandados Verificados
+# Conecta Servicios v4.9.0 — Fondo Protegido Conecta
 
-Versión piloto para presentación y validación.
+Versión piloto conceptual para presentación y validación con inversionistas.
 
 ## Incluye
 
-- Nuevo módulo **Mandados Verificados**.
-- Acceso visible desde Home.
-- Dos caminos: **Solicitar mandado** y **Trabajar como agente**.
-- Formulario para comprador con calculadora de tarifa estimada.
-- Formulario para agente de compras y entregas.
-- Checklist de evidencia: precio, peso/cantidad, ticket o total, cambio y entrega final.
-- Reporte visual simple de evidencia del mandado.
-- Guardado local en el dispositivo para pruebas, sin tocar Supabase.
-- Mensajes inteligentes reconoce consultas sobre mandados verificados.
-- PWA/cache actualizado a `v4.8.9`.
+- Mantiene el módulo **Mandados Verificados**.
+- Nueva tarjeta **Fondo Protegido Conecta** dentro de Mandados Verificados.
+- Simulador de fondo sugerido para un encargo.
+- Ejemplo de cierre y liquidación: compra real, servicio del agente, comisión plataforma y devolución al solicitante.
+- Estados de operación: solicitado, fondo protegido, agente asignado, en compra, evidencia cargada, entregado, pago liberado y sobrante devuelto.
+- Lenguaje responsable: no mueve dinero real y no crea wallet propia.
+- No toca Supabase.
+- PWA/cache actualizado a `v4.9.0`.
 
 ## Importante
 
-Esta versión usa lenguaje responsable: evidencia del mandado, validación asistida, mayor confianza y reduce dudas. No promete certificación total, garantía absoluta ni pagos automáticos.
+Esta versión muestra el funcionamiento conceptual de Fondo Protegido Conecta. La operación con dinero real debe implementarse en una etapa posterior mediante proveedor de pagos autorizado y reglas claras.
 
 ## Despliegue
 

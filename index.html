@@ -29,9 +29,9 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
   <title>Conecta Servicios v4.8.9</title>
-  <link rel="stylesheet" href="styles.css?v=4.8.9-mandados" />
+  <link rel="stylesheet" href="styles.css?v=4.9.0-fondo-protegido" />
 </head>
-<body data-version="4.8.9-mandados">
+<body data-version="4.9.0-fondo-protegido">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -101,7 +101,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
             <button type="button" class="future-card-v477 verified-errand-card" onclick="showSection('mandados')">
               <span class="future-emoji">🧺</span>
               <strong>Mandados<br>verificados</strong>
-              <small>Evidencia paso a paso</small>
+              <small>Evidencia + fondo</small>
             </button>
           </div>
 
@@ -636,6 +636,15 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <p>La app calcula una referencia con tarifa base, distancia, peso, horario y monto aproximado de compra. El costo final debe confirmarse entre las partes antes de aceptar.</p>
         </div>
 
+        <div class="protected-fund-card" aria-label="Fondo Protegido Conecta">
+          <span class="protected-kicker">Próxima etapa escalable</span>
+          <h3>Fondo Protegido Conecta</h3>
+          <p>El solicitante aparta un fondo para el encargo; el agente trabaja con evidencia y al finalizar se libera el pago correcto y se devuelve el sobrante.</p>
+          <button type="button" class="btn-small btn-purple" onclick="showProtectedFundPanel()">Ver cómo funciona</button>
+        </div>
+
+        <div id="protectedFundPanel" class="protected-fund-panel hidden"></div>
+
         <div id="errandPanel" class="errand-panel hidden"></div>
 
         <div class="errand-tabs" aria-label="Mandados Verificados">
@@ -810,6 +819,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.8.9-mandados"></script>
+  <script src="app.js?v=4.9.0-fondo-protegido"></script>
 </body>
 </html>

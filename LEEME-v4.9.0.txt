@@ -1,0 +1,13 @@
+Conecta Servicios v4.9.0 — Fondo Protegido Conecta
+
+Cambios principales:
+- Agrega módulo conceptual Fondo Protegido Conecta dentro de Mandados Verificados.
+- Incluye simulador de fondo sugerido.
+- Incluye ejemplo de cierre y liquidación.
+- Incluye estados de operación protegida.
+- Mantiene aviso responsable: no hay manejo real de dinero en esta etapa.
+- No toca Supabase.
+- Cache/PWA actualizado a v4.9.0.
+
+Commit sugerido:
+Actualización v4.9.0 - Fondo Protegido Conecta
