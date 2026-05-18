@@ -1,0 +1,11 @@
+Conecta Servicios v4.9.16 — Home tipo red social / marketplace
+
+Incluye:
+- Home reconstruido con publicaciones piloto tipo red social.
+- Categorías superiores: Para ti, Solicitantes, Agentes, Negocios, Servicios, Crecimiento, Embajadores y Aprendizaje.
+- Tarjetas visuales con imagen, acciones, compartir, guardar y botón "Hacerlo real".
+- Transición de piloto a guía real.
+- Barra inferior actualizada: Inicio, Explorar, Publicar, Chats y Perfil.
+- Notificaciones y módulos existentes conservados.
+- No toca Supabase.
+- PWA/cache actualizado a v4.9.16.

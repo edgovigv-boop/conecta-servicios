@@ -1,0 +1,9 @@
+Conecta Servicios v4.9.15 — Notificaciones y Agentes más claros
+
+Cambios:
+- Notificaciones actualizadas a la nueva lógica: Solicitantes, Agentes, Negocios, Servicios, Crecimiento, Embajadores y Aprendizaje.
+- Preferencias de notificación más visuales e intuitivas.
+- Agentes de crecimiento: botones más llamativos y centrados, sin texto pegado a la izquierda.
+- Se mantiene modo piloto, membresía $98 y comisión embajador $50.
+- No toca Supabase.
+- PWA/cache actualizado a v4.9.15.

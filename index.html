@@ -28,10 +28,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
-  <title>Conecta Servicios v4.9.14</title>
-  <link rel="stylesheet" href="styles.css?v=4.9.14-ajustes-finales" />
+  <title>Conecta Servicios v4.9.16</title>
+  <link rel="stylesheet" href="styles.css?v=4.9.16-home-social" />
 </head>
-<body data-version="4.9.14-ajustes-finales">
+<body data-version="4.9.16-home-social">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -43,95 +43,114 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </header>
 
     <main class="content">
-      <section id="inicio" class="section active home-integrated-section">
-        <div class="home-v477" aria-label="Inicio de Conecta Servicios">
-          <div class="home-v477-top">
-            <div class="home-v477-brand text-brand-only">
-              <div><strong>Conecta Servicios</strong></div>
+      <section id="inicio" class="section active home-social-section">
+        <div class="social-home" aria-label="Inicio social de Conecta Servicios">
+          <div class="social-home-top">
+            <div class="social-brand">
+              <span class="social-logo-mark">C</span>
+              <div><strong>Conecta</strong><small>SERVICIOS</small></div>
             </div>
-            <div class="home-v477-top-actions">
-              <button class="home-round-action" type="button" onclick="showSection('notificaciones')" aria-label="Notificaciones">🔔<b></b></button>
-              <button class="home-round-action" type="button" onclick="showSection('misPublicaciones')" aria-label="Mis publicaciones">👤</button>
-              <button class="office-pill" type="button" onclick="showSection('oficina')" aria-label="Oficina y contacto">⌂ Oficina / Contacto</button>
+            <div class="social-home-actions">
+              <button type="button" aria-label="Buscar publicaciones" onclick="requestNearbyPublications()">⌕</button>
+              <button type="button" class="social-notification-btn" aria-label="Notificaciones" onclick="showSection('notificaciones')">🔔<b>7</b></button>
             </div>
           </div>
 
-          <div class="home-v477-hero">
-            <div class="hero-copy">
-              <h1>Tu comunidad,<br><span>más conectada</span><br>que nunca.</h1>
-              <em></em>
-              <p>Servicios locales, movilidad,<br>entregas y apoyo entre<br>vecinos.</p>
-            </div>
-            <div class="hero-scene" aria-hidden="true"></div>
+          <div class="social-category-strip" aria-label="Tipos de oportunidades">
+            <button type="button" class="active" onclick="openPilotType('')"><span>✦</span><small>Para ti</small></button>
+            <button type="button" onclick="openPilotType('solicitantes')"><span>♙</span><small>Solicitantes</small></button>
+            <button type="button" onclick="openPilotType('agentes')"><span>♟</span><small>Agentes</small></button>
+            <button type="button" onclick="openPilotType('negocios')"><span>🏪</span><small>Negocios</small></button>
+            <button type="button" onclick="openPilotType('servicios')"><span>🛠</span><small>Servicios</small></button>
+            <button type="button" onclick="openPilotType('crecimiento')"><span>↗</span><small>Crecimiento</small></button>
+            <button type="button" onclick="showSection('embajadores')"><span>🤝</span><small>Embajadores</small></button>
+            <button type="button" onclick="showSection('aprende')"><span>🎓</span><small>Aprendizaje</small></button>
           </div>
 
-          <button class="opportunity-orb" type="button" onclick="startOpportunityGuide()" aria-label="Oportunidades para ti">
-            <span class="orb-plus">＋</span>
-            <strong>Oportunidades<br>para ti</strong>
-          </button>
+          <div class="social-feed-title">
+            <div>
+              <strong>Explora oportunidades piloto</strong>
+              <small>Desliza, toca una publicación y conviértela en una acción real.</small>
+            </div>
+            <button type="button" onclick="requestNearbyPublications()">Explorar</button>
+          </div>
 
-          <div class="home-primary-actions home-learning-single" aria-label="Acceso principal de aprendizaje">
-            <button type="button" class="home-primary-card learn-card-clean" onclick="showSection('aprende')">
-              <span class="home-primary-icon">🎓</span>
-              <div><strong>Aprendizaje</strong><small>Cursos y habilidades para mejorar servicios, negocios e ingresos.</small></div>
+          <div class="social-feed-stack" aria-label="Publicaciones piloto tipo red social">
+            <article class="social-post-card" data-type="solicitantes">
+              <img src="assets/social-post-solicitante.webp" alt="Publicación piloto de solicitante" loading="eager">
+              <div class="social-post-shade"></div>
+              <div class="social-post-topline">
+                <span class="avatar mini-avatar">MG</span>
+                <div><strong>María González</strong><small>Solicitante · CDMX</small></div>
+                <b>PILOTO</b>
+              </div>
+              <div class="social-post-side-actions">
+                <button type="button" onclick="socialLike(this)">♡<small>24</small></button>
+                <button type="button" onclick="showSection('mensajes')">💬<small>5</small></button>
+                <button type="button" onclick="sharePilotSocial('solicitantes')">↗<small>12</small></button>
+                <button type="button" onclick="openPilotType('solicitantes')">▣<small>Guardar</small></button>
+              </div>
+              <div class="social-post-content">
+                <h2>Busco barista para fines de semana</h2>
+                <p>Apoyo por evento · Zona Roma, CDMX</p>
+                <div class="hashtag-row"><span>#Servicio</span><span>#Hospitalidad</span><span>#TiempoParcial</span></div>
+                <button type="button" class="social-real-btn" onclick="makePilotReal('solicitantes')">Hacerlo real (Solicitar)</button>
+                <button type="button" class="social-details-btn" onclick="openPilotType('solicitantes')">Ver detalles</button>
+              </div>
+            </article>
+
+            <article class="social-post-card compact-preview" data-type="agentes">
+              <img src="assets/social-post-agente.webp" alt="Publicación piloto de agente" loading="lazy">
+              <div class="social-post-shade"></div>
+              <div class="social-post-topline">
+                <span class="avatar mini-avatar blue">CM</span>
+                <div><strong>Carlos Méndez</strong><small>Agente · Guadalajara</small></div>
+                <b>PILOTO</b>
+              </div>
+              <div class="social-post-content">
+                <h2>Te consigo más clientes por comisión</h2>
+                <p>Redes sociales · WhatsApp · Promoción local</p>
+                <button type="button" class="social-real-btn" onclick="makePilotReal('agentes')">Hacerlo real (Trabajar)</button>
+                <button type="button" class="social-details-btn" onclick="openPilotType('agentes')">Ver detalles</button>
+              </div>
+            </article>
+
+            <div class="social-type-cards" aria-label="Tipos de publicaciones que verás">
+              <button type="button" onclick="openPilotType('solicitantes')" class="social-type-card solicitante" style="--img:url('assets/social-post-solicitante.webp')"><b>SOLICITANTE</b><span>Busco diseñador gráfico</span></button>
+              <button type="button" onclick="openPilotType('agentes')" class="social-type-card agente" style="--img:url('assets/social-post-agente.webp')"><b>AGENTE</b><span>Te consigo más clientes</span></button>
+              <button type="button" onclick="openPilotType('negocios')" class="social-type-card negocio" style="--img:url('assets/social-post-negocio.webp')"><b>NEGOCIO</b><span>Busco personal para mi negocio</span></button>
+              <button type="button" onclick="openPilotType('servicios')" class="social-type-card servicio" style="--img:url('assets/social-post-servicio.webp')"><b>SERVICIO</b><span>Ofrezco servicio de limpieza</span></button>
+              <button type="button" onclick="openPilotType('crecimiento')" class="social-type-card crecimiento" style="--img:url('assets/social-post-crecimiento.webp')"><b>CRECIMIENTO</b><span>Quiero crecer mi empresa</span></button>
+              <button type="button" onclick="showSection('embajadores')" class="social-type-card embajadores" style="--img:url('assets/social-post-embajadores.webp')"><b>EMBAJADORES</b><span>Únete como embajador</span></button>
+              <button type="button" onclick="showSection('aprende')" class="social-type-card aprendizaje" style="--img:url('assets/social-post-aprendizaje.webp')"><b>APRENDIZAJE</b><span>Aprende y crece con nosotros</span></button>
+            </div>
+
+            <section class="social-conversion-path">
+              <strong>De piloto a real</strong>
+              <div>
+                <span>👁️<small>Exploras</small></span>
+                <b>→</b>
+                <span>👆<small>Te interesa</small></span>
+                <b>→</b>
+                <span>📋<small>Sigues guía</small></span>
+                <b>→</b>
+                <span>✅<small>Lo haces real</small></span>
+                <b>→</b>
+                <span>🚀<small>Economía activada</small></span>
+              </div>
+            </section>
+
+            <button class="ambassador-social-card" type="button" onclick="showSection('embajadores')">
+              <span>🤝</span>
+              <div>
+                <strong>Embajadores Conecta</strong>
+                <small>Gana $50 por cada membresía anual referida. Membresía: $98 MXN.</small>
+              </div>
               <b>›</b>
             </button>
+
+            <p class="sync-status visually-hidden" id="syncStatus" aria-live="polite">Conectando con la base de datos...</p>
           </div>
-
-          <button class="ambassador-home-card" type="button" onclick="showSection('embajadores')" aria-label="Embajadores Conecta">
-            <span class="ambassador-home-icon">🤝</span>
-            <div>
-              <strong>Embajadores Conecta</strong>
-              <small>Gana $50 por cada membresía anual referida. Membresía: $98 MXN.</small>
-            </div>
-            <b>›</b>
-          </button>
-
-          <div class="home-carousel-heading">
-            <div><strong>Ejemplos para inspirarte</strong><small>Toca una tarjeta para explorar y convertirla en una acción real.</small></div>
-            <button type="button" onclick="requestNearbyPublications()">Ver todas</button>
-          </div>
-
-          <div class="home-pilot-carousel" aria-label="Carrusel de publicaciones piloto">
-            <button type="button" class="home-pilot-card solicitante" onclick="openPilotType('solicitantes')">
-              <span>🙋</span>
-              <small>Solicitante</small>
-              <strong>Busco apoyo para un mandado local</strong>
-              <p>Ejemplo piloto: toca para explorar y solicitar algo parecido.</p>
-            </button>
-            <button type="button" class="home-pilot-card agente" onclick="openPilotType('agentes')">
-              <span>🧑‍🔧</span>
-              <small>Agente</small>
-              <strong>Ofrezco entregas y apoyo por encargo</strong>
-              <p>Ejemplo piloto: toca para explorar y ofrecerte como agente.</p>
-            </button>
-            <button type="button" class="home-pilot-card negocio" onclick="openPilotType('negocios')">
-              <span>🏪</span>
-              <small>Negocio</small>
-              <strong>Panadería recibe pedidos por chat</strong>
-              <p>Ejemplo piloto: toca para explorar y activar chat de negocio.</p>
-            </button>
-            <button type="button" class="home-pilot-card servicio" onclick="openPilotType('servicios')">
-              <span>🛠</span>
-              <small>Servicio</small>
-              <strong>Reparación y servicios locales</strong>
-              <p>Ejemplo piloto: toca para explorar y publicar un servicio.</p>
-            </button>
-            <button type="button" class="home-pilot-card crecimiento" onclick="openPilotType('crecimiento')">
-              <span>📈</span>
-              <small>Crecimiento</small>
-              <strong>Campañas, referidos y aprendizaje</strong>
-              <p>Ejemplo piloto: toca para explorar comisiones y crecimiento.</p>
-            </button>
-          </div>
-
-          <div class="install-card-v477">
-            <span class="install-logo cs-node-logo" aria-hidden="true"><img src="assets/pwa-plus-icon-192.png" alt="" loading="eager"></span>
-            <div><strong>Instala <span>Conecta Servicios</span></strong><p>Añade la app a tu pantalla de inicio y accede más rápido.</p></div>
-            <button type="button" onclick="installApp()">Instalar ↓</button>
-          </div>
-
-          <p class="sync-status visually-hidden" id="syncStatus" aria-live="polite">Conectando con la base de datos...</p>
         </div>
       </section>
 
@@ -518,24 +537,26 @@ Todo uso requiere autorización expresa y por escrito del titular.
         <div id="myPublicationsList" class="compact-list"></div>
       </section>
 
-      <section id="notificaciones" class="section info-section">
+      <section id="notificaciones" class="section info-section notifications-v4915">
         <h2>Notificaciones</h2>
-        <div class="notice-card">
-          <strong>Avisos útiles, sin saturarte</strong>
-          <p>Elige qué tipo de publicaciones quieres recibir en este dispositivo. Cuando la app esté abierta o en segundo plano compatible, te avisará de registros nuevos que coincidan con tus preferencias.</p>
+        <div class="notice-card notification-head-card">
+          <strong>🔔 Avisos por interés</strong>
+          <p>Elige qué quieres recibir según el nuevo lenguaje de Conecta Servicios.</p>
         </div>
         <div class="form-card notification-card">
           <button class="btn-big btn-purple" type="button" onclick="enableNotifications()">🔔 Activar notificaciones</button>
           <p id="notificationStatus" class="filter-summary">Estado: pendiente de activar</p>
-          <label>Categorías que me interesan
-            <div class="checkbox-stack">
-              <label><input type="checkbox" name="notifCategory" value="General" checked /> Servicios / general</label>
-              <label><input type="checkbox" name="notifCategory" value="Mensajería y envíos" checked /> Mensajería y envíos</label>
-              <label><input type="checkbox" name="notifCategory" value="Viajes compartidos" checked /> Viajes compartidos</label>
-              <label><input type="checkbox" name="notifCategory" value="Redes sociales" checked /> Enlaces de redes sociales</label>
-            </div>
-          </label>
-          <div class="form-grid">
+          <span class="field-title">Intereses</span>
+          <div class="notification-interest-grid" aria-label="Intereses de notificación">
+            <label><input type="checkbox" name="notifCategory" value="solicitantes" checked /><span>🙋</span><strong>Solicitantes</strong></label>
+            <label><input type="checkbox" name="notifCategory" value="agentes" checked /><span>🧑‍🔧</span><strong>Agentes</strong></label>
+            <label><input type="checkbox" name="notifCategory" value="negocios" checked /><span>🏪</span><strong>Negocios</strong></label>
+            <label><input type="checkbox" name="notifCategory" value="servicios" checked /><span>🛠️</span><strong>Servicios</strong></label>
+            <label><input type="checkbox" name="notifCategory" value="crecimiento" checked /><span>📈</span><strong>Crecimiento</strong></label>
+            <label><input type="checkbox" name="notifCategory" value="embajadores" checked /><span>🤝</span><strong>Embajadores</strong></label>
+            <label><input type="checkbox" name="notifCategory" value="aprendizaje" checked /><span>🎓</span><strong>Aprendizaje</strong></label>
+          </div>
+          <div class="form-grid compact-notification-location">
             <label>Estado
               <select id="notifState" data-state-select data-blank="true" data-default=""></select>
             </label>
@@ -543,16 +564,16 @@ Todo uso requiere autorización expresa y por escrito del titular.
               <select id="notifMunicipality"><option value="">Todos los municipios</option></select>
             </label>
           </div>
-          <div class="form-grid">
-            <label>No avisar antes de
+          <div class="form-grid compact-notification-hours">
+            <label>Desde
               <input id="notifFrom" type="time" value="07:00" />
             </label>
-            <label>No avisar después de
+            <label>Hasta
               <input id="notifTo" type="time" value="22:00" />
             </label>
           </div>
           <button class="btn-big btn-green" type="button" onclick="saveNotificationPreferences()">Guardar preferencias</button>
-          <p class="small muted">Nota: las notificaciones web dependen del permiso del navegador. Para avisos totalmente automáticos aun con la app cerrada, más adelante conviene integrar un servicio formal de push.</p>
+          <p class="small muted">Las notificaciones dependen del permiso del navegador.</p>
         </div>
       </section>
 
@@ -751,9 +772,9 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <span class="growth-kicker">Nuevo piloto</span>
           <h2>Agentes de crecimiento</h2>
           <p>Conecta negocios que necesitan clientes con personas que pueden promocionar, recomendar o conseguir contactos por comisión.</p>
-          <div class="growth-hero-actions">
-            <button type="button" class="btn-small btn-orange" onclick="startSurveyFlow('crecimientoNegocio')">Quiero conseguir clientes</button>
-            <button type="button" class="btn-small btn-purple" onclick="startSurveyFlow('crecimientoAgente')">Quiero trabajar por comisión</button>
+          <div class="growth-hero-actions growth-hero-actions-v4915">
+            <button type="button" class="growth-action-pill business" onclick="startSurveyFlow('crecimientoNegocio')"><span>🏪</span><strong>Conseguir clientes</strong></button>
+            <button type="button" class="growth-action-pill agent" onclick="startSurveyFlow('crecimientoAgente')"><span>💸</span><strong>Ganar comisión</strong></button>
           </div>
         </div>
 
@@ -893,12 +914,12 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </footer>
 
 
-    <nav class="bottom-nav system-nav" aria-label="Navegación principal">
+    <nav class="bottom-nav system-nav social-bottom-nav" aria-label="Navegación principal">
       <button type="button" onclick="showSection('inicio')">🏠<span>Inicio</span></button>
-      <button type="button" onclick="startOpportunityGuide()">🔖<span>Para ti</span></button>
-      <button type="button" class="publish-nav-action" onclick="startOpportunityGuide()" aria-label="Oportunidades para ti">＋</button>
-      <button type="button" onclick="showSection('mensajes')">💬<span>Centro</span></button>
-      <button type="button" onclick="showSection('aprende')">🎓<span>Aprendizaje</span></button>
+      <button type="button" onclick="requestNearbyPublications()">⌕<span>Explorar</span></button>
+      <button type="button" class="publish-nav-action" onclick="startOpportunityGuide()" aria-label="Publicar">＋<span>Publicar</span></button>
+      <button type="button" onclick="showSection('mensajes')">💬<span>Chats</span></button>
+      <button type="button" onclick="showSection('misPublicaciones')">👤<span>Perfil</span></button>
     </nav>
   </div>
 
@@ -971,6 +992,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.9.14-ajustes-finales"></script>
+  <script src="app.js?v=4.9.16-home-social"></script>
 </body>
 </html>

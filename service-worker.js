@@ -4,17 +4,25 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.9.14-ajustes-finales";
+const CACHE_NAME = "conecta-servicios-v4.9.16-home-social";
 const ASSETS = [
   "./",
   "index.html",
-  "styles.css?v=4.9.14-ajustes-finales",
-  "app.js?v=4.9.14-ajustes-finales",
+  "styles.css?v=4.9.16-home-social",
+  "app.js?v=4.9.16-home-social",
   "manifest.json",
   "assets/hero-scene-v4718.webp",
   "assets/hero-scene-clean-v4711.png",
   "assets/municipios-mx-base.json",
   "assets/municipios-mx-completo.json",
+
+  "assets/social-post-solicitante.webp",
+  "assets/social-post-agente.webp",
+  "assets/social-post-negocio.webp",
+  "assets/social-post-servicio.webp",
+  "assets/social-post-crecimiento.webp",
+  "assets/social-post-embajadores.webp",
+  "assets/social-post-aprendizaje.webp",
   "assets/pwa-plus-icon-192.png",
   "assets/pwa-plus-icon-512.png",
   "assets/apple-touch-plus.png",

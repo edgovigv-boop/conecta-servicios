@@ -1,3 +1,7 @@
+# Conecta Servicios v4.9.16 — Home tipo red social / marketplace
+
+Esta versión convierte el Home en una experiencia tipo red social / marketplace con publicaciones piloto protagonistas, imágenes visuales, acciones rápidas, transición de piloto a real y barra inferior más clara.
+
 # Conecta Servicios v4.9.8 — Embajadores Conecta con Mercado Pago piloto
 
 Esta versión agrega un piloto de monetización sin cobros reales para validar activación local, referidos y una futura membresía.
@@ -44,3 +48,10 @@ No guardar credenciales privadas dentro de `app.js` ni `index.html`.
 - Aclara transición de ejemplos piloto a acciones reales.
 - Agrega filtro de membresía antes de publicar: explorar/contactar gratis; publicar con membresía anual $98.
 - Actualiza cache/PWA a v4.9.14.
+
+
+## v4.9.15
+- Actualiza Notificaciones al nuevo lenguaje de la app: Solicitantes, Agentes, Negocios, Servicios, Crecimiento, Embajadores y Aprendizaje.
+- Ajusta la lógica de coincidencia de avisos para agrupar publicaciones piloto y categorías reales en esos intereses.
+- Reemplaza los botones de Agentes de crecimiento por accesos visuales centrados: Conseguir clientes y Ganar comisión.
+- Mantiene Supabase intacto y actualiza cache/PWA a v4.9.15.

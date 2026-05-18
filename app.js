@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.14-ajustes-finales";
+const PWA_VERSION = "v4.9.16-home-social";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -82,7 +82,7 @@ const APP_VERSION_KEY = "conecta_servicios_app_version";
 const CHAT_STORAGE_KEY = "conecta_business_chat_v494";
 const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v492";
 
-// v4.9.14 — Ajustes de flujo: membresía para publicar, chat limpio y pilotos más claros
+// v4.9.16 — Home tipo red social / marketplace con publicaciones piloto protagonistas
 // Muestra publicaciones curadas y oculta los registros reales de Supabase en la vista pública.
 // Supabase sigue intacto; administración y futuras versiones pueden volver a producción cambiando esta bandera.
 const PRESENTATION_PILOT_MODE = true;
@@ -822,7 +822,7 @@ function renderPublicationPreview() {
   renderPublicationMembershipGate();
 }
 
-const CONNECTA_MEMBERSHIP_KEY = "conecta_membresia_publicar_v4914";
+const CONNECTA_MEMBERSHIP_KEY = "conecta_membresia_publicar_v4915";
 function getPublishMembershipStatus() {
   try { return JSON.parse(localStorage.getItem(CONNECTA_MEMBERSHIP_KEY) || "{}"); } catch { return {}; }
 }
@@ -1521,11 +1521,53 @@ function notificationPermissionLabel() {
   if (Notification.permission === "denied") return "Bloqueadas por el navegador";
   return "Pendientes de activar";
 }
+function notificationInterestGroups() {
+  return ["solicitantes", "agentes", "negocios", "servicios", "crecimiento", "embajadores", "aprendizaje"];
+}
+function legacyNotificationCategoryMap(value) {
+  const map = {
+    "General": "servicios",
+    "Servicios": "servicios",
+    "Mensajería y envíos": "servicios",
+    "Viajes compartidos": "servicios",
+    "Redes sociales": "crecimiento",
+    "Agentes de crecimiento": "crecimiento",
+    "Embajadores Conecta": "embajadores",
+    "Aprendizaje": "aprendizaje",
+    "Negocios locales": "negocios",
+    "Mandados Verificados": "solicitantes"
+  };
+  return map[value] || value;
+}
+function normalizeNotificationCategories(categories = []) {
+  const allowed = notificationInterestGroups();
+  const mapped = categories.map(legacyNotificationCategoryMap).filter(value => allowed.includes(value));
+  return mapped.length ? Array.from(new Set(mapped)) : allowed;
+}
+function notificationGroupForItem(item = {}) {
+  if (item.category === "Embajadores Conecta") return "embajadores";
+  if (item.category === "Aprendizaje") return "aprendizaje";
+  if (item.category === "Agentes de crecimiento") return "crecimiento";
+  if (item.category === "Negocios locales") return "negocios";
+  if (item.pilotType === "solicitantes") return "solicitantes";
+  if (item.pilotType === "agentes") return "agentes";
+  if (item.pilotType === "negocios") return "negocios";
+  if (item.pilotType === "servicios") return "servicios";
+  if (item.pilotType === "crecimiento") return "crecimiento";
+  if (["Mandados Verificados"].includes(item.category)) return item.subcategory?.toLowerCase().includes("agente") ? "agentes" : "solicitantes";
+  if (["Movilidad", "Servicios", "Limpieza", "Reparaciones", "Entregas y mandados", "Mensajería y envíos", "Viajes compartidos"].includes(item.category)) return "servicios";
+  return "servicios";
+}
 function defaultNotificationPreferences() {
-  return { enabled: false, categories: ["General","Mensajería y envíos","Viajes compartidos","Redes sociales"], state: DEFAULT_STATE, municipality: DEFAULT_MUNICIPALITY, from: "07:00", to: "22:00" };
+  return { enabled: false, categories: notificationInterestGroups(), state: DEFAULT_STATE, municipality: DEFAULT_MUNICIPALITY, from: "07:00", to: "22:00" };
 }
 function getNotificationPreferences() {
-  try { return { ...defaultNotificationPreferences(), ...(JSON.parse(localStorage.getItem(NOTIFICATION_PREFS_KEY) || "{}")) }; }
+  try {
+    const saved = JSON.parse(localStorage.getItem(NOTIFICATION_PREFS_KEY) || "{}");
+    const prefs = { ...defaultNotificationPreferences(), ...saved };
+    prefs.categories = normalizeNotificationCategories(prefs.categories || []);
+    return prefs;
+  }
   catch { return defaultNotificationPreferences(); }
 }
 function renderNotificationSettings() {
@@ -1555,7 +1597,7 @@ function saveNotificationPreferences() {
   const categories = Array.from(document.querySelectorAll('input[name="notifCategory"]:checked')).map(i => i.value);
   const prefs = {
     ...getNotificationPreferences(),
-    categories: categories.length ? categories : ["General"],
+    categories: categories.length ? categories : notificationInterestGroups(),
     state: document.getElementById("notifState")?.value || "",
     municipality: document.getElementById("notifMunicipality")?.value.trim() || "",
     from: document.getElementById("notifFrom")?.value || "07:00",
@@ -1576,7 +1618,7 @@ function withinNotificationHours(prefs) {
 function itemMatchesNotificationPreferences(item, prefs) {
   if (!prefs.enabled || !("Notification" in window) || Notification.permission !== "granted") return false;
   if (!withinNotificationHours(prefs)) return false;
-  if (prefs.categories?.length && !prefs.categories.includes(item.category)) return false;
+  if (prefs.categories?.length && !prefs.categories.includes(notificationGroupForItem(item))) return false;
   if (prefs.state && normalize(item.state) !== normalize(prefs.state)) return false;
   if (prefs.municipality && !normalize(item.municipality).includes(normalize(prefs.municipality))) return false;
   return true;
@@ -2228,6 +2270,50 @@ function initMobileFormComfort() {
     window.visualViewport.addEventListener("resize", viewportHandler);
     window.visualViewport.addEventListener("scroll", viewportHandler);
   }
+}
+
+
+// v4.9.16 — Acciones del Home tipo red social / marketplace
+function socialLike(button) {
+  if (!button) return;
+  button.classList.toggle("liked");
+  const small = button.querySelector("small");
+  if (small) {
+    const current = Number(String(small.textContent || "0").replace(/\D/g, "")) || 0;
+    small.textContent = button.classList.contains("liked") ? current + 1 : Math.max(0, current - 1);
+  }
+  showToast(button.classList.contains("liked") ? "Guardado como favorito" : "Favorito quitado");
+}
+
+function sharePilotSocial(type = "") {
+  const labels = {
+    solicitantes: "solicitantes",
+    agentes: "agentes",
+    negocios: "negocios",
+    servicios: "servicios",
+    crecimiento: "crecimiento"
+  };
+  const label = labels[type] || "oportunidades";
+  const text = `Conecta Servicios: explora publicaciones piloto de ${label} y hazlas reales.`;
+  if (navigator.share) {
+    navigator.share({ title: "Conecta Servicios", text, url: location.href }).catch(() => {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(`${text} ${location.href}`).then(() => showToast("Texto copiado para compartir"));
+  } else {
+    showToast("Comparte esta oportunidad desde tu navegador");
+  }
+}
+
+function makePilotReal(type = "") {
+  trackEvent("home_social_hacerlo_real", null, { tipo: type });
+  if (type === "solicitantes") return openOpportunityWizard("necesito");
+  if (type === "agentes") return startSurveyFlow("mandadoAgente");
+  if (type === "negocios") return startSurveyFlow("chatNegocio");
+  if (type === "servicios") return openOpportunityWizard("ingresos");
+  if (type === "crecimiento") return startSurveyFlow("crecimientoMenu");
+  if (type === "embajadores") return showSection("embajadores");
+  if (type === "aprendizaje") return showSection("aprende");
+  return startOpportunityGuide();
 }
 
 function init() {
@@ -3663,10 +3749,10 @@ function renderGrowthSurveyMenu() {
   if (!root) return;
   root.innerHTML = `<div class="survey-shell">
     <button type="button" class="survey-back-link" onclick="showSection('oportunidades')">← Volver a oportunidades</button>
-    <div class="survey-hero"><span>📈</span><h2>Agentes de crecimiento</h2><p>Elige una ruta y contesta paso a paso.</p></div>
-    <div class="survey-path-grid">
-      <button type="button" onclick="startSurveyFlow('crecimientoNegocio')"><span>🏪</span><strong>Quiero conseguir clientes</strong><small>Publicar campaña y comisión por resultado.</small></button>
-      <button type="button" onclick="startSurveyFlow('crecimientoAgente')"><span>🧑‍🎓</span><strong>Quiero trabajar por comisión</strong><small>Registrar habilidades y disponibilidad.</small></button>
+    <div class="survey-hero"><span>📈</span><h2>Agentes de crecimiento</h2><p>Elige una ruta.</p></div>
+    <div class="survey-path-grid growth-survey-paths-v4915">
+      <button type="button" onclick="startSurveyFlow('crecimientoNegocio')"><span>🏪</span><strong>Conseguir clientes</strong><small>Campaña por resultado</small></button>
+      <button type="button" onclick="startSurveyFlow('crecimientoAgente')"><span>💸</span><strong>Ganar comisión</strong><small>Perfil de agente</small></button>
     </div>
   </div>`;
 }
