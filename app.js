@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.10-flujos-funcionales";
+const PWA_VERSION = "v4.9.11-flujos-encuesta";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -82,7 +82,7 @@ const APP_VERSION_KEY = "conecta_servicios_app_version";
 const CHAT_STORAGE_KEY = "conecta_business_chat_v494";
 const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v492";
 
-// v4.9.10 — Home carrusel, oportunidades reorganizadas y flujos funcionales
+// v4.9.11 — Home carrusel, oportunidades reorganizadas y flujos tipo encuesta
 // Muestra publicaciones curadas y oculta los registros reales de Supabase en la vista pública.
 // Supabase sigue intacto; administración y futuras versiones pueden volver a producción cambiando esta bandera.
 const PRESENTATION_PILOT_MODE = true;
@@ -533,7 +533,7 @@ function showSection(id, push = true) {
   document.querySelector(".app-shell")?.classList.toggle("home-mode", id === "inicio");
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   target.classList.add("active");
-  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme", mensajes:"Centro de orientación", agentes:"Agentes de crecimiento", mandados:"Mandados Verificados", negocios:"Negocios locales", embajadores:"Embajadores Conecta" };
+  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme", mensajes:"Centro de orientación", agentes:"Agentes de crecimiento", mandados:"Mandados Verificados", negocios:"Negocios locales", embajadores:"Embajadores Conecta", encuesta:"Encuesta guiada" };
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
@@ -1091,14 +1091,10 @@ function openPilotFlow(id) {
   const item = publicationsCache.find(p => p.id === id);
   if (!item) return;
   trackEvent("modo_piloto_publicacion", item, { tipo: item.pilotType || "general" });
-  if (item.pilotType === "negocios") {
-    showSection("negocios");
-    setTimeout(() => showBusinessFutureTerminal(item.subcategory || item.name), 80);
-    return;
-  }
+  if (item.pilotType === "negocios") { startSurveyFlow("chatNegocio", item.subcategory || item.name); return; }
   if (item.pilotType === "aprendizaje") { showSection("aprende"); return; }
-  if (item.category === "Mandados Verificados") { showSection("mandados"); return; }
-  if (item.category === "Agentes de crecimiento") { showSection("agentes"); return; }
+  if (item.category === "Mandados Verificados") { startSurveyFlow("mandadoSolicitud"); return; }
+  if (item.category === "Agentes de crecimiento") { startSurveyFlow("crecimientoMenu"); return; }
   showSection("mensajes");
   const input = document.getElementById("smartMessageInput");
   if (input) {
@@ -1249,7 +1245,7 @@ function renderBusinessPilotList() {
       <strong>${escapeHtml(biz.name)}</strong>
       <p>${biz.features.map(escapeHtml).join(" · ")}</p>
     </div>
-    <button type="button" class="btn-small btn-outline" onclick="showBusinessFutureTerminal('${escapeHtml(biz.type)}')">Ver flujo</button>
+    <button type="button" class="btn-small btn-outline" onclick="startSurveyFlow('chatNegocio','${escapeHtml(biz.type)}')">Ver flujo</button>
   </article>`).join("");
 }
 
@@ -3471,3 +3467,320 @@ document.addEventListener("DOMContentLoaded", () => {
   renderBusinessPilotList?.();
   renderAmbassadorPilot?.();
 });
+
+
+// v4.9.11 — Flujos tipo encuesta para botones principales
+const BUSINESS_CHAT_STORAGE_KEY = "conecta_chat_negocios_v4911";
+let surveyState = { flow: "", step: 0, values: {}, context: "" };
+
+const SURVEY_CONFIG = {
+  mandadoSolicitud: {
+    title: "Solicitar mandado verificado",
+    subtitle: "Te guiamos paso a paso para que no tengas que llenar todo en una sola pantalla.",
+    icon: "🧺",
+    module: "mandados",
+    steps: [
+      { title: "¿Qué necesitas comprar?", hint: "Escribe los productos principales. Puedes mencionar calidad, marcas o sustituciones.", fields: [
+        { id:"item", label:"Productos", type:"text", required:true, placeholder:"Ej. jitomate, pollo, abarrotes, medicamento..." },
+        { id:"notes", label:"Observaciones", type:"textarea", placeholder:"Ej. maduro pero firme, no muy grande, si no hay marca A comprar marca B" }
+      ]},
+      { title: "Lugar de compra y entrega", hint: "Ayuda al agente a entender la ruta antes de aceptar.", fields: [
+        { id:"buyAt", label:"¿Dónde se compra?", type:"text", required:true, placeholder:"Ej. Central de Abastos, mercado, tienda..." },
+        { id:"deliverTo", label:"¿Dónde se entrega?", type:"text", required:true, placeholder:"Colonia, municipio o referencia" }
+      ]},
+      { title: "Referencia de peso y compra", hint: "La app solo calcula una referencia flexible; el trato final lo acuerdan las partes.", fields: [
+        { id:"weight", label:"Peso estimado kg", type:"number", value:"5", step:"0.1" },
+        { id:"amount", label:"Monto aproximado de compra", type:"number", value:"400", step:"10" }
+      ]},
+      { title: "Distancia y horario", hint: "Estos datos ayudan a sugerir un apoyo justo para el agente.", fields: [
+        { id:"distance", label:"Distancia estimada km", type:"number", value:"4", step:"0.1" },
+        { id:"schedule", label:"Horario", type:"select", options:["Normal","Hora pico","Noche","Lluvia o festivo","Urgente"] }
+      ]},
+      { title: "Contacto", hint: "Este número sirve para acordar detalles por trato directo.", fields: [
+        { id:"phone", label:"WhatsApp", type:"tel", required:true, placeholder:"10 dígitos" }
+      ]}
+    ]
+  },
+  mandadoAgente: {
+    title: "Trabajar como agente de mandados",
+    subtitle: "Registra tu perfil de forma sencilla para que las personas sepan qué puedes hacer.",
+    icon: "🛵",
+    module: "mandados",
+    steps: [
+      { title:"Datos visibles", hint:"Usa un nombre público y tu zona de atención.", fields:[
+        { id:"name", label:"Nombre público", type:"text", required:true, placeholder:"Ej. Juan Pérez" },
+        { id:"zone", label:"Municipio o zona", type:"text", required:true, placeholder:"Ej. Toluca, Metepec, Chapultepec" }
+      ]},
+      { title:"Cómo puedes moverte", hint:"Esto ayuda a calcular qué tipo de mandados puedes aceptar.", fields:[
+        { id:"transport", label:"Transporte", type:"select", options:["Moto","Auto","Bicicleta","A pie","Camioneta"] },
+        { id:"capacity", label:"Capacidad aproximada", type:"text", required:true, placeholder:"Ej. hasta 10 kg" }
+      ]},
+      { title:"Habilidades", hint:"Menciona mercados que conoces, productos que puedes comprar y si puedes registrar evidencia.", fields:[
+        { id:"skills", label:"Habilidades o zonas que conoces", type:"textarea", required:true, placeholder:"Ej. mercado, central, farmacia, ticket, báscula, entrega cuidadosa..." }
+      ]},
+      { title:"Contacto", hint:"El contacto permite trato directo con solicitantes.", fields:[
+        { id:"phone", label:"WhatsApp", type:"tel", required:true, placeholder:"10 dígitos" }
+      ]}
+    ]
+  },
+  crecimientoNegocio: {
+    title: "Conseguir clientes por comisión",
+    subtitle: "Crea una campaña clara para que un agente sepa qué resultado debe conseguir.",
+    icon: "📈",
+    module: "agentes",
+    steps: [
+      { title:"¿Qué quieres promocionar?", hint:"Producto, servicio o campaña que necesita clientes.", fields:[
+        { id:"title", label:"Producto o servicio", type:"text", required:true, placeholder:"Ej. Crédito para pensionados, estética, curso, panadería..." },
+        { id:"zone", label:"Zona", type:"text", required:true, placeholder:"Ej. Estado de México, Toluca, Chapultepec" }
+      ]},
+      { title:"Resultado y comisión", hint:"Define por qué pagarás. Esto evita malentendidos.", fields:[
+        { id:"result", label:"Resultado que pagarás", type:"select", options:["Contacto interesado","Cita agendada","Cliente aprobado","Venta cerrada"] },
+        { id:"commission", label:"Comisión ofrecida", type:"text", required:true, placeholder:"Ej. $300 por cliente aprobado o 10% por venta" }
+      ]},
+      { title:"Descripción guiada", hint:"Explica requisitos y forma de validar el resultado.", fields:[
+        { id:"description", label:"Descripción", type:"textarea", required:true, placeholder:"Ofrezco: ...\nBusco: ...\nResultado válido: ...\nComisión: ...\nZona: ..." }
+      ]},
+      { title:"Contacto", hint:"El agente podrá comunicarse para acordar condiciones.", fields:[
+        { id:"phone", label:"WhatsApp", type:"tel", required:true, placeholder:"10 dígitos" }
+      ]}
+    ]
+  },
+  crecimientoAgente: {
+    title: "Trabajar por comisión",
+    subtitle: "Registra tus habilidades para apoyar campañas y ganar por resultado.",
+    icon: "🧑‍🎓",
+    module: "agentes",
+    steps: [
+      { title:"Datos visibles", hint:"Esto ayuda a negocios a ubicarte.", fields:[
+        { id:"name", label:"Nombre público", type:"text", required:true, placeholder:"Ej. Ana Martínez" },
+        { id:"zone", label:"Municipio o zona", type:"text", required:true, placeholder:"Ej. Toluca, Metepec, Chapultepec" }
+      ]},
+      { title:"Habilidades", hint:"Puedes incluir redes sociales, diseño, ventas, WhatsApp, atención a clientes o videos cortos.", fields:[
+        { id:"skills", label:"Habilidades", type:"textarea", required:true, placeholder:"Ej. redes sociales, diseño de flyers, ventas por WhatsApp, atención a clientes..." }
+      ], chips:["Redes sociales","Diseño de flyers","Ventas por WhatsApp","Atención a clientes","Captación de clientes","Videos cortos"]},
+      { title:"Contacto", hint:"El contacto permite trato directo con negocios o campañas.", fields:[
+        { id:"phone", label:"WhatsApp", type:"tel", required:true, placeholder:"10 dígitos" }
+      ]}
+    ]
+  },
+  chatNegocio: {
+    title: "Activar chat de negocio",
+    subtitle: "Prepara tu negocio para recibir preguntas, pedidos, citas, cotizaciones, pickup o envío.",
+    icon: "🏪",
+    module: "negocios",
+    steps: [
+      { title:"Tipo de negocio", hint:"Selecciona cómo quieres aparecer.", fields:[
+        { id:"type", label:"Tipo", type:"select", options:["Negocio local","Panadería","Estética","Ferretería","Carpintería","Restaurante","Servicio profesional","Otro"] },
+        { id:"name", label:"Nombre del negocio", type:"text", required:true, placeholder:"Ej. Panadería San Miguel" }
+      ]},
+      { title:"Qué quieres recibir por chat", hint:"Elige la operación principal que quieres probar primero.", fields:[
+        { id:"goal", label:"Función inicial", type:"select", options:["Pedidos por chat","Catálogo simple","Citas o agenda","Cotizaciones","Envío o pickup","Información de servicios"] },
+        { id:"zone", label:"Zona", type:"text", required:true, placeholder:"Municipio o colonia" }
+      ]},
+      { title:"Mensaje inicial", hint:"Este texto sirve como guía para que los clientes sepan qué pedirte.", fields:[
+        { id:"message", label:"Mensaje para clientes", type:"textarea", required:true, placeholder:"Ej. Hola, puedo mostrarte productos, precios, disponibilidad, entrega o pickup." }
+      ]},
+      { title:"Contacto", hint:"Este WhatsApp será el canal de trato directo mientras crece la terminal de venta.", fields:[
+        { id:"phone", label:"WhatsApp", type:"tel", required:true, placeholder:"10 dígitos" }
+      ]}
+    ]
+  }
+};
+
+function startSurveyFlow(flow, context = "") {
+  if (flow === "crecimientoMenu") return renderGrowthSurveyMenu();
+  const config = SURVEY_CONFIG[flow];
+  if (!config) return;
+  surveyState = { flow, step: 0, values: {}, context: context || "" };
+  config.steps.forEach(step => (step.fields || []).forEach(field => {
+    if (field.value !== undefined) surveyState.values[field.id] = field.type === "number" ? Number(field.value || 0) : String(field.value);
+    else if (field.type === "select" && Array.isArray(field.options) && field.options.length) surveyState.values[field.id] = field.options[0];
+  }));
+  if (flow === "chatNegocio" && context) surveyState.values.type = context;
+  showSection("encuesta");
+  renderSurveyFlow();
+  trackEvent("flujo_encuesta_inicio", null, { flujo: flow, contexto: context });
+}
+
+function renderGrowthSurveyMenu() {
+  surveyState = { flow: "crecimientoMenu", step: 0, values: {}, context: "" };
+  showSection("encuesta");
+  const root = document.getElementById("surveyFlowContent");
+  if (!root) return;
+  root.innerHTML = `<div class="survey-shell">
+    <button type="button" class="survey-back-link" onclick="showSection('oportunidades')">← Volver a oportunidades</button>
+    <div class="survey-hero"><span>📈</span><h2>Agentes de crecimiento</h2><p>Elige una ruta. La app te guiará como encuesta, paso por paso.</p></div>
+    <div class="survey-path-grid">
+      <button type="button" onclick="startSurveyFlow('crecimientoNegocio')"><span>🏪</span><strong>Quiero conseguir clientes</strong><small>Publicar campaña y comisión por resultado.</small></button>
+      <button type="button" onclick="startSurveyFlow('crecimientoAgente')"><span>🧑‍🎓</span><strong>Quiero trabajar por comisión</strong><small>Registrar habilidades y disponibilidad.</small></button>
+    </div>
+  </div>`;
+}
+
+function surveyCurrentConfig() { return SURVEY_CONFIG[surveyState.flow]; }
+function surveyCurrentStep() { return surveyCurrentConfig()?.steps?.[surveyState.step]; }
+function surveyFieldValue(field) {
+  const value = surveyState.values[field.id];
+  if (value !== undefined && value !== null) return String(value);
+  if (field.value !== undefined) return String(field.value);
+  if (field.type === "select" && Array.isArray(field.options) && field.options.length) return field.options[0];
+  return "";
+}
+function renderSurveyField(field) {
+  const value = surveyFieldValue(field);
+  const required = field.required ? "required" : "";
+  if (field.type === "textarea") {
+    return `<label class="survey-field"><span>${escapeHtml(field.label)}</span><textarea id="survey_${field.id}" rows="5" ${required} placeholder="${escapeHtml(field.placeholder || "")}" oninput="autoSizeTextarea(this)" onpaste="normalizeTextareaPaste(event)">${escapeHtml(value)}</textarea></label>`;
+  }
+  if (field.type === "select") {
+    return `<label class="survey-field"><span>${escapeHtml(field.label)}</span><select id="survey_${field.id}" ${required}>${(field.options || []).map(opt => `<option ${opt === value ? "selected" : ""}>${escapeHtml(opt)}</option>`).join("")}</select></label>`;
+  }
+  return `<label class="survey-field"><span>${escapeHtml(field.label)}</span><input id="survey_${field.id}" type="${escapeHtml(field.type || "text")}" ${required} step="${escapeHtml(field.step || "1")}" value="${escapeHtml(value)}" placeholder="${escapeHtml(field.placeholder || "")}"></label>`;
+}
+function renderSurveyFlow() {
+  const config = surveyCurrentConfig();
+  const step = surveyCurrentStep();
+  const root = document.getElementById("surveyFlowContent");
+  if (!config || !step || !root) return;
+  const total = config.steps.length;
+  const progress = Math.round(((surveyState.step + 1) / total) * 100);
+  root.innerHTML = `<div class="survey-shell">
+    <button type="button" class="survey-back-link" onclick="surveyCancel()">← Salir de encuesta</button>
+    <div class="survey-hero">
+      <span>${config.icon}</span>
+      <h2>${escapeHtml(config.title)}</h2>
+      <p>${escapeHtml(config.subtitle)}</p>
+    </div>
+    <div class="survey-progress"><b style="width:${progress}%"></b></div>
+    <div class="survey-step-card">
+      <small>Paso ${surveyState.step + 1} de ${total}</small>
+      <h3>${escapeHtml(step.title)}</h3>
+      <p>${escapeHtml(step.hint || "")}</p>
+      <form id="surveyStepForm" onsubmit="surveyNext(event)">
+        ${step.fields.map(renderSurveyField).join("")}
+        ${step.chips ? `<div class="survey-chip-row">${step.chips.map(chip => `<button type="button" onclick="surveyAppendChip('skills','${escapeHtml(chip)}')">${escapeHtml(chip)}</button>`).join("")}</div>` : ""}
+        ${surveyRenderLivePreview()}
+        <div class="survey-actions">
+          <button type="button" class="btn-small btn-ghost" onclick="surveyPrevious()" ${surveyState.step === 0 ? "disabled" : ""}>Atrás</button>
+          <button type="submit" class="btn-small btn-purple">${surveyState.step === total - 1 ? "Guardar" : "Siguiente"}</button>
+        </div>
+      </form>
+    </div>
+  </div>`;
+  root.querySelectorAll("textarea").forEach(autoSizeTextarea);
+}
+function surveyRenderLivePreview() {
+  if (surveyState.flow !== "mandadoSolicitud" || surveyState.step < 2) return "";
+  const values = { ...surveyState.values };
+  const quote = calculateErrandEstimate(values);
+  return `<div class="survey-preview-card"><strong>Referencia estimada</strong><p>Rango sugerido: <b>${errandMoney(quote.min)} - ${errandMoney(quote.max)}</b>. El trato final se acuerda directamente.</p></div>`;
+}
+function surveySaveCurrentStep() {
+  const step = surveyCurrentStep();
+  if (!step) return true;
+  for (const field of step.fields) {
+    const el = document.getElementById(`survey_${field.id}`);
+    if (!el) continue;
+    if (field.required && !String(el.value || "").trim()) {
+      el.focus();
+      showToast("Completa el campo requerido");
+      return false;
+    }
+    surveyState.values[field.id] = field.type === "number" ? Number(el.value || 0) : String(el.value || "").trim();
+  }
+  return true;
+}
+function surveyNext(event) {
+  event?.preventDefault?.();
+  if (!surveySaveCurrentStep()) return;
+  const config = surveyCurrentConfig();
+  if (!config) return;
+  if (surveyState.step < config.steps.length - 1) {
+    surveyState.step += 1;
+    renderSurveyFlow();
+    return;
+  }
+  surveyFinish();
+}
+function surveyPrevious() {
+  surveySaveCurrentStep();
+  if (surveyState.step > 0) {
+    surveyState.step -= 1;
+    renderSurveyFlow();
+  }
+}
+function surveyCancel() {
+  const config = surveyCurrentConfig();
+  showSection(config?.module || "oportunidades");
+}
+function surveyAppendChip(fieldId, value) {
+  const el = document.getElementById(`survey_${fieldId}`);
+  if (!el) return;
+  const current = el.value.split(",").map(v => v.trim()).filter(Boolean);
+  if (!current.some(v => normalize(v) === normalize(value))) current.push(value);
+  el.value = current.join(", ");
+  autoSizeTextarea(el);
+}
+function surveyFinish() {
+  const flow = surveyState.flow;
+  const v = { ...surveyState.values };
+  let title = "Registro guardado";
+  let message = "La información quedó guardada en modo piloto en este dispositivo.";
+  let module = surveyCurrentConfig()?.module || "oportunidades";
+  if (flow === "mandadoSolicitud") {
+    const data = getErrandPilotData();
+    const quote = calculateErrandEstimate(v);
+    data.requests.unshift({ id:`MV-${String(Date.now()).slice(-5)}`, item:v.item, buyAt:v.buyAt, deliverTo:v.deliverTo, weight:v.weight, amount:v.amount, distance:v.distance, schedule:v.schedule, notes:v.notes, estimate:quote.total, status:"Buscando agente", contact:cleanPhone(v.phone) });
+    saveErrandPilotData(data); errandActiveTab = "solicitudes"; renderErrandPilotLists();
+    title = "Mandado solicitado"; message = `Referencia flexible: ${errandMoney(quote.min)} - ${errandMoney(quote.max)}. El trato final se acuerda directamente con el agente.`;
+  }
+  if (flow === "mandadoAgente") {
+    const data = getErrandPilotData();
+    data.agents.unshift({ name:v.name, zone:v.zone, transport:v.transport, capacity:v.capacity, skills:v.skills, rating:"Nuevo", contact:cleanPhone(v.phone) });
+    saveErrandPilotData(data); errandActiveTab = "agentes"; renderErrandPilotLists();
+    title = "Agente registrado"; message = "Tu perfil piloto quedó disponible para mandados verificados.";
+  }
+  if (flow === "crecimientoNegocio") {
+    const data = getGrowthPilotData();
+    data.campaigns.unshift({ title:v.title, category:"Campaña", zone:v.zone, result:v.result, commission:v.commission, description:v.description, contact:cleanPhone(v.phone) });
+    saveGrowthPilotData(data); growthActiveTab = "campanas"; renderGrowthPilotLists();
+    title = "Campaña guardada"; message = "Tu campaña piloto quedó lista para que agentes conozcan comisión, zona y resultado esperado.";
+  }
+  if (flow === "crecimientoAgente") {
+    const data = getGrowthPilotData();
+    data.agents.unshift({ name:v.name, zone:v.zone, skills:v.skills, availability:"Disponible por comisión", rating:"Nuevo", contact:cleanPhone(v.phone) });
+    saveGrowthPilotData(data); growthActiveTab = "agentes"; renderGrowthPilotLists();
+    title = "Agente de crecimiento registrado"; message = "Tu perfil piloto quedó disponible para campañas por comisión.";
+  }
+  if (flow === "chatNegocio") {
+    saveBusinessChatLead(v);
+    title = "Chat de negocio preparado"; message = "Quedó guardada una solicitud piloto para activar chat, catálogo, pedidos, citas o pickup según el negocio.";
+  }
+  renderSurveySuccess(title, message, module);
+  showToast(title);
+  trackEvent("flujo_encuesta_guardado", null, { flujo: flow });
+}
+function getBusinessChatLeads() {
+  try { return JSON.parse(localStorage.getItem(BUSINESS_CHAT_STORAGE_KEY) || "[]"); } catch { return []; }
+}
+function saveBusinessChatLead(v) {
+  const rows = getBusinessChatLeads();
+  rows.unshift({ id:`CN-${String(Date.now()).slice(-5)}`, type:v.type, name:v.name, goal:v.goal, zone:v.zone, message:v.message, contact:cleanPhone(v.phone), createdAt:new Date().toISOString() });
+  try { localStorage.setItem(BUSINESS_CHAT_STORAGE_KEY, JSON.stringify(rows)); } catch {}
+}
+function renderSurveySuccess(title, message, module) {
+  const root = document.getElementById("surveyFlowContent");
+  if (!root) return;
+  root.innerHTML = `<div class="survey-shell">
+    <div class="survey-success-card">
+      <span>✅</span>
+      <h2>${escapeHtml(title)}</h2>
+      <p>${escapeHtml(message)}</p>
+      <div class="survey-success-actions">
+        <button type="button" class="btn-small btn-purple" onclick="showSection('${escapeHtml(module)}')">Ver módulo</button>
+        <button type="button" class="btn-small btn-outline" onclick="startOpportunityGuide()">Oportunidades</button>
+        <button type="button" class="btn-small btn-ghost" onclick="showSection('inicio')">Inicio</button>
+      </div>
+    </div>
+  </div>`;
+}

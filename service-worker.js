@@ -4,12 +4,12 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.9.10-flujos-funcionales";
+const CACHE_NAME = "conecta-servicios-v4.9.11-flujos-encuesta";
 const ASSETS = [
   "./",
   "index.html",
-  "styles.css?v=4.9.10-flujos-funcionales",
-  "app.js?v=4.9.10-flujos-funcionales",
+  "styles.css?v=4.9.11-flujos-encuesta",
+  "app.js?v=4.9.11-flujos-encuesta",
   "manifest.json",
   "assets/hero-scene-v4718.webp",
   "assets/hero-scene-clean-v4711.png",

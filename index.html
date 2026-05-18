@@ -28,7 +28,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
-  <title>Conecta Servicios v4.9.10</title>
+  <title>Conecta Servicios v4.9.11</title>
   <link rel="stylesheet" href="styles.css?v=4.9.10-flujos-funcionales" />
 </head>
 <body data-version="4.9.10-flujos-funcionales">
@@ -152,17 +152,17 @@ Todo uso requiere autorización expresa y por escrito del titular.
             <div><strong>Ver publicaciones</strong><small>Explora solicitantes, agentes, negocios, servicios y crecimiento.</small></div>
             <b>›</b>
           </button>
-          <button type="button" class="opportunity-action-card" onclick="showSection('mandados')">
+          <button type="button" class="opportunity-action-card" onclick="startSurveyFlow('mandadoSolicitud')">
             <span>🧺</span>
             <div><strong>Mandados verificados</strong><small>Compra, entrega y evidencia con trato directo.</small></div>
             <b>›</b>
           </button>
-          <button type="button" class="opportunity-action-card" onclick="showSection('agentes')">
+          <button type="button" class="opportunity-action-card" onclick="startSurveyFlow('crecimientoMenu')">
             <span>📈</span>
             <div><strong>Agentes de crecimiento</strong><small>Campañas, comisión y contactos por resultado.</small></div>
             <b>›</b>
           </button>
-          <button type="button" class="opportunity-action-card" onclick="showSection('negocios'); setTimeout(() => showBusinessFutureTerminal('Negocio local'), 160)">
+          <button type="button" class="opportunity-action-card" onclick="startSurveyFlow('chatNegocio')">
             <span>🏪</span>
             <div><strong>Chat de negocios</strong><small>Catálogo, pedido, cita, cotización, envío o pickup futuro.</small></div>
             <b>›</b>
@@ -177,6 +177,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
 
       <section id="rutaGuiada" class="section info-section guided-route-section">
         <div id="guidedRouteContent"></div>
+      </section>
+
+      <section id="encuesta" class="section info-section survey-section">
+        <div id="surveyFlowContent"></div>
       </section>
 
       <section id="registro" class="section">
@@ -418,9 +422,9 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <button class="mini-card" onclick="showSection('notificaciones')"><strong>Notificaciones</strong><small>Elige avisos útiles</small></button>
           <button class="mini-card" onclick="showSection('aprende')"><strong>Aprende y emprende</strong><small>Rutas para generar ingresos</small></button>
           <button class="mini-card" onclick="showSection('oportunidades')"><strong>Oportunidades para ti</strong><small>Coincidencias según tus intereses</small></button>
-          <button class="mini-card" onclick="showSection('agentes')"><strong>Agentes de crecimiento</strong><small>Clientes y comisiones</small></button>
+          <button class="mini-card" onclick="startSurveyFlow('crecimientoMenu')"><strong>Agentes de crecimiento</strong><small>Clientes y comisiones</small></button>
           <button class="mini-card" onclick="showSection('negocios')"><strong>Negocios locales</strong><small>Chat, catálogo y agenda</small></button>
-          <button class="mini-card" onclick="showSection('mandados')"><strong>Mandados Verificados</strong><small>Compra con evidencia</small></button>
+          <button class="mini-card" onclick="startSurveyFlow('mandadoSolicitud')"><strong>Mandados Verificados</strong><small>Compra con evidencia</small></button>
         </div>
         <div id="adminEntry" class="admin-entry hidden">
           <hr />
@@ -647,16 +651,16 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <h2>Negocios locales</h2>
           <p>Comercios como panaderías, estéticas, ferreterías y carpinterías tendrán su propio chat para atender clientes. Después podrá crecer a catálogo, carrito, agenda, pago, envío o pickup.</p>
           <div class="growth-hero-actions">
-            <button type="button" class="btn-small btn-purple" onclick="showBusinessFutureTerminal('Negocio local')">Abrir chat de negocios</button>
+            <button type="button" class="btn-small btn-purple" onclick="startSurveyFlow('chatNegocio')">Abrir chat de negocios</button>
             <button type="button" class="btn-small btn-outline" onclick="applyCategoryAndShow('Negocios locales')">Ver publicaciones piloto</button>
           </div>
         </div>
 
         <div class="business-category-grid">
-          <button type="button" onclick="showBusinessFutureTerminal('Panadería')">🥐<strong>Panaderías</strong><small>Pedidos y pickup</small></button>
-          <button type="button" onclick="showBusinessFutureTerminal('Estética')">💇<strong>Estéticas</strong><small>Servicios por cita</small></button>
-          <button type="button" onclick="showBusinessFutureTerminal('Ferretería')">🔩<strong>Ferreterías</strong><small>Catálogo y entrega</small></button>
-          <button type="button" onclick="showBusinessFutureTerminal('Carpintería')">🪚<strong>Carpinterías</strong><small>Cotización y agenda</small></button>
+          <button type="button" onclick="startSurveyFlow('chatNegocio','Panadería')">🥐<strong>Panaderías</strong><small>Pedidos y pickup</small></button>
+          <button type="button" onclick="startSurveyFlow('chatNegocio','Estética')">💇<strong>Estéticas</strong><small>Servicios por cita</small></button>
+          <button type="button" onclick="startSurveyFlow('chatNegocio','Ferretería')">🔩<strong>Ferreterías</strong><small>Catálogo y entrega</small></button>
+          <button type="button" onclick="startSurveyFlow('chatNegocio','Carpintería')">🪚<strong>Carpinterías</strong><small>Cotización y agenda</small></button>
         </div>
 
         <div id="businessTerminalPanel" class="business-terminal-panel hidden"></div>
@@ -679,19 +683,19 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <h2>Mandados Verificados</h2>
           <p>Compra, entrega y comprobación con evidencia paso a paso para reducir dudas entre comprador y agente.</p>
           <div class="errand-hero-actions">
-            <button type="button" class="btn-small btn-purple" onclick="showErrandPanel('solicitud')">Solicitar mandado</button>
-            <button type="button" class="btn-small btn-green" onclick="showErrandPanel('agente')">Trabajar como agente</button>
+            <button type="button" class="btn-small btn-purple" onclick="startSurveyFlow('mandadoSolicitud')">Solicitar mandado</button>
+            <button type="button" class="btn-small btn-green" onclick="startSurveyFlow('mandadoAgente')">Trabajar como agente</button>
           </div>
         </div>
 
         <div class="errand-path-grid">
-          <button type="button" class="errand-path-card buyer-path" onclick="showErrandPanel('solicitud')">
+          <button type="button" class="errand-path-card buyer-path" onclick="startSurveyFlow('mandadoSolicitud')">
             <span>🛒</span>
             <strong>Para quien pide el mandado</strong>
             <p>Describe lo que necesitas comprar, recibe una referencia flexible y acuerda el pago directo con evidencia.</p>
             <b>Solicitar mandado ›</b>
           </button>
-          <button type="button" class="errand-path-card agent-path" onclick="showErrandPanel('agente')">
+          <button type="button" class="errand-path-card agent-path" onclick="startSurveyFlow('mandadoAgente')">
             <span>🛵</span>
             <strong>Para agentes de compra</strong>
             <p>Acepta mandados, registra evidencia y evita confusiones sobre precio, peso, pago y cambio.</p>
@@ -748,19 +752,19 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <h2>Agentes de crecimiento</h2>
           <p>Conecta negocios que necesitan clientes con personas que pueden promocionar, recomendar o conseguir contactos por comisión.</p>
           <div class="growth-hero-actions">
-            <button type="button" class="btn-small btn-orange" onclick="showAgentPanel('negocio')">Quiero conseguir clientes</button>
-            <button type="button" class="btn-small btn-purple" onclick="showAgentPanel('agente')">Quiero trabajar por comisión</button>
+            <button type="button" class="btn-small btn-orange" onclick="startSurveyFlow('crecimientoNegocio')">Quiero conseguir clientes</button>
+            <button type="button" class="btn-small btn-purple" onclick="startSurveyFlow('crecimientoAgente')">Quiero trabajar por comisión</button>
           </div>
         </div>
 
         <div class="growth-path-grid">
-          <button type="button" class="growth-path-card business-path" onclick="showAgentPanel('negocio')">
+          <button type="button" class="growth-path-card business-path" onclick="startSurveyFlow('crecimientoNegocio')">
             <span>🏪</span>
             <strong>Para negocios</strong>
             <p>Publica una campaña, define qué resultado necesitas y ofrece una comisión clara.</p>
             <b>Publicar campaña ›</b>
           </button>
-          <button type="button" class="growth-path-card agent-path" onclick="showAgentPanel('agente')">
+          <button type="button" class="growth-path-card agent-path" onclick="startSurveyFlow('crecimientoAgente')">
             <span>🧑‍🎓</span>
             <strong>Para agentes</strong>
             <p>Usa tus redes, contactos o habilidades para generar ingresos por resultados.</p>

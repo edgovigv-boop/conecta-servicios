@@ -1,0 +1,9 @@
+Conecta Servicios v4.9.11 — Flujos tipo encuesta
+
+Cambios principales:
+- Los botones de Mandados Verificados ya no hacen scroll a formularios largos: abren una encuesta paso a paso.
+- Agentes de crecimiento separa negocio/agente con rutas guiadas tipo encuesta.
+- Chat de negocios abre un flujo guiado para activar chat, catálogo, pedidos, citas, cotización, envío o pickup futuro.
+- El botón + mantiene Oportunidades, pero los accesos complejos ahora guían al usuario sin abrumarlo.
+- No toca Supabase.
+- PWA/cache actualizado a v4.9.11.
