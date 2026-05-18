@@ -29,7 +29,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
   <title>Conecta Servicios v4.9.2</title>
-  <link rel="stylesheet" href="styles.css?v=4.9.2-modo-piloto" />
+  <link rel="stylesheet" href="styles.css?v=4.9.3-chat-negocios-barra-dinamica" />
 </head>
 <body data-version="4.9.2-modo-piloto">
   <div class="app-shell home-mode">
@@ -85,8 +85,8 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <div class="future-grid-v477">
             <button type="button" class="future-card-v477" onclick="showSection('mensajes')">
               <span class="future-emoji">💬</span>
-              <strong>Mensajes<br>inteligentes</strong>
-              <small>Chat</small>
+              <strong>Chat de<br>negocios</strong>
+              <small>Terminal piloto</small>
             </button>
             <button type="button" class="future-card-v477" onclick="showSection('aprende')">
               <span class="future-emoji">🎓</span>
@@ -110,11 +110,11 @@ Todo uso requiere autorización expresa y por escrito del titular.
             </button>
           </div>
 
-          <div class="home-stat-v477">
+          <button class="home-stat-v477 home-stat-button" type="button" onclick="requestNearbyPublications()" aria-label="Ver publicaciones cerca de mí">
             <span class="stat-people">👥</span>
-            <div><strong><span id="publicationsCount">0</span> <small>registros</small></strong><p id="growthMessage">Tu servicio puede estar más cerca de quien lo necesita</p></div>
+            <div><strong><span id="publicationsCount">0</span> <small>registros</small></strong><p id="growthMessage">Toca aquí para ver las publicaciones piloto</p></div>
             <span class="trend-icon">↗</span>
-          </div>
+          </button>
 
           <div class="install-card-v477">
             <span class="install-logo cs-node-logo" aria-hidden="true"><img src="assets/pwa-plus-icon-192.png" alt="" loading="eager"></span>
@@ -372,6 +372,11 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <button type="button" class="filter-chip" title="Movilidad" aria-label="Movilidad" data-filter-category="Viajes compartidos" data-filter-search="ruta viaje traslado movilidad" onclick="setCategoryChip(this)">🚲</button>
           <button type="button" class="filter-chip" title="Negocios" aria-label="Negocios" data-filter-category="" data-filter-search="tienda negocio panaderia estetica papeleria ferreteria tortilleria comida vendo ventas" onclick="setCategoryChip(this)">🏪</button>
           <button type="button" class="filter-chip" title="Redes" aria-label="Redes" data-filter-category="Redes sociales" data-filter-search="" onclick="setCategoryChip(this)">🔗</button>
+          <button type="button" class="filter-chip" title="Mascotas" aria-label="Mascotas" data-filter-category="" data-filter-search="mascota perro gato veterinaria paseo alimento mascota" onclick="setCategoryChip(this)">🐾</button>
+          <button type="button" class="filter-chip" title="Turismo" aria-label="Turismo" data-filter-category="" data-filter-search="turismo viaje playa mar palmera hotel paseo" onclick="setCategoryChip(this)">🌴</button>
+          <button type="button" class="filter-chip" title="Alimentos" aria-label="Alimentos" data-filter-category="Alimentos y ventas" data-filter-search="comida alimentos pan tacos cocina postres verduras mercado" onclick="setCategoryChip(this)">🍲</button>
+          <button type="button" class="filter-chip" title="Salud y cuidado" aria-label="Salud y cuidado" data-filter-category="" data-filter-search="salud cuidado enfermera terapia medicamento farmacia" onclick="setCategoryChip(this)">🩺</button>
+          <button type="button" class="filter-chip" title="Hogar" aria-label="Hogar" data-filter-category="" data-filter-search="hogar casa mantenimiento jardin pintura limpieza" onclick="setCategoryChip(this)">🏠</button>
         </div>
         <select id="categoryFilter" class="hidden" onchange="renderPublications()"><option value="">Todas las categorías</option><option>Trabajo</option><option>Servicios</option><option>Limpieza</option><option>Reparaciones</option><option>Entregas y mandados</option><option>Movilidad</option><option>Negocios locales</option><option>Alimentos y ventas</option><option>Redes sociales</option><option>Agentes de crecimiento</option><option>Mandados Verificados</option></select>
         <input id="chipSearchFilter" type="hidden" value="" />
@@ -561,31 +566,32 @@ Todo uso requiere autorización expresa y por escrito del titular.
       </section>
 
 
-      <section id="mensajes" class="section info-section smart-messages-section chat-live-section">
-        <div class="chat-shell-card">
+      <section id="mensajes" class="section info-section smart-messages-section chat-live-section business-chat-section">
+        <div class="chat-shell-card business-chat-card">
           <div class="chat-head clean-chat-head">
-            <span class="smart-bot-icon">🤖</span>
+            <span class="smart-bot-icon business-chat-icon">💬</span>
             <div>
-              <strong>Asistente Conecta</strong>
+              <strong>Chat de negocios</strong>
+              <small>Terminal de venta piloto para catálogo, pedidos, citas, pickup y envío.</small>
             </div>
           </div>
           <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
-          <div class="smart-quick-row chat-quick-row" aria-label="Ejemplos rápidos">
-            <button type="button" onclick="fillSmartMessage('Necesito enviar un paquete dentro del municipio')">Enviar paquete</button>
-            <button type="button" onclick="fillSmartMessage('Busco viaje compartido a Toluca')">Viaje</button>
-            <button type="button" onclick="fillSmartMessage('Quiero ofrecer mi servicio')">Ofrecer</button>
-            <button type="button" onclick="fillSmartMessage('Quiero tomar cursos gratuitos')">Cursos</button>
-            <button type="button" onclick="showSection('agentes')">Agentes</button>
-            <button type="button" onclick="showSection('mandados')">Mandados</button>
+          <div class="smart-quick-row chat-quick-row" aria-label="Opciones rápidas para negocio">
+            <button type="button" onclick="fillSmartMessage('Quiero ver el catálogo de una panadería')">Catálogo</button>
+            <button type="button" onclick="fillSmartMessage('Quiero hacer un pedido con envío o pickup')">Pedido</button>
+            <button type="button" onclick="fillSmartMessage('Quiero agendar una cita en una estética')">Cita</button>
+            <button type="button" onclick="fillSmartMessage('Quiero cotizar un producto de ferretería')">Cotizar</button>
+            <button type="button" onclick="showSection('negocios')">Negocios</button>
+            <button type="button" onclick="showSection('publicaciones')">Publicaciones</button>
           </div>
-          <label class="chat-input-row" aria-label="Escribe tu mensaje">
-            <textarea id="smartMessageInput" rows="2" placeholder="Escribe tu mensaje... Ej. Busco quien entregue un paquete hoy"></textarea>
+          <label class="chat-input-row" aria-label="Escribe tu mensaje al negocio">
+            <textarea id="smartMessageInput" rows="2" placeholder="Escribe aquí... Ej. Quiero pedir pan para recoger hoy"></textarea>
             <button type="button" onclick="sendSmartChatMessage()" aria-label="Enviar mensaje">➤</button>
           </label>
           <div class="chat-actions-row">
-            <button type="button" class="btn-small btn-purple" onclick="startOpportunityGuide()">Publicar algo</button>
-            <button type="button" class="btn-small btn-outline" onclick="smartShowSuggested()">Buscar coincidencias</button>
-            <button type="button" class="btn-small btn-green" onclick="showSection('aprende')">Ver cursos</button>
+            <button type="button" class="btn-small btn-purple" onclick="showBusinessFutureTerminal('Negocio local')">Ver terminal piloto</button>
+            <button type="button" class="btn-small btn-outline" onclick="showSection('negocios')">Explorar negocios</button>
+            <button type="button" class="btn-small btn-green" onclick="requestNearbyPublications()">Ver publicaciones</button>
           </div>
         </div>
 
@@ -798,7 +804,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
       <button type="button" onclick="showSection('inicio')">🏠<span>Inicio</span></button>
       <button type="button" onclick="startOpportunityGuide()">🔖<span>Para ti</span></button>
       <button type="button" class="publish-nav-action" onclick="showSection('registro')" aria-label="Publicar">＋</button>
-      <button type="button" onclick="showSection('mensajes')">💬<span>Mensajes</span></button>
+      <button type="button" onclick="showSection('mensajes')">💬<span>Chat</span></button>
       <button type="button" onclick="showSection('aprende')">🎓<span>Aprendizaje</span></button>
     </nav>
   </div>
@@ -872,6 +878,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.9.2-modo-piloto"></script>
+  <script src="app.js?v=4.9.3-chat-negocios-barra-dinamica"></script>
 </body>
 </html>

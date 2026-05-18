@@ -875,3 +875,56 @@ input,select,textarea{width:100%;border:1px solid #ded6ee;border-radius:17px;bac
   .local-business-card{ grid-template-columns:auto 1fr; }
   .local-business-card button{ grid-column:1 / -1; width:100%; }
 }
+
+
+/* v4.9.3 — Chat de negocios + barra dinámica para categorías */
+.home-stat-button{
+  width:calc(100% - 4px);
+  cursor:pointer;
+  text-align:left;
+}
+.home-stat-button:active{ transform:scale(.99); }
+.home-stat-button .trend-icon{ transition:transform .2s ease; }
+.home-stat-button:hover .trend-icon{ transform:translateX(2px); }
+.future-grid-v477{ align-items:stretch; }
+.future-card-v477{
+  min-height:98px;
+  height:100%;
+  overflow:visible;
+}
+.future-card-v477 strong{ overflow-wrap:anywhere; }
+.local-business-home-card{
+  min-height:98px;
+  height:100%;
+  background:linear-gradient(135deg,rgba(255,122,24,.11),rgba(94,45,209,.05));
+}
+.local-business-home-card .future-emoji{ font-size:2.05rem; }
+.business-chat-section .chat-shell-card{ margin-top:0; }
+.business-chat-icon{ background:linear-gradient(135deg,#25b121,#5e2dd1); }
+.business-chat-card .chat-head small{ max-width:260px; line-height:1.28; }
+.business-chat-card .chat-messages{
+  min-height:220px;
+  background:linear-gradient(180deg,#f7f4ff,#ffffff);
+}
+.floating-category-dock{
+  top:46%;
+  transform:none;
+  max-height:43dvh;
+  overflow-y:auto;
+  overflow-x:visible;
+  padding:6px 3px 6px 10px;
+  scrollbar-width:none;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
+  z-index:45;
+}
+.floating-category-dock::-webkit-scrollbar{ display:none; }
+.floating-category-dock .filter-chip{ flex:0 0 auto; }
+@media(max-width:380px){
+  .future-card-v477{ min-height:96px; padding:12px 9px; }
+  .future-card-v477 strong{ font-size:.9rem; }
+  .future-card-v477 small{ font-size:.62rem; padding:4px 8px; }
+  .floating-category-dock{ top:48%; max-height:40dvh; right:5px; }
+  .publicaciones-results{ padding-right:50px; }
+}

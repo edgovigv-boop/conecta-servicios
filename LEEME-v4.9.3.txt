@@ -1,0 +1,10 @@
+Conecta Servicios v4.9.3 — Chat de negocios y barra dinámica
+
+Cambios principales:
+- Mensajes inteligentes se convierte en Chat de negocios / terminal piloto.
+- Publicaciones mantiene modo piloto con organización por solicitantes, agentes, negocios, servicios y crecimiento.
+- Barra lateral de iconos ahora es scrollable para crecer con más categorías sin invadir filtros.
+- Negocios locales del Home queda del mismo tamaño visual que las demás tarjetas.
+- Tarjeta de registros del Home ahora abre Publicaciones cerca de mí.
+- No toca Supabase.
+- PWA/cache actualizado a v4.9.3.

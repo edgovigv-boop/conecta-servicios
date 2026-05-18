@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.2-modo-piloto-inversionistas";
+const PWA_VERSION = "v4.9.3-chat-negocios-barra-dinamica";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -79,10 +79,10 @@ let analyticsCache = [];
 let deferredInstallPrompt = null;
 const TOTAL_STEPS = 7;
 const APP_VERSION_KEY = "conecta_servicios_app_version";
-const CHAT_STORAGE_KEY = "conecta_smart_chat_v489";
+const CHAT_STORAGE_KEY = "conecta_business_chat_v493";
 const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v492";
 
-// v4.9.2 — Modo piloto para inversionistas
+// v4.9.3 — Chat de negocios + barra dinámica
 // Muestra publicaciones curadas y oculta los registros reales de Supabase en la vista pública.
 // Supabase sigue intacto; administración y futuras versiones pueden volver a producción cambiando esta bandera.
 const PRESENTATION_PILOT_MODE = true;
@@ -527,7 +527,7 @@ function showSection(id, push = true) {
   document.querySelector(".app-shell")?.classList.toggle("home-mode", id === "inicio");
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   target.classList.add("active");
-  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme", mensajes:"Mensajes inteligentes", agentes:"Agentes de crecimiento", mandados:"Mandados Verificados", negocios:"Negocios locales" };
+  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme", mensajes:"Chat de negocios", agentes:"Agentes de crecimiento", mandados:"Mandados Verificados", negocios:"Negocios locales" };
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
@@ -2207,7 +2207,9 @@ document.addEventListener("DOMContentLoaded", init);
 // v4.8.7 — Hotfix: publicación activa visible de inmediato y filtros limpios
 let smartLastSuggestion = { query: "", category: "" };
 
-const DEFAULT_CHAT_MESSAGES = [];
+const DEFAULT_CHAT_MESSAGES = [
+  { role: "bot", text: "Hola, soy el chat de negocios de Conecta. Este espacio se prepara para que un cliente pueda ver catálogo, pedir, agendar, solicitar envío o pickup y cerrar acuerdos directos con el negocio." }
+];
 
 const COURSE_CATALOG = [
   {
@@ -2316,6 +2318,9 @@ function fillSmartMessage(text) {
 }
 function detectSmartIntent(rawText) {
   const text = normalize(rawText);
+  if (/catalogo|catálogo|carrito|pedido|ordenar|pickup|pick up|recoger|agendar|cita|terminal|negocio|panader|estetica|estética|ferreter|carpinter|producto|cotizar|comprar/.test(text)) {
+    return { category: "Negocios locales", query: "negocio catálogo pedido cita", label: "Chat de negocios", action: "negocios" };
+  }
   if (/mandado verificado|mandados verificados|compra verificada|compras verificadas|fondo protegido|dinero protegido|escrow|pago protegido|precio|peso|bascula|báscula|ticket|cambio|mercado|mandado con evidencia/.test(text)) {
     return { category: "Mandados Verificados", query: "mandado verificado evidencia compra", label: "Mandados Verificados", action: "mandados" };
   }
@@ -2343,6 +2348,7 @@ function smartReplyFor(raw) {
   if (intent.action === "publicar") return "Esto parece una oportunidad para publicar. Puedo llevarte al registro guiado para crear una publicación clara con municipio, categoría y WhatsApp protegido.";
   if (intent.action === "agentes") return "Te conviene revisar Agentes de crecimiento. Ahí un negocio puede publicar campañas por comisión y una persona puede registrarse para conseguir clientes o contactos por resultado.";
   if (intent.action === "mandados") return "Te conviene revisar Mandados Verificados. Ahí puedes solicitar una compra con evidencia de precio, peso, pago, cambio y entrega; además ver el simulador de Fondo Protegido Conecta para entender cómo se apartaría el dinero en una etapa futura.";
+  if (intent.action === "negocios") return "Este chat será la terminal piloto de negocios: catálogo, pedido, cita, envío o pickup. Por ahora puedo llevarte a Negocios locales para ver el modelo y ejemplos de panadería, estética, ferretería o carpintería.";
   return `Encontré una ruta posible: ${intent.label}. Puedo buscar coincidencias o ayudarte a publicar la necesidad si no aparece una opción adecuada.`;
 }
 function sendSmartChatMessage() {
@@ -2361,6 +2367,7 @@ function sendSmartChatMessage() {
 function handleSmartMessage() { sendSmartChatMessage(); }
 function smartShowSuggested() {
   if (smartLastSuggestion?.action === "mandados") { showSection("mandados"); return; }
+  if (smartLastSuggestion?.action === "negocios") { showSection("negocios"); return; }
   if (smartLastSuggestion?.action === "agentes") { showSection("agentes"); return; }
   if (smartLastSuggestion?.action === "aprender") { showSection("aprende"); return; }
   showSection("publicaciones");

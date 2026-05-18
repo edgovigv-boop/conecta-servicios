@@ -4,12 +4,12 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.9.2-modo-piloto";
+const CACHE_NAME = "conecta-servicios-v4.9.3-chat-negocios-barra-dinamica";
 const ASSETS = [
   "./",
   "index.html",
-  "styles.css?v=4.9.2-modo-piloto",
-  "app.js?v=4.9.2-modo-piloto",
+  "styles.css?v=4.9.3-chat-negocios-barra-dinamica",
+  "app.js?v=4.9.3-chat-negocios-barra-dinamica",
   "manifest.json",
   "assets/hero-scene-v4718.webp",
   "assets/hero-scene-clean-v4711.png",
