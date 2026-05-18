@@ -623,11 +623,29 @@ function openOpportunityWizard(type, template = null) {
       toast: "Vamos a convertir lo que puedes hacer en una oportunidad publicada.",
       hint: "Ej. Ofrezco limpieza por día / Hago mandados en moto / Vendo comida por encargo / Ofrezco reparaciones sencillas."
     },
+    agente: {
+      category: "Servicios",
+      intent: "Ofrezco / Tengo disponible",
+      toast: "Vamos a publicar lo que puedes hacer como agente.",
+      hint: "Ej. Hago entregas locales / Apoyo con mandados / Puedo promover negocios / Disponible por zona."
+    },
+    servicio: {
+      category: "Servicios",
+      intent: "Ofrezco / Tengo disponible",
+      toast: "Vamos a publicar tu servicio para que puedan contactarte.",
+      hint: "Ej. Reparación, limpieza, clases, cuidado de mascotas, apoyo a domicilio o trabajo por horas."
+    },
     negocio: {
       category: "Negocios locales",
       intent: "Ofrezco / Tengo disponible",
       toast: "Vamos a publicar tu negocio para que más personas de tu zona lo encuentren.",
       hint: "Ej. Tengo una panadería en Chapultepec / Tiendita con productos básicos / Estética con servicio por cita."
+    },
+    crecimiento: {
+      category: "Agentes de crecimiento",
+      intent: "Busco / Necesito",
+      toast: "Vamos a convertir esta campaña en una publicación real.",
+      hint: "Ej. Busco personas que me ayuden a conseguir clientes / Pago comisión por resultado / Necesito promotores locales."
     },
     necesito: {
       category: "Servicios",
@@ -647,8 +665,12 @@ function openOpportunityWizard(type, template = null) {
   if (titleHint) titleHint.textContent = cfg.hint;
   wizardStep = 2;
   showSection("registro");
-  updateWizard();
-  applyHomeFeedTemplateToWizard(template);
+  setTimeout(() => {
+    setWizardPublishType(cfg.category, cfg.intent);
+    if (titleHint) titleHint.textContent = template ? "Usa este ejemplo como plantilla. Ajusta texto, zona, datos y contacto antes de publicar." : cfg.hint;
+    applyHomeFeedTemplateToWizard(template);
+    updateWizard();
+  }, 0);
   showToast(template ? "Tomamos este ejemplo como plantilla. Puedes ajustarlo antes de publicar." : cfg.toast);
   trackEvent("oportunidad_guia_iniciada", null, { tipo: type, plantilla: template?.id || "" });
 }
@@ -3213,7 +3235,7 @@ function homeFeedPostCardV4918(post) {
         <div class="v4918-tags v4922-tags">${tags}</div>
         <div class="v4922-action-row" aria-label="Interacciones rápidas">
           <button type="button" onclick="socialLike(this)" aria-label="Me gusta">♡ <small>${Number(post.likes || 0)}</small></button>
-          <button type="button" onclick="showSection('mensajes')" aria-label="Comentarios">💬 <small>${Number(post.comentarios || 0)}</small></button>
+          <button type="button" onclick="openPilotMessage('${escapeHtml(post.id || post.tipo)}')" aria-label="Enviar mensaje">💬 <small>${Number(post.comentarios || 0)}</small></button>
           <button type="button" onclick="sharePilotSocial('${escapeHtml(post.tipo)}')" aria-label="Compartir">↗ <small>${Number(post.compartidos || 0)}</small></button>
           <button type="button" onclick="savePilotTemplate('${escapeHtml(post.id || post.tipo)}')" aria-label="Guardar plantilla">▢ <small>Guardar</small></button>
         </div>
@@ -3261,29 +3283,35 @@ function sharePilotSocial(type = "") {
 function makePilotReal(target = "") {
   const post = HOME_FEED_POSTS_V4918.find(item => item.id === target) || HOME_FEED_POSTS_V4918.find(item => item.tipo === target);
   const type = post?.tipo || target || "";
-  const flow = post?.flujo || "";
-  trackEvent("home_social_hacerlo_real", null, { tipo: type, post: post?.id || target, flujo: flow });
-  if (flow === "publicarNecesidad") return openOpportunityWizard("necesito", post);
-  if (flow === "publicarOferta") return openOpportunityWizard(post?.tipo === "negocios" ? "negocio" : "ingresos", post);
-  if (flow === "mandadoSolicitud") return startSurveyFlow("mandadoSolicitud");
-  if (flow === "mandadoAgente") return startSurveyFlow("mandadoAgente");
-  if (flow === "chatNegocio") return startSurveyFlow("chatNegocio");
-  if (flow === "crecimientoAgente") return startSurveyFlow("crecimientoMenu");
-  if (flow === "crecimientoCampana") return startSurveyFlow("crecimientoMenu");
-  if (flow === "embajadores") return showSection("embajadores");
-  if (flow === "embajadoresPagos") { showSection("embajadores"); setTimeout(() => showAmbassadorPanel?.("pagos"), 80); return; }
-  if (flow === "aprendizaje") return showSection("aprende");
-  if (type === "solicitantes") return openOpportunityWizard("necesito", post);
-  if (type === "agentes") return openOpportunityWizard("ingresos", post);
-  if (type === "negocios") return openOpportunityWizard("negocio", post);
-  if (type === "servicios") return openOpportunityWizard("ingresos", post);
-  if (type === "crecimiento") return startSurveyFlow("crecimientoMenu");
+  trackEvent("home_social_hacerlo_real", null, { tipo: type, post: post?.id || target, flujo: post?.flujo || "" });
+  const publishRoutes = {
+    solicitantes: "necesito",
+    agentes: "agente",
+    negocios: "negocio",
+    servicios: "servicio",
+    crecimiento: "crecimiento"
+  };
+  if (publishRoutes[type]) return openOpportunityWizard(publishRoutes[type], post);
   if (type === "embajadores") return showSection("embajadores");
   if (type === "aprendizaje") return showSection("aprende");
-  return startOpportunityGuide();
+  return openOpportunityWizard("necesito", post || null);
 }
-// v4.9.23 — Guardar plantillas del feed y rutas rápidas funcionales.
-const SAVED_FEED_TEMPLATES_KEY = "conecta_plantillas_guardadas_v4923";
+
+function openPilotMessage(target = "") {
+  const post = HOME_FEED_POSTS_V4918.find(item => item.id === target) || HOME_FEED_POSTS_V4918.find(item => item.tipo === target);
+  showSection("mensajes");
+  setTimeout(() => {
+    const input = document.getElementById("smartChatInput") || document.querySelector("#mensajes input, #mensajes textarea");
+    if (input && post) {
+      input.value = `Hola, me interesa esta publicación: ${post.titulo}`;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.focus?.();
+    }
+  }, 120);
+  showToast(post ? "Abrimos el contacto interno para esta publicación." : "Abrimos el centro de orientación.");
+}
+// v4.9.24 — Guardar plantillas, mensajes internos y rutas rápidas funcionales.
+const SAVED_FEED_TEMPLATES_KEY = "conecta_plantillas_guardadas_v4924";
 function savedFeedTemplates() {
   try { return JSON.parse(localStorage.getItem(SAVED_FEED_TEMPLATES_KEY) || "[]"); } catch { return []; }
 }

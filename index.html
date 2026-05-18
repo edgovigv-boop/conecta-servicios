@@ -28,10 +28,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
-  <title>Conecta Servicios v4.9.23</title>
-  <link rel="stylesheet" href="styles.css?v=4.9.23-home-feed-funcional" />
+  <title>Conecta Servicios v4.9.24</title>
+  <link rel="stylesheet" href="styles.css?v=4.9.24-plus-asistente-templates" />
 </head>
-<body data-version="4.9.23-home-feed-funcional">
+<body data-version="4.9.24-plus-asistente-templates">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -46,9 +46,9 @@ Todo uso requiere autorización expresa y por escrito del titular.
       <section id="inicio" class="section active v4918-home-section">
         <div class="v4918-feed-home" aria-label="Inicio tipo red social de Conecta Servicios">
           <header class="v4918-feed-header">
-            <button type="button" class="v4918-brand" onclick="showSection('instalarApp')" aria-label="Instalar Conecta Servicios">
+            <button type="button" class="v4918-brand" onclick="installApp()" aria-label="Instalar Conecta Servicios">
               <span class="v4918-logo-mark" aria-hidden="true"></span>
-              <span><strong>Conecta</strong><small>SERVICIOS</small></span>
+              <span><strong>Conecta Servicios</strong><small>INSTALAR APP</small></span>
             </button>
             <div class="v4918-header-actions">
               <button type="button" aria-label="Buscar publicaciones" onclick="requestNearbyPublications()">⌕</button>
@@ -586,35 +586,36 @@ Todo uso requiere autorización expresa y por escrito del titular.
       </section>
 
 
-      <section id="oportunidades" class="section info-section quick-actions-section v4923-actions-section">
-        <div class="v4923-action-hero">
-          <span class="v4923-action-logo">＋</span>
+      <section id="oportunidades" class="section info-section quick-actions-section v4923-actions-section v4924-actions-section">
+        <div class="v4924-action-hero">
+          <span class="v4924-action-logo">＋</span>
           <div>
-            <h2>¿Qué quieres iniciar?</h2>
-            <p>Elige una ruta rápida y te guiaremos paso a paso.</p>
+            <h2>Iniciar</h2>
+            <p>Elige una acción.</p>
           </div>
         </div>
-        <div class="v4923-action-grid">
-          <button type="button" class="v4923-action-card need" onclick="openOpportunityWizard('necesito')">
+        <div class="v4924-action-grid" aria-label="Acciones rápidas para publicar">
+          <button type="button" class="v4924-action-card need" onclick="openOpportunityWizard('necesito')">
             <span>🙋</span>
             <strong>Necesito algo</strong>
-            <small>Publicar una solicitud, mandado, viaje, envío o apoyo.</small>
           </button>
-          <button type="button" class="v4923-action-card offer" onclick="openOpportunityWizard('ingresos')">
+          <button type="button" class="v4924-action-card offer" onclick="openOpportunityWizard('ingresos')">
             <span>🛠️</span>
             <strong>Ofrezco algo</strong>
-            <small>Publicar servicio, producto, negocio o disponibilidad.</small>
           </button>
-          <button type="button" class="v4923-action-card earn" onclick="showSection('embajadores')">
+          <button type="button" class="v4924-action-card earn" onclick="showSection('embajadores')">
             <span>💰</span>
             <strong>Quiero ganar dinero</strong>
-            <small>Embajadores, agentes de crecimiento, servicios y aprendizaje.</small>
           </button>
         </div>
-        <div class="v4923-action-shortcuts">
-          <button type="button" onclick="startSurveyFlow('mandadoSolicitud')">📦 Mandado verificado</button>
-          <button type="button" onclick="startSurveyFlow('crecimientoMenu')">📈 Agentes de crecimiento</button>
-          <button type="button" onclick="startSurveyFlow('chatNegocio')">🏪 Chat de negocio</button>
+        <div class="v4924-action-shortcuts" aria-label="Accesos de oportunidad">
+          <button type="button" onclick="openOpportunityWizard('necesito')">🙋 Solicitante</button>
+          <button type="button" onclick="openOpportunityWizard('agente')">🧑‍💼 Agente</button>
+          <button type="button" onclick="openOpportunityWizard('negocio')">🏪 Negocio</button>
+          <button type="button" onclick="openOpportunityWizard('servicio')">🛠️ Servicio</button>
+          <button type="button" onclick="startSurveyFlow('mandadoSolicitud')">📦 Mandado</button>
+          <button type="button" onclick="openOpportunityWizard('crecimiento')">📈 Crecimiento</button>
+          <button type="button" onclick="showSection('embajadores')">🤝 Embajadores</button>
           <button type="button" onclick="showSection('aprende')">🎓 Aprendizaje</button>
         </div>
       </section>
@@ -653,7 +654,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
       <button type="button" onclick="showSection('inicio')">🏠<span>Inicio</span></button>
       <button type="button" onclick="requestNearbyPublications()">⌕<span>Explorar</span></button>
       <button type="button" class="publish-nav-action" onclick="startOpportunityGuide()" aria-label="Publicar">＋<span>Publicar</span></button>
-      <button type="button" onclick="showSection('mensajes')">💬<span>Chats</span></button>
+      <button type="button" onclick="showSection('mensajes')" aria-label="Asistente de orientación">🧭<span>Asistente</span></button>
       <button type="button" onclick="showSection('misPublicaciones')">👤<span>Perfil</span></button>
     </nav>
   </div>
@@ -727,6 +728,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.9.23-home-feed-funcional"></script>
+  <script src="app.js?v=4.9.24-plus-asistente-templates"></script>
 </body>
 </html>
