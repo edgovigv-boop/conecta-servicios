@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.21-home-feed-plantillas-reales";
+const PWA_VERSION = "v4.9.22-feed-validado-sin-vercel";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -2294,7 +2294,7 @@ function initMobileFormComfort() {
 
 
 
-// v4.9.21 — Home Feed de oportunidades con plantillas reales por categoría
+// v4.9.22 — Feed validado con imágenes fotográficas de prueba
 const HOME_FEED_POSTS_V4918 = [
   {
     "id": "v4921-solicitante-barista",
@@ -3138,6 +3138,26 @@ const HOME_FEED_POSTS_V4918 = [
   }
 ];
 
+// v4.9.22 — Sustitución controlada de imágenes del feed por assets fotográficos de prueba.
+// Nota: son imágenes de validación visual incluidas en el paquete; pueden sustituirse después por fotos propias/licenciadas.
+const FEED_PHOTO_VARIANTS_V4922 = {
+  solicitantes: [1,2,3,4,5].map(n => `assets/photo4922-solicitantes-${n}.webp`),
+  agentes: [1,2,3,4,5].map(n => `assets/photo4922-agentes-${n}.webp`),
+  negocios: [1,2,3,4,5].map(n => `assets/photo4922-negocios-${n}.webp`),
+  servicios: [1,2,3,4,5].map(n => `assets/photo4922-servicios-${n}.webp`),
+  crecimiento: [1,2,3,4,5].map(n => `assets/photo4922-crecimiento-${n}.webp`),
+  embajadores: [1,2,3,4,5].map(n => `assets/photo4922-embajadores-${n}.webp`),
+  aprendizaje: [1,2,3,4,5].map(n => `assets/photo4922-aprendizaje-${n}.webp`)
+};
+const feedPhotoCursorV4922 = {};
+HOME_FEED_POSTS_V4918.forEach(post => {
+  const list = FEED_PHOTO_VARIANTS_V4922[post.tipo] || FEED_PHOTO_VARIANTS_V4922.solicitantes;
+  const index = feedPhotoCursorV4922[post.tipo] || 0;
+  post.imagen = list[index % list.length];
+  post.posicion = "center center";
+  feedPhotoCursorV4922[post.tipo] = index + 1;
+});
+
 let homeFeedFilterV4918 = "";
 
 function homeFeedLabelV4918(type = "") {
@@ -3175,30 +3195,30 @@ function setHomeFeedFilter(type = "") {
 }
 
 function homeFeedPostCardV4918(post) {
-  const tags = (post.hashtags || []).map(tag => `<span>#${escapeHtml(tag)}</span>`).join("");
+  const tags = (post.hashtags || []).slice(0, 3).map(tag => `<span>#${escapeHtml(tag)}</span>`).join("");
   const initials = (post.nombre || "CS").split(/\s+/).map(word => word[0] || "").join("").slice(0,2).toUpperCase() || "CS";
-  return `<article class="v4918-feed-card" data-type="${escapeHtml(post.tipo)}">
-    <div class="v4918-feed-media">
+  const cta = post.accion || "Hacerlo real";
+  return `<article class="v4918-feed-card v4922-photo-card" data-type="${escapeHtml(post.tipo)}">
+    <div class="v4918-feed-media v4922-feed-media">
       <img src="${escapeHtml(post.imagen)}" alt="${escapeHtml(post.titulo)}" loading="lazy" style="object-position:${escapeHtml(post.posicion || 'center center')}" />
-      <div class="v4918-media-gradient" aria-hidden="true"></div>
-      <div class="v4918-post-badge">EJEMPLO</div>
-      <div class="v4918-post-author">
-        <span class="v4918-avatar">${escapeHtml(initials)}</span>
-        <span><strong>${escapeHtml(post.nombre)}</strong><small>${escapeHtml(post.rol)} · ${escapeHtml(post.ubicacion)}</small></span>
+      <div class="v4918-media-gradient v4922-media-gradient" aria-hidden="true"></div>
+      <div class="v4922-card-top">
+        <span class="v4922-type-pill">${escapeHtml(post.rol || homeFeedLabelV4918(post.tipo))}</span>
+        <button type="button" class="v4922-more" onclick="openPilotType('${escapeHtml(post.tipo)}')" aria-label="Más opciones">⋯</button>
       </div>
-      <div class="v4918-feed-actions" aria-label="Acciones de publicación">
-        <button type="button" onclick="socialLike(this)" aria-label="Me gusta">♡<small>${Number(post.likes || 0)}</small></button>
-        <button type="button" onclick="showSection('mensajes')" aria-label="Comentarios">💬<small>${Number(post.comentarios || 0)}</small></button>
-        <button type="button" onclick="sharePilotSocial('${escapeHtml(post.tipo)}')" aria-label="Compartir">↗<small>${Number(post.compartidos || 0)}</small></button>
-        <button type="button" onclick="openPilotType('${escapeHtml(post.tipo)}')" aria-label="Guardar">▢<small>Guardar</small></button>
-      </div>
-      <div class="v4918-feed-copy">
+      <div class="v4918-feed-copy v4922-feed-copy">
+        <div class="v4922-author-line"><span class="v4918-avatar v4922-avatar">${escapeHtml(initials)}</span><span><strong>${escapeHtml(post.nombre)}</strong><small>📍 ${escapeHtml(post.ubicacion)}</small></span></div>
         <h2>${escapeHtml(post.titulo)}</h2>
         <p>${escapeHtml(post.descripcion)}</p>
-        <div class="v4918-tags">${tags}</div>
-        <div class="v4918-cta-row">
-          <button type="button" class="v4918-primary-cta" onclick="makePilotReal('${escapeHtml(post.id || post.tipo)}')">${escapeHtml(post.accion)}</button>
-          <button type="button" class="v4918-secondary-cta" onclick="openPilotType('${escapeHtml(post.tipo)}')">${escapeHtml(post.detalle || 'Ver detalles')}</button>
+        <div class="v4918-tags v4922-tags">${tags}</div>
+        <div class="v4922-action-row" aria-label="Interacciones rápidas">
+          <button type="button" onclick="socialLike(this)" aria-label="Me gusta">♡ <small>${Number(post.likes || 0)}</small></button>
+          <button type="button" onclick="showSection('mensajes')" aria-label="Comentarios">💬 <small>${Number(post.comentarios || 0)}</small></button>
+          <button type="button" onclick="sharePilotSocial('${escapeHtml(post.tipo)}')" aria-label="Compartir">↗ <small>${Number(post.compartidos || 0)}</small></button>
+          <button type="button" onclick="openPilotType('${escapeHtml(post.tipo)}')" aria-label="Guardar">▢ <small>Guardar</small></button>
+        </div>
+        <div class="v4918-cta-row v4922-cta-row">
+          <button type="button" class="v4918-primary-cta v4922-primary-cta" onclick="makePilotReal('${escapeHtml(post.id || post.tipo)}')">${escapeHtml(cta)}</button>
         </div>
       </div>
     </div>
