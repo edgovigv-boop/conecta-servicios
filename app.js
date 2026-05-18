@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.12-embajadores-encuesta-texto-minimo";
+const PWA_VERSION = "v4.9.14-ajustes-finales";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -82,7 +82,7 @@ const APP_VERSION_KEY = "conecta_servicios_app_version";
 const CHAT_STORAGE_KEY = "conecta_business_chat_v494";
 const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v492";
 
-// v4.9.12 — Embajadores tipo encuesta y textos mínimos
+// v4.9.14 — Ajustes de flujo: membresía para publicar, chat limpio y pilotos más claros
 // Muestra publicaciones curadas y oculta los registros reales de Supabase en la vista pública.
 // Supabase sigue intacto; administración y futuras versiones pueden volver a producción cambiando esta bandera.
 const PRESENTATION_PILOT_MODE = true;
@@ -819,10 +819,55 @@ function renderPublicationPreview() {
     <p><strong>Clasificación sugerida:</strong> ${escapeHtml(payload.categoria_principal || "")} · ${escapeHtml(payload.subcategoria || "")}</p>
     <p>${escapeHtml(payload.descripcion || "").slice(0, 180)}</p>
     <p class="muted"><strong>Resultado esperado:</strong> ${evaluation.status === "activo" ? "se activará automáticamente" : `quedará en revisión (${evaluation.reasons.join(", ")})`}</p>`;
+  renderPublicationMembershipGate();
 }
+
+const CONNECTA_MEMBERSHIP_KEY = "conecta_membresia_publicar_v4914";
+function getPublishMembershipStatus() {
+  try { return JSON.parse(localStorage.getItem(CONNECTA_MEMBERSHIP_KEY) || "{}"); } catch { return {}; }
+}
+function hasActivePublishMembership() {
+  const data = getPublishMembershipStatus();
+  return data && data.active === true;
+}
+function activatePublishMembershipLocal() {
+  const data = { active: true, amount: 98, source: "validacion_piloto", activatedAt: new Date().toISOString() };
+  try { localStorage.setItem(CONNECTA_MEMBERSHIP_KEY, JSON.stringify(data)); } catch {}
+  renderPublicationMembershipGate();
+  showToast("Membresía marcada para continuar publicación");
+}
+function openMembershipPaymentFromPublish() {
+  const settings = typeof getAmbassadorSettings === "function" ? getAmbassadorSettings() : {};
+  if (settings.manualPaymentLink) {
+    showToast("Abriendo cobro de membresía Mercado Pago");
+    window.open(settings.manualPaymentLink, "_blank", "noopener");
+    return;
+  }
+  showToast("Configura o abre el cobro desde Embajadores Conecta");
+  showSection("embajadores");
+  if (typeof openAmbassadorPayments === "function") setTimeout(openAmbassadorPayments, 80);
+}
+function renderPublicationMembershipGate() {
+  const gate = document.getElementById("publicationMembershipGate");
+  if (!gate) return;
+  if (hasActivePublishMembership()) {
+    gate.innerHTML = `<div class="membership-gate-ok"><strong>✅ Membresía lista</strong><p>Explorar y contactar es gratis. Esta membresía habilita publicar oportunidades durante el periodo anual.</p></div>`;
+    return;
+  }
+  gate.innerHTML = `<div class="membership-gate-info"><span>🔓</span><div><strong>Explorar y contactar es gratis</strong><p>Para publicar una oportunidad se requiere membresía anual Conecta de <b>$98 MXN</b>.</p></div></div><div class="membership-gate-actions"><button type="button" class="btn-small btn-purple" onclick="openMembershipPaymentFromPublish()">Pagar membresía</button><button type="button" class="btn-small btn-ghost" onclick="activatePublishMembershipLocal()">Ya pagué / continuar</button></div>`;
+}
+function ensurePublishMembershipBeforeSubmit() {
+  if (hasActivePublishMembership()) return true;
+  renderPublicationMembershipGate();
+  document.getElementById("publicationMembershipGate")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  showToast("Explorar es gratis. Para publicar, activa la membresía anual de $98.");
+  return false;
+}
+
 async function submitPublication(event) {
   event.preventDefault();
   if (!validateWizardStep(7)) return;
+  if (!ensurePublishMembershipBeforeSubmit()) return;
   const payload = formPayload();
   try {
     const [created] = await supabaseRequest("publicaciones", { method: "POST", body: JSON.stringify(payload) });
@@ -1059,7 +1104,7 @@ function pilotPublicationCard(item) {
   const type = item.pilotType || "general";
   const meta = [item.locality, item.municipality, item.state].filter(Boolean).join(" · ");
   const amount = Number(item.budget || 0) > 0 ? money(item.budget) : "A tratar";
-  const action = type === "negocios" ? "Ver negocio" : (type === "aprendizaje" ? "Ver cursos" : "Chat piloto");
+  const action = item.category === "Mandados Verificados" ? "Solicitar mandado" : (item.category === "Agentes de crecimiento" ? "Iniciar guía" : (type === "negocios" ? "Activar chat" : (type === "aprendizaje" ? "Ver cursos" : "Hacerlo real")));
   return `<article class="pilot-publication-card pilot-${escapeHtml(type)}" id="pub-${escapeHtml(item.id)}">
     <div class="pilot-card-head">
       <span class="pilot-main-icon">${icon}</span>
@@ -1068,6 +1113,7 @@ function pilotPublicationCard(item) {
     </div>
     <h3>${escapeHtml(item.title)}</h3>
     <p class="pilot-description">${linkify(item.description)}</p>
+    <p class="pilot-next-hint">Ejemplo piloto: toca el botón para iniciar una guía real.</p>
     <div class="pilot-duo-grid">
       <div class="pilot-duo-box">
         <small>${escapeHtml(role)}</small>
@@ -2307,6 +2353,14 @@ function loadChatMessages() {
 function saveChatMessages(messages) {
   try { localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages.slice(-40))); } catch {}
 }
+function resetOrientationChat() {
+  saveChatMessages(DEFAULT_CHAT_MESSAGES.map(message => ({ ...message })));
+  const input = document.getElementById("smartMessageInput");
+  if (input) input.value = "";
+  smartLastSuggestion = { query: "", category: "" };
+  renderSmartChat();
+  showToast("Chat limpio para iniciar de nuevo");
+}
 function renderSmartChat() {
   const list = document.getElementById("chatMessages");
   if (!list) return;
@@ -3374,7 +3428,7 @@ function renderAmbassadorPilot() {
   renderAmbassadorManual();
   setAmbassadorTab(ambassadorActiveTab, false);
 }
-function setAmbassadorTab(tab, scroll = true) {
+function setAmbassadorTab(tab, scroll = false) {
   ambassadorActiveTab = tab;
   document.querySelectorAll("[data-ambassador-tab]").forEach(button => button.classList.toggle("active", button.dataset.ambassadorTab === tab));
   document.getElementById("ambassadorReferralsList")?.classList.toggle("hidden", tab !== "referidos");
@@ -3385,7 +3439,7 @@ function setAmbassadorTab(tab, scroll = true) {
   if (tab === "pagos") renderAmbassadorPaymentPanel();
   if (tab === "membresia") renderAmbassadorMembership();
   if (tab === "manual") renderAmbassadorManual();
-  if (scroll) document.getElementById("embajadores")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (scroll) document.getElementById("embajadores")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 function showAmbassadorPanel(type = "embajador") {
   const panel = document.getElementById("ambassadorPanel");
@@ -3609,7 +3663,7 @@ function renderGrowthSurveyMenu() {
   if (!root) return;
   root.innerHTML = `<div class="survey-shell">
     <button type="button" class="survey-back-link" onclick="showSection('oportunidades')">← Volver a oportunidades</button>
-    <div class="survey-hero"><span>📈</span><h2>Agentes de crecimiento</h2><p>Elige una ruta. La app te guiará como encuesta, paso por paso.</p></div>
+    <div class="survey-hero"><span>📈</span><h2>Agentes de crecimiento</h2><p>Elige una ruta y contesta paso a paso.</p></div>
     <div class="survey-path-grid">
       <button type="button" onclick="startSurveyFlow('crecimientoNegocio')"><span>🏪</span><strong>Quiero conseguir clientes</strong><small>Publicar campaña y comisión por resultado.</small></button>
       <button type="button" onclick="startSurveyFlow('crecimientoAgente')"><span>🧑‍🎓</span><strong>Quiero trabajar por comisión</strong><small>Registrar habilidades y disponibilidad.</small></button>
@@ -3786,7 +3840,7 @@ function renderSurveySuccess(title, message, module) {
 }
 
 
-// v4.9.12 — Embajadores Conecta con flujos limpios tipo encuesta y textos mínimos
+// v4.9.13 — Embajadores Conecta con flujos limpios y menú interno sin saltos
 SURVEY_CONFIG.embajadorRegistro = {
   title: "Ser embajador Conecta",
   subtitle: "Crea tu código y empieza a invitar miembros.",
@@ -3946,6 +4000,7 @@ surveyFinish = function() {
 };
 
 showAmbassadorPanel = function(type = "embajador") {
+  // Los accesos principales de Embajadores abren páginas limpias tipo encuesta.
   startSurveyFlow(type === "referido" ? "embajadorReferido" : "embajadorRegistro");
 };
 openAmbassadorPayments = function() {

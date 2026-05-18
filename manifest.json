@@ -1,8 +1,8 @@
 {
   "name": "Conecta Servicios",
   "short_name": "Conecta",
-  "description": "Plataforma local de oportunidades, publicaciones piloto, mandados verificados, Fondo Protegido Conecta, negocios locales, centro de mensajes, aprendizaje, agentes de crecimiento y Embajadores Conecta en modo piloto de referidos y membresía anual de $98, comisión de embajadores, carrusel de oportunidades, asistente de orientación, publicación directa, cobro de membresía para embajadores y flujos tipo encuesta para mandados, agentes de crecimiento y chat de negocios.",
-  "start_url": "/?source=pwa&v=4.9.12",
+  "description": "Plataforma local de oportunidades, publicaciones piloto, mandados verificados, Fondo Protegido Conecta, negocios locales, centro de mensajes, aprendizaje, agentes de crecimiento y Embajadores Conecta en modo piloto de referidos y membresía anual de $98, comisión de embajadores, carrusel de oportunidades, asistente de orientación, publicación directa, cobro de membresía para embajadores y flujos tipo encuesta para mandados, agentes de crecimiento y chat de negocios, membresía para publicar, pilotos claros y centro de orientación con limpieza de chat.",
+  "start_url": "/?source=pwa&v=4.9.14",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

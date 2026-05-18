@@ -1,0 +1,10 @@
+Conecta Servicios v4.9.13 — Embajadores menú estable
+
+Correcciones:
+- El menú interno de Embajadores Conecta ya no sube la pantalla al tocar Referidos, Embajadores, Pagos, Membresías o Manual.
+- Los paneles cambian en el mismo lugar, sin saltos visuales.
+- Los accesos principales de Embajadores siguen abriendo pantallas limpias tipo encuesta.
+- Se conserva membresía anual $98 MXN y comisión embajador $50 MXN.
+- PWA/cache actualizado a v4.9.13.
+
+No toca Supabase.

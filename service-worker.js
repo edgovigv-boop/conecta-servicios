@@ -4,12 +4,12 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.9.12-embajadores-encuesta-texto-minimo";
+const CACHE_NAME = "conecta-servicios-v4.9.14-ajustes-finales";
 const ASSETS = [
   "./",
   "index.html",
-  "styles.css?v=4.9.12-embajadores-encuesta",
-  "app.js?v=4.9.12-embajadores-encuesta",
+  "styles.css?v=4.9.14-ajustes-finales",
+  "app.js?v=4.9.14-ajustes-finales",
   "manifest.json",
   "assets/hero-scene-v4718.webp",
   "assets/hero-scene-clean-v4711.png",

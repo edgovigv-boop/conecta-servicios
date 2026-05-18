@@ -28,10 +28,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
-  <title>Conecta Servicios v4.9.12</title>
-  <link rel="stylesheet" href="styles.css?v=4.9.10-flujos-funcionales" />
+  <title>Conecta Servicios v4.9.14</title>
+  <link rel="stylesheet" href="styles.css?v=4.9.14-ajustes-finales" />
 </head>
-<body data-version="4.9.10-flujos-funcionales">
+<body data-version="4.9.14-ajustes-finales">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -88,7 +88,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
           </button>
 
           <div class="home-carousel-heading">
-            <div><strong>Explora oportunidades piloto</strong><small>Lee ejemplos y toca una tarjeta para entrar a Publicaciones.</small></div>
+            <div><strong>Ejemplos para inspirarte</strong><small>Toca una tarjeta para explorar y convertirla en una acción real.</small></div>
             <button type="button" onclick="requestNearbyPublications()">Ver todas</button>
           </div>
 
@@ -97,31 +97,31 @@ Todo uso requiere autorización expresa y por escrito del titular.
               <span>🙋</span>
               <small>Solicitante</small>
               <strong>Busco apoyo para un mandado local</strong>
-              <p>Pide lo que necesitas y conecta con agentes de tu zona.</p>
+              <p>Ejemplo piloto: toca para explorar y solicitar algo parecido.</p>
             </button>
             <button type="button" class="home-pilot-card agente" onclick="openPilotType('agentes')">
               <span>🧑‍🔧</span>
               <small>Agente</small>
               <strong>Ofrezco entregas y apoyo por encargo</strong>
-              <p>Genera ingresos ayudando a vecinos y negocios.</p>
+              <p>Ejemplo piloto: toca para explorar y ofrecerte como agente.</p>
             </button>
             <button type="button" class="home-pilot-card negocio" onclick="openPilotType('negocios')">
               <span>🏪</span>
               <small>Negocio</small>
               <strong>Panadería recibe pedidos por chat</strong>
-              <p>Catálogo, pedido, cita, envío o pickup futuro.</p>
+              <p>Ejemplo piloto: toca para explorar y activar chat de negocio.</p>
             </button>
             <button type="button" class="home-pilot-card servicio" onclick="openPilotType('servicios')">
               <span>🛠</span>
               <small>Servicio</small>
               <strong>Reparación y servicios locales</strong>
-              <p>Encuentra u ofrece soluciones con trato directo.</p>
+              <p>Ejemplo piloto: toca para explorar y publicar un servicio.</p>
             </button>
             <button type="button" class="home-pilot-card crecimiento" onclick="openPilotType('crecimiento')">
               <span>📈</span>
               <small>Crecimiento</small>
               <strong>Campañas, referidos y aprendizaje</strong>
-              <p>Comisiones, embajadores y rutas para crecer.</p>
+              <p>Ejemplo piloto: toca para explorar comisiones y crecimiento.</p>
             </button>
           </div>
 
@@ -343,6 +343,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <div class="wizard-step" data-step="7">
             <h3>Revisa antes de publicar</h3>
             <div id="publicationPreview" class="preview-card"></div>
+            <div id="publicationMembershipGate" class="membership-gate-card"></div>
             <div class="notice-card auto-note">
               <strong>Publicación automática con cuidado</strong>
               <p>Si tu registro está completo y claro, se activará de inmediato. Si detectamos algo incompleto o dudoso, quedará en revisión.</p>
@@ -604,6 +605,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
               <strong>Asistente de orientación</strong>
               <small>Te ayuda a decidir entre publicaciones, negocios, mandados, crecimiento, embajadores o aprendizaje.</small>
             </div>
+            <button type="button" class="chat-reset-btn" onclick="resetOrientationChat()" aria-label="Borrar chat">Limpiar</button>
           </div>
           <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
           <div class="smart-quick-row chat-quick-row orientation-quick-row" aria-label="Opciones rápidas del centro de orientación">
@@ -842,11 +844,11 @@ Todo uso requiere autorización expresa y por escrito del titular.
         <div id="ambassadorPanel" class="ambassador-panel hidden"></div>
 
         <div class="ambassador-tabs" aria-label="Embajadores Conecta">
-          <button type="button" class="active" onclick="setAmbassadorTab('referidos')" data-ambassador-tab="referidos">Referidos</button>
-          <button type="button" onclick="setAmbassadorTab('embajadores')" data-ambassador-tab="embajadores">Embajadores</button>
-          <button type="button" onclick="setAmbassadorTab('pagos')" data-ambassador-tab="pagos">Pagos</button>
-          <button type="button" onclick="setAmbassadorTab('membresia')" data-ambassador-tab="membresia">Membresías</button>
-          <button type="button" onclick="setAmbassadorTab('manual')" data-ambassador-tab="manual">Manual</button>
+          <button type="button" class="active" onclick="setAmbassadorTab('referidos', false)" data-ambassador-tab="referidos">Referidos</button>
+          <button type="button" onclick="setAmbassadorTab('embajadores', false)" data-ambassador-tab="embajadores">Embajadores</button>
+          <button type="button" onclick="setAmbassadorTab('pagos', false)" data-ambassador-tab="pagos">Pagos</button>
+          <button type="button" onclick="setAmbassadorTab('membresia', false)" data-ambassador-tab="membresia">Membresías</button>
+          <button type="button" onclick="setAmbassadorTab('manual', false)" data-ambassador-tab="manual">Manual</button>
         </div>
 
         <div id="ambassadorReferralsList" class="ambassador-list"></div>
@@ -969,6 +971,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.9.10-flujos-funcionales"></script>
+  <script src="app.js?v=4.9.14-ajustes-finales"></script>
 </body>
 </html>

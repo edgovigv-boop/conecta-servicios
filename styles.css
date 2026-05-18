@@ -1862,3 +1862,113 @@ input,select,textarea{width:100%;border:1px solid #ded6ee;border-radius:17px;bac
   .opportunities-icon-first .opportunity-action-card { grid-template-columns: auto 1fr auto; padding: 13px; }
   .opportunities-icon-first .opportunity-action-card span { width: 50px; height: 50px; }
 }
+
+
+/* v4.9.13 — menú interno de Embajadores sin saltos */
+.ambassador-tabs {
+  scroll-margin-top: 0;
+  align-items: center;
+}
+.ambassador-tabs button {
+  cursor: pointer;
+}
+.ambassador-tabs button:focus-visible {
+  outline: 3px solid rgba(14, 91, 255, .28);
+  outline-offset: 2px;
+}
+.ambassador-list:not(.hidden) {
+  animation: ambassadorPanelFade .18s ease-out;
+}
+@keyframes ambassadorPanelFade {
+  from { opacity: .65; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* v4.9.14 — ajustes finales: texto centrado, chat limpio, pilotos claros y membresía */
+.growth-path-card,
+.survey-path-grid button {
+  text-align: center;
+  justify-items: center;
+  align-items: center;
+}
+.growth-path-card {
+  grid-template-columns: 1fr !important;
+  padding: 18px 16px;
+}
+.growth-path-card p,
+.growth-path-card b {
+  grid-column: auto !important;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 18rem;
+}
+.survey-path-grid button small,
+.survey-path-grid button strong {
+  text-align: center;
+}
+.clean-chat-head {
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+.chat-reset-btn {
+  border: 1px solid rgba(14,91,255,.16);
+  background: rgba(14,91,255,.07);
+  color: #0e5bff;
+  border-radius: 999px;
+  padding: 8px 11px;
+  font-weight: 900;
+  font-size: .78rem;
+  cursor: pointer;
+}
+.chat-reset-btn:active { transform: scale(.98); }
+.home-carousel-heading small { max-width: 18rem; }
+.pilot-next-hint {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: rgba(14,91,255,.07);
+  color: #1551c6;
+  font-size: .76rem;
+  font-weight: 850;
+  line-height: 1.25;
+}
+.membership-gate-card {
+  margin-top: 12px;
+  border: 1px solid rgba(111,66,193,.16);
+  background: linear-gradient(135deg, rgba(111,66,193,.08), rgba(255,255,255,.96));
+  border-radius: 22px;
+  padding: 14px;
+  box-shadow: 0 10px 28px rgba(37,31,62,.08);
+}
+.membership-gate-info {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: start;
+}
+.membership-gate-info span {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: #efe8ff;
+  font-size: 1.25rem;
+}
+.membership-gate-info strong,
+.membership-gate-ok strong { color: #24183d; font-size: 1rem; }
+.membership-gate-info p,
+.membership-gate-ok p { margin: 4px 0 0; color: #6a6278; line-height: 1.35; font-weight: 650; }
+.membership-gate-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.membership-gate-actions .btn-small { flex: 1 1 130px; justify-content: center; }
+.membership-gate-ok {
+  text-align: center;
+  padding: 4px;
+}
+@media (max-width: 520px) {
+  .clean-chat-head { grid-template-columns: auto 1fr; }
+  .chat-reset-btn { grid-column: 1 / -1; width: 100%; }
+  .membership-gate-actions .btn-small { width: 100%; }
+}

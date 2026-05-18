@@ -1,0 +1,10 @@
+Conecta Servicios v4.9.14 — Ajustes finales de flujo y membresía
+
+Incluye:
+- Centrado visual en tarjetas de Agentes de crecimiento.
+- Botón para limpiar el Centro de orientación.
+- Textos más claros en carrusel y tarjetas piloto: ejemplo → guía real.
+- Exploración y contacto gratis; publicar requiere membresía anual de $98 MXN.
+- Gate de membresía en el último paso de publicación, con acceso a Mercado Pago y confirmación piloto.
+- PWA/cache actualizado a v4.9.14.
+- No toca Supabase.
