@@ -28,7 +28,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
-  <title>Conecta Servicios v4.9.11</title>
+  <title>Conecta Servicios v4.9.12</title>
   <link rel="stylesheet" href="styles.css?v=4.9.10-flujos-funcionales" />
 </head>
 <body data-version="4.9.10-flujos-funcionales">
@@ -136,42 +136,40 @@ Todo uso requiere autorización expresa y por escrito del titular.
       </section>
 
       <section id="oportunidades" class="section info-section opportunities-section clean-opportunities opportunity-guide-start">
-        <div class="simple-section-title compact-title opportunities-clean-title">
+        <div class="simple-section-title compact-title opportunities-clean-title visually-hidden">
           <h2>Oportunidades para ti</h2>
-          <p>Elige qué quieres iniciar. Este botón reúne las acciones principales de Conecta Servicios.</p>
         </div>
 
-        <div class="opportunity-action-grid" aria-label="Acciones principales de oportunidades">
+        <div class="opportunity-action-grid opportunities-icon-first" aria-label="Acciones principales de oportunidades">
           <button type="button" class="opportunity-action-card primary-action" onclick="startWizard()">
             <span>＋</span>
-            <div><strong>Publicar una oportunidad</strong><small>Crear solicitud, servicio, negocio, mandado o campaña en la app.</small></div>
+            <div><strong>Publicar una oportunidad</strong></div>
             <b>›</b>
           </button>
           <button type="button" class="opportunity-action-card" onclick="requestNearbyPublications()">
             <span>📍</span>
-            <div><strong>Ver publicaciones</strong><small>Explora solicitantes, agentes, negocios, servicios y crecimiento.</small></div>
+            <div><strong>Ver publicaciones</strong></div>
             <b>›</b>
           </button>
           <button type="button" class="opportunity-action-card" onclick="startSurveyFlow('mandadoSolicitud')">
             <span>🧺</span>
-            <div><strong>Mandados verificados</strong><small>Compra, entrega y evidencia con trato directo.</small></div>
+            <div><strong>Mandados verificados</strong></div>
             <b>›</b>
           </button>
           <button type="button" class="opportunity-action-card" onclick="startSurveyFlow('crecimientoMenu')">
             <span>📈</span>
-            <div><strong>Agentes de crecimiento</strong><small>Campañas, comisión y contactos por resultado.</small></div>
+            <div><strong>Agentes de crecimiento</strong></div>
             <b>›</b>
           </button>
           <button type="button" class="opportunity-action-card" onclick="startSurveyFlow('chatNegocio')">
             <span>🏪</span>
-            <div><strong>Chat de negocios</strong><small>Catálogo, pedido, cita, cotización, envío o pickup futuro.</small></div>
+            <div><strong>Chat de negocios</strong></div>
             <b>›</b>
           </button>
         </div>
 
-        <div class="notice-card slim opportunities-note-card">
+        <div class="notice-card slim opportunities-note-card visually-hidden">
           <strong>Trato directo y organización clara</strong>
-          <p>Conecta orienta, muestra opciones y facilita el contacto. Los acuerdos finales se confirman entre las personas, negocios o agentes involucrados.</p>
         </div>
       </section>
 
@@ -799,7 +797,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
         <div class="ambassador-hero-card">
           <span class="growth-kicker">Monetización piloto</span>
           <h2>Embajadores Conecta</h2>
-          <p>Membresía anual Conecta Servicios: <b>$98 MXN</b>. Comisión sugerida para embajador: <b>$50 MXN</b> por membresía referida pagada. El cobro puede validarse con Mercado Pago y corte manual.</p>
+          <p><b>$98 MXN</b> membresía anual · <b>$50 MXN</b> comisión por referido pagado.</p>
           <div class="growth-hero-actions">
             <button type="button" class="btn-small btn-purple" onclick="showAmbassadorPanel('embajador')">Quiero ser embajador</button>
             <button type="button" class="btn-small btn-orange" onclick="showAmbassadorPanel('referido')">Registrar referido</button>

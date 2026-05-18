@@ -1,0 +1,10 @@
+Conecta Servicios v4.9.12 — Embajadores tipo encuesta y textos mínimos
+
+Cambios:
+- Embajadores Conecta: Quiero ser embajador, Registrar referido y Cobrar membresía abren páginas limpias tipo encuesta.
+- Manual rápido abre una guía limpia separada, sin mandar a scroll dentro de la misma pantalla.
+- Oportunidades para ti queda más intuitivo: se eliminó el texto repetitivo superior y la nota larga.
+- Tarjetas de oportunidades reducidas a icono + acción principal.
+- Membresía anual $98 MXN y comisión embajador $50 MXN se mantienen.
+- PWA/cache actualizado a v4.9.12.
+- No toca Supabase.

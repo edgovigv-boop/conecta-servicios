@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.11-flujos-encuesta";
+const PWA_VERSION = "v4.9.12-embajadores-encuesta-texto-minimo";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -82,7 +82,7 @@ const APP_VERSION_KEY = "conecta_servicios_app_version";
 const CHAT_STORAGE_KEY = "conecta_business_chat_v494";
 const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v492";
 
-// v4.9.11 — Home carrusel, oportunidades reorganizadas y flujos tipo encuesta
+// v4.9.12 — Embajadores tipo encuesta y textos mínimos
 // Muestra publicaciones curadas y oculta los registros reales de Supabase en la vista pública.
 // Supabase sigue intacto; administración y futuras versiones pueden volver a producción cambiando esta bandera.
 const PRESENTATION_PILOT_MODE = true;
@@ -3784,3 +3784,173 @@ function renderSurveySuccess(title, message, module) {
     </div>
   </div>`;
 }
+
+
+// v4.9.12 — Embajadores Conecta con flujos limpios tipo encuesta y textos mínimos
+SURVEY_CONFIG.embajadorRegistro = {
+  title: "Ser embajador Conecta",
+  subtitle: "Crea tu código y empieza a invitar miembros.",
+  icon: "🤝",
+  module: "embajadores",
+  steps: [
+    { title: "Datos visibles", hint: "Nombre y zona para identificar tu activación.", fields: [
+      { id:"name", label:"Nombre público", type:"text", required:true, placeholder:"Ej. Ana Martínez" },
+      { id:"zone", label:"Municipio o zona", type:"text", required:true, placeholder:"Ej. Chapultepec, Toluca, Metepec" }
+    ]},
+    { title: "Perfil", hint: "Elige cómo te presentarás.", fields: [
+      { id:"profile", label:"Perfil", type:"select", options:["Embajador local","Estudiante","Negocio","Agente","Promotor","Vecino recomendado"] },
+      { id:"channels", label:"Cómo invitarás", type:"textarea", placeholder:"Ej. WhatsApp, Facebook, visitas a negocios, grupos locales..." }
+    ], chips:["WhatsApp","Facebook local","Visita a negocios","Grupos vecinales","Recomendación directa"]},
+    { title: "Enfoque y contacto", hint: "Define a quién quieres invitar primero.", fields: [
+      { id:"focus", label:"A quién quieres invitar", type:"textarea", placeholder:"Ej. negocios locales, agentes, vecinos, servicios, estudiantes..." },
+      { id:"phone", label:"WhatsApp", type:"tel", required:true, placeholder:"10 dígitos" }
+    ]}
+  ]
+};
+
+SURVEY_CONFIG.embajadorReferido = {
+  title: "Registrar referido",
+  subtitle: "Vincula una persona o negocio a un código.",
+  icon: "🔗",
+  module: "embajadores",
+  steps: [
+    { title: "Código y referido", hint: "Usa el código del embajador para el corte de comisión.", fields: [
+      { id:"ambassadorCode", label:"Código de embajador", type:"text", required:true, placeholder:"Ej. CON-ANA-101" },
+      { id:"name", label:"Nombre del referido", type:"text", required:true, placeholder:"Persona, negocio o servicio" }
+    ]},
+    { title: "Tipo y zona", hint: "Así sabremos qué ruta necesita dentro de Conecta.", fields: [
+      { id:"type", label:"Tipo", type:"select", options:["Solicitante","Agente","Negocio","Servicio","Crecimiento","Embajador"] },
+      { id:"zone", label:"Zona", type:"text", placeholder:"Municipio o colonia" }
+    ]},
+    { title: "Seguimiento", hint: "Datos simples para contactarlo sin confusión.", fields: [
+      { id:"status", label:"Estado", type:"select", options:["Interesado","Contactado","Registrado","Pago pendiente","Membresía pagada"] },
+      { id:"source", label:"Origen", type:"text", placeholder:"Ej. WhatsApp, negocio visitado, grupo local" },
+      { id:"phone", label:"WhatsApp", type:"tel", placeholder:"10 dígitos" }
+    ]},
+    { title: "Notas", hint: "Solo lo necesario para recordar el caso.", fields: [
+      { id:"notes", label:"Notas", type:"textarea", placeholder:"Ej. Quiere membresía anual, negocio local interesado, revisar pago..." }
+    ]}
+  ]
+};
+
+SURVEY_CONFIG.embajadorPago = {
+  title: "Cobrar membresía",
+  subtitle: "$98 anual · $50 comisión embajador.",
+  icon: "💳",
+  module: "embajadores",
+  steps: [
+    { title: "Datos del cobro", hint: "Asocia el pago al embajador correcto.", fields: [
+      { id:"ambassadorCode", label:"Código de embajador", type:"text", required:true, placeholder:"Ej. CON-ANA-101" },
+      { id:"referralName", label:"Miembro o referido", type:"text", required:true, placeholder:"Nombre del nuevo miembro" }
+    ]},
+    { title: "Confirmación", hint: "El monto queda claro antes de cobrar.", fields: [
+      { id:"paymentMethod", label:"Método", type:"select", options:["Link Mercado Pago","Pago manual por confirmar"] },
+      { id:"notes", label:"Notas", type:"textarea", placeholder:"Ej. membresía anual pagada por link, revisar comprobante..." }
+    ]}
+  ]
+};
+
+function ambassadorCopyText(text) {
+  navigator.clipboard?.writeText(text).then(() => showToast("Copiado")).catch(() => showToast(text));
+}
+function renderAmbassadorPaymentSuccess(payload) {
+  const root = document.getElementById("surveyFlowContent");
+  if (!root) return;
+  const settings = getAmbassadorSettings();
+  const summary = `Conecta Servicios\nMembresía anual: $${payload.amount} MXN\nCódigo embajador: ${payload.ambassadorCode}\nReferido: ${payload.referralName}\nComisión embajador: $${payload.commission} MXN`;
+  root.innerHTML = `<div class="survey-shell ambassador-clean-flow">
+    <div class="survey-success-card ambassador-success-card">
+      <span>💳</span>
+      <h2>Cobro preparado</h2>
+      <p>Membresía anual $${payload.amount} · comisión embajador $${payload.commission}.</p>
+      <div class="payment-preview-card ambassador-payment-summary">
+        <div><span>Código</span><strong>${escapeHtml(payload.ambassadorCode)}</strong></div>
+        <div><span>Referido</span><strong>${escapeHtml(payload.referralName)}</strong></div>
+        <div><span>Estado</span><strong>${escapeHtml(payload.status || "Por confirmar")}</strong></div>
+      </div>
+      <div class="survey-success-actions">
+        <button type="button" class="btn-small btn-purple" onclick="openAmbassadorManualPaymentLink()">Abrir link Mercado Pago</button>
+        <button type="button" class="btn-small btn-orange" onclick="ambassadorCopyText(decodeURIComponent('${encodeURIComponent(summary)}'))">Copiar resumen</button>
+        <button type="button" class="btn-small btn-ghost" onclick="showSection('embajadores')">Embajadores</button>
+      </div>
+      ${settings.manualPaymentLink ? "" : "<small class='muted'>Para abrir Mercado Pago, guarda primero tu link en el panel de pagos.</small>"}
+    </div>
+  </div>`;
+}
+function renderAmbassadorManualGuidePage() {
+  showSection("encuesta");
+  const root = document.getElementById("surveyFlowContent");
+  if (!root) return;
+  root.innerHTML = `<div class="survey-shell ambassador-clean-flow">
+    <button type="button" class="survey-back-link" onclick="showSection('embajadores')">← Embajadores</button>
+    <div class="survey-hero compact-hero">
+      <span>📘</span>
+      <h2>Manual rápido</h2>
+      <p>Explica Conecta en pasos simples.</p>
+    </div>
+    <div class="ambassador-manual-grid manual-clean-page">
+      <article class="manual-step-card"><span>1</span><strong>Detecta</strong><p>¿Busca clientes, ingresos, mandados, servicios o aprendizaje?</p></article>
+      <article class="manual-step-card"><span>2</span><strong>Guía</strong><p>Usa Publicaciones, Mandados, Crecimiento o Negocios según su necesidad.</p></article>
+      <article class="manual-step-card"><span>3</span><strong>Código</strong><p>Comparte tu código de embajador para asociar el referido.</p></article>
+      <article class="manual-step-card"><span>4</span><strong>Membresía</strong><p>La membresía anual es $98 y tu comisión sugerida es $50.</p></article>
+      <article class="manual-step-card"><span>5</span><strong>Registro</strong><p>Guarda el referido y conserva evidencia del pago para el corte.</p></article>
+      <article class="manual-step-card"><span>6</span><strong>Seguimiento</strong><p>Acompaña al nuevo miembro para que publique o use la app.</p></article>
+    </div>
+    <div class="survey-success-actions">
+      <button type="button" class="btn-small btn-purple" onclick="startSurveyFlow('embajadorReferido')">Registrar referido</button>
+      <button type="button" class="btn-small btn-orange" onclick="startSurveyFlow('embajadorPago')">Cobrar membresía</button>
+    </div>
+  </div>`;
+  trackEvent("embajadores_manual_limpio", null, {});
+}
+
+const surveyFinishBaseV4912 = surveyFinish;
+surveyFinish = function() {
+  const flow = surveyState.flow;
+  const v = { ...surveyState.values };
+  if (flow === "embajadorRegistro") {
+    const data = getAmbassadorData();
+    const code = generateAmbassadorCode(v.name, v.zone);
+    data.members.unshift({ name:v.name, zone:v.zone, profile:v.profile, channels:v.channels, focus:v.focus, contact:cleanPhone(v.phone), code, status:"Activo piloto" });
+    saveAmbassadorData(data);
+    ambassadorActiveTab = "embajadores";
+    renderAmbassadorPilot();
+    renderSurveySuccess("Embajador registrado", `Tu código es ${code}. Ya puedes registrar referidos y cobrar membresías.`, "embajadores");
+    showToast(`Código generado: ${code}`);
+    trackEvent("embajador_encuesta_guardado", null, { tipo:"embajador" });
+    return;
+  }
+  if (flow === "embajadorReferido") {
+    const data = getAmbassadorData();
+    data.referrals.unshift({ name:v.name, type:v.type, zone:v.zone, source:v.source, status:v.status, notes:v.notes, contact:cleanPhone(v.phone), ambassadorCode:v.ambassadorCode || "CON-LOCAL" });
+    saveAmbassadorData(data);
+    ambassadorActiveTab = "referidos";
+    renderAmbassadorPilot();
+    renderSurveySuccess("Referido guardado", "Quedó vinculado al código del embajador para seguimiento y corte manual.", "embajadores");
+    showToast("Referido registrado");
+    trackEvent("embajador_encuesta_guardado", null, { tipo:"referido" });
+    return;
+  }
+  if (flow === "embajadorPago") {
+    const calc = calculateAmbassadorCommission("anual");
+    const payload = { planId:"anual", title:`Conecta Servicios - ${calc.plan.name}`, amount:calc.amount, commission:calc.ambassadorCommission, planName:calc.plan.name, ambassadorCode:v.ambassadorCode || "CON-LOCAL", referralName:v.referralName || "Nuevo miembro", notes:v.notes || "", status:v.paymentMethod || "Pago por confirmar" };
+    saveAmbassadorPaymentRecord(payload, payload.status);
+    ambassadorActiveTab = "pagos";
+    renderAmbassadorPilot();
+    renderAmbassadorPaymentSuccess(payload);
+    showToast("Cobro registrado para seguimiento");
+    trackEvent("embajador_pago_encuesta", null, { metodo:v.paymentMethod });
+    return;
+  }
+  return surveyFinishBaseV4912();
+};
+
+showAmbassadorPanel = function(type = "embajador") {
+  startSurveyFlow(type === "referido" ? "embajadorReferido" : "embajadorRegistro");
+};
+openAmbassadorPayments = function() {
+  startSurveyFlow("embajadorPago");
+};
+openAmbassadorManual = function() {
+  renderAmbassadorManualGuidePage();
+};
