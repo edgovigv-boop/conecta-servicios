@@ -1209,3 +1209,101 @@ input,select,textarea{width:100%;border:1px solid #ded6ee;border-radius:17px;bac
   font-weight:950;
   font-size:1rem;
 }
+
+/* v4.9.6 — Home limpio, Centro de mensajes y chat dentro de Negocios */
+.home-learning-single{
+  grid-template-columns:1fr!important;
+  margin:0 2px 16px!important;
+}
+.home-learning-single .home-primary-card{
+  min-height:96px!important;
+}
+.home-learning-single .learn-card-clean{
+  background:linear-gradient(135deg,rgba(111,52,223,.12),rgba(255,255,255,.98))!important;
+}
+.messages-center-section{
+  padding-bottom:18px;
+}
+.messages-center-hero{
+  background:linear-gradient(135deg,#fff,#f4efff);
+  border:1px solid rgba(111,52,223,.12);
+  border-radius:24px;
+  padding:18px;
+  box-shadow:var(--shadow-soft);
+  margin-bottom:14px;
+}
+.messages-center-hero h2{
+  margin:4px 0 6px;
+  color:var(--ink);
+  font-size:1.45rem;
+  line-height:1.08;
+}
+.messages-center-hero p{
+  margin:0;
+  color:#5f566f;
+  line-height:1.35;
+  font-weight:650;
+}
+.messages-center-grid{
+  display:grid;
+  gap:10px;
+  margin-bottom:14px;
+}
+.message-center-card{
+  width:100%;
+  border:1px solid rgba(111,52,223,.12);
+  background:#fff;
+  border-radius:20px;
+  padding:13px;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:12px;
+  align-items:center;
+  text-align:left;
+  box-shadow:0 10px 22px rgba(56,16,129,.07);
+  color:#241b38;
+}
+.message-center-card span{
+  width:46px;
+  height:46px;
+  border-radius:16px;
+  display:grid;
+  place-items:center;
+  background:#f1ebff;
+  font-size:1.45rem;
+}
+.message-center-card strong{
+  display:block;
+  font-size:1rem;
+  line-height:1.1;
+  font-weight:950;
+}
+.message-center-card small{
+  display:block;
+  margin-top:4px;
+  color:#655b76;
+  font-size:.75rem;
+  line-height:1.2;
+  font-weight:750;
+}
+.message-center-card b{
+  color:#5b22cf;
+  font-size:1.4rem;
+  font-weight:500;
+}
+.center-message-helper{
+  margin-top:14px;
+}
+.center-message-helper .chat-messages{
+  min-height:130px;
+  max-height:230px;
+}
+.business-terminal-card h3{
+  text-align:left;
+}
+@media(max-width:380px){
+  .home-learning-single .home-primary-card{min-height:90px!important;}
+  .messages-center-hero{padding:16px;}
+  .message-center-card{padding:12px;gap:10px;}
+  .message-center-card span{width:42px;height:42px;font-size:1.32rem;}
+}

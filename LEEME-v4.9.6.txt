@@ -1,0 +1,12 @@
+Conecta Servicios v4.9.6 — Centro de mensajes y home limpio
+
+Validar después de subir a Vercel:
+1. Home: ya no debe aparecer Chat de negocios como tarjeta principal.
+2. Home: Aprendizaje debe ocupar el ancho completo.
+3. Home: no debe aparecer la frase “¿Qué quieres hacer hoy?”.
+4. Barra inferior: el botón + debe abrir Oportunidades para ti.
+5. Barra inferior: el botón de mensajes debe abrir Centro de mensajes.
+6. Negocios locales: debe contener el acceso al chat de negocios / terminal futura.
+7. Publicaciones cerca de mí: debe seguir abriendo con Todo México y todas las categorías.
+
+No se modifica Supabase.

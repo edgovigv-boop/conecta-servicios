@@ -1,20 +1,15 @@
-# Conecta Servicios v4.9.4 — Lenguaje de plataforma y home ordenado
+# Conecta Servicios v4.9.6 — Centro de mensajes y home limpio
 
-Esta versión pule el modo piloto para inversionistas y adopta un lenguaje más claro dentro de la app.
+Esta versión ordena la navegación del Home y evita duplicar Chat de negocios como acceso principal.
 
-## Incluye
+Cambios principales:
 
-- Hero actualizado con el nuevo lenguaje: Solicitantes, Agentes, Negocios, Servicios y Crecimiento.
-- Nuevo acceso rápido en Home con esos cinco conceptos.
-- Chat de negocios, Aprendizaje, Agentes de crecimiento, Negocios locales y Mandados verificados con tarjetas del mismo tamaño y proporción.
-- Negocios locales corregido para que no se vea pequeño ni recortado frente a los demás módulos.
-- Barra lateral de categorías en Publicaciones con recorrido vertical más libre, desde la zona superior hasta antes de la barra inferior.
-- Filtros superiores con espacio para que la barra no invada los campos.
-- Crecimiento ahora integra también Aprendizaje como ruta visible.
-- Aprendizaje aparece en el filtro de Crecimiento del modo piloto.
-- No toca Supabase.
-- PWA/cache actualizado a v4.9.4.
-
-## Subida a Vercel
-
-Sube el contenido del ZIP en la raíz del repositorio: `index.html`, `styles.css`, `app.js`, `manifest.json`, `service-worker.js`, `assets/` y `vercel.json`.
+- Chat de negocios queda dentro de Negocios locales.
+- La barra inferior ahora muestra Centro de mensajes.
+- Centro de mensajes agrupa accesos a negocios, publicaciones, mandados y agentes.
+- Aprendizaje queda como botón principal de ancho completo en el Home.
+- Se eliminó la frase “¿Qué quieres hacer hoy?” del Home.
+- El botón + inferior abre Oportunidades para ti, igual que el botón grande central.
+- Se mantiene Publicaciones cerca de mí como eje principal de solicitantes, agentes, negocios, servicios y crecimiento.
+- No se toca Supabase.
+- PWA/cache actualizado a v4.9.6.

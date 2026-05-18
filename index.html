@@ -28,10 +28,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
-  <title>Conecta Servicios v4.9.5</title>
-  <link rel="stylesheet" href="styles.css?v=4.9.5-home-limpio-publicaciones" />
+  <title>Conecta Servicios v4.9.6</title>
+  <link rel="stylesheet" href="styles.css?v=4.9.6-centro-mensajes-home" />
 </head>
-<body data-version="4.9.5-home-limpio-publicaciones">
+<body data-version="4.9.6-centro-mensajes-home">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -76,17 +76,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
             <b>›</b>
           </button>
 
-          <div class="home-section-heading compact-home-question"><strong>¿Qué quieres hacer hoy?</strong></div>
-
-          <div class="home-primary-actions" aria-label="Accesos principales">
-            <button type="button" class="home-primary-card chat-card-clean" onclick="showSection('mensajes')">
-              <span class="home-primary-icon">💬</span>
-              <div><strong>Chat de negocios</strong><small>Conecta, cotiza y concreta.</small></div>
-              <b>›</b>
-            </button>
+          <div class="home-primary-actions home-learning-single" aria-label="Acceso principal de aprendizaje">
             <button type="button" class="home-primary-card learn-card-clean" onclick="showSection('aprende')">
               <span class="home-primary-icon">🎓</span>
-              <div><strong>Aprendizaje</strong><small>Aprende, crece y mejora cada día.</small></div>
+              <div><strong>Aprendizaje</strong><small>Cursos y habilidades para mejorar servicios, negocios e ingresos.</small></div>
               <b>›</b>
             </button>
           </div>
@@ -560,36 +553,56 @@ Todo uso requiere autorización expresa y por escrito del titular.
       </section>
 
 
-      <section id="mensajes" class="section info-section smart-messages-section chat-live-section business-chat-section">
-        <div class="chat-shell-card business-chat-card">
+            <section id="mensajes" class="section info-section messages-center-section">
+        <div class="messages-center-hero">
+          <span class="growth-kicker">Centro de mensajes</span>
+          <h2>Conversaciones y seguimiento</h2>
+          <p>Un solo lugar para llegar a chats de negocios, publicaciones, mandados, agentes y acuerdos. El chat de negocios vive dentro de la sección Negocios para evitar confusión.</p>
+        </div>
+
+        <div class="messages-center-grid">
+          <button type="button" class="message-center-card" onclick="showSection('negocios'); setTimeout(() => showBusinessFutureTerminal('Negocio local'), 150)">
+            <span>🏪</span>
+            <div><strong>Chat de negocios</strong><small>Catálogo, pedido, cita, pickup o envío futuro.</small></div>
+            <b>›</b>
+          </button>
+          <button type="button" class="message-center-card" onclick="requestNearbyPublications()">
+            <span>📍</span>
+            <div><strong>Publicaciones</strong><small>Contacta solicitantes, agentes, negocios o servicios.</small></div>
+            <b>›</b>
+          </button>
+          <button type="button" class="message-center-card" onclick="showSection('mandados')">
+            <span>🧺</span>
+            <div><strong>Mandados verificados</strong><small>Seguimiento con evidencia y trato directo.</small></div>
+            <b>›</b>
+          </button>
+          <button type="button" class="message-center-card" onclick="showSection('agentes')">
+            <span>📈</span>
+            <div><strong>Agentes de crecimiento</strong><small>Campañas, comisión y contactos por resultado.</small></div>
+            <b>›</b>
+          </button>
+        </div>
+
+        <div class="chat-shell-card center-message-helper">
           <div class="chat-head clean-chat-head">
             <span class="smart-bot-icon business-chat-icon">💬</span>
             <div>
-              <strong>Chat de negocios</strong>
-              <small>Terminal de venta piloto para catálogo, pedidos, citas, pickup y envío.</small>
+              <strong>Asistente de orientación</strong>
+              <small>Escribe lo que buscas y te llevamos a la sección correcta.</small>
             </div>
           </div>
           <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
-          <div class="smart-quick-row chat-quick-row" aria-label="Opciones rápidas para negocio">
-            <button type="button" onclick="fillSmartMessage('Quiero ver el catálogo de una panadería')">Catálogo</button>
-            <button type="button" onclick="fillSmartMessage('Quiero hacer un pedido con envío o pickup')">Pedido</button>
-            <button type="button" onclick="fillSmartMessage('Quiero agendar una cita en una estética')">Cita</button>
-            <button type="button" onclick="fillSmartMessage('Quiero cotizar un producto de ferretería')">Cotizar</button>
-            <button type="button" onclick="showSection('negocios')">Negocios</button>
-            <button type="button" onclick="showSection('publicaciones')">Publicaciones</button>
+          <div class="smart-quick-row chat-quick-row" aria-label="Opciones rápidas del centro de mensajes">
+            <button type="button" onclick="fillSmartMessage('Quiero hablar con un negocio')">Negocio</button>
+            <button type="button" onclick="fillSmartMessage('Quiero pedir un mandado verificado')">Mandado</button>
+            <button type="button" onclick="fillSmartMessage('Quiero contactar un agente')">Agente</button>
+            <button type="button" onclick="fillSmartMessage('Quiero publicar una oportunidad')">Publicar</button>
           </div>
-          <label class="chat-input-row" aria-label="Escribe tu mensaje al negocio">
-            <textarea id="smartMessageInput" rows="2" placeholder="Escribe aquí... Ej. Quiero pedir pan para recoger hoy"></textarea>
+          <label class="chat-input-row" aria-label="Escribe tu mensaje">
+            <textarea id="smartMessageInput" rows="2" placeholder="Ej. Quiero pedir pan, contratar un servicio o solicitar un mandado"></textarea>
             <button type="button" onclick="sendSmartChatMessage()" aria-label="Enviar mensaje">➤</button>
           </label>
-          <div class="chat-actions-row">
-            <button type="button" class="btn-small btn-purple" onclick="showBusinessFutureTerminal('Negocio local')">Ver terminal piloto</button>
-            <button type="button" class="btn-small btn-outline" onclick="showSection('negocios')">Explorar negocios</button>
-            <button type="button" class="btn-small btn-green" onclick="requestNearbyPublications()">Ver publicaciones</button>
-          </div>
         </div>
-
-        <div id="smartMessageResult" class="smart-result-panel hidden" aria-live="polite"></div>
       </section>
 
       <section id="aprende" class="section info-section learn-section clean-learn-section courses-section">
@@ -619,9 +632,9 @@ Todo uso requiere autorización expresa y por escrito del titular.
         <div class="business-hero-card">
           <span class="growth-kicker">Modo piloto para inversionistas</span>
           <h2>Negocios locales</h2>
-          <p>Separar panaderías, estéticas, ferreterías, carpinterías y otros comercios permite preparar un chat propio que después evolucione a catálogo, carrito, pago, envío, pickup o agenda de citas.</p>
+          <p>Comercios como panaderías, estéticas, ferreterías y carpinterías tendrán su propio chat para atender clientes. Después podrá crecer a catálogo, carrito, agenda, pago, envío o pickup.</p>
           <div class="growth-hero-actions">
-            <button type="button" class="btn-small btn-purple" onclick="showBusinessFutureTerminal('Negocio local')">Ver chat futuro</button>
+            <button type="button" class="btn-small btn-purple" onclick="showBusinessFutureTerminal('Negocio local')">Abrir chat de negocios</button>
             <button type="button" class="btn-small btn-outline" onclick="applyCategoryAndShow('Negocios locales')">Ver publicaciones piloto</button>
           </div>
         </div>
@@ -797,8 +810,8 @@ Todo uso requiere autorización expresa y por escrito del titular.
     <nav class="bottom-nav system-nav" aria-label="Navegación principal">
       <button type="button" onclick="showSection('inicio')">🏠<span>Inicio</span></button>
       <button type="button" onclick="startOpportunityGuide()">🔖<span>Para ti</span></button>
-      <button type="button" class="publish-nav-action" onclick="showSection('registro')" aria-label="Publicar">＋</button>
-      <button type="button" onclick="showSection('mensajes')">💬<span>Chat</span></button>
+      <button type="button" class="publish-nav-action" onclick="startOpportunityGuide()" aria-label="Oportunidades para ti">＋</button>
+      <button type="button" onclick="showSection('mensajes')">💬<span>Centro</span></button>
       <button type="button" onclick="showSection('aprende')">🎓<span>Aprendizaje</span></button>
     </nav>
   </div>
