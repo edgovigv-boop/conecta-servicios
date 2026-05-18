@@ -1,0 +1,13 @@
+Conecta Servicios v4.9.7 — Embajadores Conecta piloto
+
+Commit sugerido:
+Actualización v4.9.7 - Embajadores Conecta piloto
+
+Revisar:
+1. Oportunidades para ti → Quiero ser embajador Conecta.
+2. Centro de mensajes → Embajadores Conecta.
+3. Registro de embajador.
+4. Registro de referido piloto.
+5. Contadores de referidos y membresía futura.
+
+No toca Supabase ni activa cobros reales.

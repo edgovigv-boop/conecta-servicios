@@ -29,9 +29,9 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
   <title>Conecta Servicios v4.9.6</title>
-  <link rel="stylesheet" href="styles.css?v=4.9.6-centro-mensajes-home" />
+  <link rel="stylesheet" href="styles.css?v=4.9.7-embajadores-piloto" />
 </head>
-<body data-version="4.9.6-centro-mensajes-home">
+<body data-version="4.9.7-embajadores-piloto">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -133,6 +133,11 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <button type="button" class="route-start-card" onclick="openOpportunityWizard('necesito')">
             <span class="route-start-icon">🔎</span>
             <span><strong>Necesito publicar algo</strong><small>Pide apoyo, busca personal, solicita un mandado, movilidad o comparte una oportunidad.</small></span>
+            <b>›</b>
+          </button>
+          <button type="button" class="route-start-card route-ambassador-card" onclick="showSection('embajadores')">
+            <span class="route-start-icon">🤝</span>
+            <span><strong>Quiero ser embajador Conecta</strong><small>Invita negocios, usuarios o agentes y registra referidos en modo piloto, sin manejo de dinero real.</small></span>
             <b>›</b>
           </button>
         </div>
@@ -581,6 +586,11 @@ Todo uso requiere autorización expresa y por escrito del titular.
             <div><strong>Agentes de crecimiento</strong><small>Campañas, comisión y contactos por resultado.</small></div>
             <b>›</b>
           </button>
+          <button type="button" class="message-center-card" onclick="showSection('embajadores')">
+            <span>🤝</span>
+            <div><strong>Embajadores Conecta</strong><small>Referidos, membresía futura y activación local.</small></div>
+            <b>›</b>
+          </button>
         </div>
 
         <div class="chat-shell-card center-message-helper">
@@ -777,6 +787,64 @@ Todo uso requiere autorización expresa y por escrito del titular.
         </div>
       </section>
 
+
+      <section id="embajadores" class="section info-section ambassador-section">
+        <div class="ambassador-hero-card">
+          <span class="growth-kicker">Monetización piloto</span>
+          <h2>Embajadores Conecta</h2>
+          <p>Un piloto para activar usuarios, negocios y agentes mediante referidos claros. En esta etapa no hay cobros reales ni comisiones automáticas: solo registro, medición y validación del interés.</p>
+          <div class="growth-hero-actions">
+            <button type="button" class="btn-small btn-purple" onclick="showAmbassadorPanel('embajador')">Quiero ser embajador</button>
+            <button type="button" class="btn-small btn-orange" onclick="showAmbassadorPanel('referido')">Registrar referido piloto</button>
+          </div>
+        </div>
+
+        <div class="ambassador-summary-grid" aria-label="Indicadores piloto de embajadores">
+          <div><strong id="ambassadorCount">0</strong><small>embajadores</small></div>
+          <div><strong id="referralCount">0</strong><small>referidos</small></div>
+          <div><strong id="businessReferralCount">0</strong><small>negocios</small></div>
+          <div><strong id="agentReferralCount">0</strong><small>agentes</small></div>
+        </div>
+
+        <div class="ambassador-path-grid">
+          <button type="button" class="ambassador-path-card" onclick="showAmbassadorPanel('embajador')">
+            <span>🙋</span>
+            <strong>Ser embajador</strong>
+            <p>Registra tu zona, forma de invitar y tipo de personas o negocios que puedes activar.</p>
+            <b>Iniciar registro ›</b>
+          </button>
+          <button type="button" class="ambassador-path-card" onclick="showAmbassadorPanel('referido')">
+            <span>🔗</span>
+            <strong>Registrar referido</strong>
+            <p>Guarda un negocio, agente, solicitante o servicio interesado para medir tracción.</p>
+            <b>Agregar referido ›</b>
+          </button>
+          <button type="button" class="ambassador-path-card" onclick="setAmbassadorTab('membresia')">
+            <span>⭐</span>
+            <strong>Membresía futura</strong>
+            <p>Visualiza cómo podrían existir beneficios premium sin activar pagos todavía.</p>
+            <b>Ver modelo ›</b>
+          </button>
+        </div>
+
+        <div id="ambassadorPanel" class="ambassador-panel hidden"></div>
+
+        <div class="ambassador-tabs" aria-label="Embajadores Conecta">
+          <button type="button" class="active" onclick="setAmbassadorTab('referidos')" data-ambassador-tab="referidos">Referidos</button>
+          <button type="button" onclick="setAmbassadorTab('embajadores')" data-ambassador-tab="embajadores">Embajadores</button>
+          <button type="button" onclick="setAmbassadorTab('membresia')" data-ambassador-tab="membresia">Membresía futura</button>
+        </div>
+
+        <div id="ambassadorReferralsList" class="ambassador-list"></div>
+        <div id="ambassadorMembersList" class="ambassador-list hidden"></div>
+        <div id="ambassadorMembershipPanel" class="ambassador-list hidden"></div>
+
+        <div class="notice-card slim ambassador-note">
+          <strong>Etapa piloto responsable</strong>
+          <p>Este módulo solo mide interés, referidos y activación local. Las recompensas, membresías, comisiones o pagos reales deberán definirse después con reglas claras, validación y proveedor autorizado si aplica.</p>
+        </div>
+      </section>
+
       <section id="instalarApp" class="section info-section">
         <h2>Instalar Conecta Servicios</h2>
         <div class="install-help-card">
@@ -885,6 +953,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.9.3-chat-negocios-barra-dinamica"></script>
+  <script src="app.js?v=4.9.7-embajadores-piloto"></script>
 </body>
 </html>

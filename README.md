@@ -1,15 +1,17 @@
-# Conecta Servicios v4.9.6 — Centro de mensajes y home limpio
+# Conecta Servicios v4.9.7 — Embajadores Conecta piloto
 
-Esta versión ordena la navegación del Home y evita duplicar Chat de negocios como acceso principal.
+Esta versión agrega un piloto de monetización sin cobros reales para validar activación local, referidos y una futura membresía.
 
 Cambios principales:
 
-- Chat de negocios queda dentro de Negocios locales.
-- La barra inferior ahora muestra Centro de mensajes.
-- Centro de mensajes agrupa accesos a negocios, publicaciones, mandados y agentes.
-- Aprendizaje queda como botón principal de ancho completo en el Home.
-- Se eliminó la frase “¿Qué quieres hacer hoy?” del Home.
-- El botón + inferior abre Oportunidades para ti, igual que el botón grande central.
-- Se mantiene Publicaciones cerca de mí como eje principal de solicitantes, agentes, negocios, servicios y crecimiento.
+- Nueva sección **Embajadores Conecta**.
+- Acceso desde **Oportunidades para ti**.
+- Acceso desde **Centro de mensajes**.
+- Registro piloto de embajadores.
+- Registro piloto de referidos: solicitantes, agentes, negocios, servicios o crecimiento.
+- Contadores locales de referidos, negocios, agentes y embajadores.
+- Modelo visual de membresía futura, sin activar pagos.
+- Publicación piloto de Embajadores dentro de Crecimiento.
 - No se toca Supabase.
-- PWA/cache actualizado a v4.9.6.
+- No hay manejo real de dinero ni comisiones automáticas.
+- PWA/cache actualizado a v4.9.7.

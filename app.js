@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.6-centro-mensajes-home";
+const PWA_VERSION = "v4.9.7-embajadores-piloto";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -82,7 +82,7 @@ const APP_VERSION_KEY = "conecta_servicios_app_version";
 const CHAT_STORAGE_KEY = "conecta_business_chat_v494";
 const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v492";
 
-// v4.9.6 — Centro de mensajes + home limpio + acuerdo directo
+// v4.9.7 — Embajadores Conecta + monetización piloto sin cobros reales
 // Muestra publicaciones curadas y oculta los registros reales de Supabase en la vista pública.
 // Supabase sigue intacto; administración y futuras versiones pueden volver a producción cambiando esta bandera.
 const PRESENTATION_PILOT_MODE = true;
@@ -142,6 +142,12 @@ const PILOT_PUBLICATIONS = [
     name: "Ruta compartida Toluca", title: "Comparto viaje Chapultepec a Toluca", category: "Movilidad", subcategory: "Viaje compartido",
     description: "Salida por la mañana entre semana. Cooperación directa, puntos claros de encuentro y trato respetuoso.",
     state: "México", municipality: "Chapultepec", locality: "Avenida principal", phone: OFFICE_PHONE, budget: 50, status: "activo", createdAt: "2026-05-18T08:20:00Z", nextStep: "Contactar viaje"
+  },
+  {
+    id: "PILOTO-EMB-001", pilotType: "crecimiento", roleLabel: "Embajador", relationLabel: "Activación local",
+    name: "Embajador Conecta", title: "Invita negocios y usuarios en tu zona", category: "Embajadores Conecta", subcategory: "Referidos piloto",
+    description: "Piloto para medir referidos de solicitantes, agentes, negocios y servicios. Sin cobros ni comisiones automáticas en esta etapa.",
+    state: "México", municipality: "Chapultepec", locality: "Centro", phone: OFFICE_PHONE, budget: 0, status: "activo", createdAt: "2026-05-18T08:05:00Z", nextStep: "Registrar referido piloto"
   },
   {
     id: "PILOTO-APR-001", pilotType: "crecimiento", roleLabel: "Aprendizaje", relationLabel: "Curso útil",
@@ -517,7 +523,7 @@ function routeUrlForSection(id) {
   return `${base}#${id}`;
 }
 function showSection(id, push = true) {
-  const sectionAliases = { aprendizaje: "aprende", aprender: "aprende", chat: "mensajes" };
+  const sectionAliases = { aprendizaje: "aprende", aprender: "aprende", chat: "mensajes", embajador: "embajadores", embajadores: "embajadores", referidos: "embajadores" };
   id = sectionAliases[id] || id;
   if (id === "admin" && !adminRouteEnabled) { showToast("Acceso de administración oculto"); id = "inicio"; }
   const target = document.getElementById(id);
@@ -527,7 +533,7 @@ function showSection(id, push = true) {
   document.querySelector(".app-shell")?.classList.toggle("home-mode", id === "inicio");
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   target.classList.add("active");
-  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme", mensajes:"Centro de mensajes", agentes:"Agentes de crecimiento", mandados:"Mandados Verificados", negocios:"Negocios locales" };
+  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme", mensajes:"Centro de mensajes", agentes:"Agentes de crecimiento", mandados:"Mandados Verificados", negocios:"Negocios locales", embajadores:"Embajadores Conecta" };
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
@@ -551,6 +557,7 @@ function showSection(id, push = true) {
   if (id === "aprende") renderCourseCards?.();
   if (id === "agentes") renderGrowthPilotLists?.();
   if (id === "mandados") renderErrandPilotLists?.();
+  if (id === "embajadores") renderAmbassadorPilot?.();
 }
 function goBack() {
   if (currentSection === "inicio") {
@@ -2340,7 +2347,10 @@ function detectSmartIntent(rawText) {
   if (/aprend|curso|capacita|clase|enseña|ensenar|mejorar|especializar|ingresos|oficio|carlos slim|google|skillsbuild/.test(text)) {
     return { category: "", query: "aprendizaje", label: "Cursos gratuitos", action: "aprender" };
   }
-  if (/agente|agentes|comision|comisión|marketing|campaña|campana|publicidad|promocionar|promotor|referido|clientes por comision|crecimiento/.test(text)) {
+  if (/embajador|embajadores|referido|referidos|membres[ií]a|invitar|recomendar la app|activar usuarios/.test(text)) {
+    return { category: "Embajadores Conecta", query: "embajadores referidos membresía", label: "Embajadores Conecta", action: "embajadores" };
+  }
+  if (/agente|agentes|comision|comisión|marketing|campaña|campana|publicidad|promocionar|promotor|clientes por comision|crecimiento/.test(text)) {
     return { category: "Agentes de crecimiento", query: "agentes crecimiento comisión clientes", label: "Agentes de crecimiento", action: "agentes" };
   }
   if (/ofrezco|servicio|trabajo|clientes|vendo|reparo|limpio|hago|negocio|publicar/.test(text)) {
@@ -2354,6 +2364,7 @@ function smartReplyFor(raw) {
   if (intent.action === "aprender") return "Te conviene entrar a Aprendizaje. Ahí agregué cursos gratuitos como Fundación Carlos Slim, Google Actívate e IBM SkillsBuild para mejorar habilidades desde el celular.";
   if (intent.action === "publicar") return "Esto parece una oportunidad para publicar. Puedo llevarte al registro guiado para crear una publicación clara con municipio, categoría y WhatsApp protegido.";
   if (intent.action === "agentes") return "Te conviene revisar Agentes de crecimiento. Ahí un negocio puede publicar campañas por comisión y una persona puede registrarse para conseguir clientes o contactos por resultado.";
+  if (intent.action === "embajadores") return "Te conviene revisar Embajadores Conecta. Es un piloto para registrar referidos, medir activación local y validar un modelo futuro de membresía o recompensas sin manejar dinero real todavía.";
   if (intent.action === "mandados") return "Te conviene revisar Mandados Verificados. Ahí puedes solicitar una compra con evidencia de precio, peso, pago, cambio y entrega; además ver el simulador de Fondo Protegido Conecta para entender cómo se apartaría el dinero en una etapa futura.";
   if (intent.action === "negocios") return "El chat de negocios está dentro de Negocios locales. Te llevo ahí para ver el modelo de catálogo, pedido, cita, envío o pickup futuro.";
   return `Encontré una ruta posible: ${intent.label}. Puedo buscar coincidencias o ayudarte a publicar la necesidad si no aparece una opción adecuada.`;
@@ -2376,6 +2387,7 @@ function smartShowSuggested() {
   if (smartLastSuggestion?.action === "mandados") { showSection("mandados"); return; }
   if (smartLastSuggestion?.action === "negocios") { showSection("negocios"); return; }
   if (smartLastSuggestion?.action === "agentes") { showSection("agentes"); return; }
+  if (smartLastSuggestion?.action === "embajadores") { showSection("embajadores"); return; }
   if (smartLastSuggestion?.action === "aprender") { showSection("aprende"); return; }
   showSection("publicaciones");
   setTimeout(() => {
@@ -3024,10 +3036,200 @@ function saveErrandLead(event, type) {
 }
 
 
+// v4.9.7 — Embajadores Conecta: piloto de referidos y membresía futura sin cobros reales
+const AMBASSADOR_STORAGE_KEY = "conecta_embajadores_piloto_v497";
+let ambassadorActiveTab = "referidos";
+const AMBASSADOR_DEFAULT_REFERRALS = [
+  { name: "Panadería San Miguel", type: "Negocio", zone: "Chapultepec, México", source: "Recomendación local", status: "Interesado", notes: "Quiere aparecer en Negocios locales y probar chat de pedidos.", contact: OFFICE_PHONE },
+  { name: "Carlos R.", type: "Agente", zone: "Mexicaltzingo, México", source: "Vecino / conocido", status: "Registrado", notes: "Disponible para mandados verificados y entregas pequeñas.", contact: OFFICE_PHONE },
+  { name: "María G.", type: "Solicitante", zone: "Chapultepec Centro", source: "Grupo local", status: "Contactado", notes: "Necesita mandados a mercado y servicios del hogar.", contact: OFFICE_PHONE }
+];
+const AMBASSADOR_DEFAULT_MEMBERS = [
+  { name: "Ana M.", zone: "Toluca", profile: "Estudiante / redes sociales", channels: "WhatsApp, Facebook local, grupos de vecinos", focus: "Negocios y agentes de crecimiento", contact: OFFICE_PHONE },
+  { name: "Luis H.", zone: "Metepec", profile: "Promotor local", channels: "Referidos directos y comercios", focus: "Mandados y servicios", contact: OFFICE_PHONE }
+];
+function getAmbassadorData() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(AMBASSADOR_STORAGE_KEY) || "{}");
+    return {
+      referrals: Array.isArray(saved.referrals) ? saved.referrals : [],
+      members: Array.isArray(saved.members) ? saved.members : []
+    };
+  } catch {
+    return { referrals: [], members: [] };
+  }
+}
+function saveAmbassadorData(data) {
+  try { localStorage.setItem(AMBASSADOR_STORAGE_KEY, JSON.stringify(data)); } catch {}
+}
+function allAmbassadorReferrals() {
+  const data = getAmbassadorData();
+  return [...data.referrals, ...AMBASSADOR_DEFAULT_REFERRALS];
+}
+function allAmbassadorMembers() {
+  const data = getAmbassadorData();
+  return [...data.members, ...AMBASSADOR_DEFAULT_MEMBERS];
+}
+function ambassadorWhatsAppMessage(type, item) {
+  if (type === "referido") return `Hola, vi en Conecta Servicios el referido ${item.name || "registrado"}. Quiero dar seguimiento al piloto de embajadores.`;
+  if (type === "embajador") return `Hola, vi el perfil de ${item.name || "un embajador"} en Embajadores Conecta. Me interesa conversar sobre activación local.`;
+  return "Hola, quiero información sobre Embajadores Conecta.";
+}
+function renderAmbassadorReferralCard(item, local = false) {
+  return `<article class="ambassador-item-card">
+    <span class="ambassador-tag">${escapeHtml(item.type || "Referido")}</span>
+    <strong>${escapeHtml(item.name || "Referido piloto")}</strong>
+    <p>${escapeHtml(item.notes || "Contacto interesado en conocer Conecta Servicios.")}</p>
+    <dl>
+      <div><dt>Zona</dt><dd>${escapeHtml(item.zone || "Por definir")}</dd></div>
+      <div><dt>Origen</dt><dd>${escapeHtml(item.source || "Invitación directa")}</dd></div>
+      <div><dt>Estado</dt><dd>${escapeHtml(item.status || "Interesado")}</dd></div>
+    </dl>
+    <div class="growth-card-actions">
+      <button type="button" class="btn-small btn-purple" onclick="openWhatsApp('${cleanPhone(item.contact || OFFICE_PHONE)}','${encodeURIComponent(ambassadorWhatsAppMessage("referido", item))}')">Dar seguimiento</button>
+      ${local ? '<small>Guardado en este dispositivo</small>' : ''}
+    </div>
+  </article>`;
+}
+function renderAmbassadorMemberCard(item, local = false) {
+  return `<article class="ambassador-item-card ambassador-member-card">
+    <span class="ambassador-tag">Embajador</span>
+    <strong>${escapeHtml(item.name || "Embajador Conecta")}</strong>
+    <p>${escapeHtml(item.profile || "Persona interesada en activar usuarios y negocios locales.")}</p>
+    <dl>
+      <div><dt>Zona</dt><dd>${escapeHtml(item.zone || "Por definir")}</dd></div>
+      <div><dt>Canales</dt><dd>${escapeHtml(item.channels || "WhatsApp y redes locales")}</dd></div>
+      <div><dt>Enfoque</dt><dd>${escapeHtml(item.focus || "Usuarios y negocios")}</dd></div>
+    </dl>
+    <div class="growth-card-actions">
+      <button type="button" class="btn-small btn-orange" onclick="openWhatsApp('${cleanPhone(item.contact || OFFICE_PHONE)}','${encodeURIComponent(ambassadorWhatsAppMessage("embajador", item))}')">Contactar</button>
+      ${local ? '<small>Guardado en este dispositivo</small>' : ''}
+    </div>
+  </article>`;
+}
+function renderAmbassadorMembership() {
+  const panel = document.getElementById("ambassadorMembershipPanel");
+  if (!panel) return;
+  panel.innerHTML = `<div class="membership-model-grid">
+    <article class="membership-model-card">
+      <span>🆓</span><strong>Usuario básico</strong>
+      <p>Publicar, explorar y contactar con trato directo. Ideal para adopción masiva.</p>
+      <small>Sin cobro piloto</small>
+    </article>
+    <article class="membership-model-card featured">
+      <span>⭐</span><strong>Negocio destacado</strong>
+      <p>Perfil más visible, acceso a chat de negocio, catálogo futuro y prioridad local.</p>
+      <small>Membresía futura</small>
+    </article>
+    <article class="membership-model-card">
+      <span>🤝</span><strong>Embajador</strong>
+      <p>Referidos medidos, activación por zona y posibles recompensas por resultados validados.</p>
+      <small>Reglas por definir</small>
+    </article>
+  </div>
+  <div class="notice-card slim">
+    <strong>No activar cobros todavía</strong>
+    <p>La membresía se muestra como modelo de negocio para inversionistas. Antes de cobrar se deben definir beneficios, términos, facturación, comisiones y forma de validación.</p>
+  </div>`;
+}
+function updateAmbassadorSummary() {
+  const referrals = allAmbassadorReferrals();
+  const members = allAmbassadorMembers();
+  const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+  setText("ambassadorCount", members.length);
+  setText("referralCount", referrals.length);
+  setText("businessReferralCount", referrals.filter(r => normalize(r.type).includes("negocio")).length);
+  setText("agentReferralCount", referrals.filter(r => normalize(r.type).includes("agente")).length);
+}
+function renderAmbassadorPilot() {
+  updateAmbassadorSummary();
+  const data = getAmbassadorData();
+  const referrals = allAmbassadorReferrals();
+  const members = allAmbassadorMembers();
+  const referralList = document.getElementById("ambassadorReferralsList");
+  const memberList = document.getElementById("ambassadorMembersList");
+  if (referralList) referralList.innerHTML = referrals.map((item, index) => renderAmbassadorReferralCard(item, index < data.referrals.length)).join("");
+  if (memberList) memberList.innerHTML = members.map((item, index) => renderAmbassadorMemberCard(item, index < data.members.length)).join("");
+  renderAmbassadorMembership();
+  setAmbassadorTab(ambassadorActiveTab, false);
+}
+function setAmbassadorTab(tab, scroll = true) {
+  ambassadorActiveTab = tab;
+  document.querySelectorAll("[data-ambassador-tab]").forEach(button => button.classList.toggle("active", button.dataset.ambassadorTab === tab));
+  document.getElementById("ambassadorReferralsList")?.classList.toggle("hidden", tab !== "referidos");
+  document.getElementById("ambassadorMembersList")?.classList.toggle("hidden", tab !== "embajadores");
+  document.getElementById("ambassadorMembershipPanel")?.classList.toggle("hidden", tab !== "membresia");
+  if (tab === "membresia") renderAmbassadorMembership();
+  if (scroll) document.getElementById("embajadores")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function showAmbassadorPanel(type = "embajador") {
+  const panel = document.getElementById("ambassadorPanel");
+  if (!panel) return;
+  const isReferral = type === "referido";
+  panel.classList.remove("hidden");
+  panel.innerHTML = `<form class="form-card ambassador-form" onsubmit="submitAmbassadorPilot(event, '${isReferral ? "referido" : "embajador"}')">
+    <h3>${isReferral ? "Registrar referido piloto" : "Registro de embajador"}</h3>
+    <p class="muted">${isReferral ? "Guarda un contacto interesado para medir tracción sin exponer datos públicamente." : "Registra una persona que puede activar usuarios, negocios o agentes en su zona."}</p>
+    ${isReferral ? `
+      <label>Nombre del referido o negocio<input id="ambassadorReferralName" type="text" placeholder="Ej. Panadería La Estrella" required></label>
+      <div class="form-grid"><label>Tipo<select id="ambassadorReferralType"><option>Negocio</option><option>Agente</option><option>Solicitante</option><option>Servicio</option><option>Crecimiento</option></select></label><label>Estado<select id="ambassadorReferralStatus"><option>Interesado</option><option>Contactado</option><option>Registrado</option><option>En revisión</option></select></label></div>
+      <label>Zona<input id="ambassadorReferralZone" type="text" placeholder="Municipio o localidad"></label>
+      <label>Origen del contacto<input id="ambassadorReferralSource" type="text" placeholder="Ej. WhatsApp, grupo local, visita directa"></label>
+      <label>Notas<textarea id="ambassadorReferralNotes" rows="4" placeholder="Qué necesita, qué ofrece o por qué le interesa Conecta Servicios"></textarea></label>
+      <label>WhatsApp de seguimiento<input id="ambassadorReferralContact" type="tel" placeholder="10 dígitos"></label>` : `
+      <label>Nombre público<input id="ambassadorMemberName" type="text" placeholder="Ej. Ana M." required></label>
+      <label>Zona donde puede activar usuarios<input id="ambassadorMemberZone" type="text" placeholder="Ej. Chapultepec, Metepec, Toluca"></label>
+      <label>Perfil<select id="ambassadorMemberProfile"><option>Estudiante</option><option>Promotor local</option><option>Agente de servicios</option><option>Negocio local</option><option>Creador de contenido</option><option>Otro</option></select></label>
+      <label>Canales para invitar<textarea id="ambassadorMemberChannels" rows="3" placeholder="WhatsApp, grupos locales, Facebook, visitas a negocios, escuela, comunidad..."></textarea></label>
+      <label>Enfoque principal<textarea id="ambassadorMemberFocus" rows="3" placeholder="Negocios, solicitantes, agentes, servicios, mandados, aprendizaje..."></textarea></label>
+      <label>WhatsApp de seguimiento<input id="ambassadorMemberContact" type="tel" placeholder="10 dígitos"></label>`}
+    <div class="notice-card slim">
+      <strong>Piloto sin dinero real</strong>
+      <p>Este registro ayuda a medir interés. No genera pago automático ni obligación de comisión.</p>
+    </div>
+    <div class="dialog-actions"><button type="button" class="btn-small btn-ghost" onclick="document.getElementById('ambassadorPanel').classList.add('hidden')">Cancelar</button><button type="submit" class="btn-small btn-purple">Guardar piloto</button></div>
+  </form>`;
+  panel.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function submitAmbassadorPilot(event, type) {
+  event.preventDefault();
+  const data = getAmbassadorData();
+  if (type === "referido") {
+    data.referrals.unshift({
+      name: document.getElementById("ambassadorReferralName")?.value.trim(),
+      type: document.getElementById("ambassadorReferralType")?.value,
+      status: document.getElementById("ambassadorReferralStatus")?.value,
+      zone: document.getElementById("ambassadorReferralZone")?.value.trim(),
+      source: document.getElementById("ambassadorReferralSource")?.value.trim(),
+      notes: document.getElementById("ambassadorReferralNotes")?.value.trim(),
+      contact: cleanPhone(document.getElementById("ambassadorReferralContact")?.value)
+    });
+    ambassadorActiveTab = "referidos";
+    showToast("Referido piloto guardado");
+  } else {
+    data.members.unshift({
+      name: document.getElementById("ambassadorMemberName")?.value.trim(),
+      zone: document.getElementById("ambassadorMemberZone")?.value.trim(),
+      profile: document.getElementById("ambassadorMemberProfile")?.value,
+      channels: document.getElementById("ambassadorMemberChannels")?.value.trim(),
+      focus: document.getElementById("ambassadorMemberFocus")?.value.trim(),
+      contact: cleanPhone(document.getElementById("ambassadorMemberContact")?.value)
+    });
+    ambassadorActiveTab = "embajadores";
+    showToast("Embajador piloto guardado");
+  }
+  saveAmbassadorData(data);
+  document.getElementById("ambassadorPanel")?.classList.add("hidden");
+  renderAmbassadorPilot();
+  trackEvent("embajadores_piloto", null, { tipo: type });
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
   renderSmartChat();
   renderCourseCards();
   renderErrandPilotLists?.();
   renderProtectedFundSimulator?.();
   renderBusinessPilotList?.();
+  renderAmbassadorPilot?.();
 });
