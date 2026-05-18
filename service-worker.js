@@ -4,12 +4,12 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.9.8-embajadores-mp-piloto";
+const CACHE_NAME = "conecta-servicios-v4.9.9-home-carrusel-oportunidades";
 const ASSETS = [
   "./",
   "index.html",
-  "styles.css?v=4.9.8-embajadores-mp-piloto",
-  "app.js?v=4.9.8-embajadores-mp-piloto",
+  "styles.css?v=4.9.9-home-carrusel-oportunidades",
+  "app.js?v=4.9.9-home-carrusel-oportunidades",
   "manifest.json",
   "assets/hero-scene-v4718.webp",
   "assets/hero-scene-clean-v4711.png",

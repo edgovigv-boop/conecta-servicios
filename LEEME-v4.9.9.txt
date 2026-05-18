@@ -1,0 +1,14 @@
+Conecta Servicios v4.9.9 — Home carrusel + oportunidades reorganizadas
+
+Cambios principales:
+- Home con carrusel horizontal de publicaciones piloto.
+- Cada tarjeta del carrusel abre Publicaciones en el tipo correspondiente.
+- Embajadores Conecta destacado en Home: membresía anual $98 MXN y comisión sugerida $50 MXN por referido pagado.
+- Botón + / Oportunidades para ti reorganizado con cuatro acciones: Publicaciones, Mandados Verificados, Agentes de crecimiento y Chat de negocios.
+- Centro de mensajes simplificado como Asistente de orientación más potente.
+- Plan de membresía ajustado a $98 MXN y comisión de embajador a $50 MXN.
+- No toca Supabase.
+- Cache/PWA actualizado a v4.9.9.
+
+Commit sugerido:
+Actualización v4.9.9 - Home carrusel y oportunidades

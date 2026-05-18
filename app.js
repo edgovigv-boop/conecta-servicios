@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.8-embajadores-mp-piloto";
+const PWA_VERSION = "v4.9.9-home-carrusel-oportunidades";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -82,7 +82,7 @@ const APP_VERSION_KEY = "conecta_servicios_app_version";
 const CHAT_STORAGE_KEY = "conecta_business_chat_v494";
 const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v492";
 
-// v4.9.8 — Embajadores Conecta + Mercado Pago piloto
+// v4.9.9 — Home carrusel, oportunidades reorganizadas y embajadores destacados
 // Muestra publicaciones curadas y oculta los registros reales de Supabase en la vista pública.
 // Supabase sigue intacto; administración y futuras versiones pueden volver a producción cambiando esta bandera.
 const PRESENTATION_PILOT_MODE = true;
@@ -533,7 +533,7 @@ function showSection(id, push = true) {
   document.querySelector(".app-shell")?.classList.toggle("home-mode", id === "inicio");
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   target.classList.add("active");
-  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme", mensajes:"Centro de mensajes", agentes:"Agentes de crecimiento", mandados:"Mandados Verificados", negocios:"Negocios locales", embajadores:"Embajadores Conecta" };
+  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme", mensajes:"Centro de orientación", agentes:"Agentes de crecimiento", mandados:"Mandados Verificados", negocios:"Negocios locales", embajadores:"Embajadores Conecta" };
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
@@ -2222,7 +2222,7 @@ document.addEventListener("DOMContentLoaded", init);
 let smartLastSuggestion = { query: "", category: "" };
 
 const DEFAULT_CHAT_MESSAGES = [
-  { role: "bot", text: "Hola, soy el chat de negocios de Conecta. Este espacio se prepara para que un cliente pueda ver catálogo, pedir, agendar, solicitar envío o pickup y cerrar acuerdos directos con el negocio." }
+  { role: "bot", text: "Hola, soy el asistente de orientación de Conecta. Escríbeme qué necesitas: ganar dinero, publicar algo, pedir un mandado, hablar con un negocio, aprender una habilidad o invitar miembros como embajador. Te llevo a la sección correcta." }
 ];
 
 const COURSE_CATALOG = [
@@ -2361,12 +2361,12 @@ function detectSmartIntent(rawText) {
 function smartReplyFor(raw) {
   const intent = detectSmartIntent(raw);
   smartLastSuggestion = { query: intent.query, category: intent.category, action: intent.action };
-  if (intent.action === "aprender") return "Te conviene entrar a Aprendizaje. Ahí agregué cursos gratuitos como Fundación Carlos Slim, Google Actívate e IBM SkillsBuild para mejorar habilidades desde el celular.";
-  if (intent.action === "publicar") return "Esto parece una oportunidad para publicar. Puedo llevarte al registro guiado para crear una publicación clara con municipio, categoría y WhatsApp protegido.";
+  if (intent.action === "aprender") return "Ruta recomendada: Aprendizaje. Ahí puedes buscar cursos gratuitos por oficio, ventas, negocio, computación o tecnología para mejorar tus ingresos. Toca Aprendizaje en la barra inferior o te llevo desde aquí.";
+  if (intent.action === "publicar") return "Ruta recomendada: Publicaciones. Puedes crear una publicación como solicitante, agente, negocio o servicio. Te conviene usar Oportunidades para ti para elegir el camino correcto antes de publicar.";
   if (intent.action === "agentes") return "Te conviene revisar Agentes de crecimiento. Ahí un negocio puede publicar campañas por comisión y una persona puede registrarse para conseguir clientes o contactos por resultado.";
-  if (intent.action === "embajadores") return "Te conviene revisar Embajadores Conecta. Es un piloto para registrar referidos, medir activación local y validar un modelo futuro de membresía o recompensas sin manejar dinero real todavía.";
+  if (intent.action === "embajadores") return "Ruta recomendada: Embajadores Conecta. La membresía anual es de $98 MXN y la comisión sugerida para el embajador es de $50 por membresía referida pagada. Puedes registrar tu código, referidos y pagos para corte manual.";
   if (intent.action === "mandados") return "Te conviene revisar Mandados Verificados. Ahí puedes solicitar una compra con evidencia de precio, peso, pago, cambio y entrega; además ver el simulador de Fondo Protegido Conecta para entender cómo se apartaría el dinero en una etapa futura.";
-  if (intent.action === "negocios") return "El chat de negocios está dentro de Negocios locales. Te llevo ahí para ver el modelo de catálogo, pedido, cita, envío o pickup futuro.";
+  if (intent.action === "negocios") return "Ruta recomendada: Chat de negocios dentro de Negocios locales. Ahí el negocio podrá evolucionar a catálogo, pedidos, citas, cotizaciones, envío o pickup. Te llevo a esa sección.";
   return `Encontré una ruta posible: ${intent.label}. Puedo buscar coincidencias o ayudarte a publicar la necesidad si no aparece una opción adecuada.`;
 }
 function sendSmartChatMessage() {
@@ -3036,7 +3036,7 @@ function saveErrandLead(event, type) {
 }
 
 
-// v4.9.8 — Embajadores Conecta: registro, códigos, referidos y Mercado Pago piloto
+// v4.9.9 — Embajadores Conecta: membresía anual, comisión $50 y Mercado Pago piloto
 const AMBASSADOR_STORAGE_KEY = "conecta_embajadores_v498";
 const AMBASSADOR_LEGACY_KEY = "conecta_embajadores_piloto_v497";
 const AMBASSADOR_SETTINGS_KEY = "conecta_embajadores_mp_settings_v498";
@@ -3051,9 +3051,7 @@ const AMBASSADOR_DEFAULT_MEMBERS = [
   { name: "Luis H.", zone: "Metepec", profile: "Promotor local", channels: "Referidos directos y comercios", focus: "Mandados y servicios", contact: OFFICE_PHONE, code: "CON-LUIS-204", status: "Piloto" }
 ];
 const MEMBERSHIP_PLANS = [
-  { id: "basica", name: "Membresía básica", audience: "Personas, vecinos o agentes", amount: 49, commission: 15, benefits: "Perfil básico, publicaciones y acceso a comunidad." },
-  { id: "negocio", name: "Negocio local", audience: "Panaderías, estéticas, ferreterías, oficios", amount: 99, commission: 30, benefits: "Perfil de negocio, chat interno y prioridad local piloto." },
-  { id: "destacado", name: "Negocio destacado", audience: "Comercios que quieren más visibilidad", amount: 199, commission: 60, benefits: "Mayor visibilidad, acceso a catálogo futuro y seguimiento por embajador." }
+  { id: "anual", name: "Membresía anual Conecta", audience: "Personas, vecinos, agentes y negocios locales", amount: 98, commission: 50, benefits: "Acceso anual a Conecta Servicios, publicaciones, comunidad local y activación por embajador." }
 ];
 function migrateAmbassadorData() {
   try {
@@ -3169,7 +3167,7 @@ function shareAmbassadorCode(code) {
   }
 }
 function getSelectedMembershipPlan(planId) {
-  return MEMBERSHIP_PLANS.find(plan => plan.id === planId) || MEMBERSHIP_PLANS[1];
+  return MEMBERSHIP_PLANS.find(plan => plan.id === planId) || MEMBERSHIP_PLANS[0];
 }
 function calculateAmbassadorCommission(planId) {
   const plan = getSelectedMembershipPlan(planId);
@@ -3186,8 +3184,8 @@ function renderAmbassadorMembership() {
   panel.innerHTML = `<div class="membership-model-grid">
     ${MEMBERSHIP_PLANS.map(plan => {
       const calc = calculateAmbassadorCommission(plan.id);
-      return `<article class="membership-model-card ${plan.id === "negocio" ? "featured" : ""}">
-        <span>${plan.id === "basica" ? "🆓" : plan.id === "negocio" ? "🏪" : "⭐"}</span>
+      return `<article class="membership-model-card ${plan.id === "anual" ? "featured" : ""}">
+        <span>${"🤝"}</span>
         <strong>${escapeHtml(plan.name)}</strong>
         <p>${escapeHtml(plan.benefits)}</p>
         <small>$${plan.amount} MXN · comisión sugerida $${calc.ambassadorCommission}</small>
@@ -3253,7 +3251,7 @@ function renderAmbassadorPaymentPanel() {
 function updateAmbassadorPaymentPreview() {
   const target = document.getElementById("ambassadorPaymentPreview");
   if (!target) return;
-  const planId = document.getElementById("ambassadorPaymentPlan")?.value || "negocio";
+  const planId = document.getElementById("ambassadorPaymentPlan")?.value || "anual";
   const calc = calculateAmbassadorCommission(planId);
   target.innerHTML = `<div><span>Monto sugerido</span><strong>$${calc.amount}</strong></div><div><span>Comisión embajador</span><strong>$${calc.ambassadorCommission}</strong></div><div><span>Conecta</span><strong>$${calc.platformNet}</strong></div>`;
 }
@@ -3264,7 +3262,7 @@ function saveAmbassadorPaymentSettings(event) {
   renderAmbassadorPaymentPanel();
 }
 function getAmbassadorPaymentPayload() {
-  const planId = document.getElementById("ambassadorPaymentPlan")?.value || "negocio";
+  const planId = document.getElementById("ambassadorPaymentPlan")?.value || "anual";
   const calc = calculateAmbassadorCommission(planId);
   return {
     planId,

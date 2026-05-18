@@ -28,10 +28,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
-  <title>Conecta Servicios v4.9.6</title>
-  <link rel="stylesheet" href="styles.css?v=4.9.8-embajadores-mp-piloto" />
+  <title>Conecta Servicios v4.9.9</title>
+  <link rel="stylesheet" href="styles.css?v=4.9.9-home-carrusel-oportunidades" />
 </head>
-<body data-version="4.9.8-embajadores-mp-piloto">
+<body data-version="4.9.9-home-carrusel-oportunidades">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -70,12 +70,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
             <strong>Oportunidades<br>para ti</strong>
           </button>
 
-          <button class="nearby-cta-pulse" type="button" onclick="requestNearbyPublications()" aria-label="Publicaciones cerca de mí">
-            <span class="pin-icon">📍</span>
-            <strong>Publicaciones cerca de mí</strong>
-            <b>›</b>
-          </button>
-
           <div class="home-primary-actions home-learning-single" aria-label="Acceso principal de aprendizaje">
             <button type="button" class="home-primary-card learn-card-clean" onclick="showSection('aprende')">
               <span class="home-primary-icon">🎓</span>
@@ -84,24 +78,52 @@ Todo uso requiere autorización expresa y por escrito del titular.
             </button>
           </div>
 
-          <div class="home-publications-heading">
-            <div><strong>Publicaciones cerca de mí</strong><small>Todo México y todas las categorías</small></div>
+          <button class="ambassador-home-card" type="button" onclick="showSection('embajadores')" aria-label="Embajadores Conecta">
+            <span class="ambassador-home-icon">🤝</span>
+            <div>
+              <strong>Embajadores Conecta</strong>
+              <small>Gana $50 por cada membresía anual referida. Membresía: $98 MXN.</small>
+            </div>
+            <b>›</b>
+          </button>
+
+          <div class="home-carousel-heading">
+            <div><strong>Explora oportunidades piloto</strong><small>Lee ejemplos y toca una tarjeta para entrar a Publicaciones.</small></div>
             <button type="button" onclick="requestNearbyPublications()">Ver todas</button>
           </div>
 
-          <div class="platform-language-grid" aria-label="Organización principal de Conecta Servicios">
-            <button type="button" onclick="openPilotType('solicitantes')"><span>🙋</span><strong>Solicitantes</strong></button>
-            <button type="button" onclick="openPilotType('agentes')"><span>🧑‍🔧</span><strong>Agentes</strong></button>
-            <button type="button" onclick="openPilotType('negocios')"><span>🏪</span><strong>Negocios</strong></button>
-            <button type="button" onclick="openPilotType('servicios')"><span>🛠</span><strong>Servicios</strong></button>
-            <button type="button" onclick="openPilotType('crecimiento')"><span>📈</span><strong>Crecimiento</strong></button>
+          <div class="home-pilot-carousel" aria-label="Carrusel de publicaciones piloto">
+            <button type="button" class="home-pilot-card solicitante" onclick="openPilotType('solicitantes')">
+              <span>🙋</span>
+              <small>Solicitante</small>
+              <strong>Busco apoyo para un mandado local</strong>
+              <p>Pide lo que necesitas y conecta con agentes de tu zona.</p>
+            </button>
+            <button type="button" class="home-pilot-card agente" onclick="openPilotType('agentes')">
+              <span>🧑‍🔧</span>
+              <small>Agente</small>
+              <strong>Ofrezco entregas y apoyo por encargo</strong>
+              <p>Genera ingresos ayudando a vecinos y negocios.</p>
+            </button>
+            <button type="button" class="home-pilot-card negocio" onclick="openPilotType('negocios')">
+              <span>🏪</span>
+              <small>Negocio</small>
+              <strong>Panadería recibe pedidos por chat</strong>
+              <p>Catálogo, pedido, cita, envío o pickup futuro.</p>
+            </button>
+            <button type="button" class="home-pilot-card servicio" onclick="openPilotType('servicios')">
+              <span>🛠</span>
+              <small>Servicio</small>
+              <strong>Reparación y servicios locales</strong>
+              <p>Encuentra u ofrece soluciones con trato directo.</p>
+            </button>
+            <button type="button" class="home-pilot-card crecimiento" onclick="openPilotType('crecimiento')">
+              <span>📈</span>
+              <small>Crecimiento</small>
+              <strong>Campañas, referidos y aprendizaje</strong>
+              <p>Comisiones, embajadores y rutas para crecer.</p>
+            </button>
           </div>
-
-          <button class="home-stat-v477 home-stat-button" type="button" onclick="requestNearbyPublications()" aria-label="Ver publicaciones cerca de mí">
-            <span class="stat-people">👥</span>
-            <div><strong><span id="publicationsCount">0</span> <small>registros</small></strong><p id="growthMessage">Toca aquí para ver las publicaciones piloto</p></div>
-            <span class="trend-icon">↗</span>
-          </button>
 
           <div class="install-card-v477">
             <span class="install-logo cs-node-logo" aria-hidden="true"><img src="assets/pwa-plus-icon-192.png" alt="" loading="eager"></span>
@@ -114,35 +136,38 @@ Todo uso requiere autorización expresa y por escrito del titular.
       </section>
 
       <section id="oportunidades" class="section info-section opportunities-section clean-opportunities opportunity-guide-start">
-        <div class="simple-section-title compact-title">
+        <div class="simple-section-title compact-title opportunities-clean-title">
           <h2>Oportunidades para ti</h2>
-          <p>Elige lo que quieres lograr. Enseguida iniciamos una guía corta para crear tu primera publicación bien dirigida.</p>
+          <p>Elige qué quieres iniciar. Este botón reúne las acciones principales de Conecta Servicios.</p>
         </div>
 
-        <div class="route-button-list v47-route-list">
-          <button type="button" class="route-start-card" onclick="openOpportunityWizard('ingresos')">
-            <span class="route-start-icon">🚀</span>
-            <span><strong>Quiero generar ingresos</strong><small>Servicios, limpieza, mandados, comida, reparaciones u otro apoyo que puedas ofrecer.</small></span>
+        <div class="opportunity-action-grid" aria-label="Acciones principales de oportunidades">
+          <button type="button" class="opportunity-action-card" onclick="requestNearbyPublications()">
+            <span>📍</span>
+            <div><strong>Publicaciones</strong><small>Explora solicitantes, agentes, negocios, servicios y crecimiento.</small></div>
             <b>›</b>
           </button>
-          <button type="button" class="route-start-card" onclick="openOpportunityWizard('negocio')">
-            <span class="route-start-icon">🏪</span>
-            <span><strong>Tengo un negocio</strong><small>Publica tu negocio, lo que vendes, tu zona y si necesitas mensajeros locales.</small></span>
+          <button type="button" class="opportunity-action-card" onclick="showSection('mandados')">
+            <span>🧺</span>
+            <div><strong>Mandados verificados</strong><small>Compra, entrega y evidencia con trato directo.</small></div>
             <b>›</b>
           </button>
-          <button type="button" class="route-start-card" onclick="openOpportunityWizard('necesito')">
-            <span class="route-start-icon">🔎</span>
-            <span><strong>Necesito publicar algo</strong><small>Pide apoyo, busca personal, solicita un mandado, movilidad o comparte una oportunidad.</small></span>
+          <button type="button" class="opportunity-action-card" onclick="showSection('agentes')">
+            <span>📈</span>
+            <div><strong>Agentes de crecimiento</strong><small>Campañas, comisión y contactos por resultado.</small></div>
             <b>›</b>
           </button>
-          <button type="button" class="route-start-card route-ambassador-card" onclick="showSection('embajadores')">
-            <span class="route-start-icon">🤝</span>
-            <span><strong>Quiero ser embajador Conecta</strong><small>Invita negocios, usuarios o agentes y registra referidos en modo piloto, sin manejo de dinero real.</small></span>
+          <button type="button" class="opportunity-action-card" onclick="showSection('negocios'); setTimeout(() => showBusinessFutureTerminal('Negocio local'), 160)">
+            <span>🏪</span>
+            <div><strong>Chat de negocios</strong><small>Catálogo, pedido, cita, cotización, envío o pickup futuro.</small></div>
             <b>›</b>
           </button>
         </div>
 
-        <button class="btn-small btn-outline why-update" type="button" onclick="showSection('actualizarme')">📘 ¿Por qué actualizarme en oportunidades y servicios?</button>
+        <div class="notice-card slim opportunities-note-card">
+          <strong>Trato directo y organización clara</strong>
+          <p>Conecta orienta, muestra opciones y facilita el contacto. Los acuerdos finales se confirman entre las personas, negocios o agentes involucrados.</p>
+        </div>
       </section>
 
       <section id="rutaGuiada" class="section info-section guided-route-section">
@@ -558,58 +583,31 @@ Todo uso requiere autorización expresa y por escrito del titular.
       </section>
 
 
-            <section id="mensajes" class="section info-section messages-center-section">
-        <div class="messages-center-hero">
-          <span class="growth-kicker">Centro de mensajes</span>
-          <h2>Conversaciones y seguimiento</h2>
-          <p>Un solo lugar para llegar a chats de negocios, publicaciones, mandados, agentes y acuerdos. El chat de negocios vive dentro de la sección Negocios para evitar confusión.</p>
+            <section id="mensajes" class="section info-section messages-center-section orientation-assistant-section">
+        <div class="messages-center-hero assistant-only-hero">
+          <span class="growth-kicker">Centro de orientación</span>
+          <h2>¿Qué necesitas hacer?</h2>
+          <p>Escribe tu idea con tus palabras. El asistente te sugiere la sección correcta y el siguiente paso dentro de Conecta Servicios.</p>
         </div>
 
-        <div class="messages-center-grid">
-          <button type="button" class="message-center-card" onclick="showSection('negocios'); setTimeout(() => showBusinessFutureTerminal('Negocio local'), 150)">
-            <span>🏪</span>
-            <div><strong>Chat de negocios</strong><small>Catálogo, pedido, cita, pickup o envío futuro.</small></div>
-            <b>›</b>
-          </button>
-          <button type="button" class="message-center-card" onclick="requestNearbyPublications()">
-            <span>📍</span>
-            <div><strong>Publicaciones</strong><small>Contacta solicitantes, agentes, negocios o servicios.</small></div>
-            <b>›</b>
-          </button>
-          <button type="button" class="message-center-card" onclick="showSection('mandados')">
-            <span>🧺</span>
-            <div><strong>Mandados verificados</strong><small>Seguimiento con evidencia y trato directo.</small></div>
-            <b>›</b>
-          </button>
-          <button type="button" class="message-center-card" onclick="showSection('agentes')">
-            <span>📈</span>
-            <div><strong>Agentes de crecimiento</strong><small>Campañas, comisión y contactos por resultado.</small></div>
-            <b>›</b>
-          </button>
-          <button type="button" class="message-center-card" onclick="showSection('embajadores')">
-            <span>🤝</span>
-            <div><strong>Embajadores Conecta</strong><small>Referidos, membresía futura y activación local.</small></div>
-            <b>›</b>
-          </button>
-        </div>
-
-        <div class="chat-shell-card center-message-helper">
+        <div class="chat-shell-card center-message-helper orientation-chat-card">
           <div class="chat-head clean-chat-head">
             <span class="smart-bot-icon business-chat-icon">💬</span>
             <div>
               <strong>Asistente de orientación</strong>
-              <small>Escribe lo que buscas y te llevamos a la sección correcta.</small>
+              <small>Te ayuda a decidir entre publicaciones, negocios, mandados, crecimiento, embajadores o aprendizaje.</small>
             </div>
           </div>
           <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
-          <div class="smart-quick-row chat-quick-row" aria-label="Opciones rápidas del centro de mensajes">
-            <button type="button" onclick="fillSmartMessage('Quiero hablar con un negocio')">Negocio</button>
-            <button type="button" onclick="fillSmartMessage('Quiero pedir un mandado verificado')">Mandado</button>
-            <button type="button" onclick="fillSmartMessage('Quiero contactar un agente')">Agente</button>
-            <button type="button" onclick="fillSmartMessage('Quiero publicar una oportunidad')">Publicar</button>
+          <div class="smart-quick-row chat-quick-row orientation-quick-row" aria-label="Opciones rápidas del centro de orientación">
+            <button type="button" onclick="fillSmartMessage('Quiero ganar dinero')">Ganar dinero</button>
+            <button type="button" onclick="fillSmartMessage('Tengo un negocio')">Tengo negocio</button>
+            <button type="button" onclick="fillSmartMessage('Necesito un mandado verificado')">Mandado</button>
+            <button type="button" onclick="fillSmartMessage('Quiero ser embajador Conecta')">Embajador</button>
+            <button type="button" onclick="fillSmartMessage('Quiero aprender una habilidad')">Aprender</button>
           </div>
           <label class="chat-input-row" aria-label="Escribe tu mensaje">
-            <textarea id="smartMessageInput" rows="2" placeholder="Ej. Quiero pedir pan, contratar un servicio o solicitar un mandado"></textarea>
+            <textarea id="smartMessageInput" rows="2" placeholder="Ej. quiero ganar dinero, tengo un negocio, necesito una entrega o quiero aprender ventas"></textarea>
             <button type="button" onclick="sendSmartChatMessage()" aria-label="Enviar mensaje">➤</button>
           </label>
         </div>
@@ -792,7 +790,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
         <div class="ambassador-hero-card">
           <span class="growth-kicker">Monetización piloto</span>
           <h2>Embajadores Conecta</h2>
-          <p>Registra embajadores, genera un código único, vincula referidos y prepara cobros de membresía con Mercado Pago. En esta etapa el flujo puede operar con validación manual y sin tocar Supabase.</p>
+          <p>Membresía anual Conecta Servicios: <b>$98 MXN</b>. Comisión sugerida para embajador: <b>$50 MXN</b> por membresía referida pagada. El cobro puede validarse con Mercado Pago y corte manual.</p>
           <div class="growth-hero-actions">
             <button type="button" class="btn-small btn-purple" onclick="showAmbassadorPanel('embajador')">Quiero ser embajador</button>
             <button type="button" class="btn-small btn-orange" onclick="showAmbassadorPanel('referido')">Registrar referido</button>
@@ -964,6 +962,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.9.8-embajadores-mp-piloto"></script>
+  <script src="app.js?v=4.9.9-home-carrusel-oportunidades"></script>
 </body>
 </html>
