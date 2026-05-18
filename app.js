@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.7-embajadores-piloto";
+const PWA_VERSION = "v4.9.8-embajadores-mp-piloto";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -82,7 +82,7 @@ const APP_VERSION_KEY = "conecta_servicios_app_version";
 const CHAT_STORAGE_KEY = "conecta_business_chat_v494";
 const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v492";
 
-// v4.9.7 — Embajadores Conecta + monetización piloto sin cobros reales
+// v4.9.8 — Embajadores Conecta + Mercado Pago piloto
 // Muestra publicaciones curadas y oculta los registros reales de Supabase en la vista pública.
 // Supabase sigue intacto; administración y futuras versiones pueden volver a producción cambiando esta bandera.
 const PRESENTATION_PILOT_MODE = true;
@@ -3036,31 +3036,75 @@ function saveErrandLead(event, type) {
 }
 
 
-// v4.9.7 — Embajadores Conecta: piloto de referidos y membresía futura sin cobros reales
-const AMBASSADOR_STORAGE_KEY = "conecta_embajadores_piloto_v497";
+// v4.9.8 — Embajadores Conecta: registro, códigos, referidos y Mercado Pago piloto
+const AMBASSADOR_STORAGE_KEY = "conecta_embajadores_v498";
+const AMBASSADOR_LEGACY_KEY = "conecta_embajadores_piloto_v497";
+const AMBASSADOR_SETTINGS_KEY = "conecta_embajadores_mp_settings_v498";
 let ambassadorActiveTab = "referidos";
 const AMBASSADOR_DEFAULT_REFERRALS = [
-  { name: "Panadería San Miguel", type: "Negocio", zone: "Chapultepec, México", source: "Recomendación local", status: "Interesado", notes: "Quiere aparecer en Negocios locales y probar chat de pedidos.", contact: OFFICE_PHONE },
-  { name: "Carlos R.", type: "Agente", zone: "Mexicaltzingo, México", source: "Vecino / conocido", status: "Registrado", notes: "Disponible para mandados verificados y entregas pequeñas.", contact: OFFICE_PHONE },
-  { name: "María G.", type: "Solicitante", zone: "Chapultepec Centro", source: "Grupo local", status: "Contactado", notes: "Necesita mandados a mercado y servicios del hogar.", contact: OFFICE_PHONE }
+  { name: "Panadería San Miguel", type: "Negocio", zone: "Chapultepec, México", source: "Recomendación local", status: "Interesado", notes: "Quiere aparecer en Negocios locales y probar chat de pedidos.", contact: OFFICE_PHONE, ambassadorCode: "CON-ANA-101" },
+  { name: "Carlos R.", type: "Agente", zone: "Mexicaltzingo, México", source: "Vecino / conocido", status: "Registrado", notes: "Disponible para mandados verificados y entregas pequeñas.", contact: OFFICE_PHONE, ambassadorCode: "CON-LUIS-204" },
+  { name: "María G.", type: "Solicitante", zone: "Chapultepec Centro", source: "Grupo local", status: "Contactado", notes: "Necesita mandados a mercado y servicios del hogar.", contact: OFFICE_PHONE, ambassadorCode: "CON-ANA-101" }
 ];
 const AMBASSADOR_DEFAULT_MEMBERS = [
-  { name: "Ana M.", zone: "Toluca", profile: "Estudiante / redes sociales", channels: "WhatsApp, Facebook local, grupos de vecinos", focus: "Negocios y agentes de crecimiento", contact: OFFICE_PHONE },
-  { name: "Luis H.", zone: "Metepec", profile: "Promotor local", channels: "Referidos directos y comercios", focus: "Mandados y servicios", contact: OFFICE_PHONE }
+  { name: "Ana M.", zone: "Toluca", profile: "Estudiante / redes sociales", channels: "WhatsApp, Facebook local, grupos de vecinos", focus: "Negocios y agentes de crecimiento", contact: OFFICE_PHONE, code: "CON-ANA-101", status: "Piloto" },
+  { name: "Luis H.", zone: "Metepec", profile: "Promotor local", channels: "Referidos directos y comercios", focus: "Mandados y servicios", contact: OFFICE_PHONE, code: "CON-LUIS-204", status: "Piloto" }
 ];
+const MEMBERSHIP_PLANS = [
+  { id: "basica", name: "Membresía básica", audience: "Personas, vecinos o agentes", amount: 49, commission: 15, benefits: "Perfil básico, publicaciones y acceso a comunidad." },
+  { id: "negocio", name: "Negocio local", audience: "Panaderías, estéticas, ferreterías, oficios", amount: 99, commission: 30, benefits: "Perfil de negocio, chat interno y prioridad local piloto." },
+  { id: "destacado", name: "Negocio destacado", audience: "Comercios que quieren más visibilidad", amount: 199, commission: 60, benefits: "Mayor visibilidad, acceso a catálogo futuro y seguimiento por embajador." }
+];
+function migrateAmbassadorData() {
+  try {
+    const current = localStorage.getItem(AMBASSADOR_STORAGE_KEY);
+    if (current) return;
+    const legacy = JSON.parse(localStorage.getItem(AMBASSADOR_LEGACY_KEY) || "{}");
+    if (legacy && (Array.isArray(legacy.referrals) || Array.isArray(legacy.members))) {
+      const migrated = {
+        referrals: (legacy.referrals || []).map(r => ({ ...r, ambassadorCode: r.ambassadorCode || "SIN-CODIGO" })),
+        members: (legacy.members || []).map(m => ({ ...m, code: m.code || generateAmbassadorCode(m.name, m.zone), status: m.status || "Piloto" })),
+        payments: []
+      };
+      localStorage.setItem(AMBASSADOR_STORAGE_KEY, JSON.stringify(migrated));
+    }
+  } catch {}
+}
 function getAmbassadorData() {
+  migrateAmbassadorData();
   try {
     const saved = JSON.parse(localStorage.getItem(AMBASSADOR_STORAGE_KEY) || "{}");
     return {
       referrals: Array.isArray(saved.referrals) ? saved.referrals : [],
-      members: Array.isArray(saved.members) ? saved.members : []
+      members: Array.isArray(saved.members) ? saved.members : [],
+      payments: Array.isArray(saved.payments) ? saved.payments : []
     };
   } catch {
-    return { referrals: [], members: [] };
+    return { referrals: [], members: [], payments: [] };
   }
 }
 function saveAmbassadorData(data) {
   try { localStorage.setItem(AMBASSADOR_STORAGE_KEY, JSON.stringify(data)); } catch {}
+}
+function getAmbassadorSettings() {
+  try {
+    return JSON.parse(localStorage.getItem(AMBASSADOR_SETTINGS_KEY) || "{}") || {};
+  } catch { return {}; }
+}
+function saveAmbassadorSettings(settings) {
+  try { localStorage.setItem(AMBASSADOR_SETTINGS_KEY, JSON.stringify(settings)); } catch {}
+}
+function normalizeAmbassadorPart(value) {
+  return normalize(value || "")
+    .replace(/[^a-z0-9]+/g, "")
+    .slice(0, 4)
+    .toUpperCase() || "CS";
+}
+function generateAmbassadorCode(name = "Embajador", zone = "Local") {
+  const a = normalizeAmbassadorPart(name);
+  const b = normalizeAmbassadorPart(zone);
+  const n = String(Date.now()).slice(-3);
+  return `CON-${a}-${b}-${n}`;
 }
 function allAmbassadorReferrals() {
   const data = getAmbassadorData();
@@ -3068,16 +3112,23 @@ function allAmbassadorReferrals() {
 }
 function allAmbassadorMembers() {
   const data = getAmbassadorData();
-  return [...data.members, ...AMBASSADOR_DEFAULT_MEMBERS];
+  const local = data.members.map(member => ({ ...member, code: member.code || generateAmbassadorCode(member.name, member.zone) }));
+  return [...local, ...AMBASSADOR_DEFAULT_MEMBERS];
+}
+function allAmbassadorPayments() {
+  return getAmbassadorData().payments || [];
 }
 function ambassadorWhatsAppMessage(type, item) {
-  if (type === "referido") return `Hola, vi en Conecta Servicios el referido ${item.name || "registrado"}. Quiero dar seguimiento al piloto de embajadores.`;
-  if (type === "embajador") return `Hola, vi el perfil de ${item.name || "un embajador"} en Embajadores Conecta. Me interesa conversar sobre activación local.`;
+  if (type === "referido") return `Hola, vi en Conecta Servicios el referido ${item.name || "registrado"}. Código embajador: ${item.ambassadorCode || "por confirmar"}. Quiero dar seguimiento.`;
+  if (type === "embajador") return `Hola, soy ${item.name || "embajador Conecta"}. Mi código de embajador es ${item.code || "por confirmar"}. Quiero activar usuarios y negocios.`;
   return "Hola, quiero información sobre Embajadores Conecta.";
+}
+function ambassadorShareMessage(item) {
+  return `Hola, te invito a conocer Conecta Servicios. Usa mi código de embajador: ${item.code || "CON-LOCAL"}. Puedes registrarte como solicitante, agente, negocio o servicio.`;
 }
 function renderAmbassadorReferralCard(item, local = false) {
   return `<article class="ambassador-item-card">
-    <span class="ambassador-tag">${escapeHtml(item.type || "Referido")}</span>
+    <div class="ambassador-card-top"><span class="ambassador-tag">${escapeHtml(item.type || "Referido")}</span><span class="ambassador-code-pill">${escapeHtml(item.ambassadorCode || "Sin código")}</span></div>
     <strong>${escapeHtml(item.name || "Referido piloto")}</strong>
     <p>${escapeHtml(item.notes || "Contacto interesado en conocer Conecta Servicios.")}</p>
     <dl>
@@ -3093,7 +3144,7 @@ function renderAmbassadorReferralCard(item, local = false) {
 }
 function renderAmbassadorMemberCard(item, local = false) {
   return `<article class="ambassador-item-card ambassador-member-card">
-    <span class="ambassador-tag">Embajador</span>
+    <div class="ambassador-card-top"><span class="ambassador-tag">Embajador</span><span class="ambassador-code-pill">${escapeHtml(item.code || "CON-LOCAL")}</span></div>
     <strong>${escapeHtml(item.name || "Embajador Conecta")}</strong>
     <p>${escapeHtml(item.profile || "Persona interesada en activar usuarios y negocios locales.")}</p>
     <dl>
@@ -3103,34 +3154,171 @@ function renderAmbassadorMemberCard(item, local = false) {
     </dl>
     <div class="growth-card-actions">
       <button type="button" class="btn-small btn-orange" onclick="openWhatsApp('${cleanPhone(item.contact || OFFICE_PHONE)}','${encodeURIComponent(ambassadorWhatsAppMessage("embajador", item))}')">Contactar</button>
-      ${local ? '<small>Guardado en este dispositivo</small>' : ''}
+      <button type="button" class="btn-small btn-ghost" onclick="shareAmbassadorCode('${escapeHtml(item.code || "CON-LOCAL")}')">Compartir código</button>
+      ${local ? '<small>Mi registro local</small>' : ''}
     </div>
   </article>`;
+}
+function shareAmbassadorCode(code) {
+  const member = allAmbassadorMembers().find(m => m.code === code) || { code };
+  const text = ambassadorShareMessage(member);
+  if (navigator.share) {
+    navigator.share({ title: "Conecta Servicios", text }).catch(() => null);
+  } else {
+    navigator.clipboard?.writeText(text).then(() => showToast("Mensaje copiado")).catch(() => showToast(text));
+  }
+}
+function getSelectedMembershipPlan(planId) {
+  return MEMBERSHIP_PLANS.find(plan => plan.id === planId) || MEMBERSHIP_PLANS[1];
+}
+function calculateAmbassadorCommission(planId) {
+  const plan = getSelectedMembershipPlan(planId);
+  return {
+    amount: plan.amount,
+    ambassadorCommission: plan.commission,
+    platformNet: Math.max(0, plan.amount - plan.commission),
+    plan
+  };
 }
 function renderAmbassadorMembership() {
   const panel = document.getElementById("ambassadorMembershipPanel");
   if (!panel) return;
   panel.innerHTML = `<div class="membership-model-grid">
-    <article class="membership-model-card">
-      <span>🆓</span><strong>Usuario básico</strong>
-      <p>Publicar, explorar y contactar con trato directo. Ideal para adopción masiva.</p>
-      <small>Sin cobro piloto</small>
-    </article>
-    <article class="membership-model-card featured">
-      <span>⭐</span><strong>Negocio destacado</strong>
-      <p>Perfil más visible, acceso a chat de negocio, catálogo futuro y prioridad local.</p>
-      <small>Membresía futura</small>
-    </article>
-    <article class="membership-model-card">
-      <span>🤝</span><strong>Embajador</strong>
-      <p>Referidos medidos, activación por zona y posibles recompensas por resultados validados.</p>
-      <small>Reglas por definir</small>
-    </article>
+    ${MEMBERSHIP_PLANS.map(plan => {
+      const calc = calculateAmbassadorCommission(plan.id);
+      return `<article class="membership-model-card ${plan.id === "negocio" ? "featured" : ""}">
+        <span>${plan.id === "basica" ? "🆓" : plan.id === "negocio" ? "🏪" : "⭐"}</span>
+        <strong>${escapeHtml(plan.name)}</strong>
+        <p>${escapeHtml(plan.benefits)}</p>
+        <small>$${plan.amount} MXN · comisión sugerida $${calc.ambassadorCommission}</small>
+      </article>`;
+    }).join("")}
   </div>
   <div class="notice-card slim">
-    <strong>No activar cobros todavía</strong>
-    <p>La membresía se muestra como modelo de negocio para inversionistas. Antes de cobrar se deben definir beneficios, términos, facturación, comisiones y forma de validación.</p>
+    <strong>Modelo flexible</strong>
+    <p>La app puede sugerir membresía y comisión, pero el seguimiento inicial puede validarse con Mercado Pago y corte manual. Así se prueba monetización sin construir una wallet propia.</p>
   </div>`;
+}
+function renderAmbassadorManual() {
+  const panel = document.getElementById("ambassadorManualPanel");
+  if (!panel) return;
+  panel.innerHTML = `<div class="ambassador-manual-grid">
+    <article class="manual-step-card"><span>1</span><strong>Explica la app simple</strong><p>Conecta personas que solicitan, agentes que ayudan, negocios locales, servicios y crecimiento.</p></article>
+    <article class="manual-step-card"><span>2</span><strong>Detecta el perfil</strong><p>Pregunta si la persona necesita publicar, vender, ofrecer un servicio, hacer mandados o aprender.</p></article>
+    <article class="manual-step-card"><span>3</span><strong>Usa tu código</strong><p>Comparte tu código de embajador para que el referido quede asociado a tu activación.</p></article>
+    <article class="manual-step-card"><span>4</span><strong>Registra evidencia</strong><p>Guarda nombre, zona, tipo de referido, WhatsApp y estado del acercamiento.</p></article>
+    <article class="manual-step-card"><span>5</span><strong>Cobra membresía</strong><p>Cuando el referido acepte, genera cobro Mercado Pago o registra pago manual con referencia.</p></article>
+    <article class="manual-step-card"><span>6</span><strong>Corte de comisión</strong><p>El administrador revisa pagos confirmados y paga comisiones por código de embajador.</p></article>
+  </div>
+  <div class="notice-card slim"><strong>Guía para embajadores</strong><p>El objetivo no es vender humo: es explicar con claridad cómo Conecta puede ayudar a la comunidad, negocios y personas que quieren generar ingresos.</p></div>`;
+}
+function renderAmbassadorPaymentPanel() {
+  const panel = document.getElementById("ambassadorPaymentPanel");
+  if (!panel) return;
+  const members = allAmbassadorMembers();
+  const referrals = allAmbassadorReferrals();
+  const settings = getAmbassadorSettings();
+  const payments = allAmbassadorPayments();
+  const memberOptions = members.map(member => `<option value="${escapeHtml(member.code || "CON-LOCAL")}">${escapeHtml(member.code || "CON-LOCAL")} · ${escapeHtml(member.name || "Embajador")}</option>`).join("");
+  const referralOptions = referrals.map(ref => `<option value="${escapeHtml(ref.name || "Referido")}">${escapeHtml(ref.name || "Referido")} · ${escapeHtml(ref.type || "Tipo")}</option>`).join("");
+  panel.innerHTML = `<form class="form-card ambassador-form ambassador-payment-form" onsubmit="createAmbassadorMembershipPayment(event)">
+    <h3>Cobro de membresía</h3>
+    <p class="muted">Genera una referencia de pago vinculada al código del embajador. Si Mercado Pago aún no está configurado en Vercel, puedes usar tu link manual.</p>
+    <div class="form-grid">
+      <label>Código de embajador<select id="ambassadorPaymentCode">${memberOptions || '<option value="CON-LOCAL">CON-LOCAL</option>'}</select></label>
+      <label>Referido<select id="ambassadorPaymentReferral"><option value="Nuevo miembro">Nuevo miembro</option>${referralOptions}</select></label>
+    </div>
+    <label>Tipo de membresía<select id="ambassadorPaymentPlan" onchange="updateAmbassadorPaymentPreview()">${MEMBERSHIP_PLANS.map(plan => `<option value="${plan.id}">${plan.name} · $${plan.amount}</option>`).join("")}</select></label>
+    <div id="ambassadorPaymentPreview" class="payment-preview-card"></div>
+    <label>Notas del pago<input id="ambassadorPaymentNotes" type="text" placeholder="Ej. pago de negocio local de Chapultepec"></label>
+    <div class="dialog-actions"><button type="button" class="btn-small btn-ghost" onclick="registerManualAmbassadorPayment()">Registrar pago manual</button><button type="submit" class="btn-small btn-purple">Generar cobro Mercado Pago</button></div>
+  </form>
+  <form class="form-card ambassador-form ambassador-settings-form" onsubmit="saveAmbassadorPaymentSettings(event)">
+    <h3>Configuración rápida</h3>
+    <p class="muted">Pega tu link de cobro de Mercado Pago para operar mientras se configura la integración automática.</p>
+    <label>Link de cobro Mercado Pago<input id="ambassadorManualPaymentLink" type="url" placeholder="https://mpago.la/..." value="${escapeHtml(settings.manualPaymentLink || "")}"></label>
+    <button type="submit" class="btn-small btn-orange">Guardar link</button>
+  </form>
+  <div class="ambassador-payout-card">
+    <strong>Corte de comisiones</strong>
+    <p>Los pagos confirmados se agrupan por código de embajador. El administrador puede hacer el corte y pagar por transferencia, efectivo o Mercado Pago.</p>
+    <small>Versión piloto: control local y validación manual.</small>
+  </div>
+  <div class="ambassador-payment-history">
+    <h3>Pagos registrados</h3>
+    ${payments.length ? payments.map(payment => `<article class="payment-history-card"><strong>${escapeHtml(payment.planName)}</strong><small>${escapeHtml(payment.ambassadorCode)} · ${escapeHtml(payment.referralName)}</small><p>$${payment.amount} MXN · comisión sugerida $${payment.commission} · ${escapeHtml(payment.status)}</p></article>`).join("") : '<p class="muted">Aún no hay pagos registrados en este dispositivo.</p>'}
+  </div>`;
+  updateAmbassadorPaymentPreview();
+}
+function updateAmbassadorPaymentPreview() {
+  const target = document.getElementById("ambassadorPaymentPreview");
+  if (!target) return;
+  const planId = document.getElementById("ambassadorPaymentPlan")?.value || "negocio";
+  const calc = calculateAmbassadorCommission(planId);
+  target.innerHTML = `<div><span>Monto sugerido</span><strong>$${calc.amount}</strong></div><div><span>Comisión embajador</span><strong>$${calc.ambassadorCommission}</strong></div><div><span>Conecta</span><strong>$${calc.platformNet}</strong></div>`;
+}
+function saveAmbassadorPaymentSettings(event) {
+  event.preventDefault();
+  saveAmbassadorSettings({ manualPaymentLink: document.getElementById("ambassadorManualPaymentLink")?.value.trim() });
+  showToast("Link de Mercado Pago guardado");
+  renderAmbassadorPaymentPanel();
+}
+function getAmbassadorPaymentPayload() {
+  const planId = document.getElementById("ambassadorPaymentPlan")?.value || "negocio";
+  const calc = calculateAmbassadorCommission(planId);
+  return {
+    planId,
+    title: `Conecta Servicios - ${calc.plan.name}`,
+    amount: calc.amount,
+    commission: calc.ambassadorCommission,
+    planName: calc.plan.name,
+    ambassadorCode: document.getElementById("ambassadorPaymentCode")?.value || "CON-LOCAL",
+    referralName: document.getElementById("ambassadorPaymentReferral")?.value || "Nuevo miembro",
+    notes: document.getElementById("ambassadorPaymentNotes")?.value.trim() || ""
+  };
+}
+function saveAmbassadorPaymentRecord(payload, status = "Pendiente") {
+  const data = getAmbassadorData();
+  data.payments.unshift({ ...payload, status, createdAt: new Date().toISOString(), id: `MP-${String(Date.now()).slice(-6)}` });
+  saveAmbassadorData(data);
+}
+async function createAmbassadorMembershipPayment(event) {
+  event.preventDefault();
+  const payload = getAmbassadorPaymentPayload();
+  saveAmbassadorPaymentRecord(payload, "Cobro generado");
+  try {
+    const response = await fetch("/api/create-ambassador-payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json().catch(() => ({}));
+    if (response.ok && (result.init_point || result.sandbox_init_point)) {
+      showToast("Abriendo Mercado Pago");
+      window.open(result.init_point || result.sandbox_init_point, "_blank", "noopener");
+    } else {
+      openManualMercadoPagoFallback(result.error || "Mercado Pago aún no está configurado en Vercel");
+    }
+  } catch (error) {
+    openManualMercadoPagoFallback("Función de Mercado Pago no disponible todavía");
+  }
+  renderAmbassadorPaymentPanel();
+  trackEvent("embajadores_pago_piloto", null, { plan: payload.planId });
+}
+function openManualMercadoPagoFallback(message) {
+  const settings = getAmbassadorSettings();
+  if (settings.manualPaymentLink) {
+    showToast("Abriendo link manual de Mercado Pago");
+    window.open(settings.manualPaymentLink, "_blank", "noopener");
+  } else {
+    showToast(message || "Configura tu link de Mercado Pago");
+  }
+}
+function registerManualAmbassadorPayment() {
+  const payload = getAmbassadorPaymentPayload();
+  saveAmbassadorPaymentRecord(payload, "Pago manual por confirmar");
+  showToast("Pago manual registrado para corte");
+  renderAmbassadorPaymentPanel();
 }
 function updateAmbassadorSummary() {
   const referrals = allAmbassadorReferrals();
@@ -3150,7 +3338,9 @@ function renderAmbassadorPilot() {
   const memberList = document.getElementById("ambassadorMembersList");
   if (referralList) referralList.innerHTML = referrals.map((item, index) => renderAmbassadorReferralCard(item, index < data.referrals.length)).join("");
   if (memberList) memberList.innerHTML = members.map((item, index) => renderAmbassadorMemberCard(item, index < data.members.length)).join("");
+  renderAmbassadorPaymentPanel();
   renderAmbassadorMembership();
+  renderAmbassadorManual();
   setAmbassadorTab(ambassadorActiveTab, false);
 }
 function setAmbassadorTab(tab, scroll = true) {
@@ -3158,24 +3348,31 @@ function setAmbassadorTab(tab, scroll = true) {
   document.querySelectorAll("[data-ambassador-tab]").forEach(button => button.classList.toggle("active", button.dataset.ambassadorTab === tab));
   document.getElementById("ambassadorReferralsList")?.classList.toggle("hidden", tab !== "referidos");
   document.getElementById("ambassadorMembersList")?.classList.toggle("hidden", tab !== "embajadores");
+  document.getElementById("ambassadorPaymentPanel")?.classList.toggle("hidden", tab !== "pagos");
   document.getElementById("ambassadorMembershipPanel")?.classList.toggle("hidden", tab !== "membresia");
+  document.getElementById("ambassadorManualPanel")?.classList.toggle("hidden", tab !== "manual");
+  if (tab === "pagos") renderAmbassadorPaymentPanel();
   if (tab === "membresia") renderAmbassadorMembership();
+  if (tab === "manual") renderAmbassadorManual();
   if (scroll) document.getElementById("embajadores")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 function showAmbassadorPanel(type = "embajador") {
   const panel = document.getElementById("ambassadorPanel");
   if (!panel) return;
   const isReferral = type === "referido";
+  const members = allAmbassadorMembers();
+  const memberOptions = members.map(member => `<option value="${escapeHtml(member.code || "CON-LOCAL")}">${escapeHtml(member.code || "CON-LOCAL")} · ${escapeHtml(member.name || "Embajador")}</option>`).join("");
   panel.classList.remove("hidden");
   panel.innerHTML = `<form class="form-card ambassador-form" onsubmit="submitAmbassadorPilot(event, '${isReferral ? "referido" : "embajador"}')">
-    <h3>${isReferral ? "Registrar referido piloto" : "Registro de embajador"}</h3>
-    <p class="muted">${isReferral ? "Guarda un contacto interesado para medir tracción sin exponer datos públicamente." : "Registra una persona que puede activar usuarios, negocios o agentes en su zona."}</p>
+    <h3>${isReferral ? "Registrar referido" : "Registro de embajador"}</h3>
+    <p class="muted">${isReferral ? "Vincula un contacto al código de un embajador para dar seguimiento y calcular comisión." : "Crea un perfil local y genera un código único de embajador."}</p>
     ${isReferral ? `
+      <label>Código de embajador<select id="ambassadorReferralCode">${memberOptions || '<option value="CON-LOCAL">CON-LOCAL</option>'}</select></label>
       <label>Nombre del referido o negocio<input id="ambassadorReferralName" type="text" placeholder="Ej. Panadería La Estrella" required></label>
-      <div class="form-grid"><label>Tipo<select id="ambassadorReferralType"><option>Negocio</option><option>Agente</option><option>Solicitante</option><option>Servicio</option><option>Crecimiento</option></select></label><label>Estado<select id="ambassadorReferralStatus"><option>Interesado</option><option>Contactado</option><option>Registrado</option><option>En revisión</option></select></label></div>
+      <div class="form-grid"><label>Tipo<select id="ambassadorReferralType"><option>Negocio</option><option>Agente</option><option>Solicitante</option><option>Servicio</option><option>Crecimiento</option></select></label><label>Estado<select id="ambassadorReferralStatus"><option>Interesado</option><option>Contactado</option><option>Registrado</option><option>Pago pendiente</option><option>Pago confirmado</option></select></label></div>
       <label>Zona<input id="ambassadorReferralZone" type="text" placeholder="Municipio o localidad"></label>
       <label>Origen del contacto<input id="ambassadorReferralSource" type="text" placeholder="Ej. WhatsApp, grupo local, visita directa"></label>
-      <label>Notas<textarea id="ambassadorReferralNotes" rows="4" placeholder="Qué necesita, qué ofrece o por qué le interesa Conecta Servicios"></textarea></label>
+      <label>Notas<textarea id="ambassadorReferralNotes" rows="4" placeholder="Qué necesita, qué ofrece o qué membresía podría interesarle"></textarea></label>
       <label>WhatsApp de seguimiento<input id="ambassadorReferralContact" type="tel" placeholder="10 dígitos"></label>` : `
       <label>Nombre público<input id="ambassadorMemberName" type="text" placeholder="Ej. Ana M." required></label>
       <label>Zona donde puede activar usuarios<input id="ambassadorMemberZone" type="text" placeholder="Ej. Chapultepec, Metepec, Toluca"></label>
@@ -3184,10 +3381,10 @@ function showAmbassadorPanel(type = "embajador") {
       <label>Enfoque principal<textarea id="ambassadorMemberFocus" rows="3" placeholder="Negocios, solicitantes, agentes, servicios, mandados, aprendizaje..."></textarea></label>
       <label>WhatsApp de seguimiento<input id="ambassadorMemberContact" type="tel" placeholder="10 dígitos"></label>`}
     <div class="notice-card slim">
-      <strong>Piloto sin dinero real</strong>
-      <p>Este registro ayuda a medir interés. No genera pago automático ni obligación de comisión.</p>
+      <strong>${isReferral ? "Referencia medible" : "Código único"}</strong>
+      <p>${isReferral ? "El referido queda ligado al código del embajador para seguimiento y corte manual." : "Al guardar se genera un código tipo CON-XXXX que podrá usarse en pagos y referidos."}</p>
     </div>
-    <div class="dialog-actions"><button type="button" class="btn-small btn-ghost" onclick="document.getElementById('ambassadorPanel').classList.add('hidden')">Cancelar</button><button type="submit" class="btn-small btn-purple">Guardar piloto</button></div>
+    <div class="dialog-actions"><button type="button" class="btn-small btn-ghost" onclick="document.getElementById('ambassadorPanel').classList.add('hidden')">Cancelar</button><button type="submit" class="btn-small btn-purple">Guardar</button></div>
   </form>`;
   panel.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -3202,21 +3399,27 @@ function submitAmbassadorPilot(event, type) {
       zone: document.getElementById("ambassadorReferralZone")?.value.trim(),
       source: document.getElementById("ambassadorReferralSource")?.value.trim(),
       notes: document.getElementById("ambassadorReferralNotes")?.value.trim(),
-      contact: cleanPhone(document.getElementById("ambassadorReferralContact")?.value)
+      contact: cleanPhone(document.getElementById("ambassadorReferralContact")?.value),
+      ambassadorCode: document.getElementById("ambassadorReferralCode")?.value || "CON-LOCAL"
     });
     ambassadorActiveTab = "referidos";
-    showToast("Referido piloto guardado");
+    showToast("Referido guardado con código de embajador");
   } else {
+    const name = document.getElementById("ambassadorMemberName")?.value.trim();
+    const zone = document.getElementById("ambassadorMemberZone")?.value.trim();
+    const code = generateAmbassadorCode(name, zone);
     data.members.unshift({
-      name: document.getElementById("ambassadorMemberName")?.value.trim(),
-      zone: document.getElementById("ambassadorMemberZone")?.value.trim(),
+      name,
+      zone,
       profile: document.getElementById("ambassadorMemberProfile")?.value,
       channels: document.getElementById("ambassadorMemberChannels")?.value.trim(),
       focus: document.getElementById("ambassadorMemberFocus")?.value.trim(),
-      contact: cleanPhone(document.getElementById("ambassadorMemberContact")?.value)
+      contact: cleanPhone(document.getElementById("ambassadorMemberContact")?.value),
+      code,
+      status: "Activo piloto"
     });
     ambassadorActiveTab = "embajadores";
-    showToast("Embajador piloto guardado");
+    showToast(`Embajador guardado: ${code}`);
   }
   saveAmbassadorData(data);
   document.getElementById("ambassadorPanel")?.classList.add("hidden");

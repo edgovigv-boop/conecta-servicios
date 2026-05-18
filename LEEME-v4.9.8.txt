@@ -1,0 +1,24 @@
+Conecta Servicios v4.9.8 — Embajadores Conecta con Mercado Pago piloto
+
+Commit sugerido:
+Actualización v4.9.8 - Embajadores Conecta Mercado Pago piloto
+
+Incluye:
+- Corrección visual de tarjetas de Embajadores Conecta.
+- Registro de embajador con código único.
+- Referidos vinculados a código de embajador.
+- Manual rápido para embajadores.
+- Simulador de membresías y comisión sugerida.
+- Panel de pagos con Mercado Pago en dos modos:
+  1) link manual de Mercado Pago,
+  2) función Vercel /api/create-ambassador-payment usando MP_ACCESS_TOKEN.
+- Historial local de pagos para corte manual.
+- No toca Supabase.
+- No expone credenciales privadas en frontend.
+
+Para activar Mercado Pago automático en Vercel:
+1. Crear variable de entorno MP_ACCESS_TOKEN.
+2. Redeploy.
+3. Probar desde Embajadores Conecta > Pagos.
+
+Nota: esta versión permite operación piloto y validación manual. El webhook incluido solo confirma recepción y no guarda pagos reales todavía.

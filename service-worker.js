@@ -4,12 +4,12 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.9.7-embajadores-piloto";
+const CACHE_NAME = "conecta-servicios-v4.9.8-embajadores-mp-piloto";
 const ASSETS = [
   "./",
   "index.html",
-  "styles.css?v=4.9.7-embajadores-piloto",
-  "app.js?v=4.9.7-embajadores-piloto",
+  "styles.css?v=4.9.8-embajadores-mp-piloto",
+  "app.js?v=4.9.8-embajadores-mp-piloto",
   "manifest.json",
   "assets/hero-scene-v4718.webp",
   "assets/hero-scene-clean-v4711.png",

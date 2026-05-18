@@ -2,7 +2,7 @@
   "name": "Conecta Servicios",
   "short_name": "Conecta",
   "description": "Plataforma local de oportunidades, publicaciones piloto, mandados verificados, Fondo Protegido Conecta, negocios locales, centro de mensajes, aprendizaje, agentes de crecimiento y Embajadores Conecta en modo piloto de referidos y membresía futura sin cobros reales.",
-  "start_url": "/?source=pwa&v=4.9.7",
+  "start_url": "/?source=pwa&v=4.9.8",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

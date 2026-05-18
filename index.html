@@ -29,9 +29,9 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
   <title>Conecta Servicios v4.9.6</title>
-  <link rel="stylesheet" href="styles.css?v=4.9.7-embajadores-piloto" />
+  <link rel="stylesheet" href="styles.css?v=4.9.8-embajadores-mp-piloto" />
 </head>
-<body data-version="4.9.7-embajadores-piloto">
+<body data-version="4.9.8-embajadores-mp-piloto">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -792,10 +792,11 @@ Todo uso requiere autorización expresa y por escrito del titular.
         <div class="ambassador-hero-card">
           <span class="growth-kicker">Monetización piloto</span>
           <h2>Embajadores Conecta</h2>
-          <p>Un piloto para activar usuarios, negocios y agentes mediante referidos claros. En esta etapa no hay cobros reales ni comisiones automáticas: solo registro, medición y validación del interés.</p>
+          <p>Registra embajadores, genera un código único, vincula referidos y prepara cobros de membresía con Mercado Pago. En esta etapa el flujo puede operar con validación manual y sin tocar Supabase.</p>
           <div class="growth-hero-actions">
             <button type="button" class="btn-small btn-purple" onclick="showAmbassadorPanel('embajador')">Quiero ser embajador</button>
-            <button type="button" class="btn-small btn-orange" onclick="showAmbassadorPanel('referido')">Registrar referido piloto</button>
+            <button type="button" class="btn-small btn-orange" onclick="showAmbassadorPanel('referido')">Registrar referido</button>
+            <button type="button" class="btn-small btn-ghost" onclick="setAmbassadorTab('pagos')">Cobrar membresía</button>
           </div>
         </div>
 
@@ -810,20 +811,26 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <button type="button" class="ambassador-path-card" onclick="showAmbassadorPanel('embajador')">
             <span>🙋</span>
             <strong>Ser embajador</strong>
-            <p>Registra tu zona, forma de invitar y tipo de personas o negocios que puedes activar.</p>
+            <p>Crea tu perfil, recibe tu código y aprende cómo invitar negocios o usuarios.</p>
             <b>Iniciar registro ›</b>
           </button>
           <button type="button" class="ambassador-path-card" onclick="showAmbassadorPanel('referido')">
             <span>🔗</span>
             <strong>Registrar referido</strong>
-            <p>Guarda un negocio, agente, solicitante o servicio interesado para medir tracción.</p>
+            <p>Vincula negocios, agentes o solicitantes al código del embajador.</p>
             <b>Agregar referido ›</b>
           </button>
-          <button type="button" class="ambassador-path-card" onclick="setAmbassadorTab('membresia')">
-            <span>⭐</span>
-            <strong>Membresía futura</strong>
-            <p>Visualiza cómo podrían existir beneficios premium sin activar pagos todavía.</p>
-            <b>Ver modelo ›</b>
+          <button type="button" class="ambassador-path-card" onclick="setAmbassadorTab('pagos')">
+            <span>💳</span>
+            <strong>Cobrar membresía</strong>
+            <p>Genera un cobro con Mercado Pago o registra pago manual para corte.</p>
+            <b>Ver pagos ›</b>
+          </button>
+          <button type="button" class="ambassador-path-card" onclick="setAmbassadorTab('manual')">
+            <span>📘</span>
+            <strong>Manual rápido</strong>
+            <p>Guía para explicar la app y acercarse a posibles miembros.</p>
+            <b>Ver guía ›</b>
           </button>
         </div>
 
@@ -832,16 +839,20 @@ Todo uso requiere autorización expresa y por escrito del titular.
         <div class="ambassador-tabs" aria-label="Embajadores Conecta">
           <button type="button" class="active" onclick="setAmbassadorTab('referidos')" data-ambassador-tab="referidos">Referidos</button>
           <button type="button" onclick="setAmbassadorTab('embajadores')" data-ambassador-tab="embajadores">Embajadores</button>
-          <button type="button" onclick="setAmbassadorTab('membresia')" data-ambassador-tab="membresia">Membresía futura</button>
+          <button type="button" onclick="setAmbassadorTab('pagos')" data-ambassador-tab="pagos">Pagos</button>
+          <button type="button" onclick="setAmbassadorTab('membresia')" data-ambassador-tab="membresia">Membresías</button>
+          <button type="button" onclick="setAmbassadorTab('manual')" data-ambassador-tab="manual">Manual</button>
         </div>
 
         <div id="ambassadorReferralsList" class="ambassador-list"></div>
         <div id="ambassadorMembersList" class="ambassador-list hidden"></div>
+        <div id="ambassadorPaymentPanel" class="ambassador-list hidden"></div>
         <div id="ambassadorMembershipPanel" class="ambassador-list hidden"></div>
+        <div id="ambassadorManualPanel" class="ambassador-list hidden"></div>
 
         <div class="notice-card slim ambassador-note">
           <strong>Etapa piloto responsable</strong>
-          <p>Este módulo solo mide interés, referidos y activación local. Las recompensas, membresías, comisiones o pagos reales deberán definirse después con reglas claras, validación y proveedor autorizado si aplica.</p>
+          <p>El cobro con Mercado Pago puede operar con validación manual o con una función serverless si configuras tus credenciales en Vercel. No guardes llaves privadas en el frontend.</p>
         </div>
       </section>
 
@@ -953,6 +964,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.9.7-embajadores-piloto"></script>
+  <script src="app.js?v=4.9.8-embajadores-mp-piloto"></script>
 </body>
 </html>
