@@ -2,7 +2,7 @@
 ------------------------------------------------------------------
 PROPIEDAD EXCLUSIVA - DERECHOS RESERVADOS © 2026
 Proyecto: Conecta Servicios
-Versión: v4.8.9 - Mandados Verificados piloto
+Versión: v4.9.4 - Lenguaje de plataforma y home ordenado
 ------------------------------------------------------------------
 */
 
@@ -927,4 +927,113 @@ input,select,textarea{width:100%;border:1px solid #ded6ee;border-radius:17px;bac
   .future-card-v477 small{ font-size:.62rem; padding:4px 8px; }
   .floating-category-dock{ top:48%; max-height:40dvh; right:5px; }
   .publicaciones-results{ padding-right:50px; }
+}
+
+
+/* v4.9.4 — Lenguaje de plataforma, home ordenado y barra lateral libre */
+.hero-language-chips{
+  grid-template-columns:repeat(5,1fr);
+  gap:6px;
+  padding:9px;
+}
+.hero-language-chips span{
+  font-size:.55rem;
+  letter-spacing:-.01em;
+}
+.hero-language-chips b{
+  width:31px;
+  height:31px;
+  font-size:1rem;
+}
+.hero-chips .chip-solicitantes{background:#4d14c7;}
+.hero-chips .chip-agentes{background:#2aa70f;}
+.hero-chips .chip-negocios{background:#ff7a00;}
+.hero-chips .chip-servicios{background:#6222d8;}
+.hero-chips .chip-crecimiento{background:#0e5bff;}
+.platform-language-grid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:7px;
+  margin:0 2px 12px;
+}
+.platform-language-grid button{
+  border:1px solid rgba(111,52,223,.10);
+  border-radius:17px;
+  background:#fff;
+  color:#241b38;
+  padding:9px 4px;
+  display:grid;
+  justify-items:center;
+  gap:4px;
+  box-shadow:0 10px 22px rgba(56,16,129,.07);
+}
+.platform-language-grid span{font-size:1.25rem;line-height:1;}
+.platform-language-grid strong{font-size:.62rem;line-height:1.05;font-weight:950;}
+.home-module-grid-v494{
+  grid-template-columns:1fr 1fr;
+  align-items:stretch;
+}
+.home-module-grid-v494 .future-card-v477,
+.home-module-grid-v494 .local-business-home-card,
+.home-module-grid-v494 .agent-growth-card,
+.home-module-grid-v494 .verified-errand-card,
+.home-module-grid-v494 .business-chat-home-card,
+.home-module-grid-v494 .learning-home-card{
+  min-height:112px!important;
+  height:100%!important;
+  padding:14px 12px!important;
+  border-radius:20px;
+}
+.home-module-grid-v494 .future-emoji,
+.home-module-grid-v494 .local-business-home-card .future-emoji{
+  font-size:2.18rem!important;
+}
+.home-module-grid-v494 .future-card-v477 strong{font-size:.98rem;line-height:1.07;}
+.home-module-grid-v494 .future-card-v477 small{font-size:.66rem;white-space:normal;}
+.business-chat-home-card{background:linear-gradient(135deg,rgba(37,177,33,.10),rgba(94,45,209,.05));}
+.learning-home-card{background:linear-gradient(135deg,rgba(14,91,255,.10),rgba(94,45,209,.05));}
+.local-business-home-card{background:linear-gradient(135deg,rgba(255,122,24,.12),rgba(94,45,209,.05))!important;}
+.publicaciones-clean-section{position:relative;}
+.publicaciones-sticky-controls{
+  padding-right:70px!important;
+}
+.pilot-mode-banner,
+.pilot-type-tabs{
+  margin-right:58px;
+}
+.floating-category-dock{
+  top:calc(env(safe-area-inset-top,0px) + 104px)!important;
+  bottom:calc(84px + env(safe-area-inset-bottom,0px))!important;
+  max-height:none!important;
+  transform:none!important;
+  justify-content:flex-start;
+  padding:6px 2px 10px 10px!important;
+  overflow-y:auto!important;
+  overflow-x:visible!important;
+  z-index:46!important;
+}
+.floating-category-dock .filter-chip{
+  width:44px!important;
+  height:44px!important;
+  min-height:44px!important;
+  min-width:44px!important;
+}
+.learn-path span{background:#eaf1ff;}
+.growth-path-grid .learn-path b{color:#0e5bff;}
+@media(max-width:380px){
+  .hero-language-chips{gap:4px;padding:8px;}
+  .hero-language-chips span{font-size:.5rem;}
+  .hero-language-chips b{width:28px;height:28px;font-size:.92rem;}
+  .platform-language-grid{gap:5px;}
+  .platform-language-grid button{padding:8px 2px;border-radius:15px;}
+  .platform-language-grid strong{font-size:.56rem;}
+  .home-module-grid-v494 .future-card-v477,
+  .home-module-grid-v494 .local-business-home-card,
+  .home-module-grid-v494 .agent-growth-card,
+  .home-module-grid-v494 .verified-errand-card,
+  .home-module-grid-v494 .business-chat-home-card,
+  .home-module-grid-v494 .learning-home-card{min-height:108px!important;padding:12px 9px!important;}
+  .publicaciones-sticky-controls{padding-right:64px!important;}
+  .pilot-mode-banner,.pilot-type-tabs{margin-right:54px;}
+  .floating-category-dock{top:calc(env(safe-area-inset-top,0px) + 100px)!important;right:5px!important;bottom:calc(82px + env(safe-area-inset-bottom,0px))!important;}
 }

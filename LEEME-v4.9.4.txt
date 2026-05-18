@@ -1,0 +1,11 @@
+Conecta Servicios v4.9.4 - Lenguaje de plataforma y home ordenado
+
+Validar después de publicar:
+1. Home: los iconos del hero deben mostrar Solicitantes, Agentes, Negocios, Servicios y Crecimiento.
+2. Home: los módulos Chat, Aprendizaje, Agentes, Negocios y Mandados deben verse del mismo tamaño.
+3. Negocios locales no debe verse recortado ni más pequeño.
+4. Publicaciones: la barra lateral debe poder desplazarse verticalmente con más recorrido.
+5. Publicaciones: los filtros superiores deben conservar espacio para que la barra no tape campos.
+6. Crecimiento debe mostrar también la ruta de Aprendizaje.
+
+No se toca Supabase.

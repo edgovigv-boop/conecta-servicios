@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.3-chat-negocios-barra-dinamica";
+const PWA_VERSION = "v4.9.4-lenguaje-plataforma-home";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -79,10 +79,10 @@ let analyticsCache = [];
 let deferredInstallPrompt = null;
 const TOTAL_STEPS = 7;
 const APP_VERSION_KEY = "conecta_servicios_app_version";
-const CHAT_STORAGE_KEY = "conecta_business_chat_v493";
+const CHAT_STORAGE_KEY = "conecta_business_chat_v494";
 const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v492";
 
-// v4.9.3 — Chat de negocios + barra dinámica
+// v4.9.4 — Lenguaje de plataforma + home ordenado + barra libre
 // Muestra publicaciones curadas y oculta los registros reales de Supabase en la vista pública.
 // Supabase sigue intacto; administración y futuras versiones pueden volver a producción cambiando esta bandera.
 const PRESENTATION_PILOT_MODE = true;
@@ -144,7 +144,7 @@ const PILOT_PUBLICATIONS = [
     state: "México", municipality: "Chapultepec", locality: "Avenida principal", phone: OFFICE_PHONE, budget: 50, status: "activo", createdAt: "2026-05-18T08:20:00Z", nextStep: "Contactar viaje"
   },
   {
-    id: "PILOTO-APR-001", pilotType: "aprendizaje", roleLabel: "Aprendizaje", relationLabel: "Curso útil",
+    id: "PILOTO-APR-001", pilotType: "crecimiento", roleLabel: "Aprendizaje", relationLabel: "Curso útil",
     name: "Rutas gratuitas", title: "Aprende ventas, computación u oficio básico", category: "Aprendizaje", subcategory: "Cursos gratuitos",
     description: "Ruta piloto para mostrar cursos gratuitos que ayudan a mejorar servicios, negocios y oportunidades de ingreso.",
     state: "México", municipality: "Todo México", locality: "En línea", phone: OFFICE_PHONE, budget: 0, status: "activo", createdAt: "2026-05-18T08:10:00Z", nextStep: "Ver cursos"
@@ -1040,6 +1040,7 @@ function categoryIcon(category) {
     "Alimentos y ventas": "🍲",
     "Redes sociales": "🔗",
     "Agentes de crecimiento": "📈",
+    "Aprendizaje": "🎓",
     "Mandados Verificados": "🧺",
     "Colaboración general": "🤝"
   };
@@ -1104,6 +1105,12 @@ function setPilotTypeFilter(type) {
   pilotTypeFilter = type || "";
   document.querySelectorAll("[data-pilot-type]").forEach(btn => btn.classList.toggle("active", (btn.dataset.pilotType || "") === pilotTypeFilter));
   renderPublications();
+}
+function openPilotType(type) {
+  showSection("publicaciones");
+  resetPublicationFiltersToAllMexico();
+  nearbyMode = false;
+  setPilotTypeFilter(type || "");
 }
 
 function compactPublicationCard(item) {

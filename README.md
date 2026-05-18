@@ -1,19 +1,19 @@
-# Conecta Servicios v4.9.2 — Modo piloto para inversionistas
+# Conecta Servicios v4.9.4 — Lenguaje de plataforma y home ordenado
 
-Esta versión prepara una vista controlada para presentar la aplicación a inversionistas.
+Esta versión pule el modo piloto para inversionistas y adopta un lenguaje más claro dentro de la app.
 
 ## Incluye
 
-- Modo piloto en Publicaciones.
-- Ejemplos curados tipo solicitante / agente / negocio.
-- Registros reales ocultos en la vista pública sin modificar Supabase.
-- Nueva sección de Negocios locales.
-- Visión de chat + catálogo + carrito + agenda + pago futuro.
-- Mantiene Mandados Verificados, Fondo Protegido, Agentes de crecimiento, Mensajes y Aprendizaje.
-
-## Importante
-
-No se implementan pagos reales ni wallet. Fondo Protegido sigue como simulador conceptual y la app mantiene trato directo entre las partes.
+- Hero actualizado con el nuevo lenguaje: Solicitantes, Agentes, Negocios, Servicios y Crecimiento.
+- Nuevo acceso rápido en Home con esos cinco conceptos.
+- Chat de negocios, Aprendizaje, Agentes de crecimiento, Negocios locales y Mandados verificados con tarjetas del mismo tamaño y proporción.
+- Negocios locales corregido para que no se vea pequeño ni recortado frente a los demás módulos.
+- Barra lateral de categorías en Publicaciones con recorrido vertical más libre, desde la zona superior hasta antes de la barra inferior.
+- Filtros superiores con espacio para que la barra no invada los campos.
+- Crecimiento ahora integra también Aprendizaje como ruta visible.
+- Aprendizaje aparece en el filtro de Crecimiento del modo piloto.
+- No toca Supabase.
+- PWA/cache actualizado a v4.9.4.
 
 ## Subida a Vercel
 
