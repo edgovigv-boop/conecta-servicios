@@ -4,12 +4,12 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.9.22-feed-validado-sin-vercel";
+const CACHE_NAME = "conecta-servicios-v4.9.23-home-feed-funcional";
 const ASSETS = [
   "./",
   "index.html",
-  "styles.css?v=4.9.22-feed-validado-sin-vercel",
-  "app.js?v=4.9.22-feed-validado-sin-vercel",
+  "styles.css?v=4.9.23-home-feed-funcional",
+  "app.js?v=4.9.23-home-feed-funcional",
   "manifest.json",
   "assets/hero-scene-v4718.webp",
   "assets/hero-scene-clean-v4711.png",

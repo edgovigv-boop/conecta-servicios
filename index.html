@@ -28,10 +28,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
-  <title>Conecta Servicios v4.9.22</title>
-  <link rel="stylesheet" href="styles.css?v=4.9.22-feed-validado-sin-vercel" />
+  <title>Conecta Servicios v4.9.23</title>
+  <link rel="stylesheet" href="styles.css?v=4.9.23-home-feed-funcional" />
 </head>
-<body data-version="4.9.22-feed-validado-sin-vercel">
+<body data-version="4.9.23-home-feed-funcional">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -46,7 +46,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
       <section id="inicio" class="section active v4918-home-section">
         <div class="v4918-feed-home" aria-label="Inicio tipo red social de Conecta Servicios">
           <header class="v4918-feed-header">
-            <button type="button" class="v4918-brand" onclick="setHomeFeedFilter('')" aria-label="Conecta Servicios inicio">
+            <button type="button" class="v4918-brand" onclick="showSection('instalarApp')" aria-label="Instalar Conecta Servicios">
               <span class="v4918-logo-mark" aria-hidden="true"></span>
               <span><strong>Conecta</strong><small>SERVICIOS</small></span>
             </button>
@@ -585,6 +585,40 @@ Todo uso requiere autorización expresa y por escrito del titular.
         </div>
       </section>
 
+
+      <section id="oportunidades" class="section info-section quick-actions-section v4923-actions-section">
+        <div class="v4923-action-hero">
+          <span class="v4923-action-logo">＋</span>
+          <div>
+            <h2>¿Qué quieres iniciar?</h2>
+            <p>Elige una ruta rápida y te guiaremos paso a paso.</p>
+          </div>
+        </div>
+        <div class="v4923-action-grid">
+          <button type="button" class="v4923-action-card need" onclick="openOpportunityWizard('necesito')">
+            <span>🙋</span>
+            <strong>Necesito algo</strong>
+            <small>Publicar una solicitud, mandado, viaje, envío o apoyo.</small>
+          </button>
+          <button type="button" class="v4923-action-card offer" onclick="openOpportunityWizard('ingresos')">
+            <span>🛠️</span>
+            <strong>Ofrezco algo</strong>
+            <small>Publicar servicio, producto, negocio o disponibilidad.</small>
+          </button>
+          <button type="button" class="v4923-action-card earn" onclick="showSection('embajadores')">
+            <span>💰</span>
+            <strong>Quiero ganar dinero</strong>
+            <small>Embajadores, agentes de crecimiento, servicios y aprendizaje.</small>
+          </button>
+        </div>
+        <div class="v4923-action-shortcuts">
+          <button type="button" onclick="startSurveyFlow('mandadoSolicitud')">📦 Mandado verificado</button>
+          <button type="button" onclick="startSurveyFlow('crecimientoMenu')">📈 Agentes de crecimiento</button>
+          <button type="button" onclick="startSurveyFlow('chatNegocio')">🏪 Chat de negocio</button>
+          <button type="button" onclick="showSection('aprende')">🎓 Aprendizaje</button>
+        </div>
+      </section>
+
       <section id="instalarApp" class="section info-section">
         <h2>Instalar Conecta Servicios</h2>
         <div class="install-help-card">
@@ -693,6 +727,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.9.22-feed-validado-sin-vercel"></script>
+  <script src="app.js?v=4.9.23-home-feed-funcional"></script>
 </body>
 </html>

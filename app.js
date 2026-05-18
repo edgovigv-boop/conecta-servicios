@@ -3215,7 +3215,7 @@ function homeFeedPostCardV4918(post) {
           <button type="button" onclick="socialLike(this)" aria-label="Me gusta">♡ <small>${Number(post.likes || 0)}</small></button>
           <button type="button" onclick="showSection('mensajes')" aria-label="Comentarios">💬 <small>${Number(post.comentarios || 0)}</small></button>
           <button type="button" onclick="sharePilotSocial('${escapeHtml(post.tipo)}')" aria-label="Compartir">↗ <small>${Number(post.compartidos || 0)}</small></button>
-          <button type="button" onclick="openPilotType('${escapeHtml(post.tipo)}')" aria-label="Guardar">▢ <small>Guardar</small></button>
+          <button type="button" onclick="savePilotTemplate('${escapeHtml(post.id || post.tipo)}')" aria-label="Guardar plantilla">▢ <small>Guardar</small></button>
         </div>
         <div class="v4918-cta-row v4922-cta-row">
           <button type="button" class="v4918-primary-cta v4922-primary-cta" onclick="makePilotReal('${escapeHtml(post.id || post.tipo)}')">${escapeHtml(cta)}</button>
@@ -3264,7 +3264,7 @@ function makePilotReal(target = "") {
   const flow = post?.flujo || "";
   trackEvent("home_social_hacerlo_real", null, { tipo: type, post: post?.id || target, flujo: flow });
   if (flow === "publicarNecesidad") return openOpportunityWizard("necesito", post);
-  if (flow === "publicarOferta") return openOpportunityWizard("ingresos", post);
+  if (flow === "publicarOferta") return openOpportunityWizard(post?.tipo === "negocios" ? "negocio" : "ingresos", post);
   if (flow === "mandadoSolicitud") return startSurveyFlow("mandadoSolicitud");
   if (flow === "mandadoAgente") return startSurveyFlow("mandadoAgente");
   if (flow === "chatNegocio") return startSurveyFlow("chatNegocio");
@@ -3274,14 +3274,47 @@ function makePilotReal(target = "") {
   if (flow === "embajadoresPagos") { showSection("embajadores"); setTimeout(() => showAmbassadorPanel?.("pagos"), 80); return; }
   if (flow === "aprendizaje") return showSection("aprende");
   if (type === "solicitantes") return openOpportunityWizard("necesito", post);
-  if (type === "agentes") return startSurveyFlow("mandadoAgente");
-  if (type === "negocios") return startSurveyFlow("chatNegocio");
+  if (type === "agentes") return openOpportunityWizard("ingresos", post);
+  if (type === "negocios") return openOpportunityWizard("negocio", post);
   if (type === "servicios") return openOpportunityWizard("ingresos", post);
   if (type === "crecimiento") return startSurveyFlow("crecimientoMenu");
   if (type === "embajadores") return showSection("embajadores");
   if (type === "aprendizaje") return showSection("aprende");
   return startOpportunityGuide();
 }
+// v4.9.23 — Guardar plantillas del feed y rutas rápidas funcionales.
+const SAVED_FEED_TEMPLATES_KEY = "conecta_plantillas_guardadas_v4923";
+function savedFeedTemplates() {
+  try { return JSON.parse(localStorage.getItem(SAVED_FEED_TEMPLATES_KEY) || "[]"); } catch { return []; }
+}
+function saveFeedTemplates(list) {
+  try { localStorage.setItem(SAVED_FEED_TEMPLATES_KEY, JSON.stringify(list)); } catch {}
+}
+function savePilotTemplate(target = "") {
+  const post = HOME_FEED_POSTS_V4918.find(item => item.id === target) || HOME_FEED_POSTS_V4918.find(item => item.tipo === target);
+  if (!post) { showToast("No encontramos esta plantilla"); return; }
+  if (typeof hasActivePublishMembership === "function" && !hasActivePublishMembership()) {
+    showToast("Guardar plantillas requiere membresía anual Conecta ($98). Puedes seguir explorando gratis.");
+    showSection("embajadores");
+    setTimeout(() => {
+      if (typeof showAmbassadorPanel === "function") showAmbassadorPanel("membresias");
+    }, 90);
+    return;
+  }
+  const current = savedFeedTemplates();
+  const template = {
+    id: post.id,
+    tipo: post.tipo,
+    titulo: post.titulo,
+    descripcion: post.plantilla || post.descripcion,
+    categoria: post.rol || homeFeedLabelV4918(post.tipo),
+    savedAt: new Date().toISOString()
+  };
+  const next = [template, ...current.filter(item => item.id !== template.id)].slice(0, 30);
+  saveFeedTemplates(next);
+  showToast("Plantilla guardada. Puedes usarla después para publicar.");
+}
+
 function init() {
   const params = new URLSearchParams(location.search);
   pendingSharedPublicationId = params.get("pub") || params.get("publicacion");
