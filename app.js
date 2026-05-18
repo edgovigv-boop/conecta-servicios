@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.19-feed-pilotos-limpios";
+const PWA_VERSION = "v4.9.20-home-publica-demo";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -519,11 +519,13 @@ function handlePairedStateChange(stateId, municipalityId, placeholder) {
 function routeUrlForSection(id) {
   const params = new URLSearchParams(location.search);
   const adminMode = adminRouteEnabled || params.get("admin") === "1";
-  const base = adminMode ? `${location.pathname}?admin=1` : location.pathname;
-  return `${base}#${id}`;
+  const cleanPath = location.pathname.replace(/\/demo-inversionistas\/?$/, "/") || "/";
+  if (id === "demoInversionistas") return adminMode ? `${cleanPath}?admin=1#demoInversionistas` : "/demo-inversionistas";
+  const base = adminMode ? `${cleanPath}?admin=1` : cleanPath;
+  return id === "inicio" ? base : `${base}#${id}`;
 }
 function showSection(id, push = true) {
-  const sectionAliases = { aprendizaje: "aprende", aprender: "aprende", chat: "mensajes", embajador: "embajadores", embajadores: "embajadores", referidos: "embajadores" };
+  const sectionAliases = { aprendizaje: "aprende", aprender: "aprende", chat: "mensajes", embajador: "embajadores", embajadores: "embajadores", referidos: "embajadores", demo: "demoInversionistas", "demo-inversionistas": "demoInversionistas", inversionistas: "demoInversionistas" };
   id = sectionAliases[id] || id;
   if (id === "admin" && !adminRouteEnabled) { showToast("Acceso de administración oculto"); id = "inicio"; }
   const target = document.getElementById(id);
@@ -533,11 +535,12 @@ function showSection(id, push = true) {
   document.querySelector(".app-shell")?.classList.toggle("home-mode", id === "inicio");
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   target.classList.add("active");
-  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme", mensajes:"Centro de orientación", agentes:"Agentes de crecimiento", mandados:"Mandados Verificados", negocios:"Negocios locales", embajadores:"Embajadores Conecta", encuesta:"Encuesta guiada" };
+  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme", mensajes:"Centro de orientación", agentes:"Agentes de crecimiento", mandados:"Mandados Verificados", negocios:"Negocios locales", embajadores:"Embajadores Conecta", encuesta:"Encuesta guiada", demoInversionistas:"Demo inversionistas" };
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
-  if (id === "inicio") renderSocialHomeFeed();
+  if (id === "inicio") { renderPublicHomeV4920?.(); renderSocialHomeFeed(); }
+  if (id === "demoInversionistas") renderDemoInvestorFeedV4920?.();
   if (id === "publicaciones") {
     // v4.8.7: cada entrada a Publicaciones inicia limpia en Todo México / Todo.
     // Esto evita que búsquedas o chips anteriores oculten una publicación recién creada.
@@ -2275,7 +2278,7 @@ function initMobileFormComfort() {
 
 
 
-// v4.9.19 — Feed social real con publicaciones piloto limpias, sin texto incrustado en imágenes
+// v4.9.20 — Feed social real con publicaciones piloto limpias, sin texto incrustado en imágenes
 const HOME_FEED_POSTS_V4918 = [
   {
     id: "feed4919-solicitante-barista",
@@ -2802,6 +2805,75 @@ function makePilotReal(target = "") {
   if (type === "aprendizaje") return showSection("aprende");
   return startOpportunityGuide();
 }
+
+
+// v4.9.20 — Home pública clara + demo para inversionistas separada
+let demoFeedFilterV4920 = "";
+
+function publicHomeStoriesV4920() {
+  const preferred = [
+    "feed4919-solicitante-mandado",
+    "feed4919-servicio-reparacion",
+    "feed4919-negocio-panaderia",
+    "feed4919-agente-redes",
+    "feed4919-embajadores-comision",
+    "feed4919-aprendizaje-computacion"
+  ];
+  const selected = preferred.map(id => HOME_FEED_POSTS_V4918.find(post => post.id === id)).filter(Boolean);
+  return selected.length ? selected : HOME_FEED_POSTS_V4918.slice(0, 6);
+}
+
+function renderPublicHomeV4920() {
+  const target = document.getElementById("publicHomeStories");
+  if (!target) return;
+  const stories = publicHomeStoriesV4920();
+  target.innerHTML = stories.map(publicHomeStoryCardV4920).join("");
+}
+
+function publicHomeStoryCardV4920(post) {
+  const typeLabel = homeFeedLabelV4918(post.tipo);
+  const action = post.tipo === "embajadores" ? "Activar membresía" : post.tipo === "aprendizaje" ? "Empezar" : "Hacerlo real";
+  return `<article class="v4920-story-card" data-type="${escapeHtml(post.tipo)}">
+    <button type="button" class="v4920-story-media" onclick="makePilotReal('${escapeHtml(post.id)}')" aria-label="${escapeHtml(action)}: ${escapeHtml(post.titulo)}">
+      <img src="${escapeHtml(post.imagen)}" alt="${escapeHtml(post.titulo)}" loading="lazy" style="object-position:${escapeHtml(post.posicion || 'center center')}" />
+      <span>${escapeHtml(typeLabel)}</span>
+    </button>
+    <div class="v4920-story-body">
+      <strong>${escapeHtml(post.titulo)}</strong>
+      <small>${escapeHtml(post.ubicacion)} · ${escapeHtml(post.rol)}</small>
+      <p>${escapeHtml((post.descripcion || '').replace(/^Ejemplo piloto:\s*/i, ''))}</p>
+      <button type="button" onclick="makePilotReal('${escapeHtml(post.id)}')">${escapeHtml(action)}</button>
+    </div>
+  </article>`;
+}
+
+function renderDemoInvestorFeedV4920() {
+  const feed = document.getElementById("demoSocialFeed");
+  if (!feed) return;
+  const posts = demoFeedFilterV4920 ? HOME_FEED_POSTS_V4918.filter(post => post.tipo === demoFeedFilterV4920) : HOME_FEED_POSTS_V4918;
+  const title = document.getElementById("demoFeedTitle");
+  const hint = document.getElementById("demoFeedHint");
+  if (title) title.textContent = homeFeedLabelV4918(demoFeedFilterV4920);
+  if (hint) hint.textContent = demoFeedFilterV4920 ? "Módulo filtrado para revisión de inversionistas." : "Demo completa con pilotos, módulos y visión escalable.";
+  document.querySelectorAll("[data-demo-feed-filter]").forEach(btn => {
+    btn.classList.toggle("active", (btn.dataset.demoFeedFilter || "") === demoFeedFilterV4920);
+  });
+  feed.innerHTML = posts.map(post => homeFeedPostCardV4918(post)).join("");
+}
+
+function setDemoFeedFilterV4920(type = "") {
+  demoFeedFilterV4920 = type || "";
+  renderDemoInvestorFeedV4920();
+  const feed = document.getElementById("demoSocialFeed");
+  if (feed) feed.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function initialSectionV4920() {
+  const path = String(location.pathname || "").replace(/\/+$/, "");
+  const hash = String(location.hash || "").replace("#", "");
+  if (path.endsWith("/demo-inversionistas") || hash === "demoInversionistas" || hash === "demo-inversionistas") return "demoInversionistas";
+  return hash || "inicio";
+}
 function init() {
   const params = new URLSearchParams(location.search);
   pendingSharedPublicationId = params.get("pub") || params.get("publicacion");
@@ -2816,14 +2888,18 @@ function init() {
   document.getElementById("pubState")?.addEventListener("change", () => handlePairedStateChange("pubState", "pubMunicipality", "Selecciona municipio"));
   document.getElementById("notifState")?.addEventListener("change", () => handlePairedStateChange("notifState", "notifMunicipality", "Todos los municipios"));
   document.getElementById("externalState")?.addEventListener("change", () => handlePairedStateChange("externalState", "externalMunicipality", "Selecciona municipio"));
-  history.replaceState({ section: "inicio" }, "", routeUrlForSection("inicio"));
-  document.querySelector(".app-shell")?.classList.add("home-mode");
+  const initialSection = initialSectionV4920();
+  history.replaceState({ section: initialSection }, "", routeUrlForSection(initialSection));
+  document.querySelector(".app-shell")?.classList.toggle("home-mode", initialSection === "inicio");
   updateWizard();
   updateCategoryDetails();
   initMobileFormComfort();
   refreshAppCacheIfNeeded().finally(registerServiceWorker);
   updateInstallCard();
+  renderPublicHomeV4920?.();
   renderSocialHomeFeed();
+  renderDemoInvestorFeedV4920?.();
+  if (initialSection !== "inicio") showSection(initialSection, false);
   renderNotificationSettings();
   renderOpportunitySettings();
   trackEvent("visita_home");

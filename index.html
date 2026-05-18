@@ -28,10 +28,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
-  <title>Conecta Servicios v4.9.19</title>
-  <link rel="stylesheet" href="styles.css?v=4.9.19-feed-pilotos-limpios" />
+  <title>Conecta Servicios v4.9.20</title>
+  <link rel="stylesheet" href="styles.css?v=4.9.20-home-publica-demo" />
 </head>
-<body data-version="4.9.19-feed-pilotos-limpios">
+<body data-version="4.9.20-home-publica-demo">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -43,12 +43,71 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </header>
 
     <main class="content">
-      <section id="inicio" class="section active v4918-home-section">
-        <div class="v4918-feed-home" aria-label="Inicio tipo red social de Conecta Servicios">
+      <section id="inicio" class="section active v4920-public-home-section">
+        <div class="v4920-public-home" aria-label="Inicio público de Conecta Servicios">
+          <header class="v4920-public-header">
+            <button type="button" class="v4920-public-brand" onclick="showSection('inicio')" aria-label="Inicio Conecta Servicios">
+              <span class="v4920-public-logo" aria-hidden="true">＋</span>
+              <span><strong>Conecta</strong><small>Servicios</small></span>
+            </button>
+            <div class="v4920-public-actions">
+              <button type="button" onclick="requestNearbyPublications()" aria-label="Buscar">⌕</button>
+              <button type="button" onclick="showSection('notificaciones')" aria-label="Notificaciones">🔔</button>
+            </div>
+          </header>
+
+          <section class="v4920-public-hero">
+            <span class="v4920-eyebrow">Economía local en movimiento</span>
+            <h1>Pide ayuda, ofrece algo o genera ingresos cerca de ti.</h1>
+            <p>Explora gratis. Contacta directo. Publica cuando quieras activar tu membresía anual.</p>
+            <div class="v4920-decision-grid" aria-label="Acciones principales">
+              <button type="button" onclick="openOpportunityWizard('necesito')"><span>📍</span><strong>Necesito algo</strong><small>Pide ayuda, mandados, viajes o servicios.</small></button>
+              <button type="button" onclick="openOpportunityWizard('ingresos')"><span>🛠️</span><strong>Ofrezco algo</strong><small>Publica servicio, producto, negocio o apoyo.</small></button>
+              <button type="button" onclick="showSection('oportunidades')"><span>📈</span><strong>Quiero ganar dinero</strong><small>Embajadores, agentes, servicios y aprendizaje.</small></button>
+            </div>
+          </section>
+
+          <section class="v4920-public-stories-wrap" aria-label="Historias visuales de oportunidades">
+            <div class="v4920-section-title">
+              <div>
+                <span>Publicaciones destacadas</span>
+                <strong>Explora lo que puedes hacer</strong>
+              </div>
+              <button type="button" onclick="requestNearbyPublications()">Ver todas</button>
+            </div>
+            <div id="publicHomeStories" class="v4920-public-stories" aria-live="polite"></div>
+          </section>
+
+          <section class="v4920-member-card" aria-label="Membresía Conecta Servicios">
+            <span>🤝</span>
+            <div>
+              <strong>Embajadores Conecta</strong>
+              <small>Membresía anual $98 MXN · comisión embajador $50 por membresía referida pagada.</small>
+            </div>
+            <button type="button" onclick="showSection('embajadores')">Activar</button>
+          </section>
+
+          <button type="button" class="v4920-demo-link" onclick="showSection('demoInversionistas')">Ver demo para inversionistas</button>
+          <p class="sync-status visually-hidden" id="syncStatus" aria-live="polite">Conectando con la base de datos...</p>
+        </div>
+      </section>
+
+      <section id="demoInversionistas" class="section v4920-demo-section">
+        <div class="v4920-demo-hero">
+          <span>Demo estratégica</span>
+          <h2>Demo para inversionistas</h2>
+          <p>Vista completa del potencial de Conecta Servicios: feed social, pilotos, embajadores, mandados, negocios, aprendizaje, crecimiento y módulos futuros.</p>
+          <div class="v4920-demo-actions">
+            <button type="button" onclick="showSection('inicio')">Ver Home pública</button>
+            <button type="button" onclick="showSection('oportunidades')">Ver oportunidades</button>
+          </div>
+        </div>
+
+        <div class="v4918-feed-home v4920-demo-feed" aria-label="Demo tipo red social de Conecta Servicios">
           <header class="v4918-feed-header">
-            <button type="button" class="v4918-brand" onclick="setHomeFeedFilter('')" aria-label="Conecta Servicios inicio">
+            <button type="button" class="v4918-brand" onclick="setDemoFeedFilterV4920('')" aria-label="Conecta Servicios demo">
               <span class="v4918-logo-mark" aria-hidden="true"></span>
-              <span><strong>Conecta</strong><small>SERVICIOS</small></span>
+              <span><strong>Conecta</strong><small>DEMO</small></span>
             </button>
             <div class="v4918-header-actions">
               <button type="button" aria-label="Buscar publicaciones" onclick="requestNearbyPublications()">⌕</button>
@@ -56,25 +115,31 @@ Todo uso requiere autorización expresa y por escrito del titular.
             </div>
           </header>
 
-          <nav class="v4918-feed-tabs" aria-label="Filtrar publicaciones piloto">
-            <button type="button" class="active" data-feed-filter="" onclick="setHomeFeedFilter('')"><span>✦</span><small>Para ti</small></button>
-            <button type="button" data-feed-filter="solicitantes" onclick="setHomeFeedFilter('solicitantes')"><span>🙋</span><small>Solicitantes</small></button>
-            <button type="button" data-feed-filter="agentes" onclick="setHomeFeedFilter('agentes')"><span>🧑‍💼</span><small>Agentes</small></button>
-            <button type="button" data-feed-filter="negocios" onclick="setHomeFeedFilter('negocios')"><span>🏪</span><small>Negocios</small></button>
-            <button type="button" data-feed-filter="servicios" onclick="setHomeFeedFilter('servicios')"><span>🛠️</span><small>Servicios</small></button>
-            <button type="button" data-feed-filter="crecimiento" onclick="setHomeFeedFilter('crecimiento')"><span>📈</span><small>Crecimiento</small></button>
-            <button type="button" data-feed-filter="embajadores" onclick="setHomeFeedFilter('embajadores')"><span>🤝</span><small>Embajadores</small></button>
-            <button type="button" data-feed-filter="aprendizaje" onclick="setHomeFeedFilter('aprendizaje')"><span>🎓</span><small>Aprendizaje</small></button>
+          <nav class="v4918-feed-tabs" aria-label="Filtrar publicaciones de demo">
+            <button type="button" class="active" data-demo-feed-filter="" onclick="setDemoFeedFilterV4920('')"><span>✦</span><small>Para ti</small></button>
+            <button type="button" data-demo-feed-filter="solicitantes" onclick="setDemoFeedFilterV4920('solicitantes')"><span>🙋</span><small>Solicitantes</small></button>
+            <button type="button" data-demo-feed-filter="agentes" onclick="setDemoFeedFilterV4920('agentes')"><span>🧑‍💼</span><small>Agentes</small></button>
+            <button type="button" data-demo-feed-filter="negocios" onclick="setDemoFeedFilterV4920('negocios')"><span>🏪</span><small>Negocios</small></button>
+            <button type="button" data-demo-feed-filter="servicios" onclick="setDemoFeedFilterV4920('servicios')"><span>🛠️</span><small>Servicios</small></button>
+            <button type="button" data-demo-feed-filter="crecimiento" onclick="setDemoFeedFilterV4920('crecimiento')"><span>📈</span><small>Crecimiento</small></button>
+            <button type="button" data-demo-feed-filter="embajadores" onclick="setDemoFeedFilterV4920('embajadores')"><span>🤝</span><small>Embajadores</small></button>
+            <button type="button" data-demo-feed-filter="aprendizaje" onclick="setDemoFeedFilterV4920('aprendizaje')"><span>🎓</span><small>Aprendizaje</small></button>
           </nav>
 
           <div class="v4918-feed-intro">
-            <strong id="homeFeedTitle">Para ti</strong>
-            <small id="homeFeedHint">Desliza oportunidades piloto y conviértelas en acciones reales.</small>
+            <strong id="demoFeedTitle">Para ti</strong>
+            <small id="demoFeedHint">Demo completa con publicaciones piloto y módulos de crecimiento.</small>
           </div>
+          <div id="demoSocialFeed" class="v4918-social-feed" aria-live="polite" aria-label="Feed demo para inversionistas"></div>
+        </div>
 
-          <div id="homeSocialFeed" class="v4918-social-feed" aria-live="polite" aria-label="Feed de publicaciones piloto"></div>
-
-          <p class="sync-status visually-hidden" id="syncStatus" aria-live="polite">Conectando con la base de datos...</p>
+        <div class="v4920-demo-modules">
+          <button type="button" onclick="showSection('mandados')"><span>🧺</span><strong>Mandados Verificados</strong><small>Evidencia, trato directo y fondo protegido conceptual.</small></button>
+          <button type="button" onclick="showSection('agentes')"><span>📈</span><strong>Agentes de crecimiento</strong><small>Campañas, comisión y resultados.</small></button>
+          <button type="button" onclick="showSection('negocios')"><span>🏪</span><strong>Negocios locales</strong><small>Chat, catálogo, citas y pedidos futuros.</small></button>
+          <button type="button" onclick="showSection('embajadores')"><span>🤝</span><strong>Embajadores</strong><small>Membresía $98 y comisión $50.</small></button>
+          <button type="button" onclick="showSection('aprende')"><span>🎓</span><strong>Aprendizaje</strong><small>Cursos y rutas para generar ingresos.</small></button>
+          <button type="button" onclick="showSection('analitica')"><span>📊</span><strong>Analítica</strong><small>Datos internos, solo para revisión.</small></button>
         </div>
       </section>
 

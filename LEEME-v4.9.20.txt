@@ -1,0 +1,15 @@
+Conecta Servicios v4.9.20 — Home pública clara + demo para inversionistas
+
+Cambios principales:
+- Home pública simplificada a tres decisiones: Necesito algo, Ofrezco algo, Quiero ganar dinero.
+- Publicaciones destacadas como historias visuales, sin lenguaje de demo en la portada pública.
+- Demo para inversionistas separada en /demo-inversionistas y #demoInversionistas.
+- Elementos técnicos/admin conservados, pero fuera de la vista pública principal.
+- Flujo Hacerlo real mantiene conexión con publicación, membresía, embajadores, mandados, negocios, aprendizaje y agentes.
+- PWA/cache actualizado a v4.9.20.
+
+Validación rápida:
+1. Abrir / y confirmar que se entienden las 3 acciones principales.
+2. Tocar una historia destacada y confirmar que lleva al flujo real.
+3. Abrir /demo-inversionistas y confirmar que muestra el feed completo y módulos estratégicos.
+4. Confirmar que admin no aparece en Home pública salvo con ?admin=1.
