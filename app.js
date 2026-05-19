@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.34-hotfix-overrides-multimedia";
+const PWA_VERSION = "v4.9.35-landing-embajadores";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -608,7 +608,7 @@ function routeUrlForSection(id) {
   return `${base}#${id}`;
 }
 function showSection(id, push = true) {
-  const sectionAliases = { aprendizaje: "aprende", aprender: "aprende", chat: "mensajes", embajador: "embajadores", embajadores: "embajadores", referidos: "embajadores" };
+  const sectionAliases = { aprendizaje: "aprende", aprender: "aprende", chat: "mensajes", embajador: "embajadores", embajadores: "embajadores", referidos: "embajadores", landingEmbajadores: "embajadoresLanding", embajadoresLanding: "embajadoresLanding", landing: "embajadoresLanding" };
   id = sectionAliases[id] || id;
   if (id === "admin" && !adminRouteEnabled) { showToast("Acceso de administración oculto"); id = "inicio"; }
   const target = document.getElementById(id);
@@ -618,11 +618,12 @@ function showSection(id, push = true) {
   document.querySelector(".app-shell")?.classList.toggle("home-mode", id === "inicio");
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   target.classList.add("active");
-  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme", mensajes:"Centro de orientación", agentes:"Agentes de crecimiento", mandados:"Mandados Verificados", negocios:"Negocios locales", embajadores:"Embajadores Conecta", encuesta:"Encuesta guiada" };
+  const titles = { inicio:"Conecta Servicios", registro:"Crear oportunidad", publicaciones:"Publicaciones", oficina:"Oficina", admin:"Administración", comoFunciona:"Cómo funciona", reglas:"Reglas", planes:"Planes", avisoPrivacidad:"Aviso de Privacidad", terminos:"Términos", notificaciones:"Notificaciones", misPublicaciones:"Mis publicaciones", enlaceExterno:"Enlace externo", aprende:"Aprende y emprende", analitica:"Analítica", oportunidades:"Oportunidades para ti", rutaGuiada:"Ruta guiada", actualizarme:"Por qué actualizarme", mensajes:"Centro de orientación", agentes:"Agentes de crecimiento", mandados:"Mandados Verificados", negocios:"Negocios locales", embajadores:"Embajadores Conecta", embajadoresLanding:"Embajadores Conecta", encuesta:"Encuesta guiada" };
   document.getElementById("mainTitle").textContent = titles[id] || "Conecta Servicios";
   document.getElementById("backButton").style.visibility = id === "inicio" ? "hidden" : "visible";
   document.querySelector(".app-shell").scrollTo({ top: 0, behavior: "smooth" });
   if (id === "inicio") renderSocialHomeFeed();
+  if (id === "embajadoresLanding") trackEvent("vista_landing_embajadores");
   if (id === "publicaciones") {
     // v4.8.7: cada entrada a Publicaciones inicia limpia en Todo México / Todo.
     // Esto evita que búsquedas o chips anteriores oculten una publicación recién creada.
@@ -3617,13 +3618,15 @@ function init() {
   document.getElementById("pubState")?.addEventListener("change", () => handlePairedStateChange("pubState", "pubMunicipality", "Selecciona municipio"));
   document.getElementById("notifState")?.addEventListener("change", () => handlePairedStateChange("notifState", "notifMunicipality", "Todos los municipios"));
   document.getElementById("externalState")?.addEventListener("change", () => handlePairedStateChange("externalState", "externalMunicipality", "Selecciona municipio"));
-  history.replaceState({ section: "inicio" }, "", routeUrlForSection("inicio"));
-  document.querySelector(".app-shell")?.classList.add("home-mode");
+  const initialSection = initialSectionFromUrlV4935();
+  history.replaceState({ section: initialSection }, "", routeUrlForSection(initialSection));
+  document.querySelector(".app-shell")?.classList.toggle("home-mode", initialSection === "inicio");
   updateWizard();
   updateCategoryDetails();
   initMobileFormComfort();
   refreshAppCacheIfNeeded().finally(registerServiceWorker);
   updateInstallCard();
+  showSection(initialSection, false);
   ensureInitialHomeFeedVisible();
   renderNotificationSettings();
   renderOpportunitySettings();

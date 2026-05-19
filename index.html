@@ -28,10 +28,13 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
-  <title>Conecta Servicios v4.9.34</title>
-  <link rel="stylesheet" href="styles.css?v=4.9.34-hotfix-subida-multimedia-admin" />
+  <title>Conecta Servicios v4.9.35</title>
+  <meta property="og:title" content="Embajadores Conecta Servicios" />
+  <meta property="og:description" content="Gana $50 MXN por cada membresía anual referida y activada en Conecta Servicios." />
+  <meta name="description" content="Embajadores Conecta: membresía anual $98 MXN y comisión de $50 MXN por referido validado." />
+  <link rel="stylesheet" href="styles.css?v=4.9.35-landing-embajadores" />
 </head>
-<body data-version="4.9.34-hotfix-subida-multimedia-admin">
+<body data-version="4.9.35-landing-embajadores">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -715,6 +718,64 @@ Todo uso requiere autorización expresa y por escrito del titular.
       </section>
 
 
+      <section id="embajadoresLanding" class="section ambassador-landing-section" aria-label="Landing Embajadores Conecta">
+        <div class="ambassador-landing-hero">
+          <div class="landing-brand-row">
+            <span class="landing-logo-plus">＋</span>
+            <span>Conecta Servicios</span>
+          </div>
+          <span class="landing-pill">Embajadores Conecta</span>
+          <h1>Gana $50 por cada membresía anual que ayudes a activar</h1>
+          <p>Invita personas, negocios, agentes o servicios a formar parte de Conecta Servicios. La membresía anual cuesta <b>$98 MXN</b> y tú puedes recibir <b>$50 MXN</b> por cada activación validada.</p>
+          <div class="landing-hero-actions">
+            <button type="button" class="landing-primary" onclick="startAmbassadorLandingFlow('embajador')">Quiero ser embajador</button>
+            <button type="button" class="landing-secondary" onclick="startAmbassadorLandingFlow('pago')">Activar membresía $98</button>
+          </div>
+        </div>
+
+        <div class="landing-value-grid">
+          <article>
+            <span>💸</span>
+            <strong>$50 de comisión</strong>
+            <p>Por cada membresía anual referida, pagada y validada.</p>
+          </article>
+          <article>
+            <span>🔗</span>
+            <strong>Código de seguimiento</strong>
+            <p>Registra tus referidos para que puedan asociarse a tu código de embajador.</p>
+          </article>
+          <article>
+            <span>📘</span>
+            <strong>Manual rápido</strong>
+            <p>Aprende cómo explicar la app, invitar negocios y dar seguimiento.</p>
+          </article>
+        </div>
+
+        <div class="landing-steps-card">
+          <h2>Cómo funciona</h2>
+          <ol>
+            <li><span>1</span><p>Activa tu membresía anual Conecta.</p></li>
+            <li><span>2</span><p>Registra tu perfil y recibe tu código de embajador.</p></li>
+            <li><span>3</span><p>Invita personas, negocios o servicios a usar la app.</p></li>
+            <li><span>4</span><p>Cada membresía validada genera comisión para tu corte.</p></li>
+          </ol>
+        </div>
+
+        <div class="landing-action-grid">
+          <button type="button" onclick="startAmbassadorLandingFlow('embajador')"><span>🙋</span><strong>Registrarme</strong><small>Crear mi perfil de embajador</small></button>
+          <button type="button" onclick="startAmbassadorLandingFlow('referido')"><span>🔗</span><strong>Registrar referido</strong><small>Vincular contacto a un código</small></button>
+          <button type="button" onclick="startAmbassadorLandingFlow('pago')"><span>💳</span><strong>Cobrar membresía</strong><small>Mercado Pago o validación manual</small></button>
+          <button type="button" onclick="startAmbassadorLandingFlow('manual')"><span>📘</span><strong>Manual rápido</strong><small>Aprender a promover la app</small></button>
+        </div>
+
+        <div class="landing-trust-card">
+          <strong>Proceso controlado por Conecta Servicios</strong>
+          <p>La publicidad en redes puede atraer interesados, pero el registro, el código de embajador, la membresía y el seguimiento de comisiones se gestionan dentro de Conecta Servicios.</p>
+          <button type="button" class="btn-small btn-ghost" onclick="copyAmbassadorLandingLink()">Copiar enlace para compartir</button>
+        </div>
+      </section>
+
+
       <section id="embajadores" class="section info-section ambassador-section">
         <div class="ambassador-hero-card">
           <span class="growth-kicker">Monetización piloto</span>
@@ -932,6 +993,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.9.34-hotfix-subida-multimedia-admin"></script>
+  <script src="app.js?v=4.9.35-landing-embajadores"></script>
 </body>
 </html>

@@ -4,12 +4,12 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.9.34-hotfix-subida-multimedia-admin";
+const CACHE_NAME = "conecta-servicios-v4.9.35-landing-embajadores";
 const ASSETS = [
   "./",
   "index.html",
-  "styles.css?v=4.9.34-hotfix-subida-multimedia-admin",
-  "app.js?v=4.9.34-hotfix-subida-multimedia-admin",
+  "styles.css?v=4.9.35-landing-embajadores",
+  "app.js?v=4.9.35-landing-embajadores",
   "manifest.json",
   "assets/hero-scene-v4718.webp",
   "assets/hero-scene-clean-v4711.png",
