@@ -1,0 +1,12 @@
+Checklist v4.9.36.8
+
+[ ] Usuario sin membresía crea Chat negocio y recibe pantalla de pago/activación.
+[ ] El Chat negocio no se publica si la membresía no está activa.
+[ ] El borrador pendiente aparece en Mi acceso.
+[ ] Usuario con membresía activa puede publicar el Chat negocio.
+[ ] Admin puede crear Chat negocio sin bloqueo de membresía.
+[ ] Admin puede publicar oportunidades normales sin bloqueo.
+[ ] Mis publicaciones sigue mostrando Mi acceso / Membresía.
+[ ] Embajadores Conecta mantiene Cobrar membresía funcionando.
+[ ] /embajadores sigue abriendo landing.
+[ ] /?section=membresia&ref=CON-LOCAL no da 404.

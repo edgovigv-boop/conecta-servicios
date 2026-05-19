@@ -1,11 +1,11 @@
-// Conecta Servicios v4.9.36.6 — Service Worker hotfix Chat negocio + Cobrar membresía
-const CACHE_NAME = "conecta-servicios-v4.9.36.6-chat-negocio-cobro";
+// Conecta Servicios v4.9.36.8 — Service Worker hotfix Chat negocio + membresía/admin
+const CACHE_NAME = "conecta-servicios-v4.9.36.8-chat-negocio-membresia-admin";
 const ASSETS = [
   "/",
   "/index.html",
-  "/styles.css?v=4.9.36.6-chat-negocio-cobro",
-  "/app.js?v=4.9.36.6-chat-negocio-cobro",
-  "/manifest.json?v=4.9.36.6-chat-negocio-cobro"
+  "/styles.css?v=4.9.36.8-chat-negocio-membresia-admin",
+  "/app.js?v=4.9.36.8-chat-negocio-membresia-admin",
+  "/manifest.json?v=4.9.36.8-chat-negocio-membresia-admin"
 ];
 self.addEventListener("install", event => {
   self.skipWaiting();

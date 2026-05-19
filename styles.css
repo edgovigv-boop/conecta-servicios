@@ -3300,3 +3300,281 @@ body[data-version] .bottom-nav.social-bottom-nav .publish-nav-action{
   .business-chat-leads-head-v49366 { gap: 10px; }
   .business-chat-lead-actions-v49366 .btn-small { width: 100%; }
 }
+
+/* v4.9.36.7 — Chat negocio ligado a publicación */
+.business-publications-panel-v49367 {
+  margin: 18px 0;
+  padding: 16px;
+  border-radius: 24px;
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 18px 45px rgba(40, 15, 90, .10);
+  border: 1px solid rgba(96, 54, 190, .12);
+}
+.business-publications-panel-v49367__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+.business-publications-panel-v49367__head span,
+.business-publication-card-v49367__eyebrow,
+.business-client-filter-v49367 > span,
+.business-requests-list-v49367 > span {
+  display: inline-block;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #5f2fd6;
+}
+.business-publications-panel-v49367__head h2,
+.business-client-filter-v49367 h2,
+.business-requests-list-v49367 h2 {
+  margin: 4px 0 0;
+  font-size: 1.18rem;
+}
+.business-publications-grid-v49367 {
+  display: grid;
+  gap: 14px;
+}
+.business-publication-card-v49367,
+.business-client-filter-v49367,
+.business-request-success-v49367,
+.business-chat-success-v49367,
+.business-requests-list-v49367,
+.business-publication-help-v49367,
+.business-publications-empty-v49367 {
+  border-radius: 22px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid rgba(96, 54, 190, .14);
+  box-shadow: 0 12px 28px rgba(48, 22, 92, .08);
+}
+.business-publication-card-v49367 h3,
+.business-chat-success-v49367 h3 {
+  margin: 6px 0 8px;
+  font-size: 1.08rem;
+}
+.business-publication-card-v49367 p,
+.business-publication-help-v49367 p,
+.business-publications-empty-v49367 p,
+.business-request-success-v49367 p,
+.business-chat-success-v49367 p {
+  color: #5f5a6e;
+  line-height: 1.45;
+}
+.business-publication-card-v49367__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.business-publication-card-v49367__meta span {
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #f2edff;
+  color: #4d21b8;
+  font-size: .8rem;
+  font-weight: 700;
+}
+.business-publication-card-v49367__latest {
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: #faf8ff;
+}
+.business-publication-card-v49367__actions,
+.business-chat-success-v49367__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+.business-publication-card-v49367 button,
+.business-client-filter-v49367 button,
+.business-request-success-v49367 button,
+.business-chat-success-v49367 button,
+.business-request-card-v49367 button,
+.business-publications-panel-v49367 button {
+  border: 0;
+  border-radius: 999px;
+  padding: 11px 16px;
+  background: linear-gradient(135deg, #6f38e8, #4b13ba);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+.business-publication-card-v49367 button.ghost,
+.business-client-filter-v49367 button.ghost,
+.business-chat-success-v49367 button.ghost,
+.business-publications-panel-v49367 button.ghost {
+  background: #f1ecff;
+  color: #4b13ba;
+}
+.business-client-filter-v49367 {
+  display: grid;
+  gap: 12px;
+}
+.business-client-filter-v49367 label {
+  display: grid;
+  gap: 6px;
+  font-weight: 750;
+  color: #302343;
+}
+.business-client-filter-v49367 input,
+.business-client-filter-v49367 select,
+.business-client-filter-v49367 textarea {
+  width: 100%;
+  border: 1px solid rgba(96,54,190,.18);
+  border-radius: 16px;
+  padding: 12px 13px;
+  font: inherit;
+  background: #fbfaff;
+}
+.business-client-filter-v49367 textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+.business-request-card-v49367 {
+  margin: 12px 0;
+  padding: 14px;
+  border-radius: 18px;
+  background: #faf8ff;
+  border: 1px solid rgba(96,54,190,.14);
+}
+.business-request-card-v49367 small {
+  display: block;
+  margin: 8px 0 10px;
+  color: #6b6578;
+}
+.success-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #ecfff4;
+  margin-bottom: 10px;
+}
+@media (min-width: 760px) {
+  .business-publications-grid-v49367 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* v4.9.36.8 — Chat negocio con membresía obligatoria + Admin libre */
+.business-chat-membership-gate-v49368,
+.pending-business-chat-notice-v49368 {
+  border: 1px solid rgba(91, 34, 207, .16);
+  border-radius: 28px;
+  background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
+  box-shadow: 0 18px 45px rgba(54, 20, 110, .11);
+  padding: 24px;
+  margin: 18px 0;
+}
+.business-chat-membership-gate-v49368__icon {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 22px;
+  background: rgba(91, 34, 207, .10);
+  font-size: 2rem;
+  margin-bottom: 14px;
+}
+.business-chat-membership-gate-v49368 > span,
+.pending-business-chat-notice-v49368 > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #5b22cf;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  font-size: .78rem;
+}
+.business-chat-membership-gate-v49368 h2,
+.pending-business-chat-notice-v49368 h3 {
+  margin: 8px 0 8px;
+  color: #1f1235;
+}
+.business-chat-membership-gate-v49368 p,
+.pending-business-chat-notice-v49368 p {
+  color: #5f5969;
+  line-height: 1.55;
+}
+.business-chat-membership-gate-v49368__price {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #fff;
+  border: 1px solid rgba(91, 34, 207, .14);
+  border-radius: 20px;
+  padding: 16px;
+  margin: 16px 0;
+}
+.business-chat-membership-gate-v49368__price strong {
+  font-size: 1.15rem;
+  color: #32105f;
+}
+.business-chat-membership-gate-v49368__summary,
+.pending-business-chat-notice-v49368 ul {
+  background: rgba(91, 34, 207, .055);
+  border-radius: 20px;
+  padding: 16px;
+  margin: 14px 0;
+}
+.business-chat-membership-gate-v49368__summary ul,
+.pending-business-chat-notice-v49368 ul {
+  list-style: none;
+  padding-left: 0;
+}
+.business-chat-membership-gate-v49368__summary li,
+.pending-business-chat-notice-v49368 li {
+  margin: 7px 0;
+  color: #43384f;
+}
+.business-chat-membership-gate-v49368__actions,
+.pending-business-chat-notice-v49368__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+.business-chat-membership-gate-v49368__actions button,
+.pending-business-chat-notice-v49368__actions button {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 18px;
+  background: linear-gradient(135deg, #6c2be8, #4513a7);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+.business-chat-membership-gate-v49368__actions button.ghost,
+.pending-business-chat-notice-v49368__actions button.ghost {
+  background: #f1ecfb;
+  color: #4513a7;
+}
+.business-chat-membership-gate-v49368__note {
+  font-size: .92rem;
+  background: #fff;
+  border-left: 4px solid #5b22cf;
+  padding: 12px 14px;
+  border-radius: 14px;
+}
+.membership-gate-ok.admin-free-v49368 {
+  border: 1px solid rgba(22, 163, 74, .20);
+  background: linear-gradient(135deg, rgba(22, 163, 74, .10), rgba(91, 34, 207, .06));
+}
+@media (max-width: 640px) {
+  .business-chat-membership-gate-v49368,
+  .pending-business-chat-notice-v49368 {
+    padding: 20px;
+    border-radius: 24px;
+  }
+  .business-chat-membership-gate-v49368__actions button,
+  .pending-business-chat-notice-v49368__actions button {
+    width: 100%;
+  }
+}

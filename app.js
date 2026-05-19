@@ -7573,3 +7573,839 @@ try {
   window.deleteBusinessChatLeadV49366 = deleteBusinessChatLeadV49366;
   window.openAmbassadorPaymentFlowV49366 = openAmbassadorPaymentFlowV49366;
 } catch {}
+
+// ------------------------------------------------------------------
+// v4.9.36.7 — Chat de negocio ligado a publicación + Cobro membresía robusto
+// Objetivo:
+// 1) El Chat de negocio ya no queda como registro huérfano.
+// 2) Al guardar un chat se crea/actualiza una publicación local de negocio/servicio.
+// 3) La publicación muestra un filtro para clientes y las solicitudes quedan visibles en Mis publicaciones.
+// 4) El botón Cobrar membresía en Embajadores abre el flujo de cobro, no Manual rápido.
+// ------------------------------------------------------------------
+const CHAT_PUBLICATIONS_VERSION_V49367 = "4.9.36.7-chat-publicacion";
+const BUSINESS_CHAT_PUBLICATIONS_KEY_V49367 = "conecta_chat_negocio_publicaciones_v49367";
+const BUSINESS_CHAT_REQUESTS_KEY_V49367 = "conecta_chat_negocio_solicitudes_v49367";
+
+function safeTextV49367(value = "") {
+  if (typeof escapeHtml === "function") return escapeHtml(value);
+  return String(value || "").replace(/[&<>\"]/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[m]));
+}
+
+function cleanPhoneV49367(value = "") {
+  if (typeof cleanPhone === "function") return cleanPhone(value);
+  return String(value || "").replace(/\D/g, "");
+}
+
+function createLocalIdV49367(prefix = "ID") {
+  return `${prefix}-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(16).slice(2, 6).toUpperCase()}`;
+}
+
+function readJsonV49367(key, fallback) {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(key) || "");
+    return Array.isArray(fallback) ? (Array.isArray(parsed) ? parsed : fallback) : (parsed && typeof parsed === "object" ? parsed : fallback);
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJsonV49367(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+}
+
+function getBusinessChatPublicationsV49367() {
+  return readJsonV49367(BUSINESS_CHAT_PUBLICATIONS_KEY_V49367, []);
+}
+
+function saveBusinessChatPublicationsV49367(rows = []) {
+  writeJsonV49367(BUSINESS_CHAT_PUBLICATIONS_KEY_V49367, rows.slice(0, 80));
+}
+
+function getBusinessChatRequestsV49367() {
+  return readJsonV49367(BUSINESS_CHAT_REQUESTS_KEY_V49367, []);
+}
+
+function saveBusinessChatRequestsV49367(rows = []) {
+  writeJsonV49367(BUSINESS_CHAT_REQUESTS_KEY_V49367, rows.slice(0, 120));
+}
+
+function normalizeBusinessTextV49367(value = "") {
+  return String(value || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function businessChatCurrentSourceSafeV49367(values = {}) {
+  if (typeof businessChatCurrentSourceV49366 === "function") return businessChatCurrentSourceV49366(values);
+  const stateSource = (typeof surveyState !== "undefined" && surveyState && surveyState.businessChatSource) || {};
+  return {
+    sourceId: values.sourceId || stateSource.sourceId || "",
+    sourceTitle: values.sourceTitle || stateSource.sourceTitle || "Nuevo negocio / servicio",
+    sourceCategory: values.sourceCategory || stateSource.sourceCategory || "Negocios locales",
+    sourceZone: values.sourceZone || stateSource.sourceZone || values.zone || "",
+    sourceOrigin: values.sourceOrigin || stateSource.sourceOrigin || "Chat de negocio"
+  };
+}
+
+function publicationTitleFromChatV49367(record = {}) {
+  const name = String(record.name || "").trim() || "Negocio o servicio";
+  const goal = String(record.goal || "").trim();
+  if (goal && !normalizeBusinessTextV49367(name).includes(normalizeBusinessTextV49367(goal))) {
+    return `${name} · ${goal}`.slice(0, 90);
+  }
+  return name.slice(0, 90);
+}
+
+function buildDescriptionFromChatV49367(record = {}) {
+  const lines = [];
+  if (record.type) lines.push(`Tipo: ${record.type}`);
+  if (record.goal) lines.push(`Objetivo del chat: ${record.goal}`);
+  if (record.message) lines.push(record.message);
+  lines.push("Chat activo para filtrar solicitudes de clientes antes del contacto directo.");
+  if (record.sourceTitle && record.sourceTitle !== "Flujo general de Negocios locales") {
+    lines.push(`Creado a partir de: ${record.sourceTitle}`);
+  }
+  return lines.filter(Boolean).join("\n");
+}
+
+function upsertBusinessPublicationForChatV49367(record = {}) {
+  const rows = getBusinessChatPublicationsV49367();
+  const contact = cleanPhoneV49367(record.contact || record.phone || "");
+  const nameKey = normalizeBusinessTextV49367(record.name || record.sourceTitle || "");
+  let existing = rows.find(row => row.businessChatId === record.id);
+  if (!existing && nameKey) {
+    existing = rows.find(row => normalizeBusinessTextV49367(row.name) === nameKey && cleanPhoneV49367(row.phone) === contact);
+  }
+  const now = new Date().toISOString();
+  const publication = {
+    ...(existing || {}),
+    id: existing?.id || record.publicationId || createLocalIdV49367("PUB-NEG"),
+    businessChatId: record.id,
+    sourceId: record.sourceId || existing?.sourceId || "",
+    sourceTitle: record.sourceTitle || existing?.sourceTitle || "",
+    sourceOrigin: record.sourceOrigin || existing?.sourceOrigin || "Chat de negocio",
+    name: record.name || existing?.name || record.sourceTitle || "Negocio o servicio",
+    title: publicationTitleFromChatV49367(record),
+    description: buildDescriptionFromChatV49367(record),
+    category: "Negocios locales",
+    subcategory: record.type || existing?.subcategory || "Servicio profesional",
+    chatGoal: record.goal || existing?.chatGoal || "Filtrar solicitudes por chat",
+    zone: record.zone || record.sourceZone || existing?.zone || "",
+    municipality: record.zone || record.sourceZone || existing?.municipality || "",
+    phone: contact || existing?.phone || "",
+    status: "activo",
+    chatStatus: "activo",
+    createdAt: existing?.createdAt || now,
+    updatedAt: now
+  };
+  const nextRows = [publication, ...rows.filter(row => row.id !== publication.id && row.businessChatId !== publication.businessChatId)];
+  saveBusinessChatPublicationsV49367(nextRows);
+  record.publicationId = publication.id;
+  record.publicationTitle = publication.title;
+  record.status = "Publicación activa con chat";
+  return { record, publication, wasNew: !existing };
+}
+
+function getBusinessChatLeadsSafeV49367() {
+  if (typeof getBusinessChatLeadsV49366 === "function") return getBusinessChatLeadsV49366();
+  if (typeof getBusinessChatLeads === "function") return getBusinessChatLeads();
+  try { return JSON.parse(localStorage.getItem(BUSINESS_CHAT_STORAGE_KEY) || "[]"); } catch { return []; }
+}
+
+function saveBusinessChatLeadV49367(values = {}) {
+  const source = businessChatCurrentSourceSafeV49367(values);
+  const record = {
+    id: createLocalIdV49367("CN"),
+    type: values.type || "Servicio profesional",
+    name: values.name || source.sourceTitle || "Negocio o servicio",
+    goal: values.goal || "Filtrar solicitudes de clientes",
+    zone: values.zone || source.sourceZone || "",
+    message: values.message || "Hola, cuéntame qué necesitas y revisamos si puedo ayudarte.",
+    contact: cleanPhoneV49367(values.phone || values.contact || ""),
+    sourceId: source.sourceId || "",
+    sourceTitle: source.sourceTitle || "Nuevo negocio / servicio",
+    sourceCategory: source.sourceCategory || "Negocios locales",
+    sourceZone: source.sourceZone || values.zone || "",
+    sourceOrigin: source.sourceOrigin || "Chat de negocio",
+    createdAt: new Date().toISOString()
+  };
+  const linked = upsertBusinessPublicationForChatV49367(record).record;
+  const rows = getBusinessChatLeadsSafeV49367();
+  rows.unshift(linked);
+  try { localStorage.setItem(BUSINESS_CHAT_STORAGE_KEY, JSON.stringify(rows.slice(0, 80))); } catch {}
+  return linked;
+}
+
+function businessPublicationRequestsV49367(publicationId = "") {
+  return getBusinessChatRequestsV49367().filter(row => row.publicationId === publicationId);
+}
+
+function businessPublicationByIdV49367(publicationId = "") {
+  return getBusinessChatPublicationsV49367().find(row => row.id === publicationId);
+}
+
+function businessPublicationCardV49367(publication = {}, mode = "public") {
+  const requests = businessPublicationRequestsV49367(publication.id);
+  const latest = requests[0];
+  return `
+    <article class="business-publication-card-v49367">
+      <div class="business-publication-card-v49367__eyebrow">Publicación con chat activo</div>
+      <h3>${safeTextV49367(publication.title || publication.name || "Negocio o servicio")}</h3>
+      <p>${safeTextV49367(publication.description || "Chat preparado para filtrar solicitudes de clientes.").replace(/\n/g, "<br>")}</p>
+      <div class="business-publication-card-v49367__meta">
+        <span>${safeTextV49367(publication.subcategory || "Negocios locales")}</span>
+        <span>${safeTextV49367(publication.zone || publication.municipality || "Zona por confirmar")}</span>
+        <span>${requests.length} solicitud${requests.length === 1 ? "" : "es"}</span>
+      </div>
+      ${latest ? `<p class="business-publication-card-v49367__latest"><strong>Última solicitud:</strong> ${safeTextV49367(latest.clientNeed || latest.details || "Solicitud recibida")}</p>` : ""}
+      <div class="business-publication-card-v49367__actions">
+        <button type="button" onclick="openBusinessClientFilterV49367('${safeTextV49367(publication.id)}')">Responder filtro</button>
+        <button type="button" class="ghost" onclick="showBusinessPublicationV49367('${safeTextV49367(publication.id)}')">Ver publicación</button>
+        ${mode === "owner" ? `<button type="button" class="ghost" onclick="showBusinessRequestsV49367('${safeTextV49367(publication.id)}')">Ver solicitudes</button>` : ""}
+      </div>
+    </article>
+  `;
+}
+
+function ensureBusinessPublicationsPanelV49367(sectionId = "negocios", mode = "public") {
+  const section = document.getElementById(sectionId);
+  if (!section) return null;
+  const panelId = mode === "owner" ? "businessPublicationsOwnerPanelV49367" : "businessPublicationsPublicPanelV49367";
+  let panel = document.getElementById(panelId);
+  if (!panel) {
+    panel = document.createElement("section");
+    panel.id = panelId;
+    panel.className = `business-publications-panel-v49367 ${mode === "owner" ? "is-owner" : "is-public"}`;
+    if (mode === "owner") {
+      const list = document.getElementById("myPublicationsList");
+      if (list && list.parentNode) list.parentNode.insertBefore(panel, list);
+      else section.appendChild(panel);
+    } else {
+      const anchor = section.querySelector("#businessChatLeadsPanelV49366") || section.querySelector("#localBusinessPilotList") || section.firstElementChild;
+      if (anchor && anchor.parentNode === section) section.insertBefore(panel, anchor.nextSibling);
+      else section.appendChild(panel);
+    }
+  }
+  return panel;
+}
+
+function renderBusinessPublicationsPanelV49367(mode = "public") {
+  const rows = getBusinessChatPublicationsV49367();
+  const sectionId = mode === "owner" ? "misPublicaciones" : "negocios";
+  const panel = ensureBusinessPublicationsPanelV49367(sectionId, mode);
+  if (!panel) return;
+  if (!rows.length) {
+    panel.innerHTML = mode === "owner" ? `
+      <div class="business-publications-empty-v49367">
+        <strong>Publicaciones de negocio con chat</strong>
+        <p>Cuando registres un Chat negocio, aquí aparecerá como publicación para que el cliente pueda contactarte usando un filtro.</p>
+      </div>` : "";
+    return;
+  }
+  panel.innerHTML = `
+    <div class="business-publications-panel-v49367__head">
+      <div>
+        <span>${mode === "owner" ? "Mis publicaciones con chat" : "Negocios con chat activo"}</span>
+        <h2>${mode === "owner" ? "Solicitudes filtradas por publicación" : "Contacta por publicación"}</h2>
+      </div>
+      <button type="button" class="ghost" onclick="showSection('oportunidades')">Crear otro chat</button>
+    </div>
+    <div class="business-publications-grid-v49367">
+      ${rows.map(row => businessPublicationCardV49367(row, mode)).join("")}
+    </div>
+  `;
+}
+
+function showBusinessPublicationV49367(publicationId = "") {
+  const publication = businessPublicationByIdV49367(publicationId);
+  if (!publication) return showToast?.("No encontré esa publicación de negocio");
+  showSection?.("encuesta");
+  const root = document.getElementById("surveyFlowContent");
+  if (!root) return;
+  root.innerHTML = `
+    <div class="business-publication-detail-v49367">
+      <button type="button" class="ghost" onclick="showSection('misPublicaciones')">← Mis publicaciones</button>
+      ${businessPublicationCardV49367(publication, "owner")}
+      <div class="business-publication-help-v49367">
+        <strong>Cómo funciona</strong>
+        <p>Esta publicación es la puerta de entrada. El chat no vive solo: ayuda a filtrar qué necesita el cliente, cuándo lo necesita y cómo contactarlo.</p>
+      </div>
+    </div>
+  `;
+}
+
+function openBusinessClientFilterV49367(publicationId = "") {
+  const publication = businessPublicationByIdV49367(publicationId);
+  if (!publication) return showToast?.("No encontré esa publicación");
+  showSection?.("encuesta");
+  const root = document.getElementById("surveyFlowContent");
+  if (!root) return;
+  root.innerHTML = `
+    <form class="business-client-filter-v49367" onsubmit="submitBusinessClientFilterV49367(event, '${safeTextV49367(publication.id)}')">
+      <button type="button" class="ghost" onclick="showBusinessPublicationV49367('${safeTextV49367(publication.id)}')">← Volver</button>
+      <span>Filtro de cliente</span>
+      <h2>${safeTextV49367(publication.title || publication.name)}</h2>
+      <p>Responde estas preguntas para que el negocio reciba una solicitud más clara antes de contactarte.</p>
+      <label>Nombre
+        <input id="businessClientNameV49367" required placeholder="Tu nombre" />
+      </label>
+      <label>WhatsApp
+        <input id="businessClientPhoneV49367" required inputmode="tel" placeholder="10 dígitos" />
+      </label>
+      <label>¿Qué necesitas?
+        <select id="businessClientNeedV49367">
+          <option>Agendar cita</option>
+          <option>Solicitar cotización</option>
+          <option>Consultar disponibilidad</option>
+          <option>Recibir diagnóstico inicial</option>
+          <option>Hablar con el negocio</option>
+        </select>
+      </label>
+      <label>Fecha u horario preferido
+        <input id="businessClientDateV49367" placeholder="Ej. mañana por la tarde" />
+      </label>
+      <label>Descripción breve
+        <textarea id="businessClientDetailsV49367" required placeholder="Describe tu solicitud para que el negocio pueda filtrarla mejor"></textarea>
+      </label>
+      <button type="submit">Enviar solicitud filtrada</button>
+    </form>
+  `;
+}
+
+function submitBusinessClientFilterV49367(event, publicationId = "") {
+  event?.preventDefault?.();
+  const publication = businessPublicationByIdV49367(publicationId);
+  if (!publication) return showToast?.("No encontré esa publicación");
+  const request = {
+    id: createLocalIdV49367("SOL-NEG"),
+    publicationId,
+    publicationTitle: publication.title || publication.name,
+    businessName: publication.name || "Negocio",
+    clientName: document.getElementById("businessClientNameV49367")?.value.trim() || "Cliente",
+    clientPhone: cleanPhoneV49367(document.getElementById("businessClientPhoneV49367")?.value || ""),
+    clientNeed: document.getElementById("businessClientNeedV49367")?.value || "Solicitud",
+    preferredDate: document.getElementById("businessClientDateV49367")?.value.trim() || "Por definir",
+    details: document.getElementById("businessClientDetailsV49367")?.value.trim() || "",
+    createdAt: new Date().toISOString()
+  };
+  const rows = getBusinessChatRequestsV49367();
+  rows.unshift(request);
+  saveBusinessChatRequestsV49367(rows);
+  renderBusinessPublicationsPanelV49367("owner");
+  renderBusinessPublicationsPanelV49367("public");
+  const root = document.getElementById("surveyFlowContent");
+  if (root) {
+    root.innerHTML = `
+      <div class="business-request-success-v49367">
+        <div class="success-icon">✅</div>
+        <h2>Solicitud enviada al filtro</h2>
+        <p>Quedó vinculada a la publicación: <strong>${safeTextV49367(request.publicationTitle)}</strong>.</p>
+        <p>El negocio verá esta solicitud en <strong>Mis publicaciones → Publicaciones con chat → Ver solicitudes</strong>.</p>
+        <button type="button" onclick="openBusinessWhatsAppV49367('${safeTextV49367(request.id)}')">Enviar también por WhatsApp</button>
+        <button type="button" class="ghost" onclick="showSection('misPublicaciones')">Ver Mis publicaciones</button>
+      </div>
+    `;
+  }
+  showToast?.("Solicitud vinculada a la publicación");
+  openBusinessWhatsAppV49367(request.id, false);
+}
+
+function requestByIdV49367(requestId = "") {
+  return getBusinessChatRequestsV49367().find(row => row.id === requestId);
+}
+
+function openBusinessWhatsAppV49367(requestId = "", forceToast = true) {
+  const request = requestByIdV49367(requestId);
+  if (!request) return;
+  const publication = businessPublicationByIdV49367(request.publicationId);
+  const phone = cleanPhoneV49367(publication?.phone || "");
+  if (!phone) {
+    if (forceToast) showToast?.("La publicación no tiene WhatsApp del negocio");
+    return;
+  }
+  const withCountry = phone.length === 10 ? `52${phone}` : phone;
+  const message = `Hola, vi tu publicación en Conecta Servicios: ${request.publicationTitle}\n\nNecesito: ${request.clientNeed}\nFecha/horario: ${request.preferredDate}\nDescripción: ${request.details}\n\nMi nombre: ${request.clientName}\nMi WhatsApp: ${request.clientPhone}`;
+  window.open(`https://wa.me/${withCountry}?text=${encodeURIComponent(message)}`, "_blank", "noopener");
+}
+
+function showBusinessRequestsV49367(publicationId = "") {
+  const publication = businessPublicationByIdV49367(publicationId);
+  if (!publication) return showToast?.("No encontré esa publicación");
+  const requests = businessPublicationRequestsV49367(publicationId);
+  showSection?.("encuesta");
+  const root = document.getElementById("surveyFlowContent");
+  if (!root) return;
+  root.innerHTML = `
+    <div class="business-requests-list-v49367">
+      <button type="button" class="ghost" onclick="showSection('misPublicaciones')">← Mis publicaciones</button>
+      <span>Solicitudes recibidas</span>
+      <h2>${safeTextV49367(publication.title || publication.name)}</h2>
+      ${requests.length ? requests.map(row => `
+        <article class="business-request-card-v49367">
+          <strong>${safeTextV49367(row.clientNeed)}</strong>
+          <p>${safeTextV49367(row.details)}</p>
+          <small>${safeTextV49367(row.clientName)} · ${safeTextV49367(row.clientPhone)} · ${safeTextV49367(row.preferredDate)}</small>
+          <button type="button" onclick="openBusinessWhatsAppV49367('${safeTextV49367(row.id)}')">Responder por WhatsApp</button>
+        </article>
+      `).join("") : `<p>Aún no hay solicitudes filtradas para esta publicación.</p>`}
+    </div>
+  `;
+}
+
+function renderBusinessChatSuccessV49367(record = {}) {
+  const root = document.getElementById("surveyFlowContent");
+  if (!root) return;
+  root.innerHTML = `
+    <div class="business-chat-success-v49367">
+      <div class="success-icon">✅</div>
+      <h2>Publicación de negocio creada con chat</h2>
+      <p>El chat ya no quedó suelto. Se vinculó a esta publicación:</p>
+      <h3>${safeTextV49367(record.publicationTitle || record.name || "Publicación de negocio")}</h3>
+      <p>Los clientes entrarán por la publicación y el chat les ayudará a filtrar su solicitud antes del contacto.</p>
+      <div class="business-chat-success-v49367__actions">
+        <button type="button" onclick="showBusinessPublicationV49367('${safeTextV49367(record.publicationId || "")}')">Ver publicación</button>
+        <button type="button" class="ghost" onclick="showSection('misPublicaciones')">Ir a Mis publicaciones</button>
+        <button type="button" class="ghost" onclick="showSection('negocios')">Ver Negocios locales</button>
+      </div>
+    </div>
+  `;
+}
+
+try {
+  saveBusinessChatLead = saveBusinessChatLeadV49367;
+  saveBusinessChatLeadV49366 = saveBusinessChatLeadV49367;
+} catch (error) {
+  console.warn("No se pudo reemplazar guardado de Chat negocio v4.9.36.7", error);
+}
+
+try {
+  const surveyFinishBaseV49367 = surveyFinish;
+  surveyFinish = function() {
+    if (typeof surveyState !== "undefined" && surveyState && surveyState.flow === "chatNegocio") {
+      const values = { ...(surveyState.values || {}) };
+      const record = saveBusinessChatLeadV49367(values);
+      renderBusinessChatSuccessV49367(record);
+      renderBusinessPublicationsPanelV49367("owner");
+      renderBusinessPublicationsPanelV49367("public");
+      showToast?.("Publicación con chat creada");
+      try { trackEvent?.("chat_negocio_publicacion_creada", null, { publicationId: record.publicationId, sourceTitle: record.sourceTitle, goal: record.goal }); } catch {}
+      return;
+    }
+    return surveyFinishBaseV49367();
+  };
+} catch (error) {
+  console.warn("No se pudo reforzar surveyFinish v4.9.36.7", error);
+}
+
+function openAmbassadorPaymentFlowV49367() {
+  try { trackEvent?.("embajadores_cobrar_membresia_v49367", null, {}); } catch {}
+  if (typeof startSurveyFlow === "function") startSurveyFlow("embajadorPago");
+  else if (typeof openAmbassadorPayments === "function") openAmbassadorPayments();
+  else showSection?.("embajadores");
+}
+
+function bindAmbassadorPaymentButtonsV49367() {
+  try {
+    const roots = [document.getElementById("embajadoresLanding"), document.getElementById("embajadores"), document.body].filter(Boolean);
+    roots.forEach(root => {
+      root.querySelectorAll("button, a, .card, article, [onclick]").forEach(el => {
+        const text = String(el.innerText || el.textContent || "").toLowerCase();
+        const inline = String(el.getAttribute?.("onclick") || "").toLowerCase();
+        const raw = `${inline} ${text}`;
+        if (!/cobrar/.test(raw) || !/membres[ií]a/.test(raw)) return;
+        if (el.dataset.boundCobroMembresiaV49367 === "1") return;
+        el.dataset.boundCobroMembresiaV49367 = "1";
+        el.addEventListener("click", event => {
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+          openAmbassadorPaymentFlowV49367();
+        }, true);
+      });
+    });
+  } catch (error) {
+    console.warn("No se pudieron blindar botones de Cobrar membresía", error);
+  }
+}
+
+try {
+  inferAmbassadorLandingFlowFromButtonV49363 = function(button) {
+    const text = String(button?.innerText || button?.textContent || "").toLowerCase();
+    const attr = String(button?.getAttribute?.("data-landing-flow") || "").toLowerCase();
+    const inline = String(button?.getAttribute?.("onclick") || "").toLowerCase();
+    const raw = `${attr} ${inline} ${text}`;
+    if (/cobrar/.test(raw) && /membres[ií]a/.test(raw)) return "pago";
+    if (/\$98|pago|pagos|activar/.test(raw)) return "pago";
+    if (/manual|gu[ií]a|promover/.test(raw)) return "manual";
+    if (/referido|vincular/.test(raw)) return "referido";
+    return "embajador";
+  };
+  startAmbassadorLandingFlow = function(flow = "embajador") {
+    if (flow === "pago") return openAmbassadorPaymentFlowV49367();
+    if (flow === "manual" && typeof openAmbassadorManual === "function") return openAmbassadorManual();
+    if (flow === "referido" && typeof startSurveyFlow === "function") return startSurveyFlow("embajadorReferido");
+    if (typeof startSurveyFlow === "function") return startSurveyFlow("embajadorRegistro");
+  };
+} catch (error) {
+  console.warn("No se pudo reforzar flujo de landing Embajadores v4.9.36.7", error);
+}
+
+document.addEventListener("click", function(event) {
+  const el = event.target?.closest?.("button, a, .card, article, [onclick]");
+  if (!el) return;
+  const text = String(el.innerText || el.textContent || "").toLowerCase();
+  const inline = String(el.getAttribute?.("onclick") || "").toLowerCase();
+  const raw = `${inline} ${text}`;
+  if (/cobrar/.test(raw) && /membres[ií]a/.test(raw)) {
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    openAmbassadorPaymentFlowV49367();
+  }
+}, true);
+
+try {
+  const showSectionBaseV49367 = showSection;
+  showSection = function(id, push = true) {
+    const result = showSectionBaseV49367(id, push);
+    const section = typeof sectionAliasV4936 === "function" ? sectionAliasV4936(id) : id;
+    if (section === "misPublicaciones") {
+      setTimeout(() => renderBusinessPublicationsPanelV49367("owner"), 80);
+      setTimeout(() => renderBusinessPublicationsPanelV49367("owner"), 350);
+    }
+    if (section === "negocios") {
+      setTimeout(() => renderBusinessPublicationsPanelV49367("public"), 80);
+      setTimeout(() => renderBusinessPublicationsPanelV49367("public"), 350);
+    }
+    if (section === "embajadores" || section === "embajadoresLanding") {
+      setTimeout(bindAmbassadorPaymentButtonsV49367, 80);
+      setTimeout(bindAmbassadorPaymentButtonsV49367, 350);
+    }
+    return result;
+  };
+} catch (error) {
+  console.warn("No se pudo enganchar navegación v4.9.36.7", error);
+}
+
+try {
+  const renderMyPublicationsBaseV49367 = renderMyPublications;
+  renderMyPublications = function() {
+    const result = renderMyPublicationsBaseV49367();
+    renderBusinessPublicationsPanelV49367("owner");
+    return result;
+  };
+} catch (error) {
+  console.warn("No se pudo reforzar Mis publicaciones v4.9.36.7", error);
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => renderBusinessPublicationsPanelV49367("owner"), 250);
+  setTimeout(() => renderBusinessPublicationsPanelV49367("public"), 300);
+  setTimeout(bindAmbassadorPaymentButtonsV49367, 350);
+  document.body.dataset.chatPublicationVersion = CHAT_PUBLICATIONS_VERSION_V49367;
+});
+window.addEventListener("pageshow", () => {
+  setTimeout(() => renderBusinessPublicationsPanelV49367("owner"), 180);
+  setTimeout(() => renderBusinessPublicationsPanelV49367("public"), 220);
+  setTimeout(bindAmbassadorPaymentButtonsV49367, 240);
+});
+
+try {
+  window.showBusinessPublicationV49367 = showBusinessPublicationV49367;
+  window.openBusinessClientFilterV49367 = openBusinessClientFilterV49367;
+  window.submitBusinessClientFilterV49367 = submitBusinessClientFilterV49367;
+  window.showBusinessRequestsV49367 = showBusinessRequestsV49367;
+  window.openBusinessWhatsAppV49367 = openBusinessWhatsAppV49367;
+  window.openAmbassadorPaymentFlowV49367 = openAmbassadorPaymentFlowV49367;
+} catch {}
+
+// ------------------------------------------------------------------
+// v4.9.36.8 — Chat negocio con membresía obligatoria + Admin libre
+// Objetivo:
+// 1) Si un usuario crea un Chat negocio, al finalizar debe ver la invitación
+//    a pagar/activar membresía anual antes de publicar el chat.
+// 2) El chat no queda suelto: queda como borrador hasta que la membresía esté activa.
+// 3) Admin puede probar/supervisar todo libre e ilimitado sin bloquearse por membresía.
+// ------------------------------------------------------------------
+const BUSINESS_CHAT_MEMBERSHIP_VERSION_V49368 = "4.9.36.8-chat-negocio-membresia-admin";
+const BUSINESS_CHAT_PENDING_DRAFT_KEY_V49368 = "conecta_chat_negocio_borrador_pendiente_v49368";
+
+function safeTextV49368(value = "") {
+  if (typeof safeTextV49367 === "function") return safeTextV49367(value);
+  if (typeof escapeHtml === "function") return escapeHtml(value);
+  return String(value || "").replace(/[&<>\"]/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[m]));
+}
+
+function cleanPhoneV49368(value = "") {
+  if (typeof cleanPhoneV49367 === "function") return cleanPhoneV49367(value);
+  if (typeof cleanPhone === "function") return cleanPhone(value);
+  return String(value || "").replace(/\D/g, "");
+}
+
+function isAdminSupervisorActiveV49368() {
+  try {
+    if (typeof adminUnlocked !== "undefined" && adminUnlocked) return true;
+    if (typeof adminRouteEnabled !== "undefined" && adminRouteEnabled) return true;
+    if (typeof adminAccessAvailableV4936 === "function" && adminAccessAvailableV4936()) return true;
+    if (typeof hasStoredAdminAccessV4936 === "function" && hasStoredAdminAccessV4936()) return true;
+    return localStorage.getItem("conecta_admin_access_v4936") === "1";
+  } catch {
+    return false;
+  }
+}
+
+function userCanPublishBusinessChatV49368() {
+  if (isAdminSupervisorActiveV49368()) return true;
+  if (typeof userMembershipIsActiveV4936 === "function" && userMembershipIsActiveV4936()) return true;
+  if (typeof hasActivePublishMembership === "function" && hasActivePublishMembership()) return true;
+  return false;
+}
+
+function normalizeBusinessChatDraftV49368(values = {}) {
+  const source = typeof businessChatCurrentSourceSafeV49367 === "function"
+    ? businessChatCurrentSourceSafeV49367(values)
+    : {};
+  return {
+    values: { ...(values || {}) },
+    type: values.type || "Servicio profesional",
+    name: values.name || source.sourceTitle || "Negocio o servicio",
+    goal: values.goal || "Filtrar solicitudes de clientes",
+    zone: values.zone || source.sourceZone || "",
+    message: values.message || "Hola, cuéntame qué necesitas y revisamos si puedo ayudarte.",
+    phone: cleanPhoneV49368(values.phone || values.contact || ""),
+    sourceId: source.sourceId || values.sourceId || "",
+    sourceTitle: source.sourceTitle || values.sourceTitle || "Nuevo negocio / servicio",
+    sourceCategory: source.sourceCategory || values.sourceCategory || "Negocios locales",
+    sourceZone: source.sourceZone || values.zone || "",
+    sourceOrigin: source.sourceOrigin || "Chat de negocio",
+    createdAt: new Date().toISOString(),
+    status: "pendiente_membresia"
+  };
+}
+
+function savePendingBusinessChatDraftV49368(values = {}) {
+  const draft = normalizeBusinessChatDraftV49368(values);
+  try { localStorage.setItem(BUSINESS_CHAT_PENDING_DRAFT_KEY_V49368, JSON.stringify(draft)); } catch {}
+  return draft;
+}
+
+function getPendingBusinessChatDraftV49368() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(BUSINESS_CHAT_PENDING_DRAFT_KEY_V49368) || "null");
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function clearPendingBusinessChatDraftV49368() {
+  try { localStorage.removeItem(BUSINESS_CHAT_PENDING_DRAFT_KEY_V49368); } catch {}
+}
+
+function businessChatDraftSummaryV49368(draft = {}) {
+  const rows = [
+    ["Negocio", draft.name],
+    ["Categoría", draft.type],
+    ["Objetivo", draft.goal],
+    ["Zona", draft.zone || draft.sourceZone],
+    ["WhatsApp", draft.phone],
+    ["Descripción", draft.message]
+  ].filter(([, value]) => String(value || "").trim());
+  return rows.map(([label, value]) => `<li><strong>${safeTextV49368(label)}:</strong> ${safeTextV49368(value)}</li>`).join("");
+}
+
+function renderBusinessChatMembershipRequiredV49368(draft = {}) {
+  const root = document.getElementById("surveyFlowContent");
+  if (!root) return;
+  const profile = typeof getUserAccessProfileV4936 === "function" ? getUserAccessProfileV4936() : {};
+  root.innerHTML = `
+    <div class="business-chat-membership-gate-v49368">
+      <div class="business-chat-membership-gate-v49368__icon">🔐</div>
+      <span>Chat negocio listo</span>
+      <h2>Activa la membresía para publicar este chat</h2>
+      <p>Tu chat de negocio ya quedó preparado como borrador, pero para que aparezca como publicación y los clientes puedan responder el filtro se requiere la membresía anual Conecta.</p>
+      <div class="business-chat-membership-gate-v49368__price">
+        <strong>$${typeof MEMBERSHIP_PRICE_V4936 !== "undefined" ? MEMBERSHIP_PRICE_V4936 : 98} MXN / año</strong>
+        <small>Publicaciones ilimitadas durante el periodo activo.</small>
+      </div>
+      <div class="business-chat-membership-gate-v49368__summary">
+        <strong>Resumen del chat pendiente</strong>
+        <ul>${businessChatDraftSummaryV49368(draft)}</ul>
+      </div>
+      <div class="business-chat-membership-gate-v49368__actions">
+        <button type="button" onclick="openBusinessChatMembershipPaymentV49368()">Pagar / activar membresía</button>
+        <button type="button" class="ghost" onclick="publishPendingBusinessChatV49368()">Ya tengo membresía, publicar chat</button>
+        <button type="button" class="ghost" onclick="showSection('misPublicaciones')">Ir a Mis publicaciones</button>
+      </div>
+      <p class="business-chat-membership-gate-v49368__note">Estado actual: <strong>${typeof membershipLabelV4936 === "function" ? safeTextV49368(membershipLabelV4936(profile)) : "Sin membresía activa"}</strong>. Admin puede probar este flujo sin pagar ni activar membresía.</p>
+    </div>
+  `;
+  try { trackEvent?.("chat_negocio_membresia_requerida", null, { name: draft.name, goal: draft.goal }); } catch {}
+}
+
+function openBusinessChatMembershipPaymentV49368() {
+  const draft = getPendingBusinessChatDraftV49368() || {};
+  try {
+    if (typeof saveUserAccessProfileV4936 === "function") {
+      saveUserAccessProfileV4936({
+        name: draft.name || getUserAccessProfileV4936?.().name || "",
+        phone: draft.phone || getUserAccessProfileV4936?.().phone || "",
+        municipality: draft.zone || draft.sourceZone || getUserAccessProfileV4936?.().municipality || "",
+        membershipStatus: "pendiente",
+        requestedAt: new Date().toISOString(),
+        notes: `Chat negocio pendiente: ${draft.goal || draft.type || "Servicio"}`
+      });
+    }
+    if (typeof saveUserAccessHistoryV4936 === "function") {
+      saveUserAccessHistoryV4936({ action: "Chat negocio pendiente", note: `${draft.name || "Negocio"} · requiere membresía` });
+    }
+  } catch {}
+  if (typeof showSection === "function") showSection("miAcceso");
+  setTimeout(() => {
+    try { renderPendingBusinessChatNoticeV49368(); } catch {}
+    document.getElementById("pendingBusinessChatNoticeV49368")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (typeof openMembershipPaymentFromAccessV4936 === "function") openMembershipPaymentFromAccessV4936();
+  }, 180);
+}
+
+function publishPendingBusinessChatV49368() {
+  const draft = getPendingBusinessChatDraftV49368();
+  if (!draft) {
+    showToast?.("No encontré un chat pendiente");
+    return;
+  }
+  if (!userCanPublishBusinessChatV49368()) {
+    renderBusinessChatMembershipRequiredV49368(draft);
+    showToast?.("Primero activa la membresía anual para publicar el chat");
+    return;
+  }
+  const values = { ...(draft.values || {}), ...draft, contact: draft.phone, phone: draft.phone };
+  const record = typeof saveBusinessChatLeadV49367 === "function" ? saveBusinessChatLeadV49367(values) : null;
+  clearPendingBusinessChatDraftV49368();
+  if (record && typeof renderBusinessChatSuccessV49367 === "function") renderBusinessChatSuccessV49367(record);
+  else showSection?.("misPublicaciones");
+  try { renderBusinessPublicationsPanelV49367?.("owner"); renderBusinessPublicationsPanelV49367?.("public"); } catch {}
+  showToast?.(isAdminSupervisorActiveV49368() ? "Chat publicado en modo Admin" : "Chat publicado con membresía activa");
+}
+
+function renderPendingBusinessChatNoticeV49368() {
+  const draft = getPendingBusinessChatDraftV49368();
+  const root = document.getElementById("memberAccessRoot");
+  if (!root) return;
+  let panel = document.getElementById("pendingBusinessChatNoticeV49368");
+  if (!draft) {
+    panel?.remove();
+    return;
+  }
+  if (!panel) {
+    panel = document.createElement("div");
+    panel.id = "pendingBusinessChatNoticeV49368";
+    panel.className = "pending-business-chat-notice-v49368";
+    root.prepend(panel);
+  }
+  const canPublish = userCanPublishBusinessChatV49368();
+  panel.innerHTML = `
+    <span>💬 Chat negocio pendiente</span>
+    <h3>${safeTextV49368(draft.name || "Negocio o servicio")}</h3>
+    <p>Este chat ya está preparado como borrador. ${canPublish ? "Puedes publicarlo ahora." : "Para publicarlo y recibir solicitudes filtradas se requiere membresía activa."}</p>
+    <ul>${businessChatDraftSummaryV49368(draft)}</ul>
+    <div class="pending-business-chat-notice-v49368__actions">
+      <button type="button" onclick="publishPendingBusinessChatV49368()">${canPublish ? "Publicar chat" : "Revisar / publicar"}</button>
+      ${canPublish ? "" : `<button type="button" class="ghost" onclick="openBusinessChatMembershipPaymentV49368()">Pagar / activar</button>`}
+      <button type="button" class="ghost" onclick="clearPendingBusinessChatDraftV49368(); renderPendingBusinessChatNoticeV49368(); showToast?.('Borrador de chat descartado')">Descartar</button>
+    </div>
+  `;
+}
+
+try {
+  const hasActivePublishMembershipBaseV49368 = hasActivePublishMembership;
+  hasActivePublishMembership = function() {
+    if (isAdminSupervisorActiveV49368()) return true;
+    return typeof hasActivePublishMembershipBaseV49368 === "function" ? hasActivePublishMembershipBaseV49368() : false;
+  };
+} catch (error) {
+  console.warn("No se pudo liberar membresía para Admin v4.9.36.8", error);
+}
+
+try {
+  const ensurePublishMembershipBeforeSubmitBaseV49368 = ensurePublishMembershipBeforeSubmit;
+  ensurePublishMembershipBeforeSubmit = function() {
+    if (isAdminSupervisorActiveV49368()) return true;
+    return typeof ensurePublishMembershipBeforeSubmitBaseV49368 === "function" ? ensurePublishMembershipBeforeSubmitBaseV49368() : userCanPublishBusinessChatV49368();
+  };
+} catch (error) {
+  console.warn("No se pudo reforzar permiso de publicación Admin v4.9.36.8", error);
+}
+
+try {
+  const renderPublicationMembershipGateBaseV49368 = renderPublicationMembershipGate;
+  renderPublicationMembershipGate = function() {
+    const gate = document.getElementById("publicationMembershipGate");
+    if (gate && isAdminSupervisorActiveV49368()) {
+      gate.innerHTML = `<div class="membership-gate-ok admin-free-v49368"><strong>✅ Modo Admin libre</strong><p>Publicación ilimitada habilitada para supervisar y probar la funcionalidad.</p></div>`;
+      return;
+    }
+    return typeof renderPublicationMembershipGateBaseV49368 === "function" ? renderPublicationMembershipGateBaseV49368() : undefined;
+  };
+} catch (error) {
+  console.warn("No se pudo ajustar gate de publicación Admin v4.9.36.8", error);
+}
+
+try {
+  const surveyFinishBaseV49368 = surveyFinish;
+  surveyFinish = function() {
+    if (typeof surveyState !== "undefined" && surveyState && surveyState.flow === "chatNegocio") {
+      if (!userCanPublishBusinessChatV49368()) {
+        const values = { ...(surveyState.values || {}) };
+        const draft = savePendingBusinessChatDraftV49368(values);
+        renderBusinessChatMembershipRequiredV49368(draft);
+        showToast?.("Chat listo. Activa membresía para publicarlo.");
+        return;
+      }
+      return surveyFinishBaseV49368();
+    }
+    return surveyFinishBaseV49368();
+  };
+} catch (error) {
+  console.warn("No se pudo agregar gate al Chat negocio v4.9.36.8", error);
+}
+
+try {
+  const renderMemberAccessBaseV49368 = renderMemberAccessV4936;
+  renderMemberAccessV4936 = function() {
+    const result = renderMemberAccessBaseV49368();
+    renderPendingBusinessChatNoticeV49368();
+    return result;
+  };
+} catch (error) {
+  console.warn("No se pudo enganchar aviso de chat pendiente en Mi acceso", error);
+}
+
+try {
+  const showSectionBaseV49368 = showSection;
+  showSection = function(id, push = true) {
+    const result = showSectionBaseV49368(id, push);
+    const section = typeof sectionAliasV4936 === "function" ? sectionAliasV4936(id) : id;
+    if (section === "miAcceso") setTimeout(renderPendingBusinessChatNoticeV49368, 120);
+    if (section === "registro") setTimeout(() => renderPublicationMembershipGate?.(), 120);
+    return result;
+  };
+} catch (error) {
+  console.warn("No se pudo reforzar navegación v4.9.36.8", error);
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  setTimeout(renderPendingBusinessChatNoticeV49368, 350);
+  setTimeout(() => renderPublicationMembershipGate?.(), 380);
+  document.body.dataset.chatMembershipVersion = BUSINESS_CHAT_MEMBERSHIP_VERSION_V49368;
+});
+window.addEventListener("pageshow", () => {
+  setTimeout(renderPendingBusinessChatNoticeV49368, 180);
+  setTimeout(() => renderPublicationMembershipGate?.(), 220);
+});
+
+try {
+  window.publishPendingBusinessChatV49368 = publishPendingBusinessChatV49368;
+  window.openBusinessChatMembershipPaymentV49368 = openBusinessChatMembershipPaymentV49368;
+  window.renderPendingBusinessChatNoticeV49368 = renderPendingBusinessChatNoticeV49368;
+  window.clearPendingBusinessChatDraftV49368 = clearPendingBusinessChatDraftV49368;
+  window.isAdminSupervisorActiveV49368 = isAdminSupervisorActiveV49368;
+} catch {}

@@ -1,0 +1,34 @@
+Conecta Servicios v4.9.36.8 — Chat negocio con membresía obligatoria y Admin libre
+
+Objetivo:
+- Cuando un usuario termine de crear un Chat negocio, no debe quedar publicado sin membresía.
+- Debe recibir una pantalla clara para pagar/activar membresía anual, igual que al intentar publicar.
+- El chat queda guardado como borrador pendiente y puede publicarse al activar membresía.
+- Admin puede probar/supervisar esta funcionalidad libre e ilimitadamente.
+
+Archivos a reemplazar en raíz:
+- app.js
+- styles.css
+- service-worker.js
+- manifest.json
+- vercel.json
+
+Aplicar PATCH-INDEX-v4.9.36.8.txt sobre index.html.
+
+Notas técnicas:
+- No modificar Supabase.
+- No requiere SQL nuevo.
+- La persistencia del piloto sigue siendo localStorage.
+- El bypass admin se basa en el acceso admin ya guardado/desbloqueado.
+
+Prueba mínima:
+1. Usuario normal sin membresía:
+   Oportunidades para ti -> Chat negocio -> llenar flujo -> guardar.
+   Debe ver mensaje: activar/pagar membresía para publicar chat.
+2. Entrar a Mi acceso:
+   Debe mostrarse el chat negocio pendiente.
+3. Admin:
+   Activar Admin desde Oficina -> repetir Chat negocio.
+   Debe crear publicación directamente sin pedir membresía.
+4. Publicar normal:
+   Admin debe poder publicar sin bloqueo de membresía.

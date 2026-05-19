@@ -1,1 +1,4 @@
-No requiere SQL nuevo. El hotfix v4.9.36.6 usa localStorage para el piloto de chats de negocio y solo corrige navegación/funciones existentes.
+No requiere SQL nuevo.
+
+Esta versión conserva el modo piloto con localStorage para validar la experiencia.
+La persistencia multiusuario en Supabase puede implementarse después con tablas de membresías, usuarios, embajadores y solicitudes.

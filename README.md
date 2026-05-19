@@ -1,19 +1,31 @@
-# Conecta Servicios v4.9.36.6
+# Conecta Servicios v4.9.36.8
 
-Hotfix consolidado sobre v4.9.36.5.
+Hotfix de flujo de Chat negocio y membresía.
 
-## Cambios principales
+## Cambios
 
-1. Chat de negocio en **Oportunidades para ti** ahora guarda claramente el origen/publicación desde donde se abrió.
-2. Los chats de negocio guardados aparecen en **Negocios locales → Chats de negocio guardados**.
-3. Al terminar el registro del chat se muestra una pantalla de confirmación con botones para ver dónde quedó guardado.
-4. El botón/tarjeta **Cobrar membresía** de Embajadores Conecta abre el flujo de cobro de membresía, no el Manual rápido.
-5. Se actualizó cache/manifest a `4.9.36.6-chat-negocio-cobro`.
+- El Chat negocio ya no se publica libremente para usuarios sin membresía.
+- Al terminar el flujo, el usuario recibe una pantalla para pagar/activar membresía anual.
+- El chat queda como borrador pendiente y aparece en Mi acceso.
+- Admin puede probar y supervisar sin límite, sin requerir membresía.
+- Se conserva la publicación ilimitada para membresías activas.
+
+## Archivos
+
+Reemplazar en la raíz:
+
+- `app.js`
+- `styles.css`
+- `service-worker.js`
+- `manifest.json`
+- `vercel.json`
+
+Aplicar `PATCH-INDEX-v4.9.36.8.txt` sobre `index.html`.
 
 ## SQL
 
-No requiere SQL nuevo. Esta corrección sigue trabajando en modo piloto local con `localStorage`.
+No requiere SQL nuevo.
 
 ## Commit sugerido
 
-Corregir Chat negocio y Cobrar membresía v4.9.36.6
+`Agregar gate de membresía a Chat negocio y liberar Admin v4.9.36.8`
