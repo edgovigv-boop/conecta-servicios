@@ -4,12 +4,12 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.9.27-hotfix-navegacion-real";
+const CACHE_NAME = "conecta-servicios-v4.9.28-multimedia-feed-real";
 const ASSETS = [
   "./",
   "index.html",
-  "styles.css?v=4.9.26-rescate-encuestas-chat-negocios",
-  "app.js?v=4.9.26-rescate-encuestas-chat-negocios",
+  "styles.css?v=4.9.28-multimedia-feed-real",
+  "app.js?v=4.9.28-multimedia-feed-real",
   "manifest.json",
   "assets/hero-scene-v4718.webp",
   "assets/hero-scene-clean-v4711.png",

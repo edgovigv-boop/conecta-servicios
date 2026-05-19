@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.27-hotfix-navegacion-real";
+const PWA_VERSION = "v4.9.28-hotfix-navegacion-real";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -191,6 +191,72 @@ function toNumberOrNull(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 }
+
+
+// v4.9.28 — utilidades multimedia para publicaciones reales y plantillas piloto.
+const PUBLICATION_MEDIA_MARKER = "Multimedia:";
+const PILOT_FEED_OVERRIDES_KEY = "conecta_pilot_feed_overrides_v4928";
+function isLikelyMediaUrl(value = "") {
+  const text = String(value || "").trim();
+  if (!/^https?:\/\//i.test(text)) return false;
+  return /\.(png|jpe?g|webp|gif|mp4|mov)(\?|#|$)/i.test(text) || /images\.unsplash|pexels|cloudinary|supabase|storage/i.test(text);
+}
+function extractFirstUrl(value = "") {
+  const match = String(value || "").match(/https?:\/\/[^\s)<>"']+/i);
+  return match ? match[0].trim() : "";
+}
+function extractMediaUrlFromText(value = "") {
+  const text = String(value || "");
+  const markerMatch = text.match(/Multimedia:\s*(https?:\/\/[^\s)<>"']+)/i);
+  if (markerMatch && isLikelyMediaUrl(markerMatch[1])) return markerMatch[1].trim();
+  const url = extractFirstUrl(text);
+  return isLikelyMediaUrl(url) ? url : "";
+}
+function cleanDescriptionWithoutMedia(value = "") {
+  return String(value || "").replace(/\n?\s*Multimedia:\s*https?:\/\/[^\s)<>"']+/ig, "").trim();
+}
+function appendMediaUrlToDescription(description = "", url = "") {
+  const clean = cleanDescriptionWithoutMedia(description);
+  const safeUrl = String(url || "").trim();
+  return safeUrl ? `${clean}\n\n${PUBLICATION_MEDIA_MARKER} ${safeUrl}` : clean;
+}
+function categoryKeyFromPublication(item = {}) {
+  const bag = normalize([item.category, item.subcategory, item.intent, item.title, item.description].filter(Boolean).join(" "));
+  if (bag.includes("negocio") || bag.includes("panader") || bag.includes("ferreter") || bag.includes("estetica")) return "negocios";
+  if (bag.includes("crecimiento") || bag.includes("comision") || bag.includes("cliente")) return "crecimiento";
+  if (bag.includes("aprendizaje") || bag.includes("curso") || bag.includes("capacit")) return "aprendizaje";
+  if (bag.includes("embajador")) return "embajadores";
+  if (bag.includes("busco") || bag.includes("necesito") || normalize(item.intent).includes("busco")) return "solicitantes";
+  if (bag.includes("entrega") || bag.includes("mandado") || bag.includes("moto") || bag.includes("agente")) return "agentes";
+  return "servicios";
+}
+function fallbackImageForPublication(item = {}) {
+  const key = categoryKeyFromPublication(item);
+  const variants = FEED_PHOTO_VARIANTS_V4922?.[key] || FEED_PHOTO_VARIANTS_V4922?.servicios || [];
+  const raw = String(item.id || item.title || key).split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return variants.length ? variants[raw % variants.length] : "assets/social-post-servicio.webp";
+}
+function mediaUrlForPublication(item = {}) {
+  return item.mediaUrl || extractMediaUrlFromText(item.description) || (isLikelyMediaUrl(item.route) ? item.route : "") || fallbackImageForPublication(item);
+}
+function getPilotFeedOverrides() {
+  try { return JSON.parse(localStorage.getItem(PILOT_FEED_OVERRIDES_KEY) || "{}"); } catch { return {}; }
+}
+function savePilotFeedOverrides(data) {
+  try { localStorage.setItem(PILOT_FEED_OVERRIDES_KEY, JSON.stringify(data || {})); } catch {}
+}
+function applyPilotFeedOverrides() {
+  const overrides = getPilotFeedOverrides();
+  if (!Array.isArray(HOME_FEED_POSTS_V4918)) return;
+  HOME_FEED_POSTS_V4918.forEach(post => {
+    const ov = overrides[post.id];
+    if (!ov) return;
+    if (ov.imagen) post.imagen = ov.imagen;
+    if (ov.posicion) post.posicion = ov.posicion;
+    if (ov.titulo) post.titulo = ov.titulo;
+    if (ov.descripcion) post.descripcion = ov.descripcion;
+  });
+}
 function hasCoordinates(item) {
   return Number.isFinite(Number(item.lat)) && Number.isFinite(Number(item.lng));
 }
@@ -292,7 +358,8 @@ function mapPublication(row) {
     id: row.id || createId(),
     name: row.nombre_publico || "Sin nombre",
     title: row.titulo || "Publicación sin título",
-    description: row.descripcion || "",
+    description: cleanDescriptionWithoutMedia(row.descripcion || ""),
+    mediaUrl: row.multimedia_url || row.imagen_url || extractMediaUrlFromText(row.descripcion || "") || (isLikelyMediaUrl(row.ruta) ? row.ruta : ""),
     category: row.categoria_principal || "General",
     subcategory: row.subcategoria || "",
     intent: row.intencion || "",
@@ -817,10 +884,11 @@ function evaluatePublication(payload) {
 }
 function formPayload() {
   const category = document.getElementById("pubCategory").value || "General";
+  const mediaUrl = String(document.getElementById("pubMediaUrl")?.value || "").trim();
   const payload = {
     nombre_publico: document.getElementById("pubName").value.trim(),
     titulo: document.getElementById("pubTitle").value.trim(),
-    descripcion: currentDescriptionValue(),
+    descripcion: appendMediaUrlToDescription(currentDescriptionValue(), isLikelyMediaUrl(mediaUrl) ? mediaUrl : ""),
     categoria_principal: category,
     intencion: document.getElementById("pubIntent").value || "Ofrezco / Tengo disponible",
     estado_nombre: document.getElementById("pubState").value,
@@ -853,7 +921,8 @@ function renderPublicationPreview() {
   const payload = formPayload();
   const evaluation = evaluatePublication(payload);
   const icon = categoryIcon(payload.categoria_principal);
-  preview.innerHTML = `<h4>${icon} ${escapeHtml(payload.titulo || "Publicación")}</h4>
+  const previewMediaUrl = extractMediaUrlFromText(payload.descripcion || "");
+  preview.innerHTML = `${previewMediaUrl ? `<img class="publication-preview-media" src="${escapeHtml(previewMediaUrl)}" alt="Vista previa multimedia" />` : ""}<h4>${icon} ${escapeHtml(payload.titulo || "Publicación")}</h4>
     <p><strong>Aparecerás como:</strong> ${escapeHtml(payload.nombre_publico || "")}</p>
     <p><strong>Zona:</strong> ${escapeHtml(payload.municipio || "")}, ${escapeHtml(payload.estado_nombre || "")}</p>
     ${payload.latitud && payload.longitud ? `<p><strong>Cercanía:</strong> se usará ubicación aproximada para ordenar resultados.</p>` : ""}
@@ -945,6 +1014,8 @@ function resetWizardForm() {
   document.getElementById("pubIntent").value = "";
   document.getElementById("pubLat").value = "";
   document.getElementById("pubLng").value = "";
+  const mediaInput = document.getElementById("pubMediaUrl");
+  if (mediaInput) mediaInput.value = "";
   const locStatus = document.getElementById("pubLocationStatus");
   if (locStatus) locStatus.textContent = "Puedes publicar sin activar ubicación.";
   wizardStep = 1;
@@ -1207,33 +1278,87 @@ function openPilotType(type) {
 function compactPublicationCard(item) {
   if (PRESENTATION_PILOT_MODE && item.isPilot) return pilotPublicationCard(item);
   const icon = categoryIcon(item.category);
+  const media = mediaUrlForPublication(item);
   const distanceText = nearbyMode && userLocation && Number.isFinite(item.distanceKm) ? ` · 📍 ${distanceLabel(item.distanceKm)}` : (nearbyMode && item.matchType === "municipio" ? " · 📍 mismo municipio" : "");
   const meta = [item.municipality, item.state, folio(item)].filter(Boolean).join(" · ") + distanceText;
   const originalUrl = item.category === "Redes sociales" && item.route ? (/^https?:\/\//i.test(item.route) ? item.route : `https://${item.route}`) : "";
-  const originalLink = originalUrl ? `<button class="link-button original-link" type="button" onclick="openOriginalLink('${item.id}')">Ver publicación original</button>` : "";
-  const extra = [originalLink, item.category !== "Redes sociales" && item.route && `<strong>Ruta:</strong> ${escapeHtml(item.route)}`, item.time && `<strong>Horario:</strong> ${escapeHtml(item.time)}`, item.departure && `<strong>Salida:</strong> ${escapeHtml(item.departure)}`, item.transport && `<strong>Medio:</strong> ${escapeHtml(item.transport)}`].filter(Boolean).join("<br>");
-  return `<article class="compact-publication" id="pub-${item.id}">
-    <button class="compact-summary" type="button" onclick="togglePublicationDetail('${item.id}')">
-      <span class="compact-icon">${icon}</span>
-      <span><span class="compact-title">${escapeHtml(item.title)}</span><span class="compact-meta">${escapeHtml(meta)} · ${maskPhone(item.phone)}</span></span>
-      <span class="compact-chevron">›</span>
+  const originalLink = originalUrl ? `<button class="btn-small btn-outline" type="button" onclick="openOriginalLink('${item.id}')">Ver original</button>` : "";
+  const extra = [originalLink, item.category !== "Redes sociales" && item.route && !isLikelyMediaUrl(item.route) && `<strong>Ruta:</strong> ${escapeHtml(item.route)}`, item.time && `<strong>Horario:</strong> ${escapeHtml(item.time)}`, item.departure && `<strong>Salida:</strong> ${escapeHtml(item.departure)}`, item.transport && `<strong>Medio:</strong> ${escapeHtml(item.transport)}`].filter(Boolean).join("<br>");
+  return `<article class="real-feed-card" id="pub-${item.id}">
+    <button class="real-feed-cover" type="button" onclick="openRealPublicationFeedDetail('${item.id}')" aria-label="Abrir publicación real">
+      <img src="${escapeHtml(media)}" alt="${escapeHtml(item.title)}" loading="lazy" />
+      <span class="real-feed-badge">${icon} ${escapeHtml(item.category || "Publicación")}</span>
+      <span class="real-feed-zone">📍 ${escapeHtml(item.municipality || "")}, ${escapeHtml(item.state || "")}</span>
     </button>
-    <div class="compact-detail">
-      <span class="category-badge">${icon} ${escapeHtml(item.category)}</span>
-      <p><strong>Publicado por:</strong> ${escapeHtml(item.name)}</p>
-      <p class="description">${linkify(item.description)}</p>
-      ${extra ? `<div class="extra-info">${extra}</div>` : ""}
-      ${nearbyMode && userLocation && Number.isFinite(item.distanceKm) ? `<p><strong>Cercanía:</strong> ${distanceLabel(item.distanceKm)}. Ubicación aproximada.</p>` : (nearbyMode && item.matchType === "municipio" ? `<p><strong>Cercanía:</strong> coincide con tu municipio. Esta publicación aún no tiene ubicación GPS.</p>` : "")}
-      <p><strong>Contacto:</strong> ${maskPhone(item.phone)} · <strong>Costo:</strong> ${money(item.budget)}</p>
-      <div class="detail-actions">
-        ${cleanPhone(item.phone) ? `<button class="btn-small btn-green" onclick="contactPublication('${item.id}')">WhatsApp</button>` : ""}
-        <button class="btn-small btn-outline" onclick="sharePublication('${item.id}')">Compartir</button>
-        <button class="btn-small btn-ghost" onclick="requestModification('${item.id}')">Solicitar modificación</button>
-        <button class="btn-small btn-ghost" onclick="requestAttended('${item.id}')">Solicitar atendido</button>
+    <div class="real-feed-body">
+      <button class="real-feed-title" type="button" onclick="togglePublicationDetail('${item.id}')">
+        <strong>${escapeHtml(item.title)}</strong>
+        <small>${escapeHtml(meta)} · ${maskPhone(item.phone)}</small>
+      </button>
+      <p>${escapeHtml(cleanDescriptionWithoutMedia(item.description)).slice(0, 150)}${String(item.description || "").length > 150 ? "..." : ""}</p>
+      <div class="real-feed-actions">
+        <button class="btn-small btn-green" onclick="openRealPublicationFeedDetail('${item.id}')">Ver publicación</button>
+        ${cleanPhone(item.phone) ? `<button class="btn-small btn-outline" onclick="contactPublication('${item.id}')">Contactar</button>` : ""}
+        <button class="btn-small btn-ghost" onclick="publishSimilarToReal('${item.id}')">Publicar algo parecido</button>
+      </div>
+      <div class="compact-detail real-feed-detail">
+        <p><strong>Publicado por:</strong> ${escapeHtml(item.name)}</p>
+        <p class="description">${linkify(cleanDescriptionWithoutMedia(item.description))}</p>
+        ${extra ? `<div class="extra-info">${extra}</div>` : ""}
+        ${nearbyMode && userLocation && Number.isFinite(item.distanceKm) ? `<p><strong>Cercanía:</strong> ${distanceLabel(item.distanceKm)}. Ubicación aproximada.</p>` : (nearbyMode && item.matchType === "municipio" ? `<p><strong>Cercanía:</strong> coincide con tu municipio. Esta publicación aún no tiene ubicación GPS.</p>` : "")}
+        <p><strong>Contacto:</strong> ${maskPhone(item.phone)} · <strong>Costo:</strong> ${money(item.budget)}</p>
+        <div class="detail-actions">
+          ${cleanPhone(item.phone) ? `<button class="btn-small btn-green" onclick="contactPublication('${item.id}')">WhatsApp</button>` : ""}
+          <button class="btn-small btn-outline" onclick="sharePublication('${item.id}')">Compartir</button>
+          <button class="btn-small btn-ghost" onclick="requestModification('${item.id}')">Solicitar modificación</button>
+          <button class="btn-small btn-ghost" onclick="requestAttended('${item.id}')">Solicitar atendido</button>
+        </div>
       </div>
     </div>
   </article>`;
 }
+
+function publishSimilarToReal(id) {
+  const item = publicationsCache.find(p => p.id === id) || adminCache.find(p => p.id === id);
+  if (!item) return;
+  const type = normalize(item.intent).includes("busco") ? "necesito" : categoryKeyFromPublication(item) === "negocios" ? "negocio" : "servicio";
+  openOpportunityWizard(type, {
+    id: item.id,
+    titulo: item.title,
+    descripcion: cleanDescriptionWithoutMedia(item.description),
+    plantilla: cleanDescriptionWithoutMedia(item.description),
+    tipo: categoryKeyFromPublication(item)
+  });
+}
+
+function openRealPublicationFeedDetail(id) {
+  const item = publicationsCache.find(p => p.id === id) || adminCache.find(p => p.id === id);
+  if (!item) return;
+  const panel = document.getElementById("guidedRouteContent");
+  if (!panel) { togglePublicationDetail(id); return; }
+  const icon = categoryIcon(item.category);
+  const media = mediaUrlForPublication(item);
+  panel.innerHTML = `<article class="real-publication-view">
+    <button class="btn-small btn-ghost" type="button" onclick="showSection('publicaciones')">← Explorar</button>
+    <div class="real-publication-hero">
+      <img src="${escapeHtml(media)}" alt="${escapeHtml(item.title)}" />
+      <div><span>${icon} ${escapeHtml(item.category || "Publicación real")}</span><strong>${escapeHtml(item.title)}</strong><small>📍 ${escapeHtml(item.municipality || "")}, ${escapeHtml(item.state || "")} · ${folio(item)}</small></div>
+    </div>
+    <div class="real-publication-content">
+      <p><strong>Publicado por:</strong> ${escapeHtml(item.name)}</p>
+      <p>${linkify(cleanDescriptionWithoutMedia(item.description))}</p>
+      <p><strong>Contacto:</strong> ${maskPhone(item.phone)} · <strong>Costo:</strong> ${money(item.budget)}</p>
+      <div class="detail-actions">
+        ${cleanPhone(item.phone) ? `<button class="btn-small btn-green" onclick="contactPublication('${item.id}')">Contactar por WhatsApp</button>` : ""}
+        <button class="btn-small btn-outline" onclick="sharePublication('${item.id}')">Compartir</button>
+        <button class="btn-small btn-purple" onclick="publishSimilarToReal('${item.id}')">Publicar algo parecido</button>
+      </div>
+    </div>
+  </article>`;
+  showSection("rutaGuiada");
+  trackEvent("publicacion_real_feed_abierta", item, { origen: "explorar_feed" });
+}
+
 function togglePublicationDetail(id) {
   const card = document.getElementById(`pub-${id}`);
   if (!card) return;
@@ -1460,6 +1585,7 @@ function renderAdminSummary(list) {
 }
 function renderAdminPublications() {
   const list = document.getElementById("adminList");
+  renderPilotFeedAdminEditor?.();
   if (!list) return;
   renderAdminSummary(adminCache);
   const search = normalize(document.getElementById("adminSearch")?.value || "");
@@ -1469,6 +1595,48 @@ function renderAdminPublications() {
     return !search || normalize(bag).includes(search);
   });
   list.innerHTML = filtered.length ? filtered.map(adminCard).join("") : `<div class="empty-state">Sin resultados en administración.</div>`;
+}
+
+function renderPilotFeedAdminEditor() {
+  const panel = document.getElementById("pilotFeedAdminPanel");
+  if (!panel || !Array.isArray(HOME_FEED_POSTS_V4918)) return;
+  const overrides = getPilotFeedOverrides();
+  const rows = HOME_FEED_POSTS_V4918.map(post => {
+    const ov = overrides[post.id] || {};
+    const currentImg = ov.imagen || post.imagen || "";
+    const currentPos = ov.posicion || post.posicion || "center center";
+    return `<details class="pilot-admin-item"><summary><span>${escapeHtml(homeFeedLabelV4918(post.tipo))}</span><strong>${escapeHtml(post.titulo)}</strong></summary>
+      <div class="pilot-admin-row">
+        <img src="${escapeHtml(currentImg)}" alt="${escapeHtml(post.titulo)}" />
+        <div>
+          <label>URL de foto piloto<input id="pilotImg-${escapeHtml(post.id)}" type="url" value="${escapeHtml(currentImg)}" /></label>
+          <label>Enfoque / recorte<input id="pilotPos-${escapeHtml(post.id)}" type="text" value="${escapeHtml(currentPos)}" placeholder="center center / center 35%" /></label>
+          <div class="dialog-actions"><button type="button" class="btn-small btn-purple" onclick="savePilotFeedImage('${escapeHtml(post.id)}')">Guardar foto</button><button type="button" class="btn-small btn-ghost" onclick="resetPilotFeedImage('${escapeHtml(post.id)}')">Restablecer</button></div>
+        </div>
+      </div>
+    </details>`;
+  }).join("");
+  panel.innerHTML = `<div class="notice-card pilot-admin-editor"><strong>Editar fotos del Home Feed piloto</strong><p>Cambia la imagen de cada plantilla pegando una URL pública. Queda guardado en este navegador para validar visualmente antes de subir fotos definitivas a Storage.</p>${rows}</div>`;
+}
+function savePilotFeedImage(id) {
+  const img = String(document.getElementById(`pilotImg-${id}`)?.value || "").trim();
+  const pos = String(document.getElementById(`pilotPos-${id}`)?.value || "center center").trim();
+  if (img && !isLikelyMediaUrl(img)) { showToast("Pega una URL pública de imagen válida"); return; }
+  const overrides = getPilotFeedOverrides();
+  overrides[id] = { ...(overrides[id] || {}), imagen: img, posicion: pos };
+  savePilotFeedOverrides(overrides);
+  const post = HOME_FEED_POSTS_V4918.find(p => p.id === id);
+  if (post) { if (img) post.imagen = img; if (pos) post.posicion = pos; }
+  renderSocialHomeFeed?.();
+  renderPilotFeedAdminEditor?.();
+  showToast("Foto piloto actualizada");
+}
+function resetPilotFeedImage(id) {
+  const overrides = getPilotFeedOverrides();
+  delete overrides[id];
+  savePilotFeedOverrides(overrides);
+  showToast("Cambio local eliminado. Recarga para volver a la foto base.");
+  renderPilotFeedAdminEditor?.();
 }
 async function setPublicationStatus(id, status) {
   try {
@@ -1491,8 +1659,10 @@ function openEditDialog(id) {
   document.getElementById("editLocality").value = item.locality;
   document.getElementById("editPhone").value = cleanPhone(item.phone);
   document.getElementById("editRoute").value = item.route || item.transport || "";
+  const editMedia = document.getElementById("editMediaUrl");
+  if (editMedia) editMedia.value = item.mediaUrl || extractMediaUrlFromText(item.description) || (isLikelyMediaUrl(item.route) ? item.route : "");
   document.getElementById("editStatus").value = item.status;
-  document.getElementById("editDescription").value = item.description;
+  document.getElementById("editDescription").value = cleanDescriptionWithoutMedia(item.description);
   document.getElementById("editDialog").showModal();
 }
 function closeEditDialog() { document.getElementById("editDialog").close(); }
@@ -1510,7 +1680,7 @@ async function saveEdit(event) {
     telefono: cleanPhone(document.getElementById("editPhone").value),
     ruta: document.getElementById("editRoute").value.trim(),
     estado: document.getElementById("editStatus").value,
-    descripcion: document.getElementById("editDescription").value.trim()
+    descripcion: appendMediaUrlToDescription(document.getElementById("editDescription").value.trim(), document.getElementById("editMediaUrl")?.value.trim() || "")
   };
   try {
     await supabaseRequest(`publicaciones?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(payload) });
@@ -3179,6 +3349,7 @@ HOME_FEED_POSTS_V4918.forEach(post => {
   post.posicion = "center center";
   feedPhotoCursorV4922[post.tipo] = index + 1;
 });
+applyPilotFeedOverrides();
 
 let homeFeedFilterV4918 = "";
 
@@ -5297,7 +5468,7 @@ window.addEventListener("DOMContentLoaded", () => setTimeout(ensureInitialHomeFe
 window.addEventListener("load", () => setTimeout(ensureInitialHomeFeedVisibleV4926, 180));
 window.addEventListener("pageshow", () => setTimeout(ensureInitialHomeFeedVisibleV4926, 220));
 
-// v4.9.27 — Hotfix navegación real: mantiene el selector del + fuera de las páginas y refuerza rutas existentes.
+// v4.9.28 — Hotfix navegación real: mantiene el selector del + fuera de las páginas y refuerza rutas existentes.
 function ensureV4927NavigationIntegrity() {
   try {
     const opportunities = document.getElementById("oportunidades");
@@ -5305,7 +5476,7 @@ function ensureV4927NavigationIntegrity() {
     const feed = document.getElementById("homeSocialFeed");
     if (currentSection === "inicio" && feed && !feed.children.length) renderSocialHomeFeed();
   } catch (error) {
-    console.warn("No se pudo verificar navegación v4.9.27", error);
+    console.warn("No se pudo verificar navegación v4.9.28", error);
   }
 }
 window.addEventListener("DOMContentLoaded", () => setTimeout(ensureV4927NavigationIntegrity, 260));

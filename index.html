@@ -28,10 +28,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
-  <title>Conecta Servicios v4.9.27</title>
-  <link rel="stylesheet" href="styles.css?v=4.9.27-hotfix-navegacion-real" />
+  <title>Conecta Servicios v4.9.28</title>
+  <link rel="stylesheet" href="styles.css?v=4.9.28-multimedia-feed-real" />
 </head>
-<body data-version="4.9.27-hotfix-navegacion-real">
+<body data-version="4.9.28-multimedia-feed-real">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -234,6 +234,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
                 <input id="pubBudgetDelivery" type="number" min="0" placeholder="Opcional" />
               </label>
             </div>
+            <label class="media-url-field">Foto o multimedia para la publicación
+              <input id="pubMediaUrl" type="url" placeholder="Opcional: pega URL de una foto, video o evidencia" />
+              <small class="field-help">Explorar y contactar es gratis. Para publicar con imagen, pega una URL pública; más adelante se podrá subir archivo directo.</small>
+            </label>
           </div>
 
           <div class="wizard-step" data-step="6">
@@ -349,6 +353,7 @@ Todo uso requiere autorización expresa y por escrito del titular.
           <div class="admin-top-actions"><button class="btn-small btn-outline" onclick="loadAdminData()">Actualizar</button><button class="btn-small btn-outline" onclick="showSection('analitica')">📊 Analítica</button><button class="btn-small btn-purple" onclick="showSection('enlaceExterno')">+ Enlace externo</button></div>
         </div>
         <div class="admin-summary" id="adminSummary"></div>
+        <div id="pilotFeedAdminPanel" class="pilot-admin-panel"></div>
         <label class="search-box">Buscar en admin
           <input id="adminSearch" type="search" placeholder="Folio, teléfono, título, nombre, municipio, categoría o necesidad" oninput="renderAdminPublications()" />
         </label>
@@ -910,12 +915,13 @@ Todo uso requiere autorización expresa y por escrito del titular.
       <label>Localidad<input id="editLocality" type="text" /></label>
       <label>Teléfono<input id="editPhone" type="tel" /></label>
       <label>Ruta / detalle extra<input id="editRoute" type="text" /></label>
+      <label>Foto o multimedia<input id="editMediaUrl" type="url" placeholder="URL pública de foto, video o evidencia" /></label>
       <label>Estado de publicación<select id="editStatus"><option value="revision">revision</option><option value="activo">activo</option><option value="oculto">oculto</option><option value="atendido">atendido</option></select></label>
       <label>Descripción<textarea id="editDescription" rows="4"></textarea></label>
       <div class="dialog-actions"><button type="button" class="btn-small btn-ghost" onclick="closeEditDialog()">Cancelar</button><button type="submit" class="btn-small btn-purple">Guardar cambios</button></div>
     </form>
   </dialog>
 
-  <script src="app.js?v=4.9.27-hotfix-navegacion-real"></script>
+  <script src="app.js?v=4.9.28-multimedia-feed-real"></script>
 </body>
 </html>
