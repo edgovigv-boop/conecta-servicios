@@ -1,1 +1,1 @@
-No requiere SQL nuevo para esta prueba piloto.
+No requiere SQL nuevo. Este hotfix corrige JavaScript de navegación/botones del landing de Embajadores.

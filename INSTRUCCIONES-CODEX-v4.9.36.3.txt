@@ -1,0 +1,44 @@
+Continuar con Conecta Servicios v4.9.36.3.
+
+Objetivo:
+Corregir que el landing /embajadores ya abre pero sus botones no ejecutan acciones.
+
+Archivos a reemplazar en la raíz:
+- app.js
+- service-worker.js
+- manifest.json
+- README.md opcional
+
+Aplicar también en index.html:
+1. Cambiar referencia de app.js a:
+   app.js?v=4.9.36.3-botones-embajadores
+
+2. Cambiar referencia de styles.css a:
+   styles.css?v=4.9.36.3-botones-embajadores
+
+3. Cambiar body data-version a:
+   4.9.36.3-botones-embajadores
+
+4. Confirmar que los botones del landing conservan onclick:
+   - startAmbassadorLandingFlow('embajador')
+   - startAmbassadorLandingFlow('referido')
+   - startAmbassadorLandingFlow('pago')
+   - startAmbassadorLandingFlow('manual')
+   - copyAmbassadorLandingLink()
+
+5. Subir a GitHub y probar en incógnito:
+   https://conecta-servicios.vercel.app/embajadores?v=49363
+
+Pruebas obligatorias:
+- /embajadores abre landing.
+- Quiero ser embajador abre registro de embajador.
+- Activar membresía $98 abre Mi acceso / Membresía.
+- Registrar referido abre flujo de referido.
+- Cobrar membresía abre Mi acceso para visitante o pagos para admin.
+- Manual rápido abre manual.
+- Copiar enlace para compartir copia el enlace.
+- Admin visible sigue funcionando.
+- Mi acceso sigue dentro de Mis publicaciones.
+- Plus principal sigue blanco.
+
+No requiere SQL nuevo.

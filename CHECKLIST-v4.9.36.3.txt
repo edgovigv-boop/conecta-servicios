@@ -1,0 +1,16 @@
+CHECKLIST v4.9.36.3
+
+[ ] Abrir https://conecta-servicios.vercel.app/embajadores?v=49363 en incógnito.
+[ ] Confirmar que no manda al Home.
+[ ] Tocar “Quiero ser embajador”. Debe abrir registro/encuesta de embajador.
+[ ] Tocar “Activar membresía $98”. Debe abrir Mi acceso / Membresía.
+[ ] Tocar “Registrar referido”. Debe abrir registro de referido.
+[ ] Tocar “Cobrar membresía”. Para visitante debe llevar a Mi acceso; con admin activo puede abrir pagos.
+[ ] Tocar “Manual rápido”. Debe abrir guía/manual.
+[ ] Tocar “Copiar enlace para compartir”. Debe copiar enlace o mostrar toast.
+[ ] Confirmar que botón Admin sigue visible.
+[ ] Confirmar que Mi acceso está dentro de Mis publicaciones.
+[ ] Confirmar que el símbolo + principal está blanco.
+[ ] Confirmar que service worker usa cache v4.9.36.3.
+
+No requiere SQL nuevo.

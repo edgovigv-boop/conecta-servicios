@@ -1,0 +1,17 @@
+PATCH para index.html — v4.9.36.3
+
+Reemplazar cualquier referencia anterior v4.9.36.2, v4.9.36.1 o v4.9.35 por:
+
+styles.css?v=4.9.36.3-botones-embajadores
+app.js?v=4.9.36.3-botones-embajadores
+data-version="4.9.36.3-botones-embajadores"
+
+El landing de Embajadores debe conservar estos onclick:
+
+<button type="button" class="landing-primary" onclick="startAmbassadorLandingFlow('embajador')">Quiero ser embajador</button>
+<button type="button" class="landing-secondary" onclick="startAmbassadorLandingFlow('pago')">Activar membresía $98</button>
+<button type="button" onclick="startAmbassadorLandingFlow('embajador')">...</button>
+<button type="button" onclick="startAmbassadorLandingFlow('referido')">...</button>
+<button type="button" onclick="startAmbassadorLandingFlow('pago')">...</button>
+<button type="button" onclick="startAmbassadorLandingFlow('manual')">...</button>
+<button type="button" class="btn-small btn-ghost" onclick="copyAmbassadorLandingLink()">Copiar enlace para compartir</button>

@@ -1,8 +1,8 @@
 {
   "name": "Conecta Servicios",
   "short_name": "Conecta",
-  "description": "Plataforma local de oportunidades, publicaciones piloto, mandados verificados, Fondo Protegido Conecta, negocios locales, centro de mensajes, aprendizaje, agentes de crecimiento y Embajadores Conecta en modo piloto de referidos y membresía anual de $98, comisión de embajadores, carrusel de oportunidades, asistente de orientación, publicación directa, cobro de membresía para embajadores y flujos tipo encuesta para mandados, agentes de crecimiento y chat de negocios, membresía para publicar, pilotos claros y centro de orientación con limpieza de chat, y acceso de usuario ubicado dentro de Mis publicaciones.",
-  "start_url": "/?source=pwa&v=4.9.36.2-mi-acceso-mis-publicaciones",
+  "description": "Conecta Servicios v4.9.36.3 - hotfix botones de landing Embajadores, admin, membresías y acceso.",
+  "start_url": "/?source=pwa&v=4.9.36.3-botones-embajadores",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -34,5 +34,6 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "id": "/?v=4.9.36.3-botones-embajadores"
 }

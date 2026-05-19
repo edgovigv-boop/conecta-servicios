@@ -6848,3 +6848,153 @@ window.addEventListener("pageshow", () => {
   removeMemberAccessFloatingButtonV49362();
   setTimeout(renderMemberAccessShortcutInsideMyPublicationsV49362, 120);
 });
+
+// v4.9.36.3 — Hotfix botones del landing de Embajadores
+// El HTML del landing usa startAmbassadorLandingFlow(...) y copyAmbassadorLandingLink().
+// En algunas entregas esas funciones no quedaron definidas en app.js, por eso los botones abrían el landing
+// pero no ejecutaban ninguna acción. Este bloque las define de forma global y añade delegación de respaldo.
+const AMBASSADOR_LANDING_BUTTONS_VERSION_V49363 = "4.9.36.3-botones-embajadores";
+
+function ambassadorLandingScrollToPanelV49363() {
+  setTimeout(() => {
+    const panel = document.getElementById("ambassadorPanel")
+      || document.getElementById("ambassadorPaymentPanel")
+      || document.getElementById("ambassadorManualPanel")
+      || document.getElementById("memberAccessRoot")
+      || document.getElementById("embajadores")
+      || document.getElementById("embajadoresLanding");
+    panel?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+  }, 140);
+}
+
+function startAmbassadorLandingFlow(type = "embajador") {
+  const flow = String(type || "embajador").trim().toLowerCase();
+  try { trackEvent?.("landing_embajadores_boton", null, { tipo: flow }); } catch {}
+
+  if (flow === "embajador" || flow === "registro" || flow === "registrarme") {
+    if (typeof startSurveyFlow === "function") {
+      startSurveyFlow("embajadorRegistro");
+    } else if (typeof showAmbassadorPanel === "function") {
+      showSection?.("embajadores");
+      setTimeout(() => showAmbassadorPanel("embajador"), 80);
+    } else {
+      showSection?.("miAcceso");
+    }
+    ambassadorLandingScrollToPanelV49363();
+    return;
+  }
+
+  if (flow === "referido" || flow === "referidos") {
+    if (typeof startSurveyFlow === "function") {
+      startSurveyFlow("embajadorReferido");
+    } else if (typeof showAmbassadorPanel === "function") {
+      showSection?.("embajadores");
+      setTimeout(() => showAmbassadorPanel("referido"), 80);
+    } else {
+      showSection?.("miAcceso");
+    }
+    ambassadorLandingScrollToPanelV49363();
+    return;
+  }
+
+  if (flow === "pago" || flow === "cobro" || flow === "membresia" || flow === "membresía" || flow === "activar") {
+    // Para visitantes/clientes: llevar a Mi acceso para activar membresía.
+    // Para admin/embajador con acceso guardado: abrir panel de pagos si está disponible.
+    const adminMode = Boolean(adminUnlocked || adminRouteEnabled || adminAccessAvailableV4936?.());
+    if (adminMode && typeof openAmbassadorPayments === "function") {
+      showSection?.("embajadores");
+      setTimeout(() => openAmbassadorPayments(), 100);
+    } else if (typeof showSection === "function") {
+      showSection("miAcceso");
+      setTimeout(() => {
+        if (typeof renderMemberAccessV4936 === "function") renderMemberAccessV4936();
+        document.getElementById("memberAccessRoot")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+      }, 120);
+    } else if (typeof openMembershipPaymentFromAccessV4936 === "function") {
+      openMembershipPaymentFromAccessV4936();
+    }
+    ambassadorLandingScrollToPanelV49363();
+    return;
+  }
+
+  if (flow === "manual" || flow === "guia" || flow === "guía") {
+    showSection?.("embajadores");
+    setTimeout(() => {
+      if (typeof openAmbassadorManual === "function") openAmbassadorManual();
+      else if (typeof setAmbassadorTab === "function") setAmbassadorTab("manual", true);
+      document.getElementById("ambassadorManualPanel")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+    }, 100);
+    return;
+  }
+
+  showSection?.("embajadores");
+}
+
+function copyAmbassadorLandingLink() {
+  let code = "";
+  try {
+    const profile = typeof getUserAccessProfileV4936 === "function" ? getUserAccessProfileV4936() : null;
+    code = profile?.ambassadorCode || getStoredAmbassadorRefV4936?.() || "";
+  } catch {}
+  const base = `${location.origin}/embajadores`;
+  const link = code ? `${base}?ref=${encodeURIComponent(normalizeAmbassadorCodeV4936?.(code) || code)}` : base;
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(link).then(
+      () => showToast?.("Enlace de Embajadores copiado"),
+      () => showToast?.(link)
+    );
+  } else {
+    showToast?.(link);
+  }
+}
+
+function inferAmbassadorLandingFlowFromButtonV49363(button) {
+  const text = String(button?.innerText || button?.textContent || "").toLowerCase();
+  const attr = String(button?.getAttribute?.("data-landing-flow") || "").toLowerCase();
+  const raw = `${attr} ${text}`;
+  if (/referido|vincular/.test(raw)) return "referido";
+  if (/manual|gu[ií]a|promover/.test(raw)) return "manual";
+  if (/pago|cobrar|membres[ií]a|activar|\$98/.test(raw)) return "pago";
+  if (/embajador|registrarme|registro/.test(raw)) return "embajador";
+  return "embajador";
+}
+
+function bindAmbassadorLandingButtonsV49363() {
+  const landing = document.getElementById("embajadoresLanding");
+  if (!landing) return;
+  landing.querySelectorAll("button").forEach(button => {
+    const text = String(button.innerText || button.textContent || "").trim();
+    if (!text) return;
+    const onclick = String(button.getAttribute("onclick") || "");
+    if (!/startAmbassadorLandingFlow|copyAmbassadorLandingLink/.test(onclick)) return;
+    if (button.dataset.boundLandingHotfixV49363 === "1") return;
+    button.dataset.boundLandingHotfixV49363 = "1";
+    button.addEventListener("click", event => {
+      // Respaldo por si el onclick inline falla por caché, minificación o porque la función no estaba al cargar.
+      const inline = String(button.getAttribute("onclick") || "");
+      if (/copyAmbassadorLandingLink/.test(inline)) {
+        event.preventDefault();
+        copyAmbassadorLandingLink();
+        return;
+      }
+      if (/startAmbassadorLandingFlow/.test(inline)) {
+        event.preventDefault();
+        startAmbassadorLandingFlow(inferAmbassadorLandingFlowFromButtonV49363(button));
+      }
+    });
+  });
+  document.body.dataset.ambassadorLandingButtonsHotfix = AMBASSADOR_LANDING_BUTTONS_VERSION_V49363;
+}
+
+try {
+  window.startAmbassadorLandingFlow = startAmbassadorLandingFlow;
+  window.copyAmbassadorLandingLink = copyAmbassadorLandingLink;
+} catch {}
+
+window.addEventListener("DOMContentLoaded", () => {
+  bindAmbassadorLandingButtonsV49363();
+  setTimeout(bindAmbassadorLandingButtonsV49363, 200);
+  setTimeout(bindAmbassadorLandingButtonsV49363, 700);
+});
+window.addEventListener("pageshow", () => setTimeout(bindAmbassadorLandingButtonsV49363, 120));
+
