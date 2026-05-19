@@ -1,0 +1,22 @@
+Continuar con Conecta Servicios v4.9.36.6.
+
+Objetivo:
+Corregir la funcionalidad de Chat negocio y el botón Cobrar membresía en Embajadores Conecta.
+
+Archivos a reemplazar en la raíz:
+- app.js
+- styles.css
+- service-worker.js
+- manifest.json
+- vercel.json
+
+Aplicar patch en index.html:
+- styles.css?v=4.9.36.6-chat-negocio-cobro
+- app.js?v=4.9.36.6-chat-negocio-cobro
+- data-version="4.9.36.6-chat-negocio-cobro"
+
+No modificar Supabase.
+No crear SQL nuevo.
+
+Commit sugerido:
+Corregir Chat negocio y Cobrar membresía v4.9.36.6

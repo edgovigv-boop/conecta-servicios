@@ -7204,3 +7204,372 @@ window.addEventListener("pageshow", () => {
   setTimeout(removeAdminFloatingEverywhereV49365, 400);
 });
 window.addEventListener("popstate", () => setTimeout(removeAdminFloatingEverywhereV49365, 80));
+
+
+// v4.9.36.6 — Hotfix Chat de negocio + Cobrar membresía
+// 1) El chat de negocio ahora queda claramente vinculado a la publicación/origen que lo abrió.
+// 2) Los registros guardados se muestran en Negocios locales > Chats de negocio.
+// 3) El botón/tarjeta "Cobrar membresía" en Embajadores abre cobro, no Manual rápido.
+const CHAT_NEGOCIO_COBRO_VERSION_V49366 = "4.9.36.6-chat-negocio-cobro";
+
+function businessChatSourceFromOpportunityV49366(item = {}) {
+  const zone = [item.locality, item.municipality, item.state].filter(Boolean).join(" · ") || item.ubicacion || item.zone || "";
+  return {
+    sourceId: item.id || item.folio || item.publicationId || "",
+    sourceTitle: item.title || item.titulo || item.name || item.nombre || "Negocio local",
+    sourceCategory: item.category || item.categoria || item.tipo || "Negocios locales",
+    sourceZone: zone,
+    sourceName: item.name || item.nombre || "",
+    sourceOrigin: "Oportunidades para ti"
+  };
+}
+
+function setBusinessChatSourceContextV49366(source = {}) {
+  try {
+    if (!surveyState || surveyState.flow !== "chatNegocio") return;
+    surveyState.businessChatSource = { ...(surveyState.businessChatSource || {}), ...source };
+    surveyState.values = surveyState.values || {};
+    surveyState.values.sourceId = source.sourceId || surveyState.values.sourceId || "";
+    surveyState.values.sourceTitle = source.sourceTitle || surveyState.values.sourceTitle || "";
+    surveyState.values.sourceCategory = source.sourceCategory || surveyState.values.sourceCategory || "";
+    surveyState.values.sourceZone = source.sourceZone || surveyState.values.sourceZone || "";
+    surveyState.values.sourceOrigin = source.sourceOrigin || surveyState.values.sourceOrigin || "Oportunidades para ti";
+  } catch (error) {
+    console.warn("No se pudo guardar el origen del chat de negocio", error);
+  }
+}
+
+function businessChatCurrentSourceV49366(values = {}) {
+  const stateSource = (surveyState && surveyState.businessChatSource) || {};
+  return {
+    sourceId: values.sourceId || stateSource.sourceId || "",
+    sourceTitle: values.sourceTitle || stateSource.sourceTitle || "Flujo general de Negocios locales",
+    sourceCategory: values.sourceCategory || stateSource.sourceCategory || "Negocios locales",
+    sourceZone: values.sourceZone || stateSource.sourceZone || values.zone || "",
+    sourceOrigin: values.sourceOrigin || stateSource.sourceOrigin || "Negocios locales"
+  };
+}
+
+function decorateBusinessChatSurveyV49366() {
+  try {
+    if (!surveyState || surveyState.flow !== "chatNegocio") return;
+    const root = document.getElementById("surveyFlowContent");
+    const card = root?.querySelector?.(".survey-step-card");
+    if (!card || card.querySelector(".business-chat-source-note-v49366")) return;
+    const values = surveyState.values || {};
+    const source = businessChatCurrentSourceV49366(values);
+    const note = document.createElement("div");
+    note.className = "business-chat-source-note-v49366";
+    note.innerHTML = `<small>Origen del chat</small><strong>${escapeHtml(source.sourceTitle || "Negocio local")}</strong><p>${escapeHtml(source.sourceOrigin || "Negocios locales")}${source.sourceZone ? ` · ${escapeHtml(source.sourceZone)}` : ""}</p>`;
+    const form = card.querySelector("form");
+    if (form) card.insertBefore(note, form);
+    else card.appendChild(note);
+  } catch (error) {
+    console.warn("No se pudo decorar encuesta de chat de negocio", error);
+  }
+}
+
+try {
+  const renderSurveyFlowBaseV49366 = renderSurveyFlow;
+  renderSurveyFlow = function() {
+    const result = renderSurveyFlowBaseV49366();
+    decorateBusinessChatSurveyV49366();
+    return result;
+  };
+} catch (error) {
+  console.warn("No se pudo reforzar renderSurveyFlow para Chat negocio", error);
+}
+
+function startBusinessChatFromOpportunityV49366(item = {}) {
+  const source = businessChatSourceFromOpportunityV49366(item);
+  const context = item.subcategory || item.roleLabel || item.name || item.title || "Negocio local";
+  if (typeof startSurveyFlow === "function") {
+    startSurveyFlow("chatNegocio", context);
+    if (surveyState && surveyState.flow === "chatNegocio") {
+      surveyState.values = surveyState.values || {};
+      surveyState.values.type = item.subcategory || item.roleLabel || surveyState.values.type || "Negocio local";
+      surveyState.values.name = item.name || item.title || surveyState.values.name || "Negocio local";
+      surveyState.values.zone = [item.locality, item.municipality, item.state].filter(Boolean).join(" · ") || surveyState.values.zone || "";
+      surveyState.values.message = item.description || surveyState.values.message || "Hola, puedo mostrarte productos, precios, disponibilidad, entrega o pickup.";
+      setBusinessChatSourceContextV49366(source);
+      renderSurveyFlow?.();
+    }
+    showToast?.(`Chat vinculado a: ${source.sourceTitle}`);
+  }
+}
+
+try {
+  const openPilotFlowBaseV49366 = openPilotFlow;
+  openPilotFlow = function(id) {
+    const item = Array.isArray(publicationsCache) ? publicationsCache.find(p => p.id === id) : null;
+    if (item && item.pilotType === "negocios") {
+      try { trackEvent?.("modo_piloto_chat_negocio", item, { sourceId: item.id, sourceTitle: item.title }); } catch {}
+      startBusinessChatFromOpportunityV49366(item);
+      return;
+    }
+    return openPilotFlowBaseV49366(id);
+  };
+} catch (error) {
+  console.warn("No se pudo reforzar openPilotFlow para Chat negocio", error);
+}
+
+try {
+  const startSurveyFlowFromPilotBaseV49366 = typeof startSurveyFlowFromPilotV4926 === "function" ? startSurveyFlowFromPilotV4926 : null;
+  if (startSurveyFlowFromPilotBaseV49366) {
+    startSurveyFlowFromPilotV4926 = function(flow, post = null) {
+      const result = startSurveyFlowFromPilotBaseV49366(flow, post);
+      if (flow === "chatNegocio" && post && surveyState && surveyState.flow === "chatNegocio") {
+        const source = businessChatSourceFromOpportunityV49366({
+          id: post.id || post.slug || "",
+          title: post.titulo || post.title || post.nombre || "Negocio local",
+          name: post.nombre || post.name || "",
+          category: "Negocios locales",
+          tipo: post.tipo || "negocios",
+          ubicacion: post.ubicacion || post.zone || ""
+        });
+        source.sourceOrigin = "Oportunidades para ti";
+        source.sourceZone = post.ubicacion || source.sourceZone || "";
+        setBusinessChatSourceContextV49366(source);
+        renderSurveyFlow?.();
+        showToast?.(`Chat vinculado a: ${source.sourceTitle}`);
+      }
+      return result;
+    };
+  }
+} catch (error) {
+  console.warn("No se pudo reforzar startSurveyFlowFromPilot para Chat negocio", error);
+}
+
+function getBusinessChatLeadsV49366() {
+  try { return JSON.parse(localStorage.getItem(BUSINESS_CHAT_STORAGE_KEY) || "[]"); } catch { return []; }
+}
+
+function saveBusinessChatLeadV49366(v = {}) {
+  const rows = getBusinessChatLeadsV49366();
+  const source = businessChatCurrentSourceV49366(v);
+  const record = {
+    id: `CN-${String(Date.now()).slice(-6)}`,
+    type: v.type || "Negocio local",
+    name: v.name || source.sourceTitle || "Negocio local",
+    goal: v.goal || "Pedidos por chat",
+    zone: v.zone || source.sourceZone || "",
+    message: v.message || "Hola, puedo mostrarte productos, precios, disponibilidad, entrega o pickup.",
+    contact: cleanPhone(v.phone || v.contact || ""),
+    sourceId: source.sourceId || "",
+    sourceTitle: source.sourceTitle || "Flujo general de Negocios locales",
+    sourceCategory: source.sourceCategory || "Negocios locales",
+    sourceZone: source.sourceZone || v.zone || "",
+    sourceOrigin: source.sourceOrigin || "Negocios locales",
+    status: "Chat preparado",
+    createdAt: new Date().toISOString()
+  };
+  rows.unshift(record);
+  try { localStorage.setItem(BUSINESS_CHAT_STORAGE_KEY, JSON.stringify(rows.slice(0, 80))); } catch {}
+  return record;
+}
+
+try {
+  getBusinessChatLeads = getBusinessChatLeadsV49366;
+  saveBusinessChatLead = saveBusinessChatLeadV49366;
+} catch (error) {
+  console.warn("No se pudo reemplazar almacenamiento de Chat negocio", error);
+}
+
+function businessChatDateV49366(value = "") {
+  try { return new Date(value).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" }); } catch { return "Fecha no disponible"; }
+}
+
+function businessChatWhatsAppUrlV49366(row = {}) {
+  const phone = cleanPhone(row.contact || "");
+  if (!phone) return "";
+  const withCountry = phone.length === 10 ? `52${phone}` : phone;
+  const message = `Hola, vi tu negocio en Conecta Servicios. Me interesa: ${row.sourceTitle || row.name || "tu negocio"}.`;
+  return `https://wa.me/${withCountry}?text=${encodeURIComponent(message)}`;
+}
+
+function ensureBusinessChatLeadsPanelV49366() {
+  const section = document.getElementById("negocios") || document.getElementById("oportunidades");
+  if (!section) return null;
+  let panel = document.getElementById("businessChatLeadsPanelV49366");
+  if (!panel) {
+    panel = document.createElement("section");
+    panel.id = "businessChatLeadsPanelV49366";
+    panel.className = "business-chat-leads-panel-v49366";
+    const anchor = section.querySelector("#businessTerminalPanel") || section.querySelector("#localBusinessPilotList") || section.firstElementChild;
+    if (anchor && anchor.parentNode === section) section.insertBefore(panel, anchor.nextSibling);
+    else section.appendChild(panel);
+  }
+  return panel;
+}
+
+function renderBusinessChatLeadsPanelV49366() {
+  const panel = ensureBusinessChatLeadsPanelV49366();
+  if (!panel) return;
+  const rows = getBusinessChatLeadsV49366();
+  panel.innerHTML = `<div class="business-chat-leads-head-v49366">
+    <span>💬</span>
+    <div><small>Negocios locales</small><h3>Chats de negocio guardados</h3><p>Aquí queda cada chat que se prepara desde Oportunidades para ti o Negocios locales, con la publicación/origen que lo abrió.</p></div>
+  </div>
+  ${rows.length ? `<div class="business-chat-leads-list-v49366">${rows.map(row => {
+    const wa = businessChatWhatsAppUrlV49366(row);
+    return `<article class="business-chat-lead-card-v49366">
+      <div class="business-chat-lead-top-v49366"><strong>${escapeHtml(row.name || "Negocio local")}</strong><span>${escapeHtml(row.id || "CN")}</span></div>
+      <p><b>Entró desde:</b> ${escapeHtml(row.sourceTitle || "Flujo general de negocios")}</p>
+      <p><b>Función:</b> ${escapeHtml(row.goal || "Chat")} · <b>Zona:</b> ${escapeHtml(row.zone || row.sourceZone || "Sin zona")}</p>
+      <p><b>Mensaje inicial:</b> ${escapeHtml(row.message || "Sin mensaje")}</p>
+      <small>${escapeHtml(row.sourceOrigin || "Negocios locales")} · ${businessChatDateV49366(row.createdAt)}</small>
+      <div class="business-chat-lead-actions-v49366">
+        ${wa ? `<button type="button" class="btn-small btn-purple" onclick="window.open('${wa}','_blank','noopener')">Abrir WhatsApp</button>` : ""}
+        <button type="button" class="btn-small btn-ghost" onclick="copyBusinessChatLeadV49366('${escapeHtml(row.id)}')">Copiar resumen</button>
+        <button type="button" class="btn-small btn-outline" onclick="deleteBusinessChatLeadV49366('${escapeHtml(row.id)}')">Eliminar</button>
+      </div>
+    </article>`;
+  }).join("")}</div>` : `<div class="empty-state">Aún no hay chats de negocio guardados en este dispositivo. Entra a Oportunidades para ti, abre un negocio y guarda el chat.</div>`}`;
+  document.body.dataset.chatNegocioHotfix = CHAT_NEGOCIO_COBRO_VERSION_V49366;
+}
+
+function openBusinessChatLeadsV49366() {
+  showSection?.("negocios");
+  setTimeout(() => {
+    renderBusinessChatLeadsPanelV49366();
+    document.getElementById("businessChatLeadsPanelV49366")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 120);
+}
+
+function copyBusinessChatLeadV49366(id = "") {
+  const row = getBusinessChatLeadsV49366().find(item => item.id === id);
+  if (!row) return showToast?.("No encontré ese chat");
+  const text = `Chat de negocio ${row.id}\nNegocio: ${row.name}\nEntró desde: ${row.sourceTitle || "Flujo general"}\nFunción: ${row.goal}\nZona: ${row.zone || row.sourceZone || "Sin zona"}\nWhatsApp: ${row.contact || "Sin WhatsApp"}\nMensaje: ${row.message || ""}`;
+  navigator.clipboard?.writeText(text).then(() => showToast?.("Resumen copiado"), () => showToast?.(text));
+}
+
+function deleteBusinessChatLeadV49366(id = "") {
+  const rows = getBusinessChatLeadsV49366().filter(item => item.id !== id);
+  try { localStorage.setItem(BUSINESS_CHAT_STORAGE_KEY, JSON.stringify(rows)); } catch {}
+  renderBusinessChatLeadsPanelV49366();
+  showToast?.("Chat eliminado de este dispositivo");
+}
+
+function renderBusinessChatSuccessV49366(record = {}) {
+  const root = document.getElementById("surveyFlowContent");
+  if (!root) return;
+  root.innerHTML = `<div class="survey-shell business-chat-success-v49366">
+    <div class="survey-success-card">
+      <span>💬</span>
+      <h2>Chat de negocio guardado</h2>
+      <p>Quedó en <b>Negocios locales → Chats de negocio guardados</b>.</p>
+      <div class="business-chat-source-summary-v49366">
+        <small>Vinculado a publicación/origen</small>
+        <strong>${escapeHtml(record.sourceTitle || "Flujo general de Negocios locales")}</strong>
+        <p>${escapeHtml(record.sourceOrigin || "Negocios locales")}${record.sourceZone ? ` · ${escapeHtml(record.sourceZone)}` : ""}</p>
+      </div>
+      <div class="survey-success-actions">
+        <button type="button" class="btn-small btn-purple" onclick="openBusinessChatLeadsV49366()">Ver chats de negocio</button>
+        <button type="button" class="btn-small btn-outline" onclick="showSection('oportunidades')">Volver a oportunidades</button>
+        <button type="button" class="btn-small btn-ghost" onclick="showSection('inicio')">Inicio</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+try {
+  const surveyFinishBaseV49366 = surveyFinish;
+  surveyFinish = function() {
+    if (surveyState && surveyState.flow === "chatNegocio") {
+      const v = { ...(surveyState.values || {}) };
+      const record = saveBusinessChatLeadV49366(v);
+      renderBusinessChatSuccessV49366(record);
+      renderBusinessChatLeadsPanelV49366();
+      showToast?.("Chat de negocio guardado");
+      try { trackEvent?.("chat_negocio_guardado", null, { sourceId: record.sourceId, sourceTitle: record.sourceTitle, goal: record.goal }); } catch {}
+      return;
+    }
+    return surveyFinishBaseV49366();
+  };
+} catch (error) {
+  console.warn("No se pudo reforzar guardado de Chat negocio", error);
+}
+
+// Prioriza Cobrar membresía sobre Manual rápido cuando el texto de una tarjeta contiene ambas palabras.
+try {
+  inferAmbassadorLandingFlowFromButtonV49363 = function(button) {
+    const text = String(button?.innerText || button?.textContent || "").toLowerCase();
+    const attr = String(button?.getAttribute?.("data-landing-flow") || "").toLowerCase();
+    const inline = String(button?.getAttribute?.("onclick") || "").toLowerCase();
+    const raw = `${attr} ${inline} ${text}`;
+    if (/cobrar|cobro|pago|pagos|membres[ií]a|activar|\$98/.test(raw)) return "pago";
+    if (/referido|vincular/.test(raw)) return "referido";
+    if (/manual|gu[ií]a|promover/.test(raw)) return "manual";
+    if (/embajador|registrarme|registro/.test(raw)) return "embajador";
+    return "embajador";
+  };
+} catch (error) {
+  console.warn("No se pudo corregir inferencia de botones Embajadores", error);
+}
+
+function openAmbassadorPaymentFlowV49366() {
+  try { trackEvent?.("embajadores_cobrar_membresia_hotfix", null, {}); } catch {}
+  if (typeof openAmbassadorPayments === "function") {
+    openAmbassadorPayments();
+  } else if (typeof startSurveyFlow === "function") {
+    startSurveyFlow("embajadorPago");
+  } else {
+    showSection?.("embajadores");
+  }
+}
+
+function bindAmbassadorPaymentButtonsV49366() {
+  try {
+    const roots = [document.getElementById("embajadoresLanding"), document.getElementById("embajadores")].filter(Boolean);
+    roots.forEach(root => {
+      root.querySelectorAll("button, a, .card, article").forEach(el => {
+        const text = String(el.innerText || el.textContent || "").toLowerCase();
+        const inline = String(el.getAttribute?.("onclick") || "").toLowerCase();
+        const raw = `${inline} ${text}`;
+        if (!/cobrar/.test(raw) || !/membres[ií]a/.test(raw)) return;
+        if (el.dataset.boundCobroMembresiaV49366 === "1") return;
+        el.dataset.boundCobroMembresiaV49366 = "1";
+        el.addEventListener("click", event => {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          openAmbassadorPaymentFlowV49366();
+        }, true);
+      });
+    });
+  } catch (error) {
+    console.warn("No se pudieron enlazar botones de cobro de membresía", error);
+  }
+}
+
+try {
+  const showSectionBaseV49366 = showSection;
+  showSection = function(id, push = true) {
+    const result = showSectionBaseV49366(id, push);
+    const section = typeof sectionAliasV4936 === "function" ? sectionAliasV4936(id) : id;
+    if (section === "negocios") setTimeout(renderBusinessChatLeadsPanelV49366, 120);
+    if (section === "embajadores" || section === "embajadoresLanding") {
+      setTimeout(bindAmbassadorPaymentButtonsV49366, 100);
+      setTimeout(bindAmbassadorPaymentButtonsV49366, 500);
+    }
+    return result;
+  };
+} catch (error) {
+  console.warn("No se pudo enganchar showSection para v4.9.36.6", error);
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  setTimeout(renderBusinessChatLeadsPanelV49366, 250);
+  setTimeout(bindAmbassadorPaymentButtonsV49366, 250);
+  setTimeout(bindAmbassadorPaymentButtonsV49366, 900);
+});
+window.addEventListener("pageshow", () => {
+  setTimeout(renderBusinessChatLeadsPanelV49366, 250);
+  setTimeout(bindAmbassadorPaymentButtonsV49366, 250);
+});
+
+try {
+  window.openBusinessChatLeadsV49366 = openBusinessChatLeadsV49366;
+  window.copyBusinessChatLeadV49366 = copyBusinessChatLeadV49366;
+  window.deleteBusinessChatLeadV49366 = deleteBusinessChatLeadV49366;
+  window.openAmbassadorPaymentFlowV49366 = openAmbassadorPaymentFlowV49366;
+} catch {}

@@ -1,0 +1,12 @@
+Actualizar index.html:
+
+1. Reemplazar cualquier referencia anterior de styles.css por:
+   styles.css?v=4.9.36.6-chat-negocio-cobro
+
+2. Reemplazar cualquier referencia anterior de app.js por:
+   app.js?v=4.9.36.6-chat-negocio-cobro
+
+3. Actualizar body data-version a:
+   data-version="4.9.36.6-chat-negocio-cobro"
+
+4. Si existe un texto visible de versión, actualizarlo a v4.9.36.6.

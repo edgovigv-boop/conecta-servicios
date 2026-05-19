@@ -3179,3 +3179,124 @@ body[data-version] .bottom-nav.social-bottom-nav .publish-nav-action{
 .member-link-code{
   user-select:text;
 }
+
+
+/* v4.9.36.6 — Chat de negocio claro + Cobrar membresía correcto */
+.business-chat-source-note-v49366,
+.business-chat-source-summary-v49366 {
+  margin: 14px 0;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(91, 34, 207, 0.16);
+  background: linear-gradient(135deg, rgba(91, 34, 207, 0.08), rgba(255, 255, 255, 0.96));
+}
+.business-chat-source-note-v49366 small,
+.business-chat-source-summary-v49366 small {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-weight: 800;
+  color: #5b22cf;
+  margin-bottom: 4px;
+}
+.business-chat-source-note-v49366 strong,
+.business-chat-source-summary-v49366 strong {
+  display: block;
+  color: #22113f;
+  font-size: 1rem;
+}
+.business-chat-source-note-v49366 p,
+.business-chat-source-summary-v49366 p {
+  margin: 4px 0 0;
+  color: #6b6476;
+}
+.business-chat-leads-panel-v49366 {
+  margin: 22px 0;
+  padding: 18px;
+  border-radius: 26px;
+  background: #fff;
+  box-shadow: 0 18px 50px rgba(32, 18, 64, .10);
+  border: 1px solid rgba(91, 34, 207, .10);
+}
+.business-chat-leads-head-v49366 {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+.business-chat-leads-head-v49366 > span {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: rgba(91, 34, 207, .10);
+  font-size: 1.35rem;
+  flex: 0 0 auto;
+}
+.business-chat-leads-head-v49366 small {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #5b22cf;
+  font-weight: 900;
+}
+.business-chat-leads-head-v49366 h3 {
+  margin: 2px 0 4px;
+  color: #26123f;
+}
+.business-chat-leads-head-v49366 p {
+  margin: 0;
+  color: #71687d;
+}
+.business-chat-leads-list-v49366 {
+  display: grid;
+  gap: 12px;
+}
+.business-chat-lead-card-v49366 {
+  padding: 15px;
+  border-radius: 20px;
+  background: #faf8ff;
+  border: 1px solid rgba(91, 34, 207, .12);
+}
+.business-chat-lead-top-v49366 {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.business-chat-lead-top-v49366 strong {
+  color: #21123a;
+}
+.business-chat-lead-top-v49366 span {
+  font-size: .75rem;
+  font-weight: 900;
+  color: #5b22cf;
+  background: rgba(91, 34, 207, .10);
+  padding: 5px 8px;
+  border-radius: 999px;
+}
+.business-chat-lead-card-v49366 p {
+  margin: 5px 0;
+  color: #5d536a;
+}
+.business-chat-lead-card-v49366 small {
+  display: block;
+  margin-top: 8px;
+  color: #8a8394;
+}
+.business-chat-lead-actions-v49366 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.business-chat-success-v49366 .survey-success-card p b {
+  color: #5b22cf;
+}
+@media (max-width: 560px) {
+  .business-chat-leads-panel-v49366 { padding: 14px; border-radius: 22px; }
+  .business-chat-leads-head-v49366 { gap: 10px; }
+  .business-chat-lead-actions-v49366 .btn-small { width: 100%; }
+}

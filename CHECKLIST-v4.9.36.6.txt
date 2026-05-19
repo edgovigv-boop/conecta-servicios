@@ -1,0 +1,17 @@
+# Checklist v4.9.36.6
+
+1. Abrir Oportunidades para ti.
+2. Entrar a una oportunidad de tipo negocio / Chat negocio.
+3. Confirmar que la encuesta muestra “Origen del chat”.
+4. Guardar el chat.
+5. Confirmar que la pantalla final indique: Negocios locales → Chats de negocio guardados.
+6. Tocar “Ver chats de negocio”.
+7. Confirmar que aparece la tarjeta con:
+   - negocio
+   - función
+   - zona
+   - publicación/origen desde donde entró
+8. Abrir Embajadores Conecta.
+9. Tocar “Cobrar membresía”.
+10. Confirmar que abre el flujo de cobro, no Manual rápido.
+11. Probar en incógnito para descartar caché.

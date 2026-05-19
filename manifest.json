@@ -1,8 +1,8 @@
 {
   "name": "Conecta Servicios",
   "short_name": "Conecta",
-  "description": "Conecta Servicios v4.9.36.5 - Enlace de membresía seguro, Admin dentro de Oficina, Embajadores y membresías piloto.",
-  "start_url": "/?source=pwa&v=4.9.36.5-enlace-membresia-admin-oficina",
+  "description": "Conecta Servicios v4.9.36.6 - Chat de negocio con origen visible y Cobrar membresía corregido.",
+  "start_url": "/?source=pwa&v=4.9.36.6-chat-negocio-cobro",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -15,5 +15,5 @@
     { "src": "assets/pwa-plus-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "assets/pwa-plus-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
-  "id": "/?v=4.9.36.5-enlace-membresia-admin-oficina"
+  "id": "/?v=4.9.36.6-chat-negocio-cobro"
 }

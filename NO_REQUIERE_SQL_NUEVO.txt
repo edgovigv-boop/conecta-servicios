@@ -1,2 +1,1 @@
-No requiere SQL nuevo.
-Este hotfix corrige navegación, enlaces, caché y ubicación visual del acceso Admin.
+No requiere SQL nuevo. El hotfix v4.9.36.6 usa localStorage para el piloto de chats de negocio y solo corrige navegación/funciones existentes.
