@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.28-hotfix-navegacion-real";
+const PWA_VERSION = "v4.9.29-cta-plantillas";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -2503,7 +2503,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-solicitante-barista.webp",
     "posicion": "center 38%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Usar plantilla",
     "destino": "solicitantes",
     "flujo": "publicarNecesidad",
@@ -2527,7 +2527,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/social-post-solicitante.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Solicitar mandado",
     "destino": "solicitantes",
     "flujo": "mandadoSolicitud",
@@ -2551,7 +2551,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-solicitante-mandado.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Publicar envío",
     "destino": "solicitantes",
     "flujo": "publicarNecesidad",
@@ -2575,7 +2575,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-solicitante-mudanza.webp",
     "posicion": "center 44%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Publicar viaje",
     "destino": "solicitantes",
     "flujo": "publicarNecesidad",
@@ -2599,7 +2599,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-solicitante-mudanza.webp",
     "posicion": "center 41%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Publicar solicitud",
     "destino": "solicitantes",
     "flujo": "publicarNecesidad",
@@ -2623,7 +2623,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-agente-entregas.webp",
     "posicion": "center 40%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Trabajar como agente",
     "destino": "agentes",
     "flujo": "mandadoAgente",
@@ -2647,7 +2647,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-agente-mandados.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Ser agente",
     "destino": "agentes",
     "flujo": "mandadoAgente",
@@ -2671,7 +2671,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-agente-redes.webp",
     "posicion": "center 38%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Ganar comisión",
     "destino": "agentes",
     "flujo": "crecimientoAgente",
@@ -2695,7 +2695,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/social-post-agente.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Ofrecer apoyo",
     "destino": "agentes",
     "flujo": "mandadoAgente",
@@ -2719,7 +2719,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-agente-entregas.webp",
     "posicion": "center 37%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Publicar apoyo",
     "destino": "agentes",
     "flujo": "publicarOferta",
@@ -2743,7 +2743,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-negocio-panaderia.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Activar negocio",
     "destino": "negocios",
     "flujo": "chatNegocio",
@@ -2767,7 +2767,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-negocio-estetica.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Activar citas",
     "destino": "negocios",
     "flujo": "chatNegocio",
@@ -2791,7 +2791,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-negocio-ferreteria.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Activar negocio",
     "destino": "negocios",
     "flujo": "chatNegocio",
@@ -2815,7 +2815,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/social-post-negocio.webp",
     "posicion": "center 44%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Activar cotizaciones",
     "destino": "negocios",
     "flujo": "chatNegocio",
@@ -2839,7 +2839,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-negocio-panaderia.webp",
     "posicion": "center 48%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Activar pedidos",
     "destino": "negocios",
     "flujo": "chatNegocio",
@@ -2863,7 +2863,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-servicio-reparacion.webp",
     "posicion": "center 40%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Publicar servicio",
     "destino": "servicios",
     "flujo": "publicarOferta",
@@ -2887,7 +2887,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-servicio-limpieza.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Ofrecer servicio",
     "destino": "servicios",
     "flujo": "publicarOferta",
@@ -2911,7 +2911,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/social-post-servicio.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Publicar clase",
     "destino": "servicios",
     "flujo": "publicarOferta",
@@ -2935,7 +2935,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-servicio-reparacion.webp",
     "posicion": "center 45%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Ofrecer reparación",
     "destino": "servicios",
     "flujo": "publicarOferta",
@@ -2959,7 +2959,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-servicio-mascotas.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Publicar servicio",
     "destino": "servicios",
     "flujo": "publicarOferta",
@@ -2983,7 +2983,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-crecimiento-creditos.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Crear campaña",
     "destino": "crecimiento",
     "flujo": "crecimientoCampana",
@@ -3007,7 +3007,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-crecimiento-campana.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Conseguir clientes",
     "destino": "crecimiento",
     "flujo": "crecimientoCampana",
@@ -3031,7 +3031,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/social-post-crecimiento.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Publicar campaña",
     "destino": "crecimiento",
     "flujo": "crecimientoCampana",
@@ -3055,7 +3055,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-crecimiento-clientes.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Crear comisión",
     "destino": "crecimiento",
     "flujo": "crecimientoCampana",
@@ -3079,7 +3079,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-crecimiento-creditos.webp",
     "posicion": "center 39%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Captar citas",
     "destino": "crecimiento",
     "flujo": "crecimientoCampana",
@@ -3103,7 +3103,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-embajadores-recomienda.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Ser embajador",
     "destino": "embajadores",
     "flujo": "embajadores",
@@ -3127,7 +3127,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/social-post-embajadores.webp",
     "posicion": "center 43%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Invitar negocios",
     "destino": "embajadores",
     "flujo": "embajadores",
@@ -3151,7 +3151,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-embajadores-comunidad.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Registrar referido",
     "destino": "embajadores",
     "flujo": "embajadores",
@@ -3175,7 +3175,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-embajadores-comision.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Activar municipio",
     "destino": "embajadores",
     "flujo": "embajadores",
@@ -3199,7 +3199,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-embajadores-recomienda.webp",
     "posicion": "center 45%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Ver manual",
     "destino": "embajadores",
     "flujo": "embajadores",
@@ -3223,7 +3223,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-aprendizaje-computacion.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Aprender",
     "destino": "aprendizaje",
     "flujo": "aprendizaje",
@@ -3247,7 +3247,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-aprendizaje-ventas.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Ver ruta",
     "destino": "aprendizaje",
     "flujo": "aprendizaje",
@@ -3271,7 +3271,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-aprendizaje-oficios.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Ver cursos",
     "destino": "aprendizaje",
     "flujo": "aprendizaje",
@@ -3295,7 +3295,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/social-post-aprendizaje.webp",
     "posicion": "center 42%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Mejorar fotos",
     "destino": "aprendizaje",
     "flujo": "aprendizaje",
@@ -3319,7 +3319,7 @@ const HOME_FEED_POSTS_V4918 = [
     ],
     "imagen": "assets/feed4919-aprendizaje-ventas.webp",
     "posicion": "center 45%",
-    "accion": "Hacerlo real",
+    "accion": "Usar esta plantilla",
     "detalle": "Aprender atención",
     "destino": "aprendizaje",
     "flujo": "aprendizaje",
@@ -3373,7 +3373,7 @@ function renderSocialHomeFeed() {
   const title = document.getElementById("homeFeedTitle");
   const hint = document.getElementById("homeFeedHint");
   if (title) title.textContent = homeFeedLabelV4918(homeFeedFilterV4918);
-  if (hint) hint.textContent = homeFeedFilterV4918 ? "Elige una plantilla y toca Hacerlo real." : "Explora plantillas vivas y conviértelas en tu publicación.";
+  if (hint) hint.textContent = homeFeedFilterV4918 ? "Elige una publicación y toca Usar esta plantilla." : "Explora ejemplos y usa una plantilla para publicar algo parecido.";
   document.querySelectorAll("[data-feed-filter]").forEach(btn => {
     btn.classList.toggle("active", (btn.dataset.feedFilter || "") === homeFeedFilterV4918);
   });
@@ -3403,7 +3403,7 @@ function setHomeFeedFilter(type = "") {
 function homeFeedPostCardV4918(post) {
   const tags = (post.hashtags || []).slice(0, 3).map(tag => `<span>#${escapeHtml(tag)}</span>`).join("");
   const initials = (post.nombre || "CS").split(/\s+/).map(word => word[0] || "").join("").slice(0,2).toUpperCase() || "CS";
-  const cta = post.accion || "Hacerlo real";
+  const cta = post.accion || "Usar esta plantilla";
   return `<article class="v4918-feed-card v4922-photo-card" data-type="${escapeHtml(post.tipo)}">
     <div class="v4918-feed-media v4922-feed-media">
       <img src="${escapeHtml(post.imagen)}" alt="${escapeHtml(post.titulo)}" loading="lazy" style="object-position:${escapeHtml(post.posicion || 'center center')}" />
@@ -3492,7 +3492,7 @@ function makePilotReal(target = "") {
       }
     }, 30);
   } catch (error) {
-    console.error("No se pudo abrir la plantilla desde Hacerlo real", error);
+    console.error("No se pudo abrir la plantilla desde Usar esta plantilla", error);
     showToast("Abrimos el formulario guiado para crear una publicación similar.");
     showSection("registro");
     wizardStep = 2;
