@@ -28,10 +28,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
-  <title>Conecta Servicios v4.9.29</title>
-  <link rel="stylesheet" href="styles.css?v=4.9.29-cta-plantillas" />
+  <title>Conecta Servicios v4.9.30</title>
+  <link rel="stylesheet" href="styles.css?v=4.9.30-multimedia-real" />
 </head>
-<body data-version="4.9.29-cta-plantillas">
+<body data-version="4.9.30-multimedia-real">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -234,10 +234,16 @@ Todo uso requiere autorización expresa y por escrito del titular.
                 <input id="pubBudgetDelivery" type="number" min="0" placeholder="Opcional" />
               </label>
             </div>
-            <label class="media-url-field">Foto o multimedia para la publicación
-              <input id="pubMediaUrl" type="url" placeholder="Opcional: pega URL de una foto, video o evidencia" />
-              <small class="field-help">Explorar y contactar es gratis. Para publicar con imagen, pega una URL pública; más adelante se podrá subir archivo directo.</small>
-            </label>
+            <div class="media-upload-field">
+              <label>Foto principal para la publicación
+                <input id="pubMediaFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="handlePublicationMediaFileChange()" />
+              </label>
+              <div id="pubMediaPreview" class="media-upload-preview hidden"></div>
+              <label class="media-url-field">O pega una URL pública
+                <input id="pubMediaUrl" type="url" placeholder="Opcional: URL pública de foto o evidencia" />
+              </label>
+              <small class="field-help">Puedes preparar la foto durante la encuesta. Para publicar con multimedia se requiere membresía anual activa.</small>
+            </div>
           </div>
 
           <div class="wizard-step" data-step="6">
@@ -915,13 +921,17 @@ Todo uso requiere autorización expresa y por escrito del titular.
       <label>Localidad<input id="editLocality" type="text" /></label>
       <label>Teléfono<input id="editPhone" type="tel" /></label>
       <label>Ruta / detalle extra<input id="editRoute" type="text" /></label>
-      <label>Foto o multimedia<input id="editMediaUrl" type="url" placeholder="URL pública de foto, video o evidencia" /></label>
+      <div class="media-upload-field compact-upload">
+        <label>Foto o multimedia actual<input id="editMediaUrl" type="url" placeholder="URL pública de foto o evidencia" /></label>
+        <label>Subir nueva foto<input id="editMediaFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="handleAdminEditMediaFileChange()" /></label>
+        <div id="editMediaPreview" class="media-upload-preview hidden"></div>
+      </div>
       <label>Estado de publicación<select id="editStatus"><option value="revision">revision</option><option value="activo">activo</option><option value="oculto">oculto</option><option value="atendido">atendido</option></select></label>
       <label>Descripción<textarea id="editDescription" rows="4"></textarea></label>
       <div class="dialog-actions"><button type="button" class="btn-small btn-ghost" onclick="closeEditDialog()">Cancelar</button><button type="submit" class="btn-small btn-purple">Guardar cambios</button></div>
     </form>
   </dialog>
 
-  <script src="app.js?v=4.9.29-cta-plantillas"></script>
+  <script src="app.js?v=4.9.30-multimedia-real"></script>
 </body>
 </html>

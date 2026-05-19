@@ -4,12 +4,12 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.9.29-cta-plantillas";
+const CACHE_NAME = "conecta-servicios-v4.9.30-multimedia-real";
 const ASSETS = [
   "./",
   "index.html",
-  "styles.css?v=4.9.29-cta-plantillas",
-  "app.js?v=4.9.29-cta-plantillas",
+  "styles.css?v=4.9.30-multimedia-real",
+  "app.js?v=4.9.30-multimedia-real",
   "manifest.json",
   "assets/hero-scene-v4718.webp",
   "assets/hero-scene-clean-v4711.png",

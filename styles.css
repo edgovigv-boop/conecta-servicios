@@ -2723,3 +2723,48 @@ body[data-version="4.9.27-hotfix-navegacion-real"] #rutaGuiada.section:not(.acti
   .pilot-admin-row { grid-template-columns: 1fr; }
   .pilot-admin-row img { width: 100%; height: 170px; }
 }
+
+/* v4.9.30 — Multimedia real con membresía */
+.media-upload-field {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid rgba(37, 99, 235, .14);
+  background: linear-gradient(180deg, #f8fbff, #ffffff);
+  border-radius: 18px;
+  display: grid;
+  gap: 10px;
+}
+.media-upload-field.compact-upload { margin: 8px 0; }
+.media-upload-field input[type="file"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px dashed rgba(37, 99, 235, .28);
+  border-radius: 14px;
+  background: #f8fafc;
+}
+.media-upload-preview {
+  display: grid;
+  gap: 6px;
+  margin: 4px 0;
+}
+.media-upload-preview img {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 18px;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, .12);
+  background: #e2e8f0;
+}
+.media-upload-preview small { color: #64748b; font-weight: 700; }
+.pilot-admin-item input[type="file"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px dashed rgba(37, 99, 235, .25);
+}
+body[data-version="4.9.30-multimedia-real"] .publication-preview-media,
+body[data-version="4.9.30-multimedia-real"] .real-feed-cover img,
+body[data-version="4.9.30-multimedia-real"] .v4922-feed-media img {
+  background: #e2e8f0;
+}

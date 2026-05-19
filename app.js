@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.29-cta-plantillas";
+const PWA_VERSION = "v4.9.30-multimedia-real";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -5482,3 +5482,360 @@ function ensureV4927NavigationIntegrity() {
 window.addEventListener("DOMContentLoaded", () => setTimeout(ensureV4927NavigationIntegrity, 260));
 window.addEventListener("pageshow", () => setTimeout(ensureV4927NavigationIntegrity, 320));
 
+
+
+// v4.9.30 — Multimedia real con Supabase Storage + membresía
+// Nota: requiere que existan buckets públicos o políticas de Storage para el anon key:
+// - template-media
+// - publication-media
+const STORAGE_TEMPLATE_BUCKET_V4930 = "template-media";
+const STORAGE_PUBLICATION_BUCKET_V4930 = "publication-media";
+const TEMPLATE_OVERRIDES_TABLE_V4930 = "plantillas_home_overrides";
+let selectedPublicationMediaFileV4930 = null;
+let selectedEditMediaFileV4930 = null;
+
+function mediaFileExtensionV4930(file) {
+  const name = String(file?.name || "");
+  const ext = name.includes(".") ? name.split(".").pop().toLowerCase() : "webp";
+  return ["jpg", "jpeg", "png", "webp"].includes(ext) ? ext : "webp";
+}
+function validateImageFileV4930(file) {
+  if (!file) return { ok: false, reason: "Selecciona una imagen." };
+  const allowed = ["image/jpeg", "image/png", "image/webp"];
+  if (!allowed.includes(file.type)) return { ok: false, reason: "Formato no permitido. Usa JPG, PNG o WEBP." };
+  if (file.size > 3 * 1024 * 1024) return { ok: false, reason: "La imagen pesa más de 3 MB. Reduce el tamaño antes de subirla." };
+  return { ok: true };
+}
+function uniqueStoragePathV4930(folder, file) {
+  const ext = mediaFileExtensionV4930(file);
+  const safeName = String(file?.name || "imagen").replace(/\.[^.]+$/, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "imagen";
+  const id = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  return `${folder}/${id}-${safeName}.${ext}`;
+}
+function storagePublicUrlV4930(bucket, path) {
+  return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${path.split("/").map(encodeURIComponent).join("/")}`;
+}
+async function uploadImageToStorageV4930(file, bucket, folder) {
+  const validation = validateImageFileV4930(file);
+  if (!validation.ok) throw new Error(validation.reason);
+  const path = uniqueStoragePathV4930(folder, file);
+  const encodedPath = path.split("/").map(encodeURIComponent).join("/");
+  const response = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${encodedPath}`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      "Content-Type": file.type || "application/octet-stream",
+      "x-upsert": "false"
+    },
+    body: file
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || `No se pudo subir imagen (${response.status})`);
+  }
+  return { bucket, path, url: storagePublicUrlV4930(bucket, path), type: file.type, size: file.size };
+}
+function showMediaPreviewV4930(containerId, fileOrUrl) {
+  const box = document.getElementById(containerId);
+  if (!box) return;
+  let url = "";
+  if (fileOrUrl instanceof File) url = URL.createObjectURL(fileOrUrl);
+  else url = String(fileOrUrl || "").trim();
+  if (!url) { box.classList.add("hidden"); box.innerHTML = ""; return; }
+  box.classList.remove("hidden");
+  box.innerHTML = `<img src="${escapeHtml(url)}" alt="Vista previa" /><small>Vista previa de la foto principal</small>`;
+}
+function handlePublicationMediaFileChange() {
+  const input = document.getElementById("pubMediaFile");
+  const file = input?.files?.[0] || null;
+  selectedPublicationMediaFileV4930 = null;
+  if (!file) { showMediaPreviewV4930("pubMediaPreview", ""); return; }
+  const validation = validateImageFileV4930(file);
+  if (!validation.ok) {
+    showToast(validation.reason);
+    if (input) input.value = "";
+    showMediaPreviewV4930("pubMediaPreview", "");
+    return;
+  }
+  selectedPublicationMediaFileV4930 = file;
+  showMediaPreviewV4930("pubMediaPreview", file);
+  showToast("Foto lista. Se subirá al publicar con membresía activa.");
+}
+async function uploadSelectedPublicationMediaIfNeededV4930() {
+  if (!selectedPublicationMediaFileV4930) return String(document.getElementById("pubMediaUrl")?.value || "").trim();
+  if (!hasActivePublishMembership()) return String(document.getElementById("pubMediaUrl")?.value || "").trim();
+  showToast("Subiendo foto a Conecta Servicios...");
+  const uploaded = await uploadImageToStorageV4930(selectedPublicationMediaFileV4930, STORAGE_PUBLICATION_BUCKET_V4930, "publicaciones");
+  const input = document.getElementById("pubMediaUrl");
+  if (input) input.value = uploaded.url;
+  selectedPublicationMediaFileV4930 = null;
+  const fileInput = document.getElementById("pubMediaFile");
+  if (fileInput) fileInput.value = "";
+  showMediaPreviewV4930("pubMediaPreview", uploaded.url);
+  return uploaded.url;
+}
+
+function formPayload() {
+  const category = document.getElementById("pubCategory").value || "General";
+  const mediaUrl = String(document.getElementById("pubMediaUrl")?.value || "").trim();
+  const payload = {
+    nombre_publico: document.getElementById("pubName").value.trim(),
+    titulo: document.getElementById("pubTitle").value.trim(),
+    descripcion: appendMediaUrlToDescription(currentDescriptionValue(), isLikelyMediaUrl(mediaUrl) ? mediaUrl : ""),
+    categoria_principal: category,
+    intencion: document.getElementById("pubIntent").value || "Ofrezco / Tengo disponible",
+    estado_nombre: document.getElementById("pubState").value,
+    municipio: document.getElementById("pubMunicipality").value.trim(),
+    localidad: document.getElementById("pubLocality").value.trim(),
+    telefono: cleanPhone(document.getElementById("pubPhone").value),
+    ruta: document.getElementById("pubRoute")?.value.trim() || "",
+    salida: document.getElementById("pubDeparture")?.value.trim() || "",
+    hora: document.getElementById("pubTime")?.value.trim() || "",
+    medio: document.getElementById("pubTransport")?.value || "",
+    presupuesto: Number(currentBudgetValue() || 0),
+    latitud: toNumberOrNull(document.getElementById("pubLat")?.value),
+    longitud: toNumberOrNull(document.getElementById("pubLng")?.value),
+    ubicacion_aproximada: Boolean(document.getElementById("pubLat")?.value && document.getElementById("pubLng")?.value),
+    radio_servicio_km: 10
+  };
+  const inferred = inferPublicationClassificationFromText(payload);
+  payload.categoria_principal = inferred.category || payload.categoria_principal;
+  payload.subcategoria = inferred.subcategory || payload.subcategoria || "";
+  payload.intencion = inferred.intent || payload.intencion;
+  const evaluation = evaluatePublication(payload);
+  payload.estado = evaluation.status;
+  payload.referencia = evaluation.reasons.length
+    ? `Revisión automática: ${evaluation.reasons.join(", ")} · Sugerencia: ${inferred.label}`
+    : `Activación automática v4.9.30 · Clasificación: ${inferred.label}`;
+  return payload;
+}
+
+async function submitPublication(event) {
+  event.preventDefault();
+  if (!validateWizardStep(7)) return;
+  if (!ensurePublishMembershipBeforeSubmit()) return;
+  try {
+    await uploadSelectedPublicationMediaIfNeededV4930();
+  } catch (error) {
+    console.error(error);
+    showToast("No se pudo subir la foto. Revisa que Supabase Storage tenga el bucket publication-media y permisos activos.");
+    return;
+  }
+  const payload = formPayload();
+  try {
+    const [created] = await supabaseRequest("publicaciones", { method: "POST", body: JSON.stringify(payload) });
+    const item = mapPublication(created || { ...payload, id: createId() });
+    const active = payload.estado === "activo";
+    trackEvent("publicacion_creada", item, { estado_resultado: active ? "activo" : "revision", multimedia: Boolean(extractMediaUrlFromText(payload.descripcion || "")) });
+    showToast(active ? "Publicación activa" : "Publicación enviada a revisión");
+    if (!active) {
+      openOfficeWhatsApp(`Nuevo registro en revisión\n\nFolio: ${folio(item)}\nNombre: ${item.name}\nTítulo: ${item.title}\nCategoría: ${item.category}\nMunicipio: ${item.municipality}, ${item.state}\nTeléfono: ${maskPhone(item.phone)} / últimos 4: ${last4(item.phone)}\nMotivo: ${payload.referencia}`);
+    }
+    resetWizardForm();
+    if (active) {
+      publicationsCache = [item, ...publicationsCache.filter(p => p.id !== item.id)];
+      resetPublicationFiltersToAllMexico();
+      showSection("publicaciones");
+      await loadRemoteData({ silent: true });
+      resetPublicationFiltersToAllMexico();
+      renderPublications();
+    } else {
+      showSection("inicio");
+      loadRemoteData({ silent: true });
+    }
+  } catch (error) { console.error(error); showToast("No se pudo guardar. Revisa Supabase o internet."); }
+}
+
+function resetWizardForm() {
+  document.getElementById("publicationForm").reset();
+  document.querySelectorAll(".choice-card").forEach(b => b.classList.remove("selected"));
+  populateStateSelects();
+  document.getElementById("pubMunicipality").value = DEFAULT_MUNICIPALITY;
+  document.getElementById("pubLocality").value = DEFAULT_LOCALITY;
+  document.getElementById("pubCategory").value = "";
+  document.getElementById("pubIntent").value = "";
+  document.getElementById("pubLat").value = "";
+  document.getElementById("pubLng").value = "";
+  selectedPublicationMediaFileV4930 = null;
+  const mediaInput = document.getElementById("pubMediaUrl");
+  if (mediaInput) mediaInput.value = "";
+  const fileInput = document.getElementById("pubMediaFile");
+  if (fileInput) fileInput.value = "";
+  showMediaPreviewV4930("pubMediaPreview", "");
+  const locStatus = document.getElementById("pubLocationStatus");
+  if (locStatus) locStatus.textContent = "Puedes publicar sin activar ubicación.";
+  wizardStep = 1;
+  updateCategoryDetails();
+  updateWizard();
+}
+
+function handleAdminEditMediaFileChange() {
+  const input = document.getElementById("editMediaFile");
+  const file = input?.files?.[0] || null;
+  selectedEditMediaFileV4930 = null;
+  if (!file) { showMediaPreviewV4930("editMediaPreview", document.getElementById("editMediaUrl")?.value || ""); return; }
+  const validation = validateImageFileV4930(file);
+  if (!validation.ok) {
+    showToast(validation.reason);
+    if (input) input.value = "";
+    return;
+  }
+  selectedEditMediaFileV4930 = file;
+  showMediaPreviewV4930("editMediaPreview", file);
+}
+
+function openEditDialog(id) {
+  const item = adminCache.find(p => p.id === id);
+  if (!item) return;
+  document.getElementById("editId").value = item.id;
+  document.getElementById("editName").value = item.name;
+  document.getElementById("editTitle").value = item.title;
+  document.getElementById("editCategory").value = item.category;
+  document.getElementById("editIntent").value = item.intent || "Busco / Necesito";
+  document.getElementById("editStateName").value = item.state;
+  document.getElementById("editMunicipality").value = item.municipality;
+  document.getElementById("editLocality").value = item.locality;
+  document.getElementById("editPhone").value = cleanPhone(item.phone);
+  document.getElementById("editRoute").value = item.route || item.transport || "";
+  const editMedia = document.getElementById("editMediaUrl");
+  const media = item.mediaUrl || extractMediaUrlFromText(item.description) || (isLikelyMediaUrl(item.route) ? item.route : "");
+  if (editMedia) editMedia.value = media;
+  selectedEditMediaFileV4930 = null;
+  const editFile = document.getElementById("editMediaFile");
+  if (editFile) editFile.value = "";
+  showMediaPreviewV4930("editMediaPreview", media);
+  document.getElementById("editStatus").value = item.status;
+  document.getElementById("editDescription").value = cleanDescriptionWithoutMedia(item.description);
+  document.getElementById("editDialog").showModal();
+}
+
+async function saveEdit(event) {
+  event.preventDefault();
+  const id = document.getElementById("editId").value;
+  let mediaUrl = String(document.getElementById("editMediaUrl")?.value || "").trim();
+  try {
+    if (selectedEditMediaFileV4930) {
+      showToast("Subiendo foto de publicación...");
+      const uploaded = await uploadImageToStorageV4930(selectedEditMediaFileV4930, STORAGE_PUBLICATION_BUCKET_V4930, "admin-publicaciones");
+      mediaUrl = uploaded.url;
+      const input = document.getElementById("editMediaUrl");
+      if (input) input.value = mediaUrl;
+      selectedEditMediaFileV4930 = null;
+    }
+  } catch (error) {
+    console.error(error);
+    showToast("No se pudo subir la foto. Revisa bucket publication-media y permisos.");
+    return;
+  }
+  const payload = {
+    nombre_publico: document.getElementById("editName").value.trim(),
+    titulo: document.getElementById("editTitle").value.trim(),
+    categoria_principal: document.getElementById("editCategory").value,
+    intencion: document.getElementById("editIntent").value,
+    estado_nombre: document.getElementById("editStateName").value.trim(),
+    municipio: document.getElementById("editMunicipality").value.trim(),
+    localidad: document.getElementById("editLocality").value.trim(),
+    telefono: cleanPhone(document.getElementById("editPhone").value),
+    ruta: document.getElementById("editRoute").value.trim(),
+    estado: document.getElementById("editStatus").value,
+    descripcion: appendMediaUrlToDescription(document.getElementById("editDescription").value.trim(), mediaUrl)
+  };
+  try {
+    await supabaseRequest(`publicaciones?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(payload) });
+    closeEditDialog();
+    showToast("Publicación actualizada");
+    await loadAdminData();
+    await loadRemoteData();
+  } catch (error) { console.error(error); showToast("No se pudo guardar edición"); }
+}
+
+async function saveRemotePilotFeedOverrideV4930(id, imageUrl, objectPosition) {
+  try {
+    await supabaseRequest(`${TEMPLATE_OVERRIDES_TABLE_V4930}?on_conflict=template_id`, {
+      method: "POST",
+      headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+      body: JSON.stringify([{ template_id: id, image_url: imageUrl, object_position: objectPosition || "center center", updated_at: new Date().toISOString() }])
+    });
+  } catch (error) {
+    console.debug("Overrides remotos no disponibles; se conserva override local.", error.message);
+  }
+}
+async function loadRemotePilotFeedOverridesV4930() {
+  try {
+    const rows = await supabaseRequest(`${TEMPLATE_OVERRIDES_TABLE_V4930}?select=*`);
+    if (!Array.isArray(rows) || !rows.length) return;
+    const overrides = getPilotFeedOverrides();
+    rows.forEach(row => {
+      if (!row.template_id) return;
+      overrides[row.template_id] = {
+        ...(overrides[row.template_id] || {}),
+        imagen: row.image_url || row.imagen || overrides[row.template_id]?.imagen,
+        posicion: row.object_position || row.posicion || overrides[row.template_id]?.posicion || "center center"
+      };
+    });
+    savePilotFeedOverrides(overrides);
+    applyPilotFeedOverrides();
+    renderSocialHomeFeed?.();
+  } catch (error) {
+    console.debug("Tabla de overrides de plantillas no configurada todavía.", error.message);
+  }
+}
+
+function renderPilotFeedAdminEditor() {
+  const panel = document.getElementById("pilotFeedAdminPanel");
+  if (!panel || !Array.isArray(HOME_FEED_POSTS_V4918)) return;
+  const overrides = getPilotFeedOverrides();
+  const rows = HOME_FEED_POSTS_V4918.map(post => {
+    const ov = overrides[post.id] || {};
+    const currentImg = ov.imagen || post.imagen || "";
+    const currentPos = ov.posicion || post.posicion || "center center";
+    return `<details class="pilot-admin-item"><summary><span>${escapeHtml(homeFeedLabelV4918(post.tipo))}</span><strong>${escapeHtml(post.titulo)}</strong></summary>
+      <div class="pilot-admin-row">
+        <img src="${escapeHtml(currentImg)}" alt="${escapeHtml(post.titulo)}" />
+        <div>
+          <label>URL de foto piloto<input id="pilotImg-${escapeHtml(post.id)}" type="url" value="${escapeHtml(currentImg)}" /></label>
+          <label>Subir foto desde Admin<input id="pilotFile-${escapeHtml(post.id)}" type="file" accept="image/jpeg,image/png,image/webp" /></label>
+          <label>Enfoque / recorte<input id="pilotPos-${escapeHtml(post.id)}" type="text" value="${escapeHtml(currentPos)}" placeholder="center center / center 35%" /></label>
+          <div class="dialog-actions"><button type="button" class="btn-small btn-purple" onclick="uploadPilotFeedImageFileV4930('${escapeHtml(post.id)}')">Subir foto</button><button type="button" class="btn-small btn-outline" onclick="savePilotFeedImage('${escapeHtml(post.id)}')">Guardar URL</button><button type="button" class="btn-small btn-ghost" onclick="resetPilotFeedImage('${escapeHtml(post.id)}')">Restablecer</button></div>
+        </div>
+      </div>
+    </details>`;
+  }).join("");
+  panel.innerHTML = `<div class="notice-card pilot-admin-editor"><strong>Editar multimedia del Home Feed piloto</strong><p>Sube una imagen al bucket <b>template-media</b> o pega una URL pública. La URL queda guardada como override de plantilla.</p>${rows}<p class="field-help">Para que estos cambios se vean en todos los dispositivos, crea la tabla opcional <b>${TEMPLATE_OVERRIDES_TABLE_V4930}</b> o conserva los cambios en código en la siguiente versión.</p></div>`;
+}
+async function uploadPilotFeedImageFileV4930(id) {
+  if (!adminUnlocked) { showToast("Solo administración puede subir fotos de plantillas"); return; }
+  const input = document.getElementById(`pilotFile-${id}`);
+  const file = input?.files?.[0] || null;
+  const validation = validateImageFileV4930(file);
+  if (!validation.ok) { showToast(validation.reason); return; }
+  try {
+    showToast("Subiendo foto de plantilla...");
+    const uploaded = await uploadImageToStorageV4930(file, STORAGE_TEMPLATE_BUCKET_V4930, "plantillas");
+    const urlInput = document.getElementById(`pilotImg-${id}`);
+    if (urlInput) urlInput.value = uploaded.url;
+    await savePilotFeedImage(id);
+    showToast("Foto de plantilla actualizada");
+  } catch (error) {
+    console.error(error);
+    showToast("No se pudo subir. Revisa bucket template-media y permisos de Storage.");
+  }
+}
+async function savePilotFeedImage(id) {
+  const img = String(document.getElementById(`pilotImg-${id}`)?.value || "").trim();
+  const pos = String(document.getElementById(`pilotPos-${id}`)?.value || "center center").trim();
+  if (img && !isLikelyMediaUrl(img)) { showToast("Pega una URL pública de imagen válida"); return; }
+  const overrides = getPilotFeedOverrides();
+  overrides[id] = { ...(overrides[id] || {}), imagen: img, posicion: pos, updated_at: new Date().toISOString() };
+  savePilotFeedOverrides(overrides);
+  const post = HOME_FEED_POSTS_V4918.find(p => p.id === id);
+  if (post) { post.imagen = img || post.imagen; post.posicion = pos || post.posicion; }
+  renderSocialHomeFeed?.();
+  renderPilotFeedAdminEditor?.();
+  saveRemotePilotFeedOverrideV4930(id, img, pos);
+  showToast("Foto piloto actualizada");
+}
+
+// Refuerzo de inicialización v4.9.30: carga overrides remotos si la tabla existe.
+window.addEventListener("DOMContentLoaded", () => setTimeout(loadRemotePilotFeedOverridesV4930, 900));
