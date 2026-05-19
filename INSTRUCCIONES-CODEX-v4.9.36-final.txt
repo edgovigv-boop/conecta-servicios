@@ -1,0 +1,23 @@
+Continuar con Conecta Servicios v4.9.36 final.
+
+Objetivo:
+Aplicar una entrega consolidada sin desplegar automáticamente.
+
+Acciones:
+1. Reemplazar en la raíz del proyecto:
+   - app.js
+   - styles.css
+   - service-worker.js
+   - manifest.json
+2. No modificar SUPABASE_URL ni SUPABASE_ANON_KEY.
+3. No ejecutar SQL para esta prueba local.
+4. Confirmar que /embajadores abre el landing de embajadores.
+5. Confirmar que /membresia abre Mi acceso.
+6. Confirmar que /membresia?ref=CODIGO conserva el código de embajador.
+7. Confirmar que la publicación queda bloqueada si no hay membresía activa.
+8. Confirmar que admin puede activar membresía manual por 1 año.
+9. Confirmar que el + del botón publicar queda blanco.
+10. Confirmar que service-worker.js usa cache nuevo v4.9.36-final-acceso-membresias.
+
+Commit sugerido:
+Actualizar v4.9.36 con acceso, membresías y embajadores

@@ -1,0 +1,3 @@
+No requiere SQL nuevo para probar esta entrega en local o en Vercel.
+
+Para producción real multiusuario sí se recomienda crear tablas de usuarios, membresías, pagos y referidos. Se incluye SQL opcional como base, pero no debe ejecutarse automáticamente sin revisar seguridad y RLS.

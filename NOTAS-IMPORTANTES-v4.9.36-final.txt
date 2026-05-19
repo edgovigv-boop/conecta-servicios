@@ -1,0 +1,7 @@
+NOTAS IMPORTANTES
+
+- Esta versión implementa la lógica de membresía en modo piloto local con localStorage para no romper Supabase ni exigir SQL inmediato.
+- Para producción real, las membresías, usuarios, pagos y referidos deben vivir en Supabase con reglas RLS y, de preferencia, autenticación.
+- El PIN admin actual sigue siendo 3145.
+- La activación local por admin solo sirve en el navegador donde se realiza la prueba.
+- El enlace recomendado para embajadores es /membresia?ref=CODIGO.

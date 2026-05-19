@@ -1,0 +1,14 @@
+CHECKLIST v4.9.36 FINAL
+
+1. Abrir Home y confirmar que carga normal.
+2. Confirmar que el botón circular de publicar muestra el + en color blanco.
+3. Abrir /embajadores y confirmar que entra al landing de embajadores.
+4. Abrir /membresia y guardar un usuario de prueba.
+5. Abrir /membresia?ref=CON-PRUEBA y confirmar que el código se carga en Mi acceso.
+6. Solicitar activación de membresía y confirmar que queda pendiente.
+7. Entrar con ?admin=1, validar PIN y activar membresía desde Mi acceso.
+8. Confirmar que con membresía activa permite publicar.
+9. Confirmar que sin membresía activa bloquea publicación y manda a Mi acceso.
+10. Confirmar que el service worker rompe caché y carga archivos nuevos.
+11. Confirmar que Supabase Storage sigue mostrando imágenes.
+12. Confirmar que no se modificó la conexión actual con Supabase.
