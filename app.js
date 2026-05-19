@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.32-hotfix-multimedia-admin";
+const PWA_VERSION = "v4.9.33-hotfix-subida-multimedia-admin";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -5570,7 +5570,7 @@ function verifyImageUrlLoadsV4932(url, timeout = 7000) {
   });
 }
 
-// v4.9.32 — Hotfix multimedia Admin: URLs públicas reales de Storage + guardado de metadatos
+// v4.9.33 — Hotfix subida multimedia Admin: guarda URL pública sin bloquear por validación inmediata
 // Nota: requiere que existan buckets públicos o políticas de Storage para el anon key:
 // - template-media
 // - publication-media
@@ -5733,7 +5733,7 @@ function formPayload() {
   payload.estado = evaluation.status;
   payload.referencia = evaluation.reasons.length
     ? `Revisión automática: ${evaluation.reasons.join(", ")} · Sugerencia: ${inferred.label}`
-    : `Activación automática v4.9.32 · Clasificación: ${inferred.label}`;
+    : `Activación automática v4.9.33 · Clasificación: ${inferred.label}`;
   if (isLikelyMediaUrl(mediaUrl)) {
     payload.image_url = mediaUrl;
     payload.media_type = lastPublicationMediaUploadV4931?.type || "image";
@@ -5995,24 +5995,36 @@ async function uploadPilotFeedImageFileV4930(id) {
   try {
     showToast("Subiendo foto de plantilla...");
     const uploaded = await uploadImageToStorageV4930(file, STORAGE_TEMPLATE_BUCKET_V4930, "plantillas");
-    await verifyImageUrlLoadsV4932(uploaded.url);
     const urlInput = document.getElementById(`pilotImg-${id}`);
     if (urlInput) urlInput.value = uploaded.url;
-    await savePilotFeedImage(id);
-    showToast("Foto de plantilla actualizada y verificada");
+
+    // v4.9.33: no bloquear el guardado por una verificación inmediata.
+    // En móviles/CDN la URL pública puede tardar segundos en responder aunque el archivo ya exista.
+    await savePilotFeedImage(id, { skipVerify: true });
+
+    verifyImageUrlLoadsV4932(uploaded.url, 12000)
+      .then(() => showToast("Foto de plantilla actualizada"))
+      .catch((verifyError) => {
+        console.warn("La foto se subió/guardó, pero la validación pública tardó o falló.", verifyError);
+        showToast("Foto guardada. Si tarda en verse, actualiza la app en unos segundos.");
+      });
   } catch (error) {
     console.error(error);
-    showToast("No se pudo subir/ver la foto. Revisa bucket template-media, políticas y que sea imagen JPG/PNG/WEBP pública.");
+    const msg = String(error?.message || error || "Error desconocido").slice(0, 150);
+    showToast(`No se pudo subir la foto: ${msg}`);
   }
 }
-async function savePilotFeedImage(id) {
+async function savePilotFeedImage(id, options = {}) {
   let img = String(document.getElementById(`pilotImg-${id}`)?.value || "").trim();
   if (img && !/^https?:\/\//i.test(img)) img = storagePublicUrlV4930(STORAGE_TEMPLATE_BUCKET_V4930, img);
   const pos = String(document.getElementById(`pilotPos-${id}`)?.value || "center center").trim();
   if (img && !isLikelyMediaUrl(img)) { showToast("Pega una URL pública de imagen válida"); return; }
-  if (img && /^https?:\/\//i.test(img)) {
-    try { await verifyImageUrlLoadsV4932(img); }
-    catch (error) { showToast("La URL no carga como imagen pública. No se guardó."); return; }
+  if (img && /^https?:\/\//i.test(img) && !options.skipVerify) {
+    try { await verifyImageUrlLoadsV4932(img, 12000); }
+    catch (error) {
+      console.warn("La URL no respondió en validación inmediata; se guardará con fallback visual.", error);
+      showToast("URL guardada. Si la imagen tarda en verse, actualiza en unos segundos.");
+    }
   }
   const overrides = getPilotFeedOverrides();
   overrides[id] = { ...(overrides[id] || {}), imagen: img, image_url_override: img, posicion: pos, updated_at: new Date().toISOString() };
@@ -6025,5 +6037,5 @@ async function savePilotFeedImage(id) {
   showToast("Foto piloto actualizada");
 }
 
-// Refuerzo de inicialización v4.9.32: carga overrides remotos si la tabla existe.
+// Refuerzo de inicialización v4.9.33: carga overrides remotos si la tabla existe.
 window.addEventListener("DOMContentLoaded", () => setTimeout(loadRemotePilotFeedOverridesV4930, 900));
