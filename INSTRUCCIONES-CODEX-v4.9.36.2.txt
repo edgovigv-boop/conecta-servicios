@@ -1,0 +1,18 @@
+Implementar hotfix v4.9.36.2 en Conecta Servicios.
+
+Objetivo:
+Colocar el botón/acceso de "Mi acceso" dentro del apartado "Mis publicaciones", no como botón flotante independiente.
+
+Pasos:
+1. Reemplazar en raíz: app.js, styles.css, service-worker.js, manifest.json.
+2. Aplicar PATCH-INDEX-v4.9.36.2.txt en index.html.
+3. Confirmar que el botón "Mi acceso / Membresía" aparece dentro de Mis publicaciones, arriba de la lista/buscador de publicaciones.
+4. Confirmar que el botón abre la sección /membresia o miAcceso.
+5. Confirmar que /embajadores sigue abriendo el landing de embajadores.
+6. Confirmar que el botón Admin sigue visible y pide PIN.
+7. Confirmar que el símbolo + del botón principal sigue en blanco.
+8. No modificar Supabase.
+9. No crear SQL nuevo.
+
+Commit sugerido:
+Ubicar Mi acceso dentro de Mis publicaciones v4.9.36.2

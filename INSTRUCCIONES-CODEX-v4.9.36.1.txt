@@ -1,0 +1,36 @@
+Continuar con Conecta Servicios v4.9.36.1.
+
+Objetivo:
+Corregir definitivamente dos problemas detectados:
+1. La ruta /embajadores sigue abriendo Home.
+2. El acceso admin no se ve y no debe depender de capturar ?Admin o ?=Admin cada vez.
+
+Instrucciones obligatorias:
+1. Reemplazar en la raíz del proyecto:
+   - app.js
+   - styles.css
+   - service-worker.js
+   - manifest.json
+
+2. Actualizar index.html para romper caché:
+   - styles.css?v=4.9.36.1-rutas-admin
+   - app.js?v=4.9.36.1-rutas-admin
+   - manifest.json?v=4.9.36.1-rutas-admin si aplica
+   - body data-version="4.9.36.1-rutas-admin" si existe.
+
+3. No modificar Supabase.
+4. No crear SQL nuevo.
+5. No desplegar funciones nuevas.
+6. Mantener PIN admin actual: 3145.
+7. Mantener activación manual de membresías.
+
+Validaciones esperadas:
+- /embajadores abre Embajadores Conecta.
+- /embajador también debe funcionar si se usa.
+- El acceso admin aparece como botón pequeño ⚙ Admin.
+- Al tocar ⚙ Admin pide PIN.
+- Con PIN correcto guarda acceso admin en este navegador.
+- El + de publicar se ve blanco.
+
+Nota técnica:
+El hotfix refuerza rutas aunque el HTML tenga el id de sección como embajadores o embajadoresLanding. También inyecta un acceso admin visible con PIN para evitar escribir parámetros en la URL.

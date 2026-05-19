@@ -1,0 +1,12 @@
+Checklist de prueba v4.9.36.2
+
+[ ] Abrir Home sin errores.
+[ ] Abrir Mis publicaciones.
+[ ] Ver tarjeta/botón "Mi acceso / Membresía" dentro de Mis publicaciones.
+[ ] Pulsar "Abrir Mi acceso" y validar que abre el módulo de membresía.
+[ ] Pulsar "Copiar enlace" y validar que genera enlace de membresía con código de embajador.
+[ ] Confirmar que ya no aparece el botón flotante de Mi acceso.
+[ ] Abrir /embajadores y validar que abre landing de embajadores.
+[ ] Ver botón Admin arriba y validar PIN.
+[ ] Confirmar plus blanco en botón principal.
+[ ] Probar en incógnito o limpiar caché/service worker.

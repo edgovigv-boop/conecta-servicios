@@ -1,0 +1,14 @@
+Checklist v4.9.36.1
+
+[ ] Reemplacé app.js en la raíz.
+[ ] Reemplacé styles.css en la raíz.
+[ ] Reemplacé service-worker.js en la raíz.
+[ ] Reemplacé manifest.json en la raíz.
+[ ] index.html usa styles.css?v=4.9.36.1-rutas-admin.
+[ ] index.html usa app.js?v=4.9.36.1-rutas-admin.
+[ ] Abrí /embajadores?v=49361 en incógnito.
+[ ] Confirmé que abre Embajadores Conecta.
+[ ] Confirmé que aparece ⚙ Admin.
+[ ] Probé PIN 3145.
+[ ] Confirmé que el acceso admin queda guardado.
+[ ] Confirmé que el + se ve blanco.

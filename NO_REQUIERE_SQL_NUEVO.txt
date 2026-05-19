@@ -1,4 +1,1 @@
-No requiere SQL nuevo para probar la v4.9.36 final.
-
-La lógica piloto de membresías puede funcionar de forma local/controlada mientras se valida el flujo.
-Para producción real multiusuario sí convendrá crear tablas de usuarios, membresías, embajadores y referidos en Supabase.
+No requiere SQL nuevo para esta prueba piloto.

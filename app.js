@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.36-final-acceso-membresias";
+const PWA_VERSION = "v4.9.36.2-mi-acceso-mis-publicaciones";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -6592,4 +6592,259 @@ window.addEventListener("DOMContentLoaded", () => {
 window.addEventListener("pageshow", () => {
   renderPublicationMembershipGate?.();
   updateUserAccessFloatingButtonV4936();
+});
+
+// v4.9.36.1 — Hotfix rutas directas y acceso admin visible
+// Corrige dos casos reportados en prueba:
+// 1) /embajadores debe abrir el landing real de Embajadores, aunque el id del HTML sea embajadores o embajadoresLanding.
+// 2) El admin debe poder abrirse desde un acceso visible con PIN, sin capturar ?Admin cada vez.
+const ROUTE_ADMIN_HOTFIX_VERSION_V49361 = "4.9.36.1-rutas-admin";
+
+function isAmbassadorDirectRouteV49361() {
+  const path = decodeURIComponent(String(location.pathname || "")).toLowerCase().replace(/\/+$/, "");
+  const hash = decodeURIComponent(String(location.hash || "")).toLowerCase();
+  const params = new URLSearchParams(location.search || "");
+  const section = String(params.get("section") || params.get("seccion") || params.get("vista") || params.get("modulo") || "").toLowerCase();
+  return path.endsWith("/embajadores")
+    || path.endsWith("/embajador")
+    || hash.includes("embajadores")
+    || section.includes("embajadores")
+    || section.includes("embajador");
+}
+
+function resolveAmbassadorSectionIdV49361() {
+  if (document.getElementById("embajadoresLanding")) return "embajadoresLanding";
+  if (document.getElementById("embajadores")) return "embajadores";
+  return "inicio";
+}
+
+function alignAmbassadorRouteAliasesV49361() {
+  try {
+    const actual = resolveAmbassadorSectionIdV49361();
+    if (actual === "embajadores") {
+      ROUTE_SECTION_ALIASES_V4936.embajador = "embajadores";
+      ROUTE_SECTION_ALIASES_V4936.embajadores = "embajadores";
+      ROUTE_SECTION_ALIASES_V4936.referidos = "embajadores";
+      ROUTE_SECTION_ALIASES_V4936.landing = "embajadores";
+      ROUTE_SECTION_ALIASES_V4936.landingembajadores = "embajadores";
+      ROUTE_SECTION_ALIASES_V4936.embajadoreslanding = "embajadores";
+    } else if (actual === "embajadoresLanding") {
+      ROUTE_SECTION_ALIASES_V4936.embajador = "embajadoresLanding";
+      ROUTE_SECTION_ALIASES_V4936.embajadores = "embajadoresLanding";
+      ROUTE_SECTION_ALIASES_V4936.referidos = "embajadoresLanding";
+      ROUTE_SECTION_ALIASES_V4936.landing = "embajadoresLanding";
+      ROUTE_SECTION_ALIASES_V4936.landingembajadores = "embajadoresLanding";
+      ROUTE_SECTION_ALIASES_V4936.embajadoreslanding = "embajadoresLanding";
+    }
+    return actual;
+  } catch {
+    return resolveAmbassadorSectionIdV49361();
+  }
+}
+
+try {
+  const adminAccessRequestedBaseV49361 = adminAccessRequestedFromUrlV4936;
+  adminAccessRequestedFromUrlV4936 = function(params = new URLSearchParams(location.search || "")) {
+    const raw = decodeURIComponent(String(location.search || "").replace(/^\?/, "")).trim().toLowerCase();
+    const hash = decodeURIComponent(String(location.hash || "")).replace(/^#\/?/, "").trim().toLowerCase();
+    return adminAccessRequestedBaseV49361(params)
+      || params.has("admin")
+      || params.has("Admin")
+      || params.get("modo") === "admin"
+      || params.get("acceso") === "admin"
+      || raw === "admin"
+      || raw === "=admin"
+      || raw === "?admin"
+      || raw.includes("admin=1")
+      || raw.includes("admin=true")
+      || hash === "admin";
+  };
+} catch (error) {
+  console.warn("No se pudo reforzar detección admin v4.9.36.1", error);
+}
+
+try {
+  const initialSectionFromUrlBaseV49361 = initialSectionFromUrlV4935;
+  initialSectionFromUrlV4935 = function() {
+    if (isAmbassadorDirectRouteV49361()) return alignAmbassadorRouteAliasesV49361();
+    return initialSectionFromUrlBaseV49361();
+  };
+} catch (error) {
+  console.warn("No se pudo reforzar ruta inicial v4.9.36.1", error);
+}
+
+try {
+  const routeUrlForSectionBaseV49361 = routeUrlForSection;
+  routeUrlForSection = function(id) {
+    const section = typeof sectionAliasV4936 === "function" ? sectionAliasV4936(id) : id;
+    if (section === "embajadores" || section === "embajadoresLanding") {
+      const adminMode = typeof adminAccessAvailableV4936 === "function" ? adminAccessAvailableV4936() : adminRouteEnabled;
+      return `/embajadores${adminMode ? "?admin=1" : ""}`;
+    }
+    return routeUrlForSectionBaseV49361(id);
+  };
+} catch (error) {
+  console.warn("No se pudo reforzar URL de embajadores v4.9.36.1", error);
+}
+
+try {
+  const showSectionBaseV49361 = showSection;
+  showSection = function(id, push = true) {
+    alignAmbassadorRouteAliasesV49361();
+    let section = typeof sectionAliasV4936 === "function" ? sectionAliasV4936(id) : id;
+    if (section === "embajadores" || section === "embajadoresLanding") section = resolveAmbassadorSectionIdV49361();
+    return showSectionBaseV49361(section, push);
+  };
+} catch (error) {
+  console.warn("No se pudo reforzar showSection v4.9.36.1", error);
+}
+
+function openAdminQuickAccessV49361() {
+  const pin = window.prompt("PIN de administración:");
+  if (pin === null) return;
+  if (String(pin).trim() !== ADMIN_PIN) {
+    showToast?.("PIN incorrecto");
+    return;
+  }
+  adminUnlocked = true;
+  adminRouteEnabled = true;
+  setStoredAdminAccessV4936?.(true);
+  updateAdminEntryVisibilityV4936?.();
+  showToast?.("Acceso administrador guardado en este dispositivo");
+  showSection?.("admin");
+  loadAdminData?.();
+}
+
+function ensureAdminQuickAccessV49361() {
+  let button = document.getElementById("adminQuickAccessV49361");
+  if (!button) {
+    button = document.createElement("button");
+    button.id = "adminQuickAccessV49361";
+    button.type = "button";
+    button.className = "admin-quick-access-v49361";
+    button.setAttribute("aria-label", "Acceso administrador");
+    button.title = "Acceso administrador";
+    button.innerHTML = "<span>⚙</span><b>Admin</b>";
+    button.addEventListener("click", openAdminQuickAccessV49361);
+    (document.querySelector(".app-shell") || document.body).appendChild(button);
+  }
+  const isUnlocked = Boolean(adminUnlocked || adminAccessAvailableV4936?.());
+  button.classList.toggle("is-saved", isUnlocked);
+  document.body.dataset.adminHotfix = ROUTE_ADMIN_HOTFIX_VERSION_V49361;
+}
+
+function enforceDirectAmbassadorRouteV49361() {
+  alignAmbassadorRouteAliasesV49361();
+  if (!isAmbassadorDirectRouteV49361()) return;
+  const target = resolveAmbassadorSectionIdV49361();
+  if (target && target !== "inicio") {
+    showSection?.(target, false);
+    document.querySelector(".app-shell")?.classList.toggle("home-mode", false);
+    const title = document.getElementById("mainTitle");
+    if (title) title.textContent = "Embajadores Conecta";
+  }
+}
+
+function bootRouteAdminHotfixV49361() {
+  alignAmbassadorRouteAliasesV49361();
+  ensureAdminQuickAccessV49361();
+  updateAdminEntryVisibilityV4936?.();
+  enforceDirectAmbassadorRouteV49361();
+  setTimeout(enforceDirectAmbassadorRouteV49361, 120);
+  setTimeout(enforceDirectAmbassadorRouteV49361, 500);
+}
+
+window.addEventListener("DOMContentLoaded", bootRouteAdminHotfixV49361);
+window.addEventListener("pageshow", () => setTimeout(bootRouteAdminHotfixV49361, 80));
+window.addEventListener("popstate", () => setTimeout(enforceDirectAmbassadorRouteV49361, 40));
+
+
+// v4.9.36.2 — Mi acceso dentro de Mis publicaciones
+// Mueve el acceso de membresía al apartado natural donde el usuario revisa lo suyo.
+const MEMBER_ACCESS_MY_PUBLICATIONS_VERSION_V49362 = "4.9.36.2-mi-acceso-mis-publicaciones";
+
+function removeMemberAccessFloatingButtonV49362() {
+  try {
+    document.getElementById("memberAccessFloatingBtn")?.remove();
+  } catch (error) {
+    console.warn("No se pudo retirar el acceso flotante de Mi acceso", error);
+  }
+}
+
+function renderMemberAccessShortcutInsideMyPublicationsV49362() {
+  const list = document.getElementById("myPublicationsList");
+  if (!list || !list.parentNode) return;
+  let card = document.getElementById("memberAccessInMyPublicationsV49362");
+  if (!card) {
+    card = document.createElement("div");
+    card.id = "memberAccessInMyPublicationsV49362";
+    card.className = "member-access-inline-card-v49362";
+    list.parentNode.insertBefore(card, list);
+  }
+  const profile = typeof getUserAccessProfileV4936 === "function" ? getUserAccessProfileV4936() : {};
+  const active = typeof userMembershipIsActiveV4936 === "function" ? userMembershipIsActiveV4936(profile) : false;
+  const status = typeof membershipLabelV4936 === "function" ? membershipLabelV4936(profile) : "Sin membresía activa";
+  const ambassador = profile?.ambassadorCode || "CON-LOCAL";
+  card.classList.toggle("is-active", active);
+  card.innerHTML = `
+    <div class="member-access-inline-icon-v49362">👤</div>
+    <div class="member-access-inline-copy-v49362">
+      <small>Acceso de usuario</small>
+      <strong>Mi acceso / Membresía</strong>
+      <p>Revisa tu membresía, tus datos y el acceso para publicar ilimitadamente. Estado: <b>${escapeHtml(status)}</b>.</p>
+      ${ambassador ? `<p class="member-access-inline-ref-v49362">Código de embajador: <b>${escapeHtml(ambassador)}</b></p>` : ""}
+    </div>
+    <div class="member-access-inline-actions-v49362">
+      <button type="button" class="btn-small btn-purple" onclick="showSection('miAcceso')">Abrir Mi acceso</button>
+      <button type="button" class="btn-small btn-ghost" onclick="copyMemberAccessLinkV4936('${escapeHtml(ambassador)}')">Copiar enlace</button>
+    </div>`;
+}
+
+try {
+  ensureUserAccessFloatingButtonV4936 = function() {
+    removeMemberAccessFloatingButtonV49362();
+    renderMemberAccessShortcutInsideMyPublicationsV49362();
+  };
+  updateUserAccessFloatingButtonV4936 = function() {
+    removeMemberAccessFloatingButtonV49362();
+    renderMemberAccessShortcutInsideMyPublicationsV49362();
+  };
+} catch (error) {
+  console.warn("No se pudo reemplazar el acceso flotante de Mi acceso", error);
+}
+
+try {
+  const renderMyPublicationsBaseV49362 = renderMyPublications;
+  renderMyPublications = function() {
+    renderMemberAccessShortcutInsideMyPublicationsV49362();
+    const result = renderMyPublicationsBaseV49362();
+    renderMemberAccessShortcutInsideMyPublicationsV49362();
+    return result;
+  };
+} catch (error) {
+  console.warn("No se pudo reforzar Mis publicaciones con Mi acceso", error);
+}
+
+try {
+  const showSectionBaseV49362 = showSection;
+  showSection = function(id, push = true) {
+    const result = showSectionBaseV49362(id, push);
+    const section = typeof sectionAliasV4936 === "function" ? sectionAliasV4936(id) : id;
+    if (section === "misPublicaciones") {
+      setTimeout(renderMemberAccessShortcutInsideMyPublicationsV49362, 40);
+      setTimeout(renderMemberAccessShortcutInsideMyPublicationsV49362, 240);
+    }
+    return result;
+  };
+} catch (error) {
+  console.warn("No se pudo enganchar Mi acceso en navegación", error);
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  removeMemberAccessFloatingButtonV49362();
+  setTimeout(renderMemberAccessShortcutInsideMyPublicationsV49362, 120);
+});
+window.addEventListener("pageshow", () => {
+  removeMemberAccessFloatingButtonV49362();
+  setTimeout(renderMemberAccessShortcutInsideMyPublicationsV49362, 120);
 });

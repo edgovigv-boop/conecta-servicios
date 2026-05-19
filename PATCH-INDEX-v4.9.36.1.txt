@@ -1,0 +1,30 @@
+Aplicar en index.html:
+
+1) Cambiar cualquier referencia anterior:
+   styles.css?v=4.9.35...
+   styles.css?v=4.9.36...
+
+   por:
+   styles.css?v=4.9.36.1-rutas-admin
+
+2) Cambiar cualquier referencia anterior:
+   app.js?v=4.9.35...
+   app.js?v=4.9.36...
+
+   por:
+   app.js?v=4.9.36.1-rutas-admin
+
+3) Cambiar manifest si tiene versión:
+   manifest.json?v=4.9.36.1-rutas-admin
+
+4) Cambiar título si aparece:
+   Conecta Servicios v4.9.36.1
+
+5) Cambiar body si aparece data-version:
+   data-version="4.9.36.1-rutas-admin"
+
+6) Confirmar que Vercel publique la rama main actualizada.
+
+7) Después de subir, probar:
+   https://conecta-servicios.vercel.app/embajadores?v=49361
+   https://conecta-servicios.vercel.app/?v=49361

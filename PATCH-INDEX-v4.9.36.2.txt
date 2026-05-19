@@ -1,0 +1,13 @@
+Actualizar referencias de index.html para romper caché:
+
+1. Cambiar referencia CSS a:
+<link rel="stylesheet" href="styles.css?v=4.9.36.2-mi-acceso-mis-publicaciones">
+
+2. Cambiar referencia JS a:
+<script src="app.js?v=4.9.36.2-mi-acceso-mis-publicaciones" defer></script>
+
+3. Cambiar data-version del body a:
+<body data-version="4.9.36.2-mi-acceso-mis-publicaciones">
+
+4. Si el title incluye versión, actualizar a:
+Conecta Servicios v4.9.36.2

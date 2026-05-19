@@ -1,23 +1,35 @@
-# Conecta Servicios v4.9.36 — paquete directo de reemplazo
+# Conecta Servicios v4.9.36.2 — Hotfix Mi acceso en Mis publicaciones
 
-Este paquete corrige la entrega anterior para que los archivos principales estén directamente en la raíz del ZIP.
+Entrega consolidada sobre v4.9.36.1.
 
 ## Cambios incluidos
 
-1. Acceso admin recordado en el navegador.
-2. Ruta directa `/embajadores` hacia el landing de Embajadores Conecta.
-3. Símbolo `+` del botón principal en color blanco.
-4. Acceso piloto de usuario/membresía en `/membresia` y `/membresia?ref=CODIGO`.
-5. Service worker actualizado para romper caché.
+- Mantiene acceso admin visible con PIN.
+- Mantiene ruta directa `/embajadores`.
+- Mantiene plus blanco en el botón principal de publicar.
+- Mueve el acceso de usuario/membresía al apartado **Mis publicaciones**.
+- Retira visualmente el botón flotante de **Mi acceso** para que el usuario lo encuentre dentro de su espacio natural.
+- Actualiza service worker para romper caché.
 
-## Importante
+## Archivos a reemplazar en la raíz
 
-El sitio publicado seguía mostrando referencias a `v4.9.35-landing-embajadores` en `index.html`. Para ver los cambios, además de reemplazar `app.js`, `styles.css`, `service-worker.js` y `manifest.json`, debes actualizar `index.html` con el patch incluido en `PATCH-INDEX-v4.9.36.txt`.
+```text
+app.js
+styles.css
+service-worker.js
+manifest.json
+```
 
-## No requiere SQL nuevo
+## Index.html
 
-La prueba piloto funciona localmente en el navegador. El SQL opcional para producción multiusuario puede agregarse después.
+Aplicar el archivo `PATCH-INDEX-v4.9.36.2.txt`.
+
+## SQL
+
+No requiere SQL nuevo para esta prueba piloto.
 
 ## Commit sugerido
 
-Actualizar v4.9.36 final con acceso admin, membresías y embajadores
+```text
+Ubicar Mi acceso dentro de Mis publicaciones v4.9.36.2
+```
