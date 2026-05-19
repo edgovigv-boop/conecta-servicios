@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.30-multimedia-real";
+const PWA_VERSION = "v4.9.31-hotfix-multimedia-admin";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -359,7 +359,9 @@ function mapPublication(row) {
     name: row.nombre_publico || "Sin nombre",
     title: row.titulo || "Publicación sin título",
     description: cleanDescriptionWithoutMedia(row.descripcion || ""),
-    mediaUrl: row.multimedia_url || row.imagen_url || extractMediaUrlFromText(row.descripcion || "") || (isLikelyMediaUrl(row.ruta) ? row.ruta : ""),
+    mediaUrl: row.image_url || row.multimedia_url || row.imagen_url || extractMediaUrlFromText(row.descripcion || "") || (isLikelyMediaUrl(row.ruta) ? row.ruta : ""),
+    mediaPath: row.media_path || "",
+    mediaType: row.media_type || "",
     category: row.categoria_principal || "General",
     subcategory: row.subcategoria || "",
     intent: row.intencion || "",
@@ -975,13 +977,44 @@ function ensurePublishMembershipBeforeSubmit() {
   return false;
 }
 
+function isMissingMediaColumnsErrorV4931(error) {
+  const text = String(error?.message || error || "").toLowerCase();
+  return text.includes("image_url") || text.includes("media_type") || text.includes("media_path") || text.includes("media_created_at") || text.includes("schema cache");
+}
+function stripMediaColumnsForFallbackV4931(payload = {}) {
+  const clean = { ...payload };
+  delete clean.image_url;
+  delete clean.media_type;
+  delete clean.media_path;
+  delete clean.media_created_at;
+  return clean;
+}
+async function insertPublicationWithMediaFallbackV4931(payload) {
+  try {
+    return await supabaseRequest("publicaciones", { method: "POST", body: JSON.stringify(payload) });
+  } catch (error) {
+    if (!isMissingMediaColumnsErrorV4931(error)) throw error;
+    console.warn("Columnas multimedia no disponibles en publicaciones; guardando URL dentro de descripción.", error.message);
+    return await supabaseRequest("publicaciones", { method: "POST", body: JSON.stringify(stripMediaColumnsForFallbackV4931(payload)) });
+  }
+}
+async function patchPublicationWithMediaFallbackV4931(id, payload) {
+  try {
+    return await supabaseRequest(`publicaciones?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(payload) });
+  } catch (error) {
+    if (!isMissingMediaColumnsErrorV4931(error)) throw error;
+    console.warn("Columnas multimedia no disponibles en publicaciones; guardando URL dentro de descripción.", error.message);
+    return await supabaseRequest(`publicaciones?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(stripMediaColumnsForFallbackV4931(payload)) });
+  }
+}
+
 async function submitPublication(event) {
   event.preventDefault();
   if (!validateWizardStep(7)) return;
   if (!ensurePublishMembershipBeforeSubmit()) return;
   const payload = formPayload();
   try {
-    const [created] = await supabaseRequest("publicaciones", { method: "POST", body: JSON.stringify(payload) });
+    const [created] = await insertPublicationWithMediaFallbackV4931(payload);
     const item = mapPublication(created || { ...payload, id: createId() });
     const active = payload.estado === "activo";
     trackEvent("publicacion_creada", item, { estado_resultado: active ? "activo" : "revision" });
@@ -1603,11 +1636,11 @@ function renderPilotFeedAdminEditor() {
   const overrides = getPilotFeedOverrides();
   const rows = HOME_FEED_POSTS_V4918.map(post => {
     const ov = overrides[post.id] || {};
-    const currentImg = ov.imagen || post.imagen || "";
+    const currentImg = displayMediaUrlV4931(ov.imagen || post.imagen || "", STORAGE_TEMPLATE_BUCKET_V4930);
     const currentPos = ov.posicion || post.posicion || "center center";
     return `<details class="pilot-admin-item"><summary><span>${escapeHtml(homeFeedLabelV4918(post.tipo))}</span><strong>${escapeHtml(post.titulo)}</strong></summary>
       <div class="pilot-admin-row">
-        <img src="${escapeHtml(currentImg)}" alt="${escapeHtml(post.titulo)}" />
+        <img src="${escapeHtml(currentImg)}" alt="${escapeHtml(post.titulo)}" onerror="this.onerror=null;this.src='assets/photo4922-servicios-1.webp';" />
         <div>
           <label>URL de foto piloto<input id="pilotImg-${escapeHtml(post.id)}" type="url" value="${escapeHtml(currentImg)}" /></label>
           <label>Enfoque / recorte<input id="pilotPos-${escapeHtml(post.id)}" type="text" value="${escapeHtml(currentPos)}" placeholder="center center / center 35%" /></label>
@@ -1619,7 +1652,8 @@ function renderPilotFeedAdminEditor() {
   panel.innerHTML = `<div class="notice-card pilot-admin-editor"><strong>Editar fotos del Home Feed piloto</strong><p>Cambia la imagen de cada plantilla pegando una URL pública. Queda guardado en este navegador para validar visualmente antes de subir fotos definitivas a Storage.</p>${rows}</div>`;
 }
 function savePilotFeedImage(id) {
-  const img = String(document.getElementById(`pilotImg-${id}`)?.value || "").trim();
+  let img = String(document.getElementById(`pilotImg-${id}`)?.value || "").trim();
+  if (img && !/^https?:\/\//i.test(img)) img = storagePublicUrlV4930(STORAGE_TEMPLATE_BUCKET_V4930, img);
   const pos = String(document.getElementById(`pilotPos-${id}`)?.value || "center center").trim();
   if (img && !isLikelyMediaUrl(img)) { showToast("Pega una URL pública de imagen válida"); return; }
   const overrides = getPilotFeedOverrides();
@@ -1683,7 +1717,7 @@ async function saveEdit(event) {
     descripcion: appendMediaUrlToDescription(document.getElementById("editDescription").value.trim(), document.getElementById("editMediaUrl")?.value.trim() || "")
   };
   try {
-    await supabaseRequest(`publicaciones?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(payload) });
+    await patchPublicationWithMediaFallbackV4931(id, payload);
     closeEditDialog();
     showToast("Publicación actualizada");
     await loadAdminData();
@@ -2014,7 +2048,7 @@ async function saveReclassification(event) {
     estado: document.getElementById("reclassStatus").value
   };
   try {
-    await supabaseRequest(`publicaciones?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(payload) });
+    await patchPublicationWithMediaFallbackV4931(id, payload);
     closeReclassifyDialog();
     showToast("Publicación reclasificada");
     await loadAdminData();
@@ -5484,7 +5518,7 @@ window.addEventListener("pageshow", () => setTimeout(ensureV4927NavigationIntegr
 
 
 
-// v4.9.30 — Multimedia real con Supabase Storage + membresía
+// v4.9.31 — Hotfix multimedia Admin: URLs públicas reales de Storage + guardado de metadatos
 // Nota: requiere que existan buckets públicos o políticas de Storage para el anon key:
 // - template-media
 // - publication-media
@@ -5493,6 +5527,8 @@ const STORAGE_PUBLICATION_BUCKET_V4930 = "publication-media";
 const TEMPLATE_OVERRIDES_TABLE_V4930 = "plantillas_home_overrides";
 let selectedPublicationMediaFileV4930 = null;
 let selectedEditMediaFileV4930 = null;
+let lastPublicationMediaUploadV4931 = null;
+let lastEditMediaUploadV4931 = null;
 
 function mediaFileExtensionV4930(file) {
   const name = String(file?.name || "");
@@ -5512,8 +5548,41 @@ function uniqueStoragePathV4930(folder, file) {
   const id = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
   return `${folder}/${id}-${safeName}.${ext}`;
 }
+function normalizeStoragePathV4931(value = "", bucket = "") {
+  let text = String(value || "").trim();
+  if (!text) return "";
+  if (/^https?:\/\//i.test(text)) {
+    const marker = `/storage/v1/object/public/${bucket}/`;
+    const idx = text.indexOf(marker);
+    if (idx >= 0) text = text.slice(idx + marker.length);
+    else return text;
+  }
+  text = text.replace(/^\/storage\/v1\/object\/public\//, "");
+  if (bucket && text.startsWith(`${bucket}/`)) text = text.slice(bucket.length + 1);
+  return text.replace(/^\/+/, "");
+}
 function storagePublicUrlV4930(bucket, path) {
-  return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${path.split("/").map(encodeURIComponent).join("/")}`;
+  const cleanPath = normalizeStoragePathV4931(path, bucket);
+  if (!cleanPath) return "";
+  if (/^https?:\/\//i.test(cleanPath)) return cleanPath;
+  try {
+    const storageClient = window.supabase?.storage;
+    if (storageClient && typeof storageClient.from === "function") {
+      const publicUrl = storageClient.from(bucket).getPublicUrl(cleanPath);
+      const url = publicUrl?.data?.publicUrl;
+      if (url) return url;
+    }
+  } catch (error) {
+    console.debug("getPublicUrl no disponible; usando URL pública manual.", error.message);
+  }
+  return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${cleanPath.split("/").map(encodeURIComponent).join("/")}`;
+}
+function displayMediaUrlV4931(value = "", bucket = "") {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  if (/^(https?:|data:|blob:)/i.test(text)) return text;
+  if (/^(assets\/|\.\/assets\/|\/assets\/)/i.test(text)) return text;
+  return storagePublicUrlV4930(bucket, text);
 }
 async function uploadImageToStorageV4930(file, bucket, folder) {
   const validation = validateImageFileV4930(file);
@@ -5544,7 +5613,8 @@ function showMediaPreviewV4930(containerId, fileOrUrl) {
   else url = String(fileOrUrl || "").trim();
   if (!url) { box.classList.add("hidden"); box.innerHTML = ""; return; }
   box.classList.remove("hidden");
-  box.innerHTML = `<img src="${escapeHtml(url)}" alt="Vista previa" /><small>Vista previa de la foto principal</small>`;
+  const safeUrl = escapeHtml(url);
+  box.innerHTML = `<img src="${safeUrl}" alt="Vista previa" onerror="this.onerror=null;this.src='assets/photo4922-servicios-1.webp';" /><small>Vista previa de la foto principal</small>`;
 }
 function handlePublicationMediaFileChange() {
   const input = document.getElementById("pubMediaFile");
@@ -5563,10 +5633,14 @@ function handlePublicationMediaFileChange() {
   showToast("Foto lista. Se subirá al publicar con membresía activa.");
 }
 async function uploadSelectedPublicationMediaIfNeededV4930() {
-  if (!selectedPublicationMediaFileV4930) return String(document.getElementById("pubMediaUrl")?.value || "").trim();
+  if (!selectedPublicationMediaFileV4930) {
+    lastPublicationMediaUploadV4931 = null;
+    return String(document.getElementById("pubMediaUrl")?.value || "").trim();
+  }
   if (!hasActivePublishMembership()) return String(document.getElementById("pubMediaUrl")?.value || "").trim();
   showToast("Subiendo foto a Conecta Servicios...");
   const uploaded = await uploadImageToStorageV4930(selectedPublicationMediaFileV4930, STORAGE_PUBLICATION_BUCKET_V4930, "publicaciones");
+  lastPublicationMediaUploadV4931 = uploaded;
   const input = document.getElementById("pubMediaUrl");
   if (input) input.value = uploaded.url;
   selectedPublicationMediaFileV4930 = null;
@@ -5607,8 +5681,45 @@ function formPayload() {
   payload.estado = evaluation.status;
   payload.referencia = evaluation.reasons.length
     ? `Revisión automática: ${evaluation.reasons.join(", ")} · Sugerencia: ${inferred.label}`
-    : `Activación automática v4.9.30 · Clasificación: ${inferred.label}`;
+    : `Activación automática v4.9.31 · Clasificación: ${inferred.label}`;
+  if (isLikelyMediaUrl(mediaUrl)) {
+    payload.image_url = mediaUrl;
+    payload.media_type = lastPublicationMediaUploadV4931?.type || "image";
+    payload.media_path = lastPublicationMediaUploadV4931?.path || "";
+    payload.media_created_at = new Date().toISOString();
+  }
   return payload;
+}
+
+function isMissingMediaColumnsErrorV4931(error) {
+  const text = String(error?.message || error || "").toLowerCase();
+  return text.includes("image_url") || text.includes("media_type") || text.includes("media_path") || text.includes("media_created_at") || text.includes("schema cache");
+}
+function stripMediaColumnsForFallbackV4931(payload = {}) {
+  const clean = { ...payload };
+  delete clean.image_url;
+  delete clean.media_type;
+  delete clean.media_path;
+  delete clean.media_created_at;
+  return clean;
+}
+async function insertPublicationWithMediaFallbackV4931(payload) {
+  try {
+    return await supabaseRequest("publicaciones", { method: "POST", body: JSON.stringify(payload) });
+  } catch (error) {
+    if (!isMissingMediaColumnsErrorV4931(error)) throw error;
+    console.warn("Columnas multimedia no disponibles en publicaciones; guardando URL dentro de descripción.", error.message);
+    return await supabaseRequest("publicaciones", { method: "POST", body: JSON.stringify(stripMediaColumnsForFallbackV4931(payload)) });
+  }
+}
+async function patchPublicationWithMediaFallbackV4931(id, payload) {
+  try {
+    return await supabaseRequest(`publicaciones?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(payload) });
+  } catch (error) {
+    if (!isMissingMediaColumnsErrorV4931(error)) throw error;
+    console.warn("Columnas multimedia no disponibles en publicaciones; guardando URL dentro de descripción.", error.message);
+    return await supabaseRequest(`publicaciones?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(stripMediaColumnsForFallbackV4931(payload)) });
+  }
 }
 
 async function submitPublication(event) {
@@ -5624,7 +5735,7 @@ async function submitPublication(event) {
   }
   const payload = formPayload();
   try {
-    const [created] = await supabaseRequest("publicaciones", { method: "POST", body: JSON.stringify(payload) });
+    const [created] = await insertPublicationWithMediaFallbackV4931(payload);
     const item = mapPublication(created || { ...payload, id: createId() });
     const active = payload.estado === "activo";
     trackEvent("publicacion_creada", item, { estado_resultado: active ? "activo" : "revision", multimedia: Boolean(extractMediaUrlFromText(payload.descripcion || "")) });
@@ -5658,6 +5769,7 @@ function resetWizardForm() {
   document.getElementById("pubLat").value = "";
   document.getElementById("pubLng").value = "";
   selectedPublicationMediaFileV4930 = null;
+  lastPublicationMediaUploadV4931 = null;
   const mediaInput = document.getElementById("pubMediaUrl");
   if (mediaInput) mediaInput.value = "";
   const fileInput = document.getElementById("pubMediaFile");
@@ -5718,6 +5830,7 @@ async function saveEdit(event) {
     if (selectedEditMediaFileV4930) {
       showToast("Subiendo foto de publicación...");
       const uploaded = await uploadImageToStorageV4930(selectedEditMediaFileV4930, STORAGE_PUBLICATION_BUCKET_V4930, "admin-publicaciones");
+      lastEditMediaUploadV4931 = uploaded;
       mediaUrl = uploaded.url;
       const input = document.getElementById("editMediaUrl");
       if (input) input.value = mediaUrl;
@@ -5741,8 +5854,14 @@ async function saveEdit(event) {
     estado: document.getElementById("editStatus").value,
     descripcion: appendMediaUrlToDescription(document.getElementById("editDescription").value.trim(), mediaUrl)
   };
+  if (isLikelyMediaUrl(mediaUrl)) {
+    payload.image_url = mediaUrl;
+    payload.media_type = lastEditMediaUploadV4931?.type || "image";
+    payload.media_path = lastEditMediaUploadV4931?.path || "";
+    payload.media_created_at = new Date().toISOString();
+  }
   try {
-    await supabaseRequest(`publicaciones?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(payload) });
+    await patchPublicationWithMediaFallbackV4931(id, payload);
     closeEditDialog();
     showToast("Publicación actualizada");
     await loadAdminData();
@@ -5751,14 +5870,25 @@ async function saveEdit(event) {
 }
 
 async function saveRemotePilotFeedOverrideV4930(id, imageUrl, objectPosition) {
+  const base = { template_id: id, object_position: objectPosition || "center center", updated_at: new Date().toISOString() };
+  const preferred = [{ ...base, image_url_override: imageUrl }];
+  const legacy = [{ ...base, image_url: imageUrl }];
   try {
     await supabaseRequest(`${TEMPLATE_OVERRIDES_TABLE_V4930}?on_conflict=template_id`, {
       method: "POST",
       headers: { Prefer: "resolution=merge-duplicates,return=representation" },
-      body: JSON.stringify([{ template_id: id, image_url: imageUrl, object_position: objectPosition || "center center", updated_at: new Date().toISOString() }])
+      body: JSON.stringify(preferred)
     });
   } catch (error) {
-    console.debug("Overrides remotos no disponibles; se conserva override local.", error.message);
+    try {
+      await supabaseRequest(`${TEMPLATE_OVERRIDES_TABLE_V4930}?on_conflict=template_id`, {
+        method: "POST",
+        headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+        body: JSON.stringify(legacy)
+      });
+    } catch (fallbackError) {
+      console.debug("Overrides remotos no disponibles; se conserva override local.", fallbackError.message || error.message);
+    }
   }
 }
 async function loadRemotePilotFeedOverridesV4930() {
@@ -5770,7 +5900,7 @@ async function loadRemotePilotFeedOverridesV4930() {
       if (!row.template_id) return;
       overrides[row.template_id] = {
         ...(overrides[row.template_id] || {}),
-        imagen: row.image_url || row.imagen || overrides[row.template_id]?.imagen,
+        imagen: row.image_url_override || row.image_url || row.imagen || overrides[row.template_id]?.imagen,
         posicion: row.object_position || row.posicion || overrides[row.template_id]?.posicion || "center center"
       };
     });
@@ -5788,11 +5918,11 @@ function renderPilotFeedAdminEditor() {
   const overrides = getPilotFeedOverrides();
   const rows = HOME_FEED_POSTS_V4918.map(post => {
     const ov = overrides[post.id] || {};
-    const currentImg = ov.imagen || post.imagen || "";
+    const currentImg = displayMediaUrlV4931(ov.imagen || post.imagen || "", STORAGE_TEMPLATE_BUCKET_V4930);
     const currentPos = ov.posicion || post.posicion || "center center";
     return `<details class="pilot-admin-item"><summary><span>${escapeHtml(homeFeedLabelV4918(post.tipo))}</span><strong>${escapeHtml(post.titulo)}</strong></summary>
       <div class="pilot-admin-row">
-        <img src="${escapeHtml(currentImg)}" alt="${escapeHtml(post.titulo)}" />
+        <img src="${escapeHtml(currentImg)}" alt="${escapeHtml(post.titulo)}" onerror="this.onerror=null;this.src='assets/photo4922-servicios-1.webp';" />
         <div>
           <label>URL de foto piloto<input id="pilotImg-${escapeHtml(post.id)}" type="url" value="${escapeHtml(currentImg)}" /></label>
           <label>Subir foto desde Admin<input id="pilotFile-${escapeHtml(post.id)}" type="file" accept="image/jpeg,image/png,image/webp" /></label>
@@ -5802,7 +5932,7 @@ function renderPilotFeedAdminEditor() {
       </div>
     </details>`;
   }).join("");
-  panel.innerHTML = `<div class="notice-card pilot-admin-editor"><strong>Editar multimedia del Home Feed piloto</strong><p>Sube una imagen al bucket <b>template-media</b> o pega una URL pública. La URL queda guardada como override de plantilla.</p>${rows}<p class="field-help">Para que estos cambios se vean en todos los dispositivos, crea la tabla opcional <b>${TEMPLATE_OVERRIDES_TABLE_V4930}</b> o conserva los cambios en código en la siguiente versión.</p></div>`;
+  panel.innerHTML = `<div class="notice-card pilot-admin-editor"><strong>Editar multimedia del Home Feed piloto</strong><p>Sube una imagen al bucket <b>template-media</b> o pega una URL pública. La app guarda la URL pública completa como <b>image_url_override</b> de la plantilla.</p>${rows}<p class="field-help">Para que estos cambios se vean en todos los dispositivos, crea la tabla opcional <b>${TEMPLATE_OVERRIDES_TABLE_V4930}</b> o conserva los cambios en código en la siguiente versión.</p></div>`;
 }
 async function uploadPilotFeedImageFileV4930(id) {
   if (!adminUnlocked) { showToast("Solo administración puede subir fotos de plantillas"); return; }
@@ -5823,11 +5953,12 @@ async function uploadPilotFeedImageFileV4930(id) {
   }
 }
 async function savePilotFeedImage(id) {
-  const img = String(document.getElementById(`pilotImg-${id}`)?.value || "").trim();
+  let img = String(document.getElementById(`pilotImg-${id}`)?.value || "").trim();
+  if (img && !/^https?:\/\//i.test(img)) img = storagePublicUrlV4930(STORAGE_TEMPLATE_BUCKET_V4930, img);
   const pos = String(document.getElementById(`pilotPos-${id}`)?.value || "center center").trim();
   if (img && !isLikelyMediaUrl(img)) { showToast("Pega una URL pública de imagen válida"); return; }
   const overrides = getPilotFeedOverrides();
-  overrides[id] = { ...(overrides[id] || {}), imagen: img, posicion: pos, updated_at: new Date().toISOString() };
+  overrides[id] = { ...(overrides[id] || {}), imagen: img, image_url_override: img, posicion: pos, updated_at: new Date().toISOString() };
   savePilotFeedOverrides(overrides);
   const post = HOME_FEED_POSTS_V4918.find(p => p.id === id);
   if (post) { post.imagen = img || post.imagen; post.posicion = pos || post.posicion; }
@@ -5837,5 +5968,5 @@ async function savePilotFeedImage(id) {
   showToast("Foto piloto actualizada");
 }
 
-// Refuerzo de inicialización v4.9.30: carga overrides remotos si la tabla existe.
+// Refuerzo de inicialización v4.9.31: carga overrides remotos si la tabla existe.
 window.addEventListener("DOMContentLoaded", () => setTimeout(loadRemotePilotFeedOverridesV4930, 900));
