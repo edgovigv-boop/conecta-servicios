@@ -1,0 +1,30 @@
+Continuar con Conecta Servicios v4.9.36.
+
+Problema reportado:
+No se ven los cambios en la app publicada. Al verificar, index.html sigue referenciando v4.9.35-landing-embajadores y el ZIP anterior venía como kit con archivos dentro de /archivos/, no como reemplazo directo de raíz.
+
+Tarea para Codex:
+1. Reemplazar en la raíz del proyecto:
+   - app.js
+   - styles.css
+   - service-worker.js
+   - manifest.json
+2. Aplicar el archivo PATCH-INDEX-v4.9.36.txt sobre index.html.
+3. Confirmar que index.html ya referencia:
+   - styles.css?v=4.9.36-final-acceso-membresias
+   - app.js?v=4.9.36-final-acceso-membresias
+   - body data-version="4.9.36-final-acceso-membresias"
+4. Confirmar que service-worker.js usa cache relacionado con v4.9.36.
+5. Confirmar que no se modifica Supabase.
+6. Confirmar: No requiere SQL nuevo para esta prueba.
+
+Pruebas:
+- Abrir /embajadores y confirmar que muestra landing de Embajadores.
+- Abrir /membresia y confirmar acceso de usuario/membresía.
+- Abrir /membresia?ref=CON-PRUEBA y confirmar que toma el referido.
+- Abrir con ?Admin o ?admin=1, capturar PIN y confirmar que el acceso queda recordado.
+- Confirmar que el botón + se vea blanco.
+- Limpiar service worker/caché o probar en incógnito.
+
+Commit sugerido:
+Actualizar v4.9.36 final con corrección de raíz y caché

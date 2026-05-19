@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.35-landing-embajadores";
+const PWA_VERSION = "v4.9.36-final-acceso-membresias";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -79,6 +79,7 @@ let analyticsCache = [];
 let deferredInstallPrompt = null;
 const TOTAL_STEPS = 7;
 const APP_VERSION_KEY = "conecta_servicios_app_version";
+const ADMIN_ACCESS_KEY_V4936 = "conecta_admin_access_v4936";
 const CHAT_STORAGE_KEY = "conecta_business_chat_v494";
 const ERRAND_STORAGE_KEY = "conecta_mandados_verificados_v492";
 
@@ -601,16 +602,94 @@ function handlePairedStateChange(stateId, municipalityId, placeholder) {
   }
   ensureMunicipalitiesForState(state).finally(() => fillMunicipalitySelect(munSelect, state, { placeholder, disableWhenAllMexico: false }));
 }
-function routeUrlForSection(id) {
+function hasStoredAdminAccessV4936() {
+  try { return localStorage.getItem(ADMIN_ACCESS_KEY_V4936) === "1"; } catch { return false; }
+}
+function setStoredAdminAccessV4936(enabled) {
+  try {
+    if (enabled) localStorage.setItem(ADMIN_ACCESS_KEY_V4936, "1");
+    else localStorage.removeItem(ADMIN_ACCESS_KEY_V4936);
+  } catch {}
+}
+function adminAccessRequestedFromUrlV4936(params = new URLSearchParams(location.search)) {
+  const rawToken = decodeURIComponent(String(location.search || "").replace(/^\?/, "")).trim().toLowerCase();
+  return params.get("admin") === "1"
+    || params.get("admin") === "true"
+    || params.has("Admin")
+    || rawToken === "admin"
+    || rawToken === "=admin"
+    || rawToken === "?admin";
+}
+function adminAccessAvailableV4936() {
+  return adminRouteEnabled || hasStoredAdminAccessV4936();
+}
+function updateAdminEntryVisibilityV4936() {
+  const visible = adminAccessAvailableV4936();
+  document.getElementById("adminEntry")?.classList.toggle("hidden", !visible);
+  document.getElementById("homeAdminEntry")?.classList.toggle("hidden", !visible);
+}
+const ROUTE_SECTION_ALIASES_V4936 = {
+  inicio: "inicio",
+  home: "inicio",
+  publicar: "registro",
+  registro: "registro",
+  publicaciones: "publicaciones",
+  explorar: "publicaciones",
+  oficina: "oficina",
+  admin: "admin",
+  analitica: "analitica",
+  notificaciones: "notificaciones",
+  perfil: "misPublicaciones",
+  mispublicaciones: "misPublicaciones",
+  mensajes: "mensajes",
+  chat: "mensajes",
+  aprende: "aprende",
+  aprendizaje: "aprende",
+  agentes: "agentes",
+  mandados: "mandados",
+  negocios: "negocios",
+  embajador: "embajadoresLanding",
+  embajadores: "embajadoresLanding",
+  referidos: "embajadoresLanding",
+  landing: "embajadoresLanding",
+  landingembajadores: "embajadoresLanding",
+  embajadoreslanding: "embajadoresLanding"
+};
+function normalizeRouteTokenV4936(value = "") {
+  return normalize(String(value || "").replace(/^#\/?/, "").replace(/^\/?/, "").replace(/\/+$/, "").replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ_-]/g, ""));
+}
+function sectionAliasV4936(id = "") {
+  const key = normalizeRouteTokenV4936(id);
+  return ROUTE_SECTION_ALIASES_V4936[key] || id || "inicio";
+}
+function sectionFromPathV4936(pathname = location.pathname) {
+  const cleanPath = decodeURIComponent(String(pathname || "/")).replace(/\/+$/, "");
+  const parts = cleanPath.split("/").filter(Boolean);
+  const last = parts[parts.length - 1] || "";
+  return last ? sectionAliasV4936(last) : "";
+}
+function initialSectionFromUrlV4935() {
+  const hashId = String(location.hash || "").replace(/^#\/?/, "").trim();
+  if (hashId) return sectionAliasV4936(hashId);
   const params = new URLSearchParams(location.search);
-  const adminMode = adminRouteEnabled || params.get("admin") === "1";
-  const base = adminMode ? `${location.pathname}?admin=1` : location.pathname;
-  return `${base}#${id}`;
+  const querySection = params.get("section") || params.get("seccion") || params.get("vista") || params.get("modulo");
+  if (querySection) return sectionAliasV4936(querySection);
+  const pathSection = sectionFromPathV4936(location.pathname);
+  if (pathSection) return pathSection;
+  if (params.get("pub") || params.get("publicacion")) return "publicaciones";
+  return "inicio";
+}
+function routeUrlForSection(id) {
+  const section = sectionAliasV4936(id);
+  const adminMode = typeof adminAccessAvailableV4936 === "function" ? adminAccessAvailableV4936() : adminRouteEnabled;
+  const query = adminMode ? "?admin=1" : "";
+  if (section === "embajadoresLanding") return `/embajadores${query}`;
+  if (section === "inicio") return `/${query}`;
+  return `/${query}#${section}`;
 }
 function showSection(id, push = true) {
-  const sectionAliases = { aprendizaje: "aprende", aprender: "aprende", chat: "mensajes", embajador: "embajadores", embajadores: "embajadores", referidos: "embajadores", landingEmbajadores: "embajadoresLanding", embajadoresLanding: "embajadoresLanding", landing: "embajadoresLanding" };
-  id = sectionAliases[id] || id;
-  if (id === "admin" && !adminRouteEnabled) { showToast("Acceso de administración oculto"); id = "inicio"; }
+  id = sectionAliasV4936(id);
+  if (id === "admin" && !adminAccessAvailableV4936()) { showToast("Acceso de administración oculto"); id = "inicio"; }
   const target = document.getElementById(id);
   if (!target) return;
   if (push && id !== currentSection) history.pushState({ section: id }, "", routeUrlForSection(id));
@@ -1605,8 +1684,20 @@ function unlockAdmin() {
   const value = document.getElementById("adminPin").value;
   if (value !== ADMIN_PIN) { showToast("PIN incorrecto"); return; }
   adminUnlocked = true;
+  adminRouteEnabled = true;
+  setStoredAdminAccessV4936(true);
+  updateAdminEntryVisibilityV4936();
+  showToast("Acceso administrador guardado en este dispositivo");
   showSection("admin");
   loadAdminData();
+}
+function lockAdminAccessV4936() {
+  adminUnlocked = false;
+  adminRouteEnabled = false;
+  setStoredAdminAccessV4936(false);
+  updateAdminEntryVisibilityV4936();
+  showToast("Acceso administrador oculto en este dispositivo");
+  showSection("inicio");
 }
 function adminCard(item) {
   const systemNeed = humanNeedForPublication(item);
@@ -3606,9 +3697,10 @@ function savePilotTemplate(target = "") {
 function init() {
   const params = new URLSearchParams(location.search);
   pendingSharedPublicationId = params.get("pub") || params.get("publicacion");
-  adminRouteEnabled = params.get("admin") === "1" || params.get("admin") === "true";
-  document.getElementById("adminEntry")?.classList.toggle("hidden", !adminRouteEnabled);
-  document.getElementById("homeAdminEntry")?.classList.toggle("hidden", !adminRouteEnabled);
+  const adminRequested = adminAccessRequestedFromUrlV4936(params);
+  adminRouteEnabled = adminRequested || hasStoredAdminAccessV4936();
+  if (adminRequested) setStoredAdminAccessV4936(true);
+  updateAdminEntryVisibilityV4936();
   populateStateSelects();
   loadMunicipiosMx();
   document.getElementById("publicationForm")?.addEventListener("submit", submitPublication);
@@ -6085,3 +6177,419 @@ async function savePilotFeedImage(id, options = {}) {
 
 // Refuerzo de inicialización v4.9.34: carga overrides remotos si la tabla existe sin pisar cambios locales recientes.
 window.addEventListener("DOMContentLoaded", () => setTimeout(loadRemotePilotFeedOverridesV4930, 900));
+
+
+// v4.9.36 — Acceso de usuarios, membresías y referidos de Embajadores Conecta (modo piloto local)
+// Objetivo: permitir que un usuario entre a “Mi acceso / Mi membresía”, capture sus datos,
+// quede asociado a un código de embajador y solicite activación anual. La activación real se
+// mantiene manual para admin. Para producción multiusuario se incluye SQL opcional en el paquete.
+const USER_ACCESS_KEY_V4936 = "conecta_usuario_acceso_v4936";
+const USER_ACCESS_HISTORY_KEY_V4936 = "conecta_membresias_historial_v4936";
+const USER_ACCESS_VERSION_V4936 = "4.9.36";
+const MEMBERSHIP_PRICE_V4936 = 98;
+const AMBASSADOR_COMMISSION_V4936 = 50;
+
+try {
+  Object.assign(ROUTE_SECTION_ALIASES_V4936, {
+    acceso: "miAcceso",
+    miacceso: "miAcceso",
+    "mi-acceso": "miAcceso",
+    usuario: "miAcceso",
+    usuarios: "miAcceso",
+    membresia: "miAcceso",
+    membresias: "miAcceso",
+    mimembresia: "miAcceso",
+    "mi-membresia": "miAcceso",
+    activar: "miAcceso"
+  });
+} catch (error) {
+  console.warn("No se pudieron registrar rutas de Mi acceso", error);
+}
+
+function normalizeAmbassadorCodeV4936(value = "") {
+  const clean = String(value || "").trim().toUpperCase().replace(/\s+/g, "-").replace(/[^A-Z0-9_-]/g, "").slice(0, 32);
+  return clean || "CON-LOCAL";
+}
+function membershipTodayV4936() {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  return now;
+}
+function addOneYearIsoV4936(date = new Date()) {
+  const next = new Date(date);
+  next.setFullYear(next.getFullYear() + 1);
+  return next.toISOString();
+}
+function safeJsonParseV4936(raw, fallback) {
+  try { return JSON.parse(raw || ""); } catch { return fallback; }
+}
+function getStoredAmbassadorRefV4936() {
+  try { return localStorage.getItem("conecta_embajador_ref_v4936") || ""; } catch { return ""; }
+}
+function setStoredAmbassadorRefV4936(code = "") {
+  const safe = normalizeAmbassadorCodeV4936(code);
+  try { localStorage.setItem("conecta_embajador_ref_v4936", safe); } catch {}
+  return safe;
+}
+function captureAmbassadorRefFromUrlV4936() {
+  try {
+    const params = new URLSearchParams(location.search || "");
+    const ref = params.get("ref") || params.get("embajador") || params.get("codigo") || params.get("code") || params.get("ambassador") || params.get("ambassadorCode") || "";
+    if (ref) return setStoredAmbassadorRefV4936(ref);
+  } catch {}
+  return getStoredAmbassadorRefV4936();
+}
+function defaultUserAccessProfileV4936() {
+  const ref = captureAmbassadorRefFromUrlV4936();
+  return {
+    version: USER_ACCESS_VERSION_V4936,
+    userId: `USR-${Date.now().toString(36).toUpperCase()}`,
+    name: "",
+    phone: "",
+    state: DEFAULT_STATE || "",
+    municipality: DEFAULT_MUNICIPALITY || "",
+    ambassadorCode: ref || "",
+    membershipStatus: "sin_membresia",
+    membershipAmount: MEMBERSHIP_PRICE_V4936,
+    ambassadorCommission: AMBASSADOR_COMMISSION_V4936,
+    requestedAt: "",
+    activatedAt: "",
+    expiresAt: "",
+    paymentReference: "",
+    notes: "",
+    updatedAt: new Date().toISOString()
+  };
+}
+function getUserAccessProfileV4936() {
+  const saved = safeJsonParseV4936(localStorage.getItem(USER_ACCESS_KEY_V4936), null);
+  const base = defaultUserAccessProfileV4936();
+  const merged = saved && typeof saved === "object" ? { ...base, ...saved } : base;
+  const ref = captureAmbassadorRefFromUrlV4936();
+  if (ref && !merged.ambassadorCode) merged.ambassadorCode = ref;
+  return merged;
+}
+function saveUserAccessProfileV4936(profile = {}) {
+  const current = getUserAccessProfileV4936();
+  const next = { ...current, ...profile, updatedAt: new Date().toISOString(), version: USER_ACCESS_VERSION_V4936 };
+  if (next.ambassadorCode) next.ambassadorCode = normalizeAmbassadorCodeV4936(next.ambassadorCode);
+  if (next.phone) next.phone = cleanPhone(next.phone);
+  try { localStorage.setItem(USER_ACCESS_KEY_V4936, JSON.stringify(next)); } catch {}
+  return next;
+}
+function userMembershipIsActiveV4936(profile = getUserAccessProfileV4936()) {
+  if (!profile || profile.membershipStatus !== "activa") return false;
+  if (!profile.expiresAt) return true;
+  const end = new Date(profile.expiresAt);
+  if (Number.isNaN(end.getTime())) return false;
+  return end >= membershipTodayV4936();
+}
+function userMembershipDaysLeftV4936(profile = getUserAccessProfileV4936()) {
+  if (!userMembershipIsActiveV4936(profile)) return 0;
+  const end = new Date(profile.expiresAt);
+  const diff = end.getTime() - membershipTodayV4936().getTime();
+  return Math.max(0, Math.ceil(diff / 86400000));
+}
+function saveUserAccessHistoryV4936(entry = {}) {
+  const rows = safeJsonParseV4936(localStorage.getItem(USER_ACCESS_HISTORY_KEY_V4936), []);
+  rows.unshift({ id: `MEM-${Date.now().toString(36).toUpperCase()}`, createdAt: new Date().toISOString(), ...entry });
+  try { localStorage.setItem(USER_ACCESS_HISTORY_KEY_V4936, JSON.stringify(rows.slice(0, 80))); } catch {}
+}
+function getUserAccessHistoryV4936() {
+  return safeJsonParseV4936(localStorage.getItem(USER_ACCESS_HISTORY_KEY_V4936), []);
+}
+function membershipLabelV4936(profile = getUserAccessProfileV4936()) {
+  if (userMembershipIsActiveV4936(profile)) return `Activa · ${userMembershipDaysLeftV4936(profile)} días restantes`;
+  if (profile.membershipStatus === "pendiente") return "Pendiente de validación admin";
+  if (profile.membershipStatus === "vencida") return "Vencida";
+  return "Sin membresía activa";
+}
+function membershipCssStatusV4936(profile = getUserAccessProfileV4936()) {
+  if (userMembershipIsActiveV4936(profile)) return "active";
+  if (profile.membershipStatus === "pendiente") return "pending";
+  if (profile.membershipStatus === "vencida") return "expired";
+  return "empty";
+}
+function ensureUserAccessSectionV4936() {
+  if (document.getElementById("miAcceso")) return;
+  const section = document.createElement("section");
+  section.id = "miAcceso";
+  section.className = "section member-access-section";
+  section.innerHTML = `<div id="memberAccessRoot" class="member-access-root"></div>`;
+  const content = document.querySelector(".content") || document.querySelector("main") || document.querySelector(".app-shell") || document.body;
+  content.appendChild(section);
+}
+function memberAccessPublicLinkV4936(code = "") {
+  const safe = normalizeAmbassadorCodeV4936(code || getUserAccessProfileV4936().ambassadorCode || "CON-LOCAL");
+  return `${location.origin}/membresia?ref=${encodeURIComponent(safe)}`;
+}
+function renderMemberAccessV4936() {
+  ensureUserAccessSectionV4936();
+  const root = document.getElementById("memberAccessRoot");
+  if (!root) return;
+  const profile = getUserAccessProfileV4936();
+  const statusClass = membershipCssStatusV4936(profile);
+  const statusLabel = membershipLabelV4936(profile);
+  const active = userMembershipIsActiveV4936(profile);
+  const adminVisible = typeof adminAccessAvailableV4936 === "function" ? adminAccessAvailableV4936() : Boolean(adminUnlocked || adminRouteEnabled);
+  const refLink = memberAccessPublicLinkV4936(profile.ambassadorCode || "CON-LOCAL");
+  const history = getUserAccessHistoryV4936().slice(0, 8);
+  root.innerHTML = `<div class="member-access-hero">
+    <span>👤</span>
+    <div>
+      <small>Conecta Servicios v4.9.36</small>
+      <h2>Mi acceso y membresía</h2>
+      <p>Registra al usuario, conserva el código del embajador y activa publicaciones ilimitadas cuando el pago esté validado.</p>
+    </div>
+  </div>
+
+  <div class="member-status-card ${statusClass}">
+    <div><small>Estado de membresía</small><strong>${escapeHtml(statusLabel)}</strong></div>
+    <span>${active ? "✅" : profile.membershipStatus === "pendiente" ? "⏳" : "🔒"}</span>
+  </div>
+
+  <form class="form-card member-access-form" onsubmit="saveMemberAccessFormV4936(event)">
+    <h3>Datos de usuario</h3>
+    <p class="muted">Estos datos sirven para identificar al miembro en el piloto. En producción se guardarán en Supabase con permisos de admin.</p>
+    <label>Nombre público<input id="memberAccessName" type="text" value="${escapeHtml(profile.name || "")}" placeholder="Ej. Ana M., Panadería San Miguel" required></label>
+    <label>WhatsApp<input id="memberAccessPhone" type="tel" value="${escapeHtml(profile.phone || "")}" placeholder="10 dígitos" required></label>
+    <div class="form-grid">
+      <label>Estado<input id="memberAccessState" type="text" value="${escapeHtml(profile.state || "")}" placeholder="Ej. México"></label>
+      <label>Municipio<input id="memberAccessMunicipality" type="text" value="${escapeHtml(profile.municipality || "")}" placeholder="Ej. Chapultepec"></label>
+    </div>
+    <label>Código de embajador / referido<input id="memberAccessAmbassador" type="text" value="${escapeHtml(profile.ambassadorCode || "")}" placeholder="Ej. CON-ANA-101"></label>
+    <label>Referencia de pago o notas<input id="memberAccessPaymentRef" type="text" value="${escapeHtml(profile.paymentReference || "")}" placeholder="Ej. folio, comprobante, transferencia, efectivo"></label>
+    <div class="dialog-actions"><button type="submit" class="btn-small btn-purple">Guardar mi acceso</button><button type="button" class="btn-small btn-outline" onclick="requestMembershipActivationV4936()">Solicitar activación</button></div>
+  </form>
+
+  <div class="member-plan-grid">
+    <article class="member-plan-card featured"><span>🔓</span><strong>Membresía anual</strong><p>Permite publicar oportunidades de forma ilimitada durante el periodo activo.</p><b>$${MEMBERSHIP_PRICE_V4936} MXN / año</b></article>
+    <article class="member-plan-card"><span>🤝</span><strong>Embajador</strong><p>El código referido queda asociado al usuario para corte manual.</p><b>$${AMBASSADOR_COMMISSION_V4936} comisión sugerida</b></article>
+  </div>
+
+  <div class="member-action-panel">
+    <button type="button" class="btn-small btn-purple" onclick="openMembershipPaymentFromAccessV4936()">Pagar / enviar comprobante</button>
+    <button type="button" class="btn-small btn-green" onclick="startWizard()" ${active ? "" : "disabled"}>Publicar ahora</button>
+    <button type="button" class="btn-small btn-ghost" onclick="copyMemberAccessLinkV4936()">Copiar enlace con referido</button>
+  </div>
+
+  <div class="notice-card slim">
+    <strong>Enlace para embajadores</strong>
+    <p>Comparte este acceso con clientes para que lleguen directo a membresía y queden asociados al código:</p>
+    <code class="member-link-code">${escapeHtml(refLink)}</code>
+  </div>
+
+  ${adminVisible ? `<div class="form-card member-admin-panel">
+    <h3>Admin · activación manual</h3>
+    <p class="muted">Usar solo cuando el pago ya fue validado. Esta activación piloto queda en este navegador; para producción usar el SQL incluido.</p>
+    <div class="dialog-actions">
+      <button type="button" class="btn-small btn-green" onclick="adminActivateMembershipV4936()">Activar 1 año</button>
+      <button type="button" class="btn-small btn-orange" onclick="adminMarkMembershipPendingV4936()">Marcar pendiente</button>
+      <button type="button" class="btn-small btn-ghost" onclick="adminExpireMembershipV4936()">Vencer membresía</button>
+    </div>
+  </div>` : ""}
+
+  <div class="member-history-panel">
+    <h3>Historial local</h3>
+    ${history.length ? history.map(row => `<article><strong>${escapeHtml(row.action || "Movimiento")}</strong><small>${new Date(row.createdAt || Date.now()).toLocaleString("es-MX")}</small><p>${escapeHtml(row.note || "")}</p></article>`).join("") : `<p class="muted">Aún no hay movimientos guardados en este dispositivo.</p>`}
+  </div>`;
+}
+function saveMemberAccessFormV4936(event) {
+  event?.preventDefault?.();
+  const profile = saveUserAccessProfileV4936({
+    name: document.getElementById("memberAccessName")?.value.trim() || "",
+    phone: document.getElementById("memberAccessPhone")?.value || "",
+    state: document.getElementById("memberAccessState")?.value.trim() || "",
+    municipality: document.getElementById("memberAccessMunicipality")?.value.trim() || "",
+    ambassadorCode: document.getElementById("memberAccessAmbassador")?.value || "",
+    paymentReference: document.getElementById("memberAccessPaymentRef")?.value.trim() || ""
+  });
+  saveUserAccessHistoryV4936({ action: "Datos guardados", note: `${profile.name || "Usuario"} · ${profile.ambassadorCode || "sin código"}` });
+  renderMemberAccessV4936();
+  renderPublicationMembershipGate?.();
+  showToast("Acceso guardado");
+}
+function requestMembershipActivationV4936() {
+  const profile = saveUserAccessProfileV4936({ membershipStatus: "pendiente", requestedAt: new Date().toISOString() });
+  saveUserAccessHistoryV4936({ action: "Activación solicitada", note: `${profile.name || "Usuario"} · ${profile.ambassadorCode || "sin embajador"}` });
+  renderMemberAccessV4936();
+  renderPublicationMembershipGate?.();
+  showToast("Solicitud guardada. El admin debe validar el pago.");
+}
+function openMembershipPaymentFromAccessV4936() {
+  saveMemberAccessFormV4936({ preventDefault() {} });
+  const profile = saveUserAccessProfileV4936({ membershipStatus: "pendiente", requestedAt: new Date().toISOString() });
+  const text = `Hola, quiero activar mi membresía Conecta Servicios.\n\nNombre: ${profile.name || ""}\nWhatsApp: ${profile.phone || ""}\nMunicipio: ${profile.municipality || ""}\nCódigo embajador: ${profile.ambassadorCode || "CON-LOCAL"}\nMonto: $${MEMBERSHIP_PRICE_V4936} MXN anual\nReferencia: ${profile.paymentReference || "pendiente"}`;
+  const settings = typeof getAmbassadorSettings === "function" ? getAmbassadorSettings() : {};
+  if (settings.manualPaymentLink) {
+    window.open(settings.manualPaymentLink, "_blank", "noopener");
+    setTimeout(() => openOfficeWhatsApp(text), 180);
+  } else {
+    openOfficeWhatsApp(text);
+  }
+  renderMemberAccessV4936();
+}
+function adminActivateMembershipV4936() {
+  const now = new Date();
+  const profile = saveUserAccessProfileV4936({
+    membershipStatus: "activa",
+    membershipAmount: MEMBERSHIP_PRICE_V4936,
+    ambassadorCommission: AMBASSADOR_COMMISSION_V4936,
+    activatedAt: now.toISOString(),
+    expiresAt: addOneYearIsoV4936(now)
+  });
+  try { localStorage.setItem(CONNECTA_MEMBERSHIP_KEY, JSON.stringify({ active: true, amount: MEMBERSHIP_PRICE_V4936, source: "admin_v4936", activatedAt: profile.activatedAt, expiresAt: profile.expiresAt, ambassadorCode: profile.ambassadorCode || "" })); } catch {}
+  saveUserAccessHistoryV4936({ action: "Membresía activada", note: `Vence: ${new Date(profile.expiresAt).toLocaleDateString("es-MX")}` });
+  renderMemberAccessV4936();
+  renderPublicationMembershipGate?.();
+  showToast("Membresía activada por admin");
+}
+function adminMarkMembershipPendingV4936() {
+  const profile = saveUserAccessProfileV4936({ membershipStatus: "pendiente", requestedAt: new Date().toISOString() });
+  try { localStorage.removeItem(CONNECTA_MEMBERSHIP_KEY); } catch {}
+  saveUserAccessHistoryV4936({ action: "Membresía pendiente", note: profile.paymentReference || "Validación pendiente" });
+  renderMemberAccessV4936();
+  renderPublicationMembershipGate?.();
+  showToast("Membresía marcada como pendiente");
+}
+function adminExpireMembershipV4936() {
+  const profile = saveUserAccessProfileV4936({ membershipStatus: "vencida", expiresAt: new Date(Date.now() - 86400000).toISOString() });
+  try { localStorage.removeItem(CONNECTA_MEMBERSHIP_KEY); } catch {}
+  saveUserAccessHistoryV4936({ action: "Membresía vencida", note: profile.name || "Usuario" });
+  renderMemberAccessV4936();
+  renderPublicationMembershipGate?.();
+  showToast("Membresía vencida");
+}
+function copyMemberAccessLinkV4936(code = "") {
+  const link = memberAccessPublicLinkV4936(code || getUserAccessProfileV4936().ambassadorCode || "CON-LOCAL");
+  navigator.clipboard?.writeText(link).then(() => showToast("Enlace copiado"), () => showToast(link));
+}
+function ensureUserAccessFloatingButtonV4936() {
+  if (document.getElementById("memberAccessFloatingBtn")) return;
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.id = "memberAccessFloatingBtn";
+  btn.className = "member-access-floating";
+  btn.innerHTML = `<span>👤</span><b>Mi acceso</b>`;
+  btn.onclick = () => showSection("miAcceso");
+  document.body.appendChild(btn);
+}
+function updateUserAccessFloatingButtonV4936() {
+  const btn = document.getElementById("memberAccessFloatingBtn");
+  if (!btn) return;
+  const profile = getUserAccessProfileV4936();
+  btn.classList.toggle("is-active", userMembershipIsActiveV4936(profile));
+  btn.title = membershipLabelV4936(profile);
+}
+function createAmbassadorMembershipLinkV4936() {
+  const raw = document.getElementById("ambassadorMemberLinkCode")?.value || getUserAccessProfileV4936().ambassadorCode || "CON-LOCAL";
+  const code = normalizeAmbassadorCodeV4936(raw);
+  const link = memberAccessPublicLinkV4936(code);
+  const out = document.getElementById("ambassadorMemberLinkOutput");
+  if (out) out.textContent = link;
+  navigator.clipboard?.writeText(link).then(() => showToast("Enlace de membresía copiado"), () => showToast(link));
+}
+
+const hasActivePublishMembershipBaseV4936 = hasActivePublishMembership;
+hasActivePublishMembership = function() {
+  const profile = getUserAccessProfileV4936();
+  if (userMembershipIsActiveV4936(profile)) return true;
+  const legacy = getPublishMembershipStatus?.() || {};
+  if (legacy && legacy.active === true && legacy.expiresAt) {
+    const end = new Date(legacy.expiresAt);
+    return !Number.isNaN(end.getTime()) && end >= membershipTodayV4936();
+  }
+  return false;
+};
+
+activatePublishMembershipLocal = function() {
+  showSection("miAcceso");
+  setTimeout(() => {
+    requestMembershipActivationV4936();
+    document.getElementById("memberAccessRoot")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 80);
+};
+
+openMembershipPaymentFromPublish = function() {
+  showSection("miAcceso");
+  setTimeout(openMembershipPaymentFromAccessV4936, 120);
+};
+
+renderPublicationMembershipGate = function() {
+  const gate = document.getElementById("publicationMembershipGate");
+  if (!gate) return;
+  const profile = getUserAccessProfileV4936();
+  if (hasActivePublishMembership()) {
+    gate.innerHTML = `<div class="membership-gate-ok"><strong>✅ Membresía lista</strong><p>${escapeHtml(profile.name || "Tu usuario")} puede publicar oportunidades ilimitadas hasta ${profile.expiresAt ? new Date(profile.expiresAt).toLocaleDateString("es-MX") : "fin del periodo"}.</p></div>`;
+    return;
+  }
+  gate.innerHTML = `<div class="membership-gate-info"><span>🔓</span><div><strong>Explorar y contactar es gratis</strong><p>Para publicar una oportunidad se requiere membresía anual Conecta de <b>$${MEMBERSHIP_PRICE_V4936} MXN</b>. Estado: <b>${escapeHtml(membershipLabelV4936(profile))}</b>.</p></div></div><div class="membership-gate-actions"><button type="button" class="btn-small btn-purple" onclick="showSection('miAcceso')">Mi acceso / Membresía</button><button type="button" class="btn-small btn-ghost" onclick="openMembershipPaymentFromPublish()">Pagar o enviar comprobante</button></div>`;
+};
+
+ensurePublishMembershipBeforeSubmit = function() {
+  if (hasActivePublishMembership()) return true;
+  renderPublicationMembershipGate();
+  document.getElementById("publicationMembershipGate")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  showToast("Para publicar ilimitadamente, el admin debe activar la membresía anual.");
+  return false;
+};
+
+const routeUrlForSectionBaseV4936 = routeUrlForSection;
+routeUrlForSection = function(id) {
+  const section = sectionAliasV4936(id);
+  const adminMode = typeof adminAccessAvailableV4936 === "function" ? adminAccessAvailableV4936() : adminRouteEnabled;
+  const profile = getUserAccessProfileV4936();
+  const ref = profile.ambassadorCode ? `ref=${encodeURIComponent(profile.ambassadorCode)}` : "";
+  const admin = adminMode ? `${ref ? "&" : ""}admin=1` : "";
+  const query = ref || admin ? `?${ref}${admin}` : "";
+  if (section === "miAcceso") return `/membresia${query}`;
+  return routeUrlForSectionBaseV4936(id);
+};
+
+const showSectionBaseV4936 = showSection;
+showSection = function(id, push = true) {
+  const section = sectionAliasV4936(id);
+  if (section === "miAcceso") ensureUserAccessSectionV4936();
+  showSectionBaseV4936(section, push);
+  if (section === "miAcceso") {
+    renderMemberAccessV4936();
+    const title = document.getElementById("mainTitle");
+    if (title) title.textContent = "Mi acceso";
+  }
+  updateUserAccessFloatingButtonV4936();
+};
+
+const renderAmbassadorMembershipBaseV4936 = renderAmbassadorMembership;
+renderAmbassadorMembership = function() {
+  renderAmbassadorMembershipBaseV4936();
+  const panel = document.getElementById("ambassadorMembershipPanel");
+  if (!panel) return;
+  panel.insertAdjacentHTML("beforeend", `<div class="form-card ambassador-member-link-panel">
+    <h3>Enlace directo para clientes</h3>
+    <p class="muted">El embajador puede compartir este enlace para que el cliente llegue a Mi membresía con su código ya cargado.</p>
+    <label>Código de embajador<input id="ambassadorMemberLinkCode" type="text" placeholder="Ej. CON-ANA-101"></label>
+    <div class="dialog-actions"><button type="button" class="btn-small btn-purple" onclick="createAmbassadorMembershipLinkV4936()">Crear y copiar enlace</button><button type="button" class="btn-small btn-ghost" onclick="showSection('miAcceso')">Abrir Mi acceso</button></div>
+    <code id="ambassadorMemberLinkOutput" class="member-link-code"></code>
+  </div>`);
+};
+
+shareAmbassadorCode = function(code) {
+  const safe = normalizeAmbassadorCodeV4936(code || "CON-LOCAL");
+  const link = memberAccessPublicLinkV4936(safe);
+  const text = `Te invito a Conecta Servicios. Activa tu membresía anual de $${MEMBERSHIP_PRICE_V4936} MXN para publicar ilimitadamente.\n\nCódigo de embajador: ${safe}\nAcceso directo: ${link}`;
+  if (navigator.share) navigator.share({ title: "Conecta Servicios", text }).catch(() => null);
+  else navigator.clipboard?.writeText(text).then(() => showToast("Invitación copiada"), () => showToast(text));
+};
+
+window.addEventListener("DOMContentLoaded", () => {
+  captureAmbassadorRefFromUrlV4936();
+  ensureUserAccessSectionV4936();
+  ensureUserAccessFloatingButtonV4936();
+  renderMemberAccessV4936();
+  renderPublicationMembershipGate?.();
+  updateUserAccessFloatingButtonV4936();
+  if (sectionAliasV4936(initialSectionFromUrlV4935?.() || "") === "miAcceso") setTimeout(() => showSection("miAcceso", false), 60);
+});
+window.addEventListener("pageshow", () => {
+  renderPublicationMembershipGate?.();
+  updateUserAccessFloatingButtonV4936();
+});

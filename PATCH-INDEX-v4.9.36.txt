@@ -1,0 +1,40 @@
+Aplicar estos cambios en index.html para que el navegador cargue los archivos nuevos y no siga usando v4.9.35:
+
+1) Cambiar el título:
+
+Buscar:
+<title>Conecta Servicios v4.9.35</title>
+
+Reemplazar por:
+<title>Conecta Servicios v4.9.36</title>
+
+2) Cambiar la versión de styles.css:
+
+Buscar:
+<link rel="stylesheet" href="styles.css?v=4.9.35-landing-embajadores" />
+
+Reemplazar por:
+<link rel="stylesheet" href="styles.css?v=4.9.36-final-acceso-membresias" />
+
+3) Cambiar data-version del body:
+
+Buscar:
+<body data-version="4.9.35-landing-embajadores">
+
+Reemplazar por:
+<body data-version="4.9.36-final-acceso-membresias">
+
+4) Cambiar la versión de app.js:
+
+Buscar:
+<script src="app.js?v=4.9.35-landing-embajadores"></script>
+
+Reemplazar por:
+<script src="app.js?v=4.9.36-final-acceso-membresias"></script>
+
+5) Opcional pero recomendado: agregar un acceso visible a Mi membresía.
+
+Dentro de la barra inferior, cerca de Perfil o Publicar, agregar botón si Codex identifica el lugar correcto:
+<button type="button" onclick="showSection('membresia')">Mi membresía</button>
+
+Si no hay espacio visual, dejarlo como acceso flotante desde styles/app.js, ya incluido en esta versión.

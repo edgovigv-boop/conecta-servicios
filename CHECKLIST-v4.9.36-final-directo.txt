@@ -1,0 +1,17 @@
+Checklist de validación v4.9.36 final directo
+
+[ ] app.js reemplazado en la raíz del repo.
+[ ] styles.css reemplazado en la raíz del repo.
+[ ] service-worker.js reemplazado en la raíz del repo.
+[ ] manifest.json reemplazado en la raíz del repo.
+[ ] index.html actualizado con v4.9.36-final-acceso-membresias.
+[ ] /embajadores abre landing de embajadores.
+[ ] /membresia abre acceso de usuario/membresía.
+[ ] /membresia?ref=CON-PRUEBA conserva el referido.
+[ ] ?Admin o ?admin=1 muestra acceso admin.
+[ ] PIN correcto guarda acceso admin local.
+[ ] Botón + se ve blanco.
+[ ] Home no se rompe.
+[ ] Publicar no se rompe.
+[ ] Supabase sigue igual.
+[ ] No requiere SQL nuevo para prueba piloto.

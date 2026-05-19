@@ -4,12 +4,12 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.9.35-landing-embajadores";
+const CACHE_NAME = "conecta-servicios-v4.9.36-final-acceso-membresias";
 const ASSETS = [
   "./",
   "index.html",
-  "styles.css?v=4.9.35-landing-embajadores",
-  "app.js?v=4.9.35-landing-embajadores",
+  "styles.css?v=4.9.36-final-acceso-membresias",
+  "app.js?v=4.9.36-final-acceso-membresias",
   "manifest.json",
   "assets/hero-scene-v4718.webp",
   "assets/hero-scene-clean-v4711.png",
