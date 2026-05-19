@@ -1,0 +1,19 @@
+Continuar con Conecta Servicios v4.9.36.5.
+
+Objetivo:
+Corregir dos detalles reportados en prueba móvil:
+1. El botón Admin no debe aparecer arriba/flotante; debe estar solamente dentro de Oficina.
+2. El botón "Copiar enlace" de Mi acceso/Membresía no debe generar un enlace que termine en 404.
+
+Implementación:
+- Reemplazar app.js, styles.css, service-worker.js, manifest.json y vercel.json en la raíz.
+- Aplicar PATCH-INDEX-v4.9.36.5.txt en index.html.
+- Confirmar que el enlace copiado quede con formato:
+  https://conecta-servicios.vercel.app/?section=membresia&ref=CON-LOCAL
+  y no como:
+  https://conecta-servicios.vercel.app/membresia?ref=CON-LOCAL
+- Confirmar que /membresia también funcione por vercel.json para enlaces antiguos.
+- Confirmar que Admin solo aparezca en Oficina.
+
+No modificar Supabase.
+No crear SQL nuevo.

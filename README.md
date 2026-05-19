@@ -1,34 +1,22 @@
-# Conecta Servicios v4.9.36.3 — Hotfix botones landing Embajadores
+# Conecta Servicios v4.9.36.5
 
-Esta entrega corrige que el landing `/embajadores` abra correctamente pero sus botones no ejecuten acciones.
+Hotfix de prueba para:
 
-## Corrección principal
+- Evitar que el botón Admin aparezca flotante o arriba de la app.
+- Mantener el acceso Admin únicamente dentro de Oficina / Oficina de registro.
+- Corregir el botón "Copiar enlace" de Mi acceso / Membresía.
+- Usar enlaces seguros tipo `/?section=membresia&ref=CODIGO`, para evitar 404 en Vercel.
+- Agregar rewrites opcionales en `vercel.json` para que `/membresia`, `/mi-acceso` y `/acceso` también funcionen si alguien abre un enlace viejo.
 
-El `index.html` del landing usa estos botones:
+## Archivos a reemplazar
 
-- `startAmbassadorLandingFlow('embajador')`
-- `startAmbassadorLandingFlow('referido')`
-- `startAmbassadorLandingFlow('pago')`
-- `startAmbassadorLandingFlow('manual')`
-- `copyAmbassadorLandingLink()`
+- app.js
+- styles.css
+- service-worker.js
+- manifest.json
+- vercel.json
 
-En la versión publicada esas funciones no estaban definidas en `app.js`, por eso los botones se veían pero no respondían.
-
-## Qué se agregó
-
-- Función global `startAmbassadorLandingFlow(type)`.
-- Función global `copyAmbassadorLandingLink()`.
-- Delegación de respaldo para volver a enganchar los botones del landing aunque el onclick inline falle por caché.
-- Cache nuevo del service worker: `conecta-servicios-v4.9.36.3-botones-embajadores`.
-- Manifest actualizado a `v=4.9.36.3-botones-embajadores`.
-
-## Mapeo de botones
-
-- “Quiero ser embajador” / “Registrarme” → registro de embajador.
-- “Registrar referido” → registro de referido.
-- “Activar membresía $98” / “Cobrar membresía” → Mi acceso/Membresía para visitantes; panel de pagos si el admin está activo.
-- “Manual rápido” → manual de embajadores.
-- “Copiar enlace para compartir” → copia `/embajadores` o `/embajadores?ref=CODIGO`.
+Aplicar también `PATCH-INDEX-v4.9.36.5.txt` en `index.html`.
 
 ## SQL
 
@@ -36,4 +24,4 @@ No requiere SQL nuevo.
 
 ## Commit sugerido
 
-`Corregir botones del landing de embajadores v4.9.36.3`
+Corregir enlace de membresía y mover Admin a Oficina v4.9.36.5

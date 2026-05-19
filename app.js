@@ -6998,3 +6998,209 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 window.addEventListener("pageshow", () => setTimeout(bindAmbassadorLandingButtonsV49363, 120));
 
+
+// v4.9.36.4 — Acceso admin dentro de Oficina
+// Reubica el botón Admin para que no aparezca flotante ni como acceso general.
+// Ahora se muestra como tarjeta dentro de la sección Oficina / Oficina de registro.
+const ADMIN_OFFICE_ACCESS_VERSION_V49364 = "4.9.36.4-admin-en-oficina";
+
+function removeFloatingAdminQuickAccessV49364() {
+  try {
+    const oldButton = document.getElementById("adminQuickAccessV49361");
+    if (oldButton && !oldButton.closest("#officeAdminAccessV49364")) oldButton.remove();
+  } catch (error) {
+    console.warn("No se pudo retirar el acceso admin flotante", error);
+  }
+}
+
+function renderAdminAccessInsideOfficeV49364() {
+  const office = document.getElementById("oficina");
+  if (!office) return;
+  removeFloatingAdminQuickAccessV49364();
+
+  let card = document.getElementById("officeAdminAccessV49364");
+  if (!card) {
+    card = document.createElement("div");
+    card.id = "officeAdminAccessV49364";
+    card.className = "office-admin-access-card-v49364";
+    const firstCard = office.querySelector(".form-card, .notice-card, .card");
+    if (firstCard && firstCard.parentNode === office) {
+      office.insertBefore(card, firstCard);
+    } else {
+      office.insertBefore(card, office.firstChild);
+    }
+  }
+
+  const isSaved = Boolean(adminUnlocked || adminAccessAvailableV4936?.());
+  card.classList.toggle("is-saved", isSaved);
+  card.innerHTML = `
+    <div class="office-admin-access-icon-v49364">⚙</div>
+    <div class="office-admin-access-copy-v49364">
+      <small>Oficina de registro</small>
+      <strong>Acceso administrador</strong>
+      <p>${isSaved ? "Admin guardado en este dispositivo. Puedes abrir el panel de administración." : "Ingresa el PIN para revisar publicaciones, validar membresías y operar la oficina."}</p>
+    </div>
+    <div class="office-admin-access-actions-v49364">
+      <button type="button" class="btn-small btn-purple" onclick="openAdminQuickAccessV49361()">${isSaved ? "Abrir admin" : "Ingresar PIN"}</button>
+      ${isSaved ? `<button type="button" class="btn-small btn-ghost" onclick="lockAdminAccessV4936(); renderAdminAccessInsideOfficeV49364();">Ocultar admin</button>` : ""}
+    </div>`;
+  document.body.dataset.adminOfficeAccess = ADMIN_OFFICE_ACCESS_VERSION_V49364;
+}
+
+try {
+  ensureAdminQuickAccessV49361 = function() {
+    renderAdminAccessInsideOfficeV49364();
+  };
+} catch (error) {
+  console.warn("No se pudo reemplazar ensureAdminQuickAccessV49361", error);
+}
+
+try {
+  const showSectionBaseV49364 = showSection;
+  showSection = function(id, push = true) {
+    const result = showSectionBaseV49364(id, push);
+    const section = typeof sectionAliasV4936 === "function" ? sectionAliasV4936(id) : id;
+    if (section === "oficina" || section === "admin") {
+      setTimeout(renderAdminAccessInsideOfficeV49364, 60);
+      setTimeout(renderAdminAccessInsideOfficeV49364, 260);
+    }
+    return result;
+  };
+} catch (error) {
+  console.warn("No se pudo enganchar acceso admin dentro de Oficina", error);
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  removeFloatingAdminQuickAccessV49364();
+  setTimeout(renderAdminAccessInsideOfficeV49364, 120);
+});
+window.addEventListener("pageshow", () => {
+  removeFloatingAdminQuickAccessV49364();
+  setTimeout(renderAdminAccessInsideOfficeV49364, 120);
+});
+
+// v4.9.36.5 — Hotfix enlace de membresía seguro + Admin solo dentro de Oficina
+// Problemas corregidos:
+// 1) El enlace copiado usaba /membresia?ref=..., que puede dar 404 si Vercel no reescribe esa ruta.
+// 2) El botón Admin no debe mostrarse flotante; solo debe vivir dentro de Oficina.
+const MEMBER_ACCESS_SAFE_LINK_VERSION_V49365 = "4.9.36.5-enlace-membresia-admin-oficina";
+
+function memberAccessSafeRelativeUrlV49365(code = "") {
+  const safe = typeof normalizeAmbassadorCodeV4936 === "function"
+    ? normalizeAmbassadorCodeV4936(code || getUserAccessProfileV4936?.().ambassadorCode || "CON-LOCAL")
+    : String(code || "CON-LOCAL").trim().toUpperCase();
+  const params = new URLSearchParams();
+  params.set("section", "membresia");
+  params.set("ref", safe || "CON-LOCAL");
+  const adminMode = typeof adminAccessAvailableV4936 === "function"
+    ? adminAccessAvailableV4936()
+    : Boolean(window.adminUnlocked || window.adminRouteEnabled);
+  if (adminMode) params.set("admin", "1");
+  return `/?${params.toString()}`;
+}
+
+try {
+  memberAccessPublicLinkV4936 = function(code = "") {
+    return `${location.origin}${memberAccessSafeRelativeUrlV49365(code)}`;
+  };
+} catch (error) {
+  console.warn("No se pudo reemplazar enlace público de membresía", error);
+}
+
+try {
+  const routeUrlForSectionBaseV49365 = routeUrlForSection;
+  routeUrlForSection = function(id) {
+    const section = typeof sectionAliasV4936 === "function" ? sectionAliasV4936(id) : id;
+    if (section === "miAcceso") {
+      const profile = typeof getUserAccessProfileV4936 === "function" ? getUserAccessProfileV4936() : {};
+      return memberAccessSafeRelativeUrlV49365(profile?.ambassadorCode || "CON-LOCAL");
+    }
+    return routeUrlForSectionBaseV49365(id);
+  };
+} catch (error) {
+  console.warn("No se pudo reemplazar URL interna de Mi acceso", error);
+}
+
+try {
+  copyMemberAccessLinkV4936 = function(code = "") {
+    const link = memberAccessPublicLinkV4936(code || getUserAccessProfileV4936?.().ambassadorCode || "CON-LOCAL");
+    navigator.clipboard?.writeText(link).then(
+      () => showToast?.("Enlace copiado"),
+      () => showToast?.(link)
+    );
+  };
+  createAmbassadorMembershipLinkV4936 = function() {
+    const raw = document.getElementById("ambassadorMemberLinkCode")?.value || getUserAccessProfileV4936?.().ambassadorCode || "CON-LOCAL";
+    const code = normalizeAmbassadorCodeV4936?.(raw) || raw;
+    const link = memberAccessPublicLinkV4936(code);
+    const out = document.getElementById("ambassadorMemberLinkOutput");
+    if (out) out.textContent = link;
+    navigator.clipboard?.writeText(link).then(
+      () => showToast?.("Enlace de membresía copiado"),
+      () => showToast?.(link)
+    );
+  };
+} catch (error) {
+  console.warn("No se pudieron reemplazar acciones de copiado", error);
+}
+
+function removeAdminFloatingEverywhereV49365() {
+  try {
+    document.querySelectorAll("#adminQuickAccessV49361, .admin-quick-access-v49361").forEach(button => button.remove());
+  } catch (error) {
+    console.warn("No se pudo retirar botón admin flotante", error);
+  }
+}
+
+try {
+  ensureAdminQuickAccessV49361 = function() {
+    removeAdminFloatingEverywhereV49365();
+    renderAdminAccessInsideOfficeV49364?.();
+  };
+} catch (error) {
+  console.warn("No se pudo blindar ensureAdminQuickAccess", error);
+}
+
+try {
+  const showSectionBaseV49365 = showSection;
+  showSection = function(id, push = true) {
+    const result = showSectionBaseV49365(id, push);
+    const section = typeof sectionAliasV4936 === "function" ? sectionAliasV4936(id) : id;
+    document.body.dataset.currentSection = section || "";
+    removeAdminFloatingEverywhereV49365();
+    if (section === "oficina" || section === "admin") {
+      setTimeout(() => renderAdminAccessInsideOfficeV49364?.(), 80);
+      setTimeout(() => renderAdminAccessInsideOfficeV49364?.(), 350);
+    }
+    return result;
+  };
+} catch (error) {
+  console.warn("No se pudo reforzar navegación admin oficina", error);
+}
+
+function bootMemberLinkAdminOfficeV49365() {
+  removeAdminFloatingEverywhereV49365();
+  if (typeof captureAmbassadorRefFromUrlV4936 === "function") captureAmbassadorRefFromUrlV4936();
+  if (typeof initialSectionFromUrlV4935 === "function" && typeof sectionAliasV4936 === "function") {
+    const initial = sectionAliasV4936(initialSectionFromUrlV4935() || "");
+    if (initial === "miAcceso") setTimeout(() => showSection?.("miAcceso", false), 60);
+  }
+  if (typeof renderMemberAccessShortcutInsideMyPublicationsV49362 === "function") {
+    setTimeout(renderMemberAccessShortcutInsideMyPublicationsV49362, 100);
+  }
+  if (typeof renderAdminAccessInsideOfficeV49364 === "function") {
+    setTimeout(renderAdminAccessInsideOfficeV49364, 150);
+  }
+  document.body.dataset.hotfixV49365 = MEMBER_ACCESS_SAFE_LINK_VERSION_V49365;
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  bootMemberLinkAdminOfficeV49365();
+  setTimeout(removeAdminFloatingEverywhereV49365, 250);
+  setTimeout(removeAdminFloatingEverywhereV49365, 900);
+});
+window.addEventListener("pageshow", () => {
+  setTimeout(bootMemberLinkAdminOfficeV49365, 80);
+  setTimeout(removeAdminFloatingEverywhereV49365, 400);
+});
+window.addEventListener("popstate", () => setTimeout(removeAdminFloatingEverywhereV49365, 80));

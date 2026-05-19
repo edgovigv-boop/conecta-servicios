@@ -1,0 +1,12 @@
+Checklist v4.9.36.5:
+
+[ ] Abrir /embajadores y confirmar que carga el landing.
+[ ] Ir a Mis publicaciones y tocar "Copiar enlace".
+[ ] Pegar enlace copiado: debe ser /?section=membresia&ref=...
+[ ] Abrir el enlace copiado en incógnito: debe abrir Mi acceso, no 404.
+[ ] Probar enlace viejo /membresia?ref=CON-LOCAL: debe abrir la app gracias a vercel.json.
+[ ] Confirmar que el botón Admin NO aparece arriba.
+[ ] Ir a Oficina y confirmar tarjeta "Acceso administrador".
+[ ] Ingresar PIN desde Oficina y abrir administración.
+[ ] Verificar que el plus siga en blanco.
+[ ] Limpiar caché/service worker si el teléfono conserva la versión anterior.

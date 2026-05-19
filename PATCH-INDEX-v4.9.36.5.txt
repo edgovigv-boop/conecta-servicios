@@ -1,0 +1,11 @@
+Actualizar index.html en la raíz:
+
+1) Cambiar referencias de CSS y JS a:
+   styles.css?v=4.9.36.5-enlace-membresia-admin-oficina
+   app.js?v=4.9.36.5-enlace-membresia-admin-oficina
+
+2) Cambiar body data-version a:
+   data-version="4.9.36.5-enlace-membresia-admin-oficina"
+
+3) Si el title muestra una versión anterior, cambiarlo a:
+   Conecta Servicios v4.9.36.5

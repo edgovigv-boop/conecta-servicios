@@ -1,11 +1,11 @@
-// Conecta Servicios v4.9.36.3 — Service Worker hotfix botones landing Embajadores
-const CACHE_NAME = "conecta-servicios-v4.9.36.3-botones-embajadores";
+// Conecta Servicios v4.9.36.5 — Service Worker hotfix enlace membresía + Admin Oficina
+const CACHE_NAME = "conecta-servicios-v4.9.36.5-enlace-membresia-admin-oficina";
 const ASSETS = [
   "/",
   "/index.html",
-  "/styles.css?v=4.9.36.3-botones-embajadores",
-  "/app.js?v=4.9.36.3-botones-embajadores",
-  "/manifest.json?v=4.9.36.3-botones-embajadores"
+  "/styles.css?v=4.9.36.5-enlace-membresia-admin-oficina",
+  "/app.js?v=4.9.36.5-enlace-membresia-admin-oficina",
+  "/manifest.json?v=4.9.36.5-enlace-membresia-admin-oficina"
 ];
 self.addEventListener("install", event => {
   self.skipWaiting();
