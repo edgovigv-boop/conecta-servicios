@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.31-hotfix-multimedia-admin";
+const PWA_VERSION = "v4.9.32-hotfix-multimedia-admin";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -3438,9 +3438,11 @@ function homeFeedPostCardV4918(post) {
   const tags = (post.hashtags || []).slice(0, 3).map(tag => `<span>#${escapeHtml(tag)}</span>`).join("");
   const initials = (post.nombre || "CS").split(/\s+/).map(word => word[0] || "").join("").slice(0,2).toUpperCase() || "CS";
   const cta = post.accion || "Usar esta plantilla";
+  const imageSrc = displayMediaUrlV4931(post.imagen || "", STORAGE_TEMPLATE_BUCKET_V4930) || pilotFallbackImageV4932(post);
+  const fallbackSrc = pilotFallbackImageV4932(post);
   return `<article class="v4918-feed-card v4922-photo-card" data-type="${escapeHtml(post.tipo)}">
     <div class="v4918-feed-media v4922-feed-media">
-      <img src="${escapeHtml(post.imagen)}" alt="${escapeHtml(post.titulo)}" loading="lazy" style="object-position:${escapeHtml(post.posicion || 'center center')}" />
+      <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(post.titulo)}" loading="lazy" data-fallback="${escapeHtml(fallbackSrc)}" onerror="handleHomeFeedImageErrorV4932(this,'${escapeHtml(post.id || post.tipo)}')" style="object-position:${escapeHtml(post.posicion || 'center center')}" />
       <div class="v4918-media-gradient v4922-media-gradient" aria-hidden="true"></div>
       <div class="v4922-card-top">
         <span class="v4922-type-pill">${escapeHtml(post.rol || homeFeedLabelV4918(post.tipo))}</span>
@@ -5518,7 +5520,57 @@ window.addEventListener("pageshow", () => setTimeout(ensureV4927NavigationIntegr
 
 
 
-// v4.9.31 — Hotfix multimedia Admin: URLs públicas reales de Storage + guardado de metadatos
+
+// v4.9.32 — Protección contra URLs rotas en Home Feed y validación real de imagen pública
+function pilotFallbackImageV4932(postOrId = {}) {
+  const post = typeof postOrId === "string"
+    ? HOME_FEED_POSTS_V4918.find(item => item.id === postOrId) || HOME_FEED_POSTS_V4918.find(item => item.tipo === postOrId)
+    : postOrId;
+  const type = post?.tipo || "servicios";
+  const variants = (typeof FEED_PHOTO_VARIANTS_V4922 !== "undefined" && FEED_PHOTO_VARIANTS_V4922[type]) || (typeof FEED_PHOTO_VARIANTS_V4922 !== "undefined" && FEED_PHOTO_VARIANTS_V4922.servicios) || [];
+  if (!variants.length) return "assets/photo4922-servicios-1.webp";
+  const raw = String(post?.id || post?.titulo || type).split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return variants[raw % variants.length];
+}
+function handleHomeFeedImageErrorV4932(img, postId = "") {
+  try {
+    const fallback = img?.dataset?.fallback || pilotFallbackImageV4932(postId);
+    const current = String(img?.src || "");
+    img.onerror = null;
+    img.src = fallback;
+    if (postId) {
+      const overrides = getPilotFeedOverrides();
+      const ov = overrides[postId];
+      if (ov?.imagen && current.includes(encodeURI(ov.imagen).slice(0, 50)) === false) {
+        // Mantener override si no podemos comparar con seguridad.
+      }
+    }
+    if (!handleHomeFeedImageErrorV4932.notified) {
+      handleHomeFeedImageErrorV4932.notified = true;
+      showToast("La imagen no cargó; se mostró una foto base. Revisa la URL pública en Admin.");
+    }
+  } catch (error) {
+    console.warn("No se pudo aplicar fallback de imagen", error);
+  }
+}
+function verifyImageUrlLoadsV4932(url, timeout = 7000) {
+  return new Promise((resolve, reject) => {
+    if (!url || !/^https?:\/\//i.test(url)) {
+      reject(new Error("URL pública inválida"));
+      return;
+    }
+    const img = new Image();
+    const timer = setTimeout(() => {
+      img.onload = img.onerror = null;
+      reject(new Error("La imagen no respondió a tiempo"));
+    }, timeout);
+    img.onload = () => { clearTimeout(timer); resolve(true); };
+    img.onerror = () => { clearTimeout(timer); reject(new Error("La URL pública no muestra una imagen")); };
+    img.src = `${url}${url.includes("?") ? "&" : "?"}v=${Date.now()}`;
+  });
+}
+
+// v4.9.32 — Hotfix multimedia Admin: URLs públicas reales de Storage + guardado de metadatos
 // Nota: requiere que existan buckets públicos o políticas de Storage para el anon key:
 // - template-media
 // - publication-media
@@ -5681,7 +5733,7 @@ function formPayload() {
   payload.estado = evaluation.status;
   payload.referencia = evaluation.reasons.length
     ? `Revisión automática: ${evaluation.reasons.join(", ")} · Sugerencia: ${inferred.label}`
-    : `Activación automática v4.9.31 · Clasificación: ${inferred.label}`;
+    : `Activación automática v4.9.32 · Clasificación: ${inferred.label}`;
   if (isLikelyMediaUrl(mediaUrl)) {
     payload.image_url = mediaUrl;
     payload.media_type = lastPublicationMediaUploadV4931?.type || "image";
@@ -5943,13 +5995,14 @@ async function uploadPilotFeedImageFileV4930(id) {
   try {
     showToast("Subiendo foto de plantilla...");
     const uploaded = await uploadImageToStorageV4930(file, STORAGE_TEMPLATE_BUCKET_V4930, "plantillas");
+    await verifyImageUrlLoadsV4932(uploaded.url);
     const urlInput = document.getElementById(`pilotImg-${id}`);
     if (urlInput) urlInput.value = uploaded.url;
     await savePilotFeedImage(id);
-    showToast("Foto de plantilla actualizada");
+    showToast("Foto de plantilla actualizada y verificada");
   } catch (error) {
     console.error(error);
-    showToast("No se pudo subir. Revisa bucket template-media y permisos de Storage.");
+    showToast("No se pudo subir/ver la foto. Revisa bucket template-media, políticas y que sea imagen JPG/PNG/WEBP pública.");
   }
 }
 async function savePilotFeedImage(id) {
@@ -5957,6 +6010,10 @@ async function savePilotFeedImage(id) {
   if (img && !/^https?:\/\//i.test(img)) img = storagePublicUrlV4930(STORAGE_TEMPLATE_BUCKET_V4930, img);
   const pos = String(document.getElementById(`pilotPos-${id}`)?.value || "center center").trim();
   if (img && !isLikelyMediaUrl(img)) { showToast("Pega una URL pública de imagen válida"); return; }
+  if (img && /^https?:\/\//i.test(img)) {
+    try { await verifyImageUrlLoadsV4932(img); }
+    catch (error) { showToast("La URL no carga como imagen pública. No se guardó."); return; }
+  }
   const overrides = getPilotFeedOverrides();
   overrides[id] = { ...(overrides[id] || {}), imagen: img, image_url_override: img, posicion: pos, updated_at: new Date().toISOString() };
   savePilotFeedOverrides(overrides);
@@ -5968,5 +6025,5 @@ async function savePilotFeedImage(id) {
   showToast("Foto piloto actualizada");
 }
 
-// Refuerzo de inicialización v4.9.31: carga overrides remotos si la tabla existe.
+// Refuerzo de inicialización v4.9.32: carga overrides remotos si la tabla existe.
 window.addEventListener("DOMContentLoaded", () => setTimeout(loadRemotePilotFeedOverridesV4930, 900));
