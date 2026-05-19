@@ -28,10 +28,10 @@ Todo uso requiere autorización expresa y por escrito del titular.
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/pwa-plus-icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/apple-touch-plus.png" />
-  <title>Conecta Servicios v4.9.26</title>
-  <link rel="stylesheet" href="styles.css?v=4.9.26-rescate-encuestas-chat-negocios" />
+  <title>Conecta Servicios v4.9.27</title>
+  <link rel="stylesheet" href="styles.css?v=4.9.27-hotfix-navegacion-real" />
 </head>
-<body data-version="4.9.26-rescate-encuestas-chat-negocios">
+<body data-version="4.9.27-hotfix-navegacion-real">
   <div class="app-shell home-mode">
     <header class="app-header">
       <button class="back-button" id="backButton" aria-label="Volver" onclick="goBack()">←</button>
@@ -78,6 +78,191 @@ Todo uso requiere autorización expresa y por escrito del titular.
 
           <p class="sync-status visually-hidden" id="syncStatus" aria-live="polite">Conectando con la base de datos...</p>
         </div>
+      </section>
+
+
+      <section id="rutaGuiada" class="section info-section guided-route-section">
+        <div id="guidedRouteContent"></div>
+      </section>
+
+      <section id="encuesta" class="section info-section survey-section">
+        <div id="surveyFlowContent"></div>
+      </section>
+
+      <section id="registro" class="section">
+        <div class="section-header compact">
+          <div>
+            <h2>Publica paso a paso</h2>
+            <p>Te guiamos con preguntas cortas para que publicar no sea pesado.</p>
+          </div>
+        </div>
+
+        <form id="publicationForm" class="wizard-card">
+          <div class="wizard-progress">
+            <div><strong id="wizardStepLabel">Paso 1 de 7</strong><span id="wizardStepTitle">¿Qué quieres publicar?</span></div>
+            <div class="progress-track"><span id="wizardProgressBar"></span></div>
+          </div>
+
+          <div class="wizard-step active" data-step="1">
+            <h3>¿Qué quieres publicar?</h3>
+            <p class="muted">Elige una opción. Después podrás explicarlo con tus palabras.</p>
+            <div class="notice-card slim classification-tip">
+              <strong>La app te ayuda a clasificar mejor.</strong>
+              <p>Escribe natural usando frases como <b>Busco...</b>, <b>Ofrezco...</b>, <b>Necesito...</b>, <b>Tengo...</b> o <b>Vendo...</b>. Con eso el sistema acomoda tu publicación en la oportunidad correcta.</p>
+            </div>
+            <div class="choice-grid">
+              <button type="button" class="choice-card" data-category="Servicios" data-intent="Ofrezco / Tengo disponible" onclick="selectPublishType(this)"><span>🛠</span><strong>Ofrezco un servicio</strong><small>Oficios, limpieza, comida, apoyo o trabajo por cuenta propia.</small></button>
+              <button type="button" class="choice-card" data-category="Servicios" data-intent="Busco / Necesito" onclick="selectPublishType(this)"><span>🔎</span><strong>Busco ayuda o necesito algo</strong><small>Personal, limpieza, reparación, mandado o apoyo local.</small></button>
+              <button type="button" class="choice-card" data-category="Movilidad" data-intent="Ofrezco / Tengo disponible" onclick="selectPublishType(this)"><span>🚘</span><strong>Movilidad o viaje</strong><small>Ruta, horario, salida, traslado o espacios.</small></button>
+              <button type="button" class="choice-card" data-category="Entregas y mandados" data-intent="Ofrezco / Tengo disponible" onclick="selectPublishType(this)"><span>📦</span><strong>Entregas o mandados</strong><small>A pie, bici, moto, auto o camioneta.</small></button>
+            </div>
+            <input type="hidden" id="pubCategory" />
+            <input type="hidden" id="pubIntent" />
+          </div>
+
+          <div class="wizard-step" data-step="2">
+            <h3>¿Cómo quieres aparecer?</h3>
+            <label>Nombre, negocio o referencia
+              <input id="pubName" type="text" placeholder="Ej. Don Pedro Carpintería / Taquería El Centro / María mandados" />
+            </label>
+          </div>
+
+          <div class="wizard-step" data-step="3">
+            <h3>¿Dónde aplica?</h3>
+            <div class="form-grid">
+              <label>Estado
+                <select id="pubState" data-state-select data-default=""></select>
+              </label>
+              <label>Municipio
+                <select id="pubMunicipality"><option value="">Selecciona municipio</option></select>
+              </label>
+            </div>
+            <label>Colonia o localidad
+              <input id="pubLocality" type="text" value="Chapultepec Centro" placeholder="Ej. El Ameyal, Centro, Cuernavaca" />
+            </label>
+            <div class="location-consent-card">
+              <strong>Ubicación aproximada opcional</strong>
+              <p>Sirve para que otras personas encuentren tu publicación por cercanía. No se mostrará tu ubicación exacta.</p>
+              <button type="button" class="btn-small btn-outline" onclick="capturePublicationLocation()">📍 Usar mi ubicación actual</button>
+              <small id="pubLocationStatus" class="field-help">Puedes publicar sin activar ubicación.</small>
+              <input id="pubLat" type="hidden" />
+              <input id="pubLng" type="hidden" />
+            </div>
+          </div>
+
+          <div class="wizard-step" data-step="4">
+            <h3>Título de tu publicación</h3>
+            <p class="muted" id="titleHint">Ej. Busco trabajo en limpieza / Ofrezco mandados en moto / Necesito quien lave mis autos / Tengo una panadería.</p>
+            <label>Título
+              <input id="pubTitle" type="text" placeholder="Escríbelo claro y corto" />
+            </label>
+          </div>
+
+          <div class="wizard-step" data-step="5">
+            <h3>Detalles</h3>
+            <div id="generalDetails" class="dynamic-detail">
+              <label>Descripción
+                <textarea id="pubDescription" rows="5" placeholder="Cuéntalo de forma natural. Ej. Busco..., Ofrezco..., Necesito..., Tengo..., Vendo... Puedes pegar links de Facebook, TikTok, Instagram, Waze o Google Maps."></textarea>
+              </label>
+              <div class="description-helper" aria-label="Asistente de descripción">
+                <strong>✨ Asistente de descripción</strong>
+                <p>Usa estas ayudas para redactar mejor. Puedes editar el texto antes de publicar.</p>
+                <div class="helper-actions">
+                  <button type="button" onclick="assistDescription('draft')">Ayúdame a redactar</button>
+                  <button type="button" onclick="assistDescription('clear')">Más claro</button>
+                  <button type="button" onclick="assistDescription('friendly')">Más amable</button>
+                  <button type="button" onclick="assistDescription('short')">Más corto</button>
+                  <button type="button" onclick="assistDescription('details')">Agregar detalles útiles</button>
+                </div>
+              </div>
+              <label>Pago, costo o presupuesto sugerido
+                <input id="pubBudget" type="number" min="0" placeholder="Opcional. Ej. 100" />
+              </label>
+            </div>
+            <div id="rideDetails" class="dynamic-detail hidden">
+              <label>Descripción del viaje
+                <textarea id="pubDescriptionRide" rows="4" placeholder="Ej. Viajo de Chapultepec a Toluca de lunes a viernes. Comparto espacio si vas por la ruta." ></textarea>
+              </label>
+              <div class="description-helper" aria-label="Asistente de descripción para viaje">
+                <strong>✨ Asistente de descripción</strong>
+                <p>Te ayuda a explicar ruta, horario y condiciones de forma clara.</p>
+                <div class="helper-actions">
+                  <button type="button" onclick="assistDescription('draft')">Ayúdame a redactar</button>
+                  <button type="button" onclick="assistDescription('clear')">Más claro</button>
+                  <button type="button" onclick="assistDescription('friendly')">Más amable</button>
+                  <button type="button" onclick="assistDescription('short')">Más corto</button>
+                  <button type="button" onclick="assistDescription('details')">Agregar detalles útiles</button>
+                </div>
+              </div>
+              <label>Ruta o destino
+                <input id="pubRoute" type="text" placeholder="Ej. Chapultepec → Toluca / link de Waze" />
+              </label>
+              <div class="form-grid">
+                <label>Hora / días
+                  <input id="pubTime" type="text" placeholder="Ej. 7:00 am / lunes a viernes" />
+                </label>
+                <label>Lugar de salida
+                  <input id="pubDeparture" type="text" placeholder="Ej. Centro de Chapultepec" />
+                </label>
+              </div>
+              <label>Cooperación o costo sugerido
+                <input id="pubBudgetRide" type="number" min="0" placeholder="Opcional" />
+              </label>
+            </div>
+            <div id="deliveryDetails" class="dynamic-detail hidden">
+              <label>Descripción del servicio o necesidad
+                <textarea id="pubDescriptionDelivery" rows="4" placeholder="Ej. Hago entregas locales en moto / Busco quien lleve documentos." ></textarea>
+              </label>
+              <div class="description-helper" aria-label="Asistente de descripción para envíos">
+                <strong>✨ Asistente de descripción</strong>
+                <p>Te ayuda a explicar qué transportas, zona y horario sin hacerlo largo.</p>
+                <div class="helper-actions">
+                  <button type="button" onclick="assistDescription('draft')">Ayúdame a redactar</button>
+                  <button type="button" onclick="assistDescription('clear')">Más claro</button>
+                  <button type="button" onclick="assistDescription('friendly')">Más amable</button>
+                  <button type="button" onclick="assistDescription('short')">Más corto</button>
+                  <button type="button" onclick="assistDescription('details')">Agregar detalles útiles</button>
+                </div>
+              </div>
+              <label>Medio disponible o requerido
+                <select id="pubTransport">
+                  <option value="">Selecciona si aplica</option>
+                  <option>A pie</option><option>Bicicleta</option><option>Moto</option><option>Auto</option><option>Camioneta</option><option>Mudanza / Carga</option>
+                </select>
+              </label>
+              <label>Costo o presupuesto sugerido
+                <input id="pubBudgetDelivery" type="number" min="0" placeholder="Opcional" />
+              </label>
+            </div>
+          </div>
+
+          <div class="wizard-step" data-step="6">
+            <h3>Contacto</h3>
+            <label>WhatsApp
+              <input id="pubPhone" type="tel" inputmode="numeric" placeholder="Ej. 7225703145" />
+              <small class="field-help">Tu número se mostrará parcialmente oculto como xxxxxx3145.</small>
+            </label>
+            <label class="checkbox-line">
+              <input id="pubPrivacyAccept" type="checkbox" />
+              <span>Acepto el <button type="button" class="link-button" onclick="showSection('avisoPrivacidad')">Aviso de Privacidad</button> y los <button type="button" class="link-button" onclick="showSection('terminos')">Términos y Condiciones</button>.</span>
+            </label>
+          </div>
+
+          <div class="wizard-step" data-step="7">
+            <h3>Revisa antes de publicar</h3>
+            <div id="publicationPreview" class="preview-card"></div>
+            <div class="notice-card auto-note">
+              <strong>Publicación automática con cuidado</strong>
+              <p>Si tu registro está completo y claro, se activará de inmediato. Si detectamos algo incompleto o dudoso, quedará en revisión.</p>
+            </div>
+          </div>
+
+          <div class="wizard-actions">
+            <button type="button" class="btn-small btn-ghost" id="wizardBackBtn" onclick="prevWizardStep()">Atrás</button>
+            <button type="button" class="btn-small btn-purple" id="wizardNextBtn" onclick="nextWizardStep()">Continuar</button>
+            <button type="submit" class="btn-small btn-green hidden" id="wizardSubmitBtn">Publicar</button>
+          </div>
+        </form>
       </section>
 
       <section id="publicaciones" class="section publicaciones-clean-section">
@@ -731,6 +916,6 @@ Todo uso requiere autorización expresa y por escrito del titular.
     </form>
   </dialog>
 
-  <script src="app.js?v=4.9.26-plus-asistente-templates"></script>
+  <script src="app.js?v=4.9.27-hotfix-navegacion-real"></script>
 </body>
 </html>

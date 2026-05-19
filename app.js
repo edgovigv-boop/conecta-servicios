@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.26-rescate-encuestas-chat-negocios";
+const PWA_VERSION = "v4.9.27-hotfix-navegacion-real";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -3387,7 +3387,7 @@ function init() {
   document.getElementById("homeAdminEntry")?.classList.toggle("hidden", !adminRouteEnabled);
   populateStateSelects();
   loadMunicipiosMx();
-  document.getElementById("publicationForm").addEventListener("submit", submitPublication);
+  document.getElementById("publicationForm")?.addEventListener("submit", submitPublication);
   document.getElementById("editForm").addEventListener("submit", saveEdit);
   document.getElementById("reclassForm")?.addEventListener("submit", saveReclassification);
   document.getElementById("externalLinkForm")?.addEventListener("submit", submitExternalLink);
@@ -5296,3 +5296,18 @@ function openPilotMessage(target = "") {
 window.addEventListener("DOMContentLoaded", () => setTimeout(ensureInitialHomeFeedVisibleV4926, 80));
 window.addEventListener("load", () => setTimeout(ensureInitialHomeFeedVisibleV4926, 180));
 window.addEventListener("pageshow", () => setTimeout(ensureInitialHomeFeedVisibleV4926, 220));
+
+// v4.9.27 — Hotfix navegación real: mantiene el selector del + fuera de las páginas y refuerza rutas existentes.
+function ensureV4927NavigationIntegrity() {
+  try {
+    const opportunities = document.getElementById("oportunidades");
+    if (opportunities && currentSection !== "oportunidades") opportunities.classList.remove("active");
+    const feed = document.getElementById("homeSocialFeed");
+    if (currentSection === "inicio" && feed && !feed.children.length) renderSocialHomeFeed();
+  } catch (error) {
+    console.warn("No se pudo verificar navegación v4.9.27", error);
+  }
+}
+window.addEventListener("DOMContentLoaded", () => setTimeout(ensureV4927NavigationIntegrity, 260));
+window.addEventListener("pageshow", () => setTimeout(ensureV4927NavigationIntegrity, 320));
+

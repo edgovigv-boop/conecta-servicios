@@ -4,7 +4,7 @@
 // Titular del proyecto: Conecta Servicios
 // ------------------------------------------------------------------
 
-const CACHE_NAME = "conecta-servicios-v4.9.26-rescate-encuestas-chat-negocios";
+const CACHE_NAME = "conecta-servicios-v4.9.27-hotfix-navegacion-real";
 const ASSETS = [
   "./",
   "index.html",
