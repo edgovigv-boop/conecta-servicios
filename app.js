@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.33-hotfix-subida-multimedia-admin";
+const PWA_VERSION = "v4.9.34-hotfix-overrides-multimedia";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -244,6 +244,22 @@ function getPilotFeedOverrides() {
 }
 function savePilotFeedOverrides(data) {
   try { localStorage.setItem(PILOT_FEED_OVERRIDES_KEY, JSON.stringify(data || {})); } catch {}
+}
+function overrideTimestampValueV4934(value) {
+  const time = Date.parse(value || "");
+  return Number.isFinite(time) ? time : 0;
+}
+function safeOverrideImageValueV4934(value = "") {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  if (/^(https?:|assets\/|\.\/assets\/|\/assets\/)/i.test(text)) return text;
+  return "";
+}
+function shouldRemoteOverrideLocalV4934(local = {}, remoteUpdatedAt = "") {
+  const remoteTs = overrideTimestampValueV4934(remoteUpdatedAt);
+  const localTs = overrideTimestampValueV4934(local?.updated_at);
+  // Si el usuario acaba de subir una foto en este dispositivo, no dejar que una fila remota vieja la reemplace.
+  return !localTs || remoteTs >= localTs;
 }
 function applyPilotFeedOverrides() {
   const overrides = getPilotFeedOverrides();
@@ -3442,7 +3458,7 @@ function homeFeedPostCardV4918(post) {
   const fallbackSrc = pilotFallbackImageV4932(post);
   return `<article class="v4918-feed-card v4922-photo-card" data-type="${escapeHtml(post.tipo)}">
     <div class="v4918-feed-media v4922-feed-media">
-      <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(post.titulo)}" loading="lazy" data-fallback="${escapeHtml(fallbackSrc)}" onerror="handleHomeFeedImageErrorV4932(this,'${escapeHtml(post.id || post.tipo)}')" style="object-position:${escapeHtml(post.posicion || 'center center')}" />
+      <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(post.titulo)}" loading="lazy" data-fallback="${escapeHtml(fallbackSrc)}" data-retry="0" onerror="handleHomeFeedImageErrorV4932(this,'${escapeHtml(post.id || post.tipo)}')" style="object-position:${escapeHtml(post.posicion || 'center center')}" />
       <div class="v4918-media-gradient v4922-media-gradient" aria-hidden="true"></div>
       <div class="v4922-card-top">
         <span class="v4922-type-pill">${escapeHtml(post.rol || homeFeedLabelV4918(post.tipo))}</span>
@@ -5536,18 +5552,30 @@ function handleHomeFeedImageErrorV4932(img, postId = "") {
   try {
     const fallback = img?.dataset?.fallback || pilotFallbackImageV4932(postId);
     const current = String(img?.src || "");
+    const overrides = postId ? getPilotFeedOverrides() : {};
+    const ov = overrides[postId];
+    const overrideUrl = String(ov?.imagen || ov?.image_url_override || "").trim();
+    const isStorageOverride = overrideUrl && current.includes("/storage/v1/object/public/");
+    const retries = Number(img?.dataset?.retry || 0);
+
+    // Cuando una imagen acaba de subirse a Supabase Storage, la URL pública puede tardar unos segundos
+    // en responder en móvil/CDN. Reintentar antes de cambiar a fallback evita que aparezca un instante
+    // y luego desaparezca.
+    if (isStorageOverride && retries < 4) {
+      img.dataset.retry = String(retries + 1);
+      setTimeout(() => {
+        const separator = overrideUrl.includes("?") ? "&" : "?";
+        img.onerror = () => handleHomeFeedImageErrorV4932(img, postId);
+        img.src = `${overrideUrl}${separator}retry=${Date.now()}`;
+      }, 900 * (retries + 1));
+      return;
+    }
+
     img.onerror = null;
     img.src = fallback;
-    if (postId) {
-      const overrides = getPilotFeedOverrides();
-      const ov = overrides[postId];
-      if (ov?.imagen && current.includes(encodeURI(ov.imagen).slice(0, 50)) === false) {
-        // Mantener override si no podemos comparar con seguridad.
-      }
-    }
     if (!handleHomeFeedImageErrorV4932.notified) {
       handleHomeFeedImageErrorV4932.notified = true;
-      showToast("La imagen no cargó; se mostró una foto base. Revisa la URL pública en Admin.");
+      showToast("La imagen tardó en cargar; se mostró una foto base. Si acabas de subirla, actualiza en unos segundos.");
     }
   } catch (error) {
     console.warn("No se pudo aplicar fallback de imagen", error);
@@ -5570,7 +5598,7 @@ function verifyImageUrlLoadsV4932(url, timeout = 7000) {
   });
 }
 
-// v4.9.33 — Hotfix subida multimedia Admin: guarda URL pública sin bloquear por validación inmediata
+// v4.9.34 — Hotfix persistencia de overrides multimedia Admin
 // Nota: requiere que existan buckets públicos o políticas de Storage para el anon key:
 // - template-media
 // - publication-media
@@ -5733,7 +5761,7 @@ function formPayload() {
   payload.estado = evaluation.status;
   payload.referencia = evaluation.reasons.length
     ? `Revisión automática: ${evaluation.reasons.join(", ")} · Sugerencia: ${inferred.label}`
-    : `Activación automática v4.9.33 · Clasificación: ${inferred.label}`;
+    : `Activación automática v4.9.34 · Clasificación: ${inferred.label}`;
   if (isLikelyMediaUrl(mediaUrl)) {
     payload.image_url = mediaUrl;
     payload.media_type = lastPublicationMediaUploadV4931?.type || "image";
@@ -5948,17 +5976,27 @@ async function loadRemotePilotFeedOverridesV4930() {
     const rows = await supabaseRequest(`${TEMPLATE_OVERRIDES_TABLE_V4930}?select=*`);
     if (!Array.isArray(rows) || !rows.length) return;
     const overrides = getPilotFeedOverrides();
+    let changed = false;
     rows.forEach(row => {
       if (!row.template_id) return;
+      const local = overrides[row.template_id] || {};
+      if (!shouldRemoteOverrideLocalV4934(local, row.updated_at)) return;
+      const remoteImage = safeOverrideImageValueV4934(row.image_url_override || row.image_url || row.imagen || "");
+      if (!remoteImage && local.imagen) return;
       overrides[row.template_id] = {
-        ...(overrides[row.template_id] || {}),
-        imagen: row.image_url_override || row.image_url || row.imagen || overrides[row.template_id]?.imagen,
-        posicion: row.object_position || row.posicion || overrides[row.template_id]?.posicion || "center center"
+        ...local,
+        imagen: remoteImage || local.imagen,
+        image_url_override: remoteImage || local.image_url_override || local.imagen,
+        posicion: row.object_position || row.posicion || local.posicion || "center center",
+        updated_at: row.updated_at || local.updated_at || new Date().toISOString()
       };
+      changed = true;
     });
-    savePilotFeedOverrides(overrides);
-    applyPilotFeedOverrides();
-    renderSocialHomeFeed?.();
+    if (changed) {
+      savePilotFeedOverrides(overrides);
+      applyPilotFeedOverrides();
+      renderSocialHomeFeed?.();
+    }
   } catch (error) {
     console.debug("Tabla de overrides de plantillas no configurada todavía.", error.message);
   }
@@ -5998,15 +6036,20 @@ async function uploadPilotFeedImageFileV4930(id) {
     const urlInput = document.getElementById(`pilotImg-${id}`);
     if (urlInput) urlInput.value = uploaded.url;
 
-    // v4.9.33: no bloquear el guardado por una verificación inmediata.
+    // v4.9.34: no bloquear el guardado por una verificación inmediata.
     // En móviles/CDN la URL pública puede tardar segundos en responder aunque el archivo ya exista.
     await savePilotFeedImage(id, { skipVerify: true });
 
     verifyImageUrlLoadsV4932(uploaded.url, 12000)
-      .then(() => showToast("Foto de plantilla actualizada"))
+      .then(() => {
+        applyPilotFeedOverrides();
+        renderSocialHomeFeed?.();
+        showToast("Foto de plantilla actualizada");
+      })
       .catch((verifyError) => {
         console.warn("La foto se subió/guardó, pero la validación pública tardó o falló.", verifyError);
         showToast("Foto guardada. Si tarda en verse, actualiza la app en unos segundos.");
+        setTimeout(() => { applyPilotFeedOverrides(); renderSocialHomeFeed?.(); }, 2500);
       });
   } catch (error) {
     console.error(error);
@@ -6037,5 +6080,5 @@ async function savePilotFeedImage(id, options = {}) {
   showToast("Foto piloto actualizada");
 }
 
-// Refuerzo de inicialización v4.9.33: carga overrides remotos si la tabla existe.
+// Refuerzo de inicialización v4.9.34: carga overrides remotos si la tabla existe sin pisar cambios locales recientes.
 window.addEventListener("DOMContentLoaded", () => setTimeout(loadRemotePilotFeedOverridesV4930, 900));
