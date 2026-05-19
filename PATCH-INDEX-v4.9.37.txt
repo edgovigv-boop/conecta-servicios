@@ -1,0 +1,14 @@
+PATCH index.html para v4.9.37-chat-interno-negocios
+
+Reemplazar referencias antiguas por estas:
+
+<link rel="stylesheet" href="styles.css?v=4.9.37-chat-interno-negocios">
+<script src="app.js?v=4.9.37-chat-interno-negocios" defer></script>
+
+Actualizar body:
+<body data-version="4.9.37-chat-interno-negocios">
+
+Actualizar title si aplica:
+<title>Conecta Servicios v4.9.37</title>
+
+Después de publicar, probar en incógnito o limpiar service worker/caché.

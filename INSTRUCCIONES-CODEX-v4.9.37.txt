@@ -1,0 +1,16 @@
+INSTRUCCIONES CODEX v4.9.37
+
+Aplicar esta entrega sobre el proyecto actual.
+No desplegar automáticamente.
+
+Cambios principales:
+- Sustituir antiguo Chat negocio / Responder filtro.
+- Activar sistema interno por publicación: Hacer pedido, Agendar cita, Mensaje al negocio.
+- Mantener membresías y liberar al admin.
+- Mantener Supabase actual sin tocar credenciales ni Storage.
+
+SQL:
+- No requiere SQL nuevo para probar: funciona con localStorage.
+- `supabase-business-messaging.sql` queda como SQL opcional para producción real multiusuario.
+
+Después de subir a GitHub, limpiar caché si no se ven cambios.

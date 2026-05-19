@@ -1,0 +1,48 @@
+CHECKLIST v4.9.37-chat-interno-negocios
+
+1. Reemplazar en raíz:
+   - app.js
+   - styles.css
+   - service-worker.js
+   - manifest.json
+   - vercel.json
+
+2. Aplicar PATCH-INDEX-v4.9.37.txt en index.html.
+
+3. Probar en incógnito o limpiar caché/service worker.
+
+4. Crear/configurar flujo:
+   - Ir a Oportunidades para ti > Negocios locales.
+   - Tocar Configurar flujo.
+   - Usar ejemplo Rosticería.
+   - Guardar configuración.
+
+5. Probar pedido:
+   - Ir a Negocios locales o Publicaciones.
+   - Abrir la publicación de Rosticería.
+   - Tocar Hacer pedido.
+   - Elegir pollo, quesadillas, refresco y papas.
+   - Confirmar total.
+   - Elegir pickup o entrega.
+   - Confirmar pedido.
+
+6. Ver pedido:
+   - Ir a Mis publicaciones.
+   - Abrir Mensajes y pedidos de mi negocio.
+   - Cambiar estado del pedido.
+   - Responder en chat interno.
+
+7. Probar cita:
+   - Configurar un negocio con flujo Citas.
+   - Entrar como cliente.
+   - Agendar cita.
+   - Ver solicitud en el panel.
+
+8. Probar mensaje directo:
+   - Configurar un negocio con Contacto directo.
+   - Enviar mensaje.
+   - Ver conversación en el panel.
+
+9. Confirmar admin:
+   - Activar admin desde Oficina.
+   - Confirmar que no queda bloqueado por membresía.

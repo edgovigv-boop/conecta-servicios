@@ -8409,3 +8409,674 @@ try {
   window.clearPendingBusinessChatDraftV49368 = clearPendingBusinessChatDraftV49368;
   window.isAdminSupervisorActiveV49368 = isAdminSupervisorActiveV49368;
 } catch {}
+
+
+// ------------------------------------------------------------------
+// v4.9.37 — Chat interno de negocios: pedidos, citas y mensajes
+// Sustituye el viejo "Chat negocio / Responder filtro" por flujos internos
+// por publicación: Hacer pedido, Agendar cita y Mensaje al negocio.
+// Modo piloto: localStorage. Admin puede probar sin membresía.
+// ------------------------------------------------------------------
+(function businessMessagingV4937(){
+  const VERSION = "4.9.37-chat-interno-negocios";
+  const CONFIG_KEY = "conecta_business_messaging_configs_v4937";
+  const ORDER_KEY = "conecta_business_orders_v4937";
+  const APPOINTMENT_KEY = "conecta_business_appointments_v4937";
+  const MESSAGE_KEY = "conecta_business_messages_v4937";
+  const UI_STATE_KEY = "conecta_business_messaging_ui_state_v4937";
+  const ORDER_STATUSES = ["Nuevo", "Confirmado", "En preparación", "Listo para recoger", "En camino", "Completado", "Cancelado"];
+  const APPOINTMENT_STATUSES = ["Nueva solicitud", "Pendiente de confirmar", "Confirmada", "Reagendada", "Completada", "Cancelada"];
+  const MESSAGE_STATUSES = ["Nuevo mensaje", "En conversación", "Atendido", "Cerrado"];
+  const FLOW_LABELS = {
+    menu_order: { name: "Pedidos con menú", action: "Hacer pedido", icon: "🛒" },
+    appointment: { name: "Citas", action: "Agendar cita", icon: "📅" },
+    direct_message: { name: "Contacto directo", action: "Mensaje al negocio", icon: "💬" }
+  };
+  const DEMO_MENU = [
+    { name: "Pollo asado con ensalada, salsas y tortillas", price: 235, active: true },
+    { name: "Quesadillas", price: 50, active: true },
+    { name: "Refrescos", price: 35, active: true },
+    { name: "Papas fritas", price: 40, active: true }
+  ];
+
+  function esc(value = "") {
+    if (typeof escapeHtml === "function") return escapeHtml(value);
+    return String(value ?? "").replace(/[&<>\"]/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m]));
+  }
+  function clean(value = "") {
+    if (typeof cleanPhone === "function") return cleanPhone(value);
+    return String(value || "").replace(/\D/g, "");
+  }
+  function moneyMx(value = 0) {
+    const n = Number(value) || 0;
+    if (typeof money === "function") return money(n);
+    return `$${n.toFixed(2)} MXN`;
+  }
+  function nowIso() { return new Date().toISOString(); }
+  function dateLabel(value = "") {
+    try { return value ? new Date(value).toLocaleString("es-MX", { dateStyle:"medium", timeStyle:"short" }) : ""; }
+    catch { return value || ""; }
+  }
+  function id(prefix = "BM") {
+    return `${prefix}-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(16).slice(2, 7).toUpperCase()}`;
+  }
+  function read(key, fallback) {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(key) || "");
+      if (Array.isArray(fallback)) return Array.isArray(parsed) ? parsed : fallback;
+      return parsed && typeof parsed === "object" ? parsed : fallback;
+    } catch { return fallback; }
+  }
+  function write(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+  }
+  function toast(msg) {
+    if (typeof showToast === "function") showToast(msg);
+    else console.log(msg);
+  }
+  function isAdmin() {
+    try {
+      if (typeof isAdminSupervisorActiveV49368 === "function" && isAdminSupervisorActiveV49368()) return true;
+      if (typeof adminUnlocked !== "undefined" && adminUnlocked) return true;
+      if (typeof adminRouteEnabled !== "undefined" && adminRouteEnabled) return true;
+      if (typeof adminAccessAvailableV4936 === "function" && adminAccessAvailableV4936()) return true;
+      return localStorage.getItem("conecta_admin_access_v4936") === "1";
+    } catch { return false; }
+  }
+  function hasMembership() {
+    if (isAdmin()) return true;
+    try {
+      if (typeof userCanPublishBusinessChatV49368 === "function" && userCanPublishBusinessChatV49368()) return true;
+      if (typeof userMembershipIsActiveV4936 === "function" && userMembershipIsActiveV4936()) return true;
+      if (typeof hasActivePublishMembership === "function" && hasActivePublishMembership()) return true;
+    } catch {}
+    return false;
+  }
+  function track(name, payload = {}) {
+    try { if (typeof trackEvent === "function") trackEvent(name, null, payload); } catch {}
+  }
+
+  function getConfigs(){ return read(CONFIG_KEY, []); }
+  function saveConfigs(rows){ write(CONFIG_KEY, rows.slice(0, 200)); }
+  function getOrders(){ return read(ORDER_KEY, []); }
+  function saveOrders(rows){ write(ORDER_KEY, rows.slice(0, 500)); }
+  function getAppointments(){ return read(APPOINTMENT_KEY, []); }
+  function saveAppointments(rows){ write(APPOINTMENT_KEY, rows.slice(0, 500)); }
+  function getMessages(){ return read(MESSAGE_KEY, []); }
+  function saveMessages(rows){ write(MESSAGE_KEY, rows.slice(0, 900)); }
+
+  function getConfig(configId){ return getConfigs().find(row => row.id === configId || row.publicationId === configId); }
+  function getFlowLabel(type){ return FLOW_LABELS[type] || FLOW_LABELS.direct_message; }
+  function parseMenu(text = "") {
+    const rows = String(text || "").split(/\n+/).map(line => line.trim()).filter(Boolean).map(line => {
+      let [name, price] = line.split("|").map(s => s.trim());
+      if (!price) {
+        const match = line.match(/(.+?)\s+\$?([0-9]+(?:\.[0-9]+)?)\s*(?:mxn|pesos)?$/i);
+        if (match) { name = match[1].trim(); price = match[2]; }
+      }
+      return { id: id("ITEM"), name: name || "Producto", price: Math.max(0, Number(String(price || "0").replace(/[^0-9.]/g, "")) || 0), active: true };
+    });
+    return rows.length ? rows : DEMO_MENU.map(item => ({ ...item, id: id("ITEM") }));
+  }
+  function menuToText(menu = []) {
+    return (menu.length ? menu : DEMO_MENU).map(item => `${item.name} | ${Number(item.price) || 0}`).join("\n");
+  }
+  function inferContext(input = {}) {
+    const raw = typeof input === "string" ? { type: input, name: input } : (input || {});
+    const text = `${raw.type || ""} ${raw.name || ""} ${raw.title || ""} ${raw.titulo || ""} ${raw.category || ""}`.toLowerCase();
+    let interactionType = raw.interactionType || raw.interaction_type || "direct_message";
+    if (/rosti|pollo|panader|comida|tienda|abarrote|venta|producto|men[uú]/.test(text)) interactionType = "menu_order";
+    if (/consulta|consultor|tecnol[oó]g|asesor|cita|doctor|taller|belleza|clase/.test(text)) interactionType = "appointment";
+    const businessName = raw.businessName || raw.name || raw.title || raw.titulo || (interactionType === "menu_order" ? "Rosticería" : interactionType === "appointment" ? "Consultoría tecnológica" : "Negocio o servicio");
+    return {
+      businessName,
+      publicationTitle: raw.publicationTitle || businessName,
+      municipality: raw.municipality || raw.municipio || raw.zone || raw.zona || raw.locality || "Chapultepec",
+      state: raw.state || raw.estado || "México",
+      phone: clean(raw.phone || raw.whatsapp || raw.contact || raw.contacto || ""),
+      category: raw.category || raw.categoria || "Negocios locales",
+      interactionType,
+      sourceTitle: raw.sourceTitle || raw.title || raw.titulo || raw.name || businessName,
+      sourceId: raw.sourceId || raw.id || "",
+      notes: raw.notes || raw.description || raw.descripcion || ""
+    };
+  }
+
+  function ensureSection(sectionId, title = "") {
+    let section = document.getElementById(sectionId);
+    if (section) return section;
+    const content = document.querySelector(".content") || document.querySelector("main") || document.body;
+    section = document.createElement("section");
+    section.id = sectionId;
+    section.className = "section business-messaging-section-v4937";
+    section.innerHTML = `<div class="business-messaging-root-v4937"><h2>${esc(title)}</h2></div>`;
+    content.appendChild(section);
+    return section;
+  }
+  function ensureSections() {
+    ensureSection("businessMessagingConfig", "Configurar mensajería de negocio");
+    ensureSection("businessMessagingClient", "Mensaje al negocio");
+    ensureSection("businessMessagingPanel", "Mensajes y pedidos de mi negocio");
+  }
+
+  function navigate(sectionId, push = true) {
+    ensureSections();
+    if (typeof showSection === "function") showSection(sectionId, push);
+    else document.getElementById(sectionId)?.classList.add("active");
+  }
+
+  function membershipNoticeHtml() {
+    if (hasMembership()) {
+      return `<div class="bm-status-note-v4937 bm-ok-v4937"><strong>${isAdmin() ? "Modo Admin libre" : "Membresía activa"}</strong><p>Puedes activar mensajería interna, pedidos y citas sin bloqueo.</p></div>`;
+    }
+    return `<div class="bm-status-note-v4937 bm-warning-v4937"><strong>Membresía requerida para publicar</strong><p>Puedes dejar el flujo como borrador. Para activarlo en una publicación se requiere membresía anual Conecta.</p><button type="button" onclick="showSection('miAcceso')">Ir a Mi acceso / Membresía</button></div>`;
+  }
+
+  function renderConfigPage(context = {}) {
+    ensureSections();
+    const c = inferContext(context);
+    const root = document.querySelector("#businessMessagingConfig .business-messaging-root-v4937");
+    if (!root) return;
+    const isMenu = c.interactionType === "menu_order";
+    root.innerHTML = `
+      <button class="btn-small btn-ghost" type="button" onclick="showSection('oportunidades')">← Volver</button>
+      <span class="bm-kicker-v4937">v4.9.37 · Chat interno de negocios</span>
+      <h2>Configurar mensajería de negocio</h2>
+      <p class="bm-subtitle-v4937">Este flujo sustituye el antiguo “Responder filtro”. Ahora el negocio decide si quiere recibir pedidos, citas o mensajes internos por publicación.</p>
+      ${membershipNoticeHtml()}
+      <form id="businessMessagingConfigFormV4937" class="bm-form-v4937" onsubmit="event.preventDefault(); saveBusinessMessagingConfigV4937();">
+        <label>Nombre del negocio o servicio
+          <input id="bmBusinessNameV4937" type="text" required value="${esc(c.businessName)}" placeholder="Ej. Rosticería El Buen Pollo" />
+        </label>
+        <label>Título visible de la publicación
+          <input id="bmPublicationTitleV4937" type="text" required value="${esc(c.publicationTitle)}" placeholder="Ej. Pollo asado para pickup o entrega" />
+        </label>
+        <div class="bm-grid-v4937">
+          <label>Estado
+            <input id="bmStateV4937" type="text" value="${esc(c.state)}" />
+          </label>
+          <label>Municipio
+            <input id="bmMunicipalityV4937" type="text" value="${esc(c.municipality)}" />
+          </label>
+        </div>
+        <label>Teléfono de contacto del negocio
+          <input id="bmPhoneV4937" type="tel" value="${esc(c.phone)}" placeholder="WhatsApp o teléfono" />
+        </label>
+        <label>Tipo de interacción
+          <select id="bmInteractionTypeV4937" onchange="toggleBusinessMenuEditorV4937()">
+            <option value="menu_order" ${c.interactionType === "menu_order" ? "selected" : ""}>Pedidos con menú</option>
+            <option value="appointment" ${c.interactionType === "appointment" ? "selected" : ""}>Citas</option>
+            <option value="direct_message" ${c.interactionType === "direct_message" ? "selected" : ""}>Contacto directo</option>
+          </select>
+        </label>
+        <div id="bmMenuEditorV4937" class="bm-menu-editor-v4937 ${isMenu ? "" : "hidden"}">
+          <label>Menú inicial<br><small>Un producto por línea. Formato: Producto | precio</small>
+            <textarea id="bmMenuTextV4937" rows="7">${esc(menuToText(DEMO_MENU))}</textarea>
+          </label>
+          <div class="bm-menu-example-v4937">Ejemplo: Pollo asado con ensalada, salsas y tortillas | 235</div>
+        </div>
+        <label>Descripción o mensaje inicial
+          <textarea id="bmDescriptionV4937" rows="4" placeholder="Describe qué vendes, cómo atiendes o qué datos necesitas del cliente.">${esc(c.notes || "Atendemos solicitudes dentro de Conecta Servicios. El cliente puede dejar sus datos y el negocio dará seguimiento interno.")}</textarea>
+        </label>
+        <input id="bmSourceIdV4937" type="hidden" value="${esc(c.sourceId)}" />
+        <input id="bmSourceTitleV4937" type="hidden" value="${esc(c.sourceTitle)}" />
+        <div class="bm-actions-v4937">
+          <button type="submit" class="btn-small btn-purple">Guardar configuración</button>
+          <button type="button" class="btn-small btn-outline" onclick="seedRosticeriaDemoV4937()">Usar ejemplo Rosticería</button>
+          <button type="button" class="btn-small btn-ghost" onclick="showSection('misPublicaciones')">Ver Mis publicaciones</button>
+        </div>
+      </form>`;
+    navigate("businessMessagingConfig");
+    track("business_messaging_config_open", { interactionType: c.interactionType });
+  }
+
+  function toggleMenuEditor() {
+    const type = document.getElementById("bmInteractionTypeV4937")?.value || "direct_message";
+    document.getElementById("bmMenuEditorV4937")?.classList.toggle("hidden", type !== "menu_order");
+  }
+
+  function seedRosticeriaDemo() {
+    document.getElementById("bmBusinessNameV4937").value = "Rosticería";
+    document.getElementById("bmPublicationTitleV4937").value = "Rosticería · pollo asado con pickup o entrega";
+    document.getElementById("bmStateV4937").value = "México";
+    document.getElementById("bmMunicipalityV4937").value = "Chapultepec";
+    document.getElementById("bmInteractionTypeV4937").value = "menu_order";
+    document.getElementById("bmMenuTextV4937").value = menuToText(DEMO_MENU);
+    document.getElementById("bmDescriptionV4937").value = "Haz tu pedido interno: pollo asado, quesadillas, refrescos y papas. El pago queda pendiente o a acordar con el negocio.";
+    toggleMenuEditor();
+  }
+
+  function saveConfig() {
+    const type = document.getElementById("bmInteractionTypeV4937")?.value || "direct_message";
+    const businessName = document.getElementById("bmBusinessNameV4937")?.value.trim() || "Negocio o servicio";
+    const publicationTitle = document.getElementById("bmPublicationTitleV4937")?.value.trim() || businessName;
+    const state = document.getElementById("bmStateV4937")?.value.trim() || "México";
+    const municipality = document.getElementById("bmMunicipalityV4937")?.value.trim() || "Chapultepec";
+    const phone = clean(document.getElementById("bmPhoneV4937")?.value || "");
+    const description = document.getElementById("bmDescriptionV4937")?.value.trim() || "";
+    const menu = type === "menu_order" ? parseMenu(document.getElementById("bmMenuTextV4937")?.value || "") : [];
+    const rows = getConfigs();
+    const existing = rows.find(row => row.businessName.toLowerCase() === businessName.toLowerCase() && row.publicationTitle.toLowerCase() === publicationTitle.toLowerCase());
+    const active = hasMembership();
+    const config = {
+      ...(existing || {}),
+      id: existing?.id || id("BIZ"),
+      publicationId: existing?.publicationId || id("PUB-BIZ"),
+      businessName,
+      publicationTitle,
+      title: publicationTitle,
+      category: "Negocios locales",
+      state,
+      municipality,
+      locality: municipality,
+      phone,
+      description,
+      interaction_type: type,
+      interactionType: type,
+      menu,
+      status: active ? "active" : "draft_membership",
+      membershipRequired: !active,
+      sourceId: document.getElementById("bmSourceIdV4937")?.value || existing?.sourceId || "",
+      sourceTitle: document.getElementById("bmSourceTitleV4937")?.value || existing?.sourceTitle || "",
+      createdAt: existing?.createdAt || nowIso(),
+      updatedAt: nowIso()
+    };
+    saveConfigs([config, ...rows.filter(row => row.id !== config.id)]);
+    write(UI_STATE_KEY, { lastConfigId: config.id, lastSavedAt: nowIso() });
+    toast(active ? "Mensajería interna activada" : "Flujo guardado como borrador pendiente de membresía");
+    renderOwnerPanel();
+    renderPublicPanel();
+    navigate("misPublicaciones");
+    setTimeout(() => document.getElementById("businessOwnerPanelV4937")?.scrollIntoView({behavior:"smooth", block:"start"}), 150);
+    track("business_messaging_config_saved", { type, active });
+  }
+
+  function configStatusBadge(config) {
+    if (config.status === "active") return `<span class="bm-badge-v4937 active">Activo</span>`;
+    return `<span class="bm-badge-v4937 draft">Borrador pendiente de membresía</span>`;
+  }
+  function configActionButton(config) {
+    const label = getFlowLabel(config.interaction_type);
+    return `<button class="btn-small btn-purple" type="button" onclick="openBusinessPublicationV4937('${config.id}')">${esc(label.action)}</button>`;
+  }
+  function renderConfigCard(config, mode = "owner") {
+    const label = getFlowLabel(config.interaction_type);
+    const orders = getOrders().filter(row => row.configId === config.id);
+    const appts = getAppointments().filter(row => row.configId === config.id);
+    const msgs = getMessages().filter(row => row.configId === config.id && !row.orderId && !row.appointmentId);
+    return `<article class="bm-card-v4937" id="bm-config-${esc(config.id)}">
+      <div class="bm-card-head-v4937">
+        <span class="bm-card-icon-v4937">${label.icon}</span>
+        <div><strong>${esc(config.publicationTitle)}</strong><small>${esc(config.businessName)} · ${esc(label.name)} · ${esc(config.municipality)}, ${esc(config.state)}</small></div>
+      </div>
+      <p>${esc(config.description || "Publicación con mensajería interna.")}</p>
+      <div class="bm-card-meta-v4937">${configStatusBadge(config)}<span>Pedidos: ${orders.length}</span><span>Citas: ${appts.length}</span><span>Mensajes: ${msgs.length}</span></div>
+      <div class="bm-actions-v4937">
+        ${config.status === "active" || isAdmin() ? configActionButton(config) : `<button class="btn-small btn-outline" type="button" onclick="showSection('miAcceso')">Activar membresía</button>`}
+        ${mode === "owner" ? `<button class="btn-small btn-outline" type="button" onclick="editBusinessMessagingConfigV4937('${config.id}')">Editar flujo</button><button class="btn-small btn-ghost" type="button" onclick="openBusinessMessagingPanelV4937('${config.id}')">Ver pedidos y mensajes</button>` : ""}
+      </div>
+    </article>`;
+  }
+
+  function insertPanel(sectionId, panelId, html, selectorCandidates = []) {
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+    let panel = document.getElementById(panelId);
+    if (!panel) {
+      panel = document.createElement("section");
+      panel.id = panelId;
+      panel.className = "bm-panel-v4937";
+      let anchor = null;
+      for (const selector of selectorCandidates) {
+        anchor = section.querySelector(selector);
+        if (anchor) break;
+      }
+      if (anchor?.parentNode === section) section.insertBefore(panel, anchor.nextSibling);
+      else section.appendChild(panel);
+    }
+    panel.innerHTML = html;
+  }
+
+  function cleanupLegacyPanels() {
+    ["businessChatLeadsPanelV49366", "businessChatPublicationsPanelV49367"].forEach(panelId => document.getElementById(panelId)?.remove());
+    document.querySelectorAll(".business-chat-leads-panel-v49366,.business-chat-publications-panel-v49367").forEach(el => el.remove());
+  }
+
+  function renderOwnerPanel() {
+    cleanupLegacyPanels();
+    const configs = getConfigs();
+    const orders = getOrders();
+    const appointments = getAppointments();
+    const messages = getMessages();
+    const pending = configs.filter(c => c.status !== "active");
+    const html = `<div class="bm-panel-head-v4937">
+        <div><span class="bm-kicker-v4937">Nuevo chat interno</span><h3>Mensajes y pedidos de mi negocio</h3><p>Administra publicaciones con pedido, cita o mensaje directo.</p></div>
+        <button class="btn-small btn-purple" type="button" onclick="openBusinessMessagingConfigV4937({interactionType:'menu_order', businessName:'Rosticería'})">Configurar negocio</button>
+      </div>
+      ${membershipNoticeHtml()}
+      ${configs.length ? `<div class="bm-cards-grid-v4937">${configs.map(c => renderConfigCard(c, "owner")).join("")}</div>` : `<div class="empty-state">Aún no tienes flujos de negocio. Crea uno para recibir pedidos, citas o mensajes internos.</div>`}
+      ${pending.length ? `<div class="bm-warning-list-v4937"><strong>Flujos pendientes de membresía:</strong> ${pending.map(c => esc(c.publicationTitle)).join(" · ")}</div>` : ""}
+      <div class="bm-mini-metrics-v4937"><span>${configs.length} publicaciones con mensajería</span><span>${orders.length} pedidos</span><span>${appointments.length} citas</span><span>${messages.length} mensajes</span></div>`;
+    insertPanel("misPublicaciones", "businessOwnerPanelV4937", html, ["#myPublicationsList", ".member-access-shortcut-v49362"]);
+  }
+
+  function renderPublicPanel() {
+    cleanupLegacyPanels();
+    const configs = getConfigs().filter(c => c.status === "active" || isAdmin());
+    const html = `<div class="bm-panel-head-v4937">
+        <div><span class="bm-kicker-v4937">Negocios con atención interna</span><h3>Publicaciones con pedido, cita o mensaje</h3><p>Elige un negocio y entra al flujo interno sin depender de WhatsApp.</p></div>
+      </div>
+      ${configs.length ? `<div class="bm-cards-grid-v4937">${configs.map(c => renderConfigCard(c, "public")).join("")}</div>` : `<div class="empty-state">Todavía no hay negocios con mensajería interna activa en este dispositivo.</div>`}`;
+    insertPanel("negocios", "businessPublicPanelV4937", html, ["#businessTerminalPanel", "#localBusinessPilotList"]);
+    insertPanel("publicaciones", "businessPublicationsPanelV4937", html, ["#publicationsList"]);
+  }
+
+  function openConfig(context) { renderConfigPage(context); }
+  function editConfig(configId) {
+    const config = getConfig(configId);
+    if (!config) return toast("No encontré la configuración");
+    renderConfigPage({ ...config, interactionType: config.interaction_type });
+    setTimeout(() => {
+      document.getElementById("bmMenuTextV4937").value = menuToText(config.menu || []);
+      toggleMenuEditor();
+    }, 50);
+  }
+
+  function openPublication(configId) {
+    ensureSections();
+    const config = getConfig(configId);
+    if (!config) return toast("No encontré la publicación de negocio");
+    const label = getFlowLabel(config.interaction_type);
+    const root = document.querySelector("#businessMessagingClient .business-messaging-root-v4937");
+    root.innerHTML = `<button class="btn-small btn-ghost" type="button" onclick="showSection('negocios')">← Negocios</button>
+      <article class="bm-client-publication-v4937">
+        <span class="bm-card-icon-v4937">${label.icon}</span>
+        <h2>${esc(config.publicationTitle)}</h2>
+        <p>${esc(config.description || "Atención interna desde Conecta Servicios.")}</p>
+        <div class="bm-card-meta-v4937"><span>${esc(config.businessName)}</span><span>${esc(config.municipality)}, ${esc(config.state)}</span><span>${esc(label.name)}</span></div>
+        ${config.interaction_type === "menu_order" ? `<div class="bm-menu-preview-v4937">${(config.menu || []).slice(0,4).map(item => `<span>${esc(item.name)} · ${moneyMx(item.price)}</span>`).join("")}</div>` : ""}
+        <button class="bm-primary-action-v4937" type="button" onclick="startBusinessInteractionV4937('${config.id}')">${esc(label.action)}</button>
+      </article>`;
+    navigate("businessMessagingClient");
+    track("business_publication_open", { configId, type: config.interaction_type });
+  }
+
+  function startInteraction(configId) {
+    const config = getConfig(configId);
+    if (!config) return toast("No encontré el negocio");
+    if (config.interaction_type === "menu_order") return renderOrderFlow(config);
+    if (config.interaction_type === "appointment") return renderAppointmentFlow(config);
+    return renderDirectMessageFlow(config);
+  }
+
+  function renderOrderFlow(config) {
+    const root = document.querySelector("#businessMessagingClient .business-messaging-root-v4937");
+    const menu = config.menu?.length ? config.menu : DEMO_MENU;
+    root.innerHTML = `<button class="btn-small btn-ghost" type="button" onclick="openBusinessPublicationV4937('${config.id}')">← Publicación</button>
+      <form id="bmOrderFormV4937" class="bm-flow-v4937" onsubmit="event.preventDefault(); submitBusinessOrderV4937('${config.id}')">
+        <span class="bm-kicker-v4937">Pedido interno</span>
+        <h2>${esc(config.businessName)}</h2>
+        <p>Selecciona productos y cantidades. El pago queda como “pendiente / acordar con negocio”.</p>
+        <div class="bm-menu-list-v4937">${menu.map((item, index) => `<label class="bm-menu-row-v4937"><span><strong>${esc(item.name)}</strong><small>${moneyMx(item.price)}</small></span><input type="number" min="0" max="99" value="0" data-index="${index}" data-name="${esc(item.name)}" data-price="${Number(item.price)||0}" /></label>`).join("")}</div>
+        <div class="bm-grid-v4937">
+          <label>Tu nombre<input id="bmCustomerNameV4937" required placeholder="Nombre del cliente" /></label>
+          <label>Teléfono<input id="bmCustomerPhoneV4937" required placeholder="WhatsApp o teléfono" /></label>
+        </div>
+        <label>Entrega o pickup<select id="bmDeliveryTypeV4937"><option value="pickup">Pickup / recoger</option><option value="delivery">Entrega a domicilio</option></select></label>
+        <label>Dirección o referencia<textarea id="bmDeliveryAddressV4937" rows="2" placeholder="Dirección, colonia o punto de entrega si aplica"></textarea></label>
+        <label>Notas del pedido<textarea id="bmOrderNotesV4937" rows="2" placeholder="Ej. sin picante, pasaré por la mañana, etc."></textarea></label>
+        <div id="bmOrderTotalPreviewV4937" class="bm-total-v4937">Total: $0 MXN</div>
+        <button class="btn-small btn-purple" type="submit">Confirmar pedido</button>
+      </form>`;
+    root.querySelectorAll(".bm-menu-row-v4937 input").forEach(input => input.addEventListener("input", updateOrderPreview));
+    navigate("businessMessagingClient");
+  }
+  function selectedOrderItems() {
+    return [...document.querySelectorAll("#bmOrderFormV4937 .bm-menu-row-v4937 input")].map(input => {
+      const quantity = Math.max(0, Number(input.value) || 0);
+      const unitPrice = Number(input.dataset.price) || 0;
+      return { item_name: input.dataset.name || "Producto", quantity, unit_price: unitPrice, subtotal: quantity * unitPrice };
+    }).filter(item => item.quantity > 0);
+  }
+  function updateOrderPreview() {
+    const total = selectedOrderItems().reduce((sum, item) => sum + item.subtotal, 0);
+    const el = document.getElementById("bmOrderTotalPreviewV4937");
+    if (el) el.textContent = `Total: ${moneyMx(total)}`;
+  }
+  function submitOrder(configId) {
+    const config = getConfig(configId);
+    const items = selectedOrderItems();
+    if (!items.length) return toast("Elige al menos un producto");
+    const total = items.reduce((sum, item) => sum + item.subtotal, 0);
+    const order = {
+      id: id("ORD"), configId: config.id, publicationId: config.publicationId, businessName: config.businessName,
+      customer_name: document.getElementById("bmCustomerNameV4937")?.value.trim() || "Cliente",
+      customer_phone: clean(document.getElementById("bmCustomerPhoneV4937")?.value || ""),
+      order_type: "menu_order", delivery_type: document.getElementById("bmDeliveryTypeV4937")?.value || "pickup",
+      address: document.getElementById("bmDeliveryAddressV4937")?.value.trim() || "",
+      notes: document.getElementById("bmOrderNotesV4937")?.value.trim() || "",
+      total, status: "Nuevo", items, created_at: nowIso(), updated_at: nowIso(), payment_status: "Pago pendiente / acordar con negocio"
+    };
+    saveOrders([order, ...getOrders()]);
+    addMessage({ configId: config.id, orderId: order.id, sender_type: "system", sender_name: "Conecta", message: `Pedido recibido por ${moneyMx(total)}. ${order.payment_status}` });
+    renderOrderConfirmation(config, order);
+    renderOwnerPanel();
+    track("business_order_created", { configId, total });
+  }
+  function renderOrderConfirmation(config, order) {
+    const root = document.querySelector("#businessMessagingClient .business-messaging-root-v4937");
+    root.innerHTML = `<div class="bm-success-v4937"><span>✅</span><h2>Pedido confirmado</h2><p>El negocio recibió el pedido organizado en su panel.</p><strong>Total: ${moneyMx(order.total)}</strong><small>${esc(order.payment_status)}</small><div class="bm-actions-v4937"><button class="btn-small btn-purple" onclick="openBusinessChatV4937('order','${order.id}')">Abrir chat de seguimiento</button><button class="btn-small btn-outline" onclick="showSection('misPublicaciones')">Ver panel del negocio</button></div></div>`;
+  }
+
+  function renderAppointmentFlow(config) {
+    const root = document.querySelector("#businessMessagingClient .business-messaging-root-v4937");
+    root.innerHTML = `<button class="btn-small btn-ghost" type="button" onclick="openBusinessPublicationV4937('${config.id}')">← Publicación</button>
+      <form class="bm-flow-v4937" onsubmit="event.preventDefault(); submitBusinessAppointmentV4937('${config.id}')">
+        <span class="bm-kicker-v4937">Solicitud de cita</span><h2>${esc(config.businessName)}</h2>
+        <div class="bm-grid-v4937"><label>Tu nombre<input id="bmAppointmentNameV4937" required /></label><label>Teléfono<input id="bmAppointmentPhoneV4937" required /></label></div>
+        <div class="bm-grid-v4937"><label>Fecha preferida<input id="bmAppointmentDateV4937" type="date" required /></label><label>Horario preferido<input id="bmAppointmentTimeV4937" type="time" required /></label></div>
+        <label>¿Qué necesitas?<textarea id="bmAppointmentNeedV4937" rows="4" required placeholder="Describe brevemente qué necesitas revisar, agendar o consultar"></textarea></label>
+        <button class="btn-small btn-purple" type="submit">Confirmar solicitud</button>
+      </form>`;
+    navigate("businessMessagingClient");
+  }
+  function submitAppointment(configId) {
+    const config = getConfig(configId);
+    const appt = { id: id("CITA"), configId: config.id, publicationId: config.publicationId, businessName: config.businessName,
+      customer_name: document.getElementById("bmAppointmentNameV4937")?.value.trim() || "Cliente",
+      customer_phone: clean(document.getElementById("bmAppointmentPhoneV4937")?.value || ""),
+      preferred_date: document.getElementById("bmAppointmentDateV4937")?.value || "",
+      preferred_time: document.getElementById("bmAppointmentTimeV4937")?.value || "",
+      need_description: document.getElementById("bmAppointmentNeedV4937")?.value.trim() || "",
+      status: "Nueva solicitud", created_at: nowIso(), updated_at: nowIso() };
+    saveAppointments([appt, ...getAppointments()]);
+    addMessage({ configId: config.id, appointmentId: appt.id, sender_type: "system", sender_name: "Conecta", message: `Solicitud de cita recibida para ${appt.preferred_date} ${appt.preferred_time}.` });
+    document.querySelector("#businessMessagingClient .business-messaging-root-v4937").innerHTML = `<div class="bm-success-v4937"><span>📅</span><h2>Solicitud enviada</h2><p>El negocio verá tu solicitud de cita en su panel.</p><div class="bm-actions-v4937"><button class="btn-small btn-purple" onclick="openBusinessChatV4937('appointment','${appt.id}')">Abrir chat de detalles</button><button class="btn-small btn-outline" onclick="showSection('misPublicaciones')">Ver panel del negocio</button></div></div>`;
+    renderOwnerPanel();
+    track("business_appointment_created", { configId });
+  }
+
+  function renderDirectMessageFlow(config) {
+    const root = document.querySelector("#businessMessagingClient .business-messaging-root-v4937");
+    const threadId = id("MSGTHREAD");
+    root.innerHTML = `<button class="btn-small btn-ghost" type="button" onclick="openBusinessPublicationV4937('${config.id}')">← Publicación</button>
+      <form class="bm-flow-v4937" onsubmit="event.preventDefault(); submitBusinessDirectMessageV4937('${config.id}','${threadId}')">
+        <span class="bm-kicker-v4937">Mensaje interno</span><h2>${esc(config.businessName)}</h2>
+        <div class="bm-grid-v4937"><label>Tu nombre<input id="bmDirectNameV4937" required /></label><label>Teléfono<input id="bmDirectPhoneV4937" required /></label></div>
+        <label>Mensaje<textarea id="bmDirectMessageV4937" rows="5" required placeholder="Escribe tu necesidad para que el negocio pueda responder mejor"></textarea></label>
+        <button class="btn-small btn-purple" type="submit">Enviar mensaje</button>
+      </form>`;
+    navigate("businessMessagingClient");
+  }
+  function submitDirectMessage(configId, threadId) {
+    const config = getConfig(configId);
+    const customerName = document.getElementById("bmDirectNameV4937")?.value.trim() || "Cliente";
+    const customerPhone = clean(document.getElementById("bmDirectPhoneV4937")?.value || "");
+    const message = document.getElementById("bmDirectMessageV4937")?.value.trim() || "";
+    const row = addMessage({ id: threadId, configId: config.id, sender_type: "customer", sender_name: customerName, customer_phone: customerPhone, message, status: "Nuevo mensaje" });
+    document.querySelector("#businessMessagingClient .business-messaging-root-v4937").innerHTML = `<div class="bm-success-v4937"><span>💬</span><h2>Mensaje enviado</h2><p>El negocio verá tu mensaje en su panel interno.</p><div class="bm-actions-v4937"><button class="btn-small btn-purple" onclick="openBusinessChatV4937('direct','${row.threadId || row.id}')">Abrir conversación</button><button class="btn-small btn-outline" onclick="showSection('misPublicaciones')">Ver panel del negocio</button></div></div>`;
+    renderOwnerPanel();
+    track("business_direct_message_created", { configId });
+  }
+
+  function addMessage(data = {}) {
+    const row = { id: data.id || id("MSG"), threadId: data.threadId || data.id || data.orderId || data.appointmentId || id("THREAD"), configId: data.configId || "", orderId: data.orderId || "", appointmentId: data.appointmentId || "", sender_type: data.sender_type || "business", sender_name: data.sender_name || "Negocio", customer_phone: data.customer_phone || "", message: data.message || "", status: data.status || "En conversación", created_at: nowIso() };
+    saveMessages([row, ...getMessages()]);
+    return row;
+  }
+  function relatedMessages(kind, recordId) {
+    const rows = getMessages();
+    if (kind === "order") return rows.filter(m => m.orderId === recordId);
+    if (kind === "appointment") return rows.filter(m => m.appointmentId === recordId);
+    return rows.filter(m => m.threadId === recordId || m.id === recordId);
+  }
+  function openChat(kind, recordId) {
+    ensureSections();
+    const configId = kind === "order" ? getOrders().find(o => o.id === recordId)?.configId : kind === "appointment" ? getAppointments().find(a => a.id === recordId)?.configId : getMessages().find(m => m.threadId === recordId || m.id === recordId)?.configId;
+    const config = getConfig(configId || "");
+    const rows = relatedMessages(kind, recordId).sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+    const root = document.querySelector("#businessMessagingClient .business-messaging-root-v4937");
+    root.innerHTML = `<button class="btn-small btn-ghost" onclick="openBusinessMessagingPanelV4937('${configId || ""}')">← Panel</button><div class="bm-chat-v4937"><span class="bm-kicker-v4937">Chat interno</span><h2>${esc(config?.businessName || "Negocio")}</h2><div class="bm-chat-log-v4937">${rows.map(m => `<div class="bm-chat-msg-v4937 ${m.sender_type === "customer" ? "customer" : "business"}"><strong>${esc(m.sender_name)}</strong><p>${esc(m.message)}</p><small>${dateLabel(m.created_at)}</small></div>`).join("") || `<div class="empty-state">Aún no hay mensajes.</div>`}</div><form class="bm-chat-compose-v4937" onsubmit="event.preventDefault(); sendBusinessChatMessageV4937('${kind}','${recordId}')"><input id="bmChatInputV4937" placeholder="Escribe una respuesta interna" required /><button class="btn-small btn-purple" type="submit">Enviar</button></form></div>`;
+    navigate("businessMessagingClient");
+  }
+  function sendChatMessage(kind, recordId) {
+    const input = document.getElementById("bmChatInputV4937");
+    const message = input?.value.trim() || "";
+    if (!message) return;
+    let configId = "";
+    if (kind === "order") configId = getOrders().find(o => o.id === recordId)?.configId || "";
+    else if (kind === "appointment") configId = getAppointments().find(a => a.id === recordId)?.configId || "";
+    else configId = getMessages().find(m => m.threadId === recordId || m.id === recordId)?.configId || "";
+    addMessage({ configId, threadId: kind === "direct" ? recordId : undefined, orderId: kind === "order" ? recordId : "", appointmentId: kind === "appointment" ? recordId : "", sender_type: "business", sender_name: "Negocio", message });
+    openChat(kind, recordId);
+  }
+
+  function renderPanelPage(configId = "") {
+    ensureSections();
+    const root = document.querySelector("#businessMessagingPanel .business-messaging-root-v4937");
+    const configs = configId ? getConfigs().filter(c => c.id === configId) : getConfigs();
+    const orders = getOrders().filter(o => !configId || o.configId === configId);
+    const appointments = getAppointments().filter(a => !configId || a.configId === configId);
+    const directThreads = getMessages().filter(m => !m.orderId && !m.appointmentId && (!configId || m.configId === configId));
+    const groupedDirect = Object.values(directThreads.reduce((acc, m) => { const key = m.threadId || m.id; acc[key] = acc[key] || m; return acc; }, {}));
+    root.innerHTML = `<button class="btn-small btn-ghost" onclick="showSection('misPublicaciones')">← Mis publicaciones</button><span class="bm-kicker-v4937">Panel del negocio</span><h2>Mensajes y pedidos de mi negocio</h2><p>Revisa pedidos, citas y mensajes internos por publicación.</p><div class="bm-mini-metrics-v4937"><span>${configs.length} publicaciones</span><span>${orders.length} pedidos</span><span>${appointments.length} citas</span><span>${groupedDirect.length} conversaciones</span></div>${ordersTable(orders)}${appointmentsTable(appointments)}${directTable(groupedDirect)}`;
+    navigate("businessMessagingPanel");
+  }
+  function statusSelect(kind, idValue, status, options) {
+    return `<select onchange="updateBusinessItemStatusV4937('${kind}','${idValue}', this.value)">${options.map(opt => `<option value="${esc(opt)}" ${opt === status ? "selected" : ""}>${esc(opt)}</option>`).join("")}</select>`;
+  }
+  function ordersTable(rows) {
+    return `<section class="bm-table-block-v4937"><h3>Pedidos recibidos</h3>${rows.length ? rows.map(o => `<article class="bm-row-card-v4937"><strong>${esc(o.customer_name)} · ${moneyMx(o.total)}</strong><small>${dateLabel(o.created_at)} · ${esc(o.delivery_type)}</small><p>${(o.items||[]).map(i => `${esc(i.item_name)} x${i.quantity}`).join(" · ")}</p><div class="bm-actions-v4937">${statusSelect("order", o.id, o.status, ORDER_STATUSES)}<button class="btn-small btn-outline" onclick="openBusinessChatV4937('order','${o.id}')">Responder</button></div></article>`).join("") : `<div class="empty-state">Sin pedidos todavía.</div>`}</section>`;
+  }
+  function appointmentsTable(rows) {
+    return `<section class="bm-table-block-v4937"><h3>Solicitudes de cita</h3>${rows.length ? rows.map(a => `<article class="bm-row-card-v4937"><strong>${esc(a.customer_name)} · ${esc(a.preferred_date)} ${esc(a.preferred_time)}</strong><small>${dateLabel(a.created_at)} · ${esc(a.customer_phone)}</small><p>${esc(a.need_description)}</p><div class="bm-actions-v4937">${statusSelect("appointment", a.id, a.status, APPOINTMENT_STATUSES)}<button class="btn-small btn-outline" onclick="openBusinessChatV4937('appointment','${a.id}')">Responder</button></div></article>`).join("") : `<div class="empty-state">Sin citas todavía.</div>`}</section>`;
+  }
+  function directTable(rows) {
+    return `<section class="bm-table-block-v4937"><h3>Mensajes directos</h3>${rows.length ? rows.map(m => `<article class="bm-row-card-v4937"><strong>${esc(m.sender_name || "Cliente")}</strong><small>${dateLabel(m.created_at)} · ${esc(m.customer_phone || "")}</small><p>${esc(m.message)}</p><div class="bm-actions-v4937">${statusSelect("message", m.threadId || m.id, m.status || "Nuevo mensaje", MESSAGE_STATUSES)}<button class="btn-small btn-outline" onclick="openBusinessChatV4937('direct','${m.threadId || m.id}')">Responder</button></div></article>`).join("") : `<div class="empty-state">Sin mensajes directos todavía.</div>`}</section>`;
+  }
+  function updateStatus(kind, idValue, value) {
+    if (kind === "order") saveOrders(getOrders().map(o => o.id === idValue ? { ...o, status: value, updated_at: nowIso() } : o));
+    if (kind === "appointment") saveAppointments(getAppointments().map(a => a.id === idValue ? { ...a, status: value, updated_at: nowIso() } : a));
+    if (kind === "message") saveMessages(getMessages().map(m => (m.threadId === idValue || m.id === idValue) ? { ...m, status: value } : m));
+    toast("Estado actualizado");
+    renderPanelPage();
+  }
+
+  function forceActiveConfig(configId) {
+    if (!isAdmin() && !hasMembership()) return toast("Activa la membresía para publicar este flujo");
+    saveConfigs(getConfigs().map(c => c.id === configId ? { ...c, status: "active", membershipRequired: false, updatedAt: nowIso() } : c));
+    toast("Flujo activado");
+    renderOwnerPanel(); renderPublicPanel();
+  }
+
+  function overrideLegacy() {
+    // Redirige el viejo Chat negocio al nuevo configurador.
+    try {
+      if (typeof startSurveyFlow === "function" && !window.__startSurveyFlowBaseV4937) {
+        window.__startSurveyFlowBaseV4937 = startSurveyFlow;
+        startSurveyFlow = function(flow, context) {
+          if (flow === "chatNegocio") return openConfig(typeof context === "string" ? { type: context, businessName: context } : (context || {}));
+          return window.__startSurveyFlowBaseV4937(flow, context);
+        };
+      }
+    } catch (error) { console.warn("No se pudo reemplazar startSurveyFlow", error); }
+    try {
+      if (typeof renderBusinessPilotList === "function" && !window.__renderBusinessPilotListBaseV4937) {
+        window.__renderBusinessPilotListBaseV4937 = renderBusinessPilotList;
+        renderBusinessPilotList = function() {
+          const list = document.getElementById("localBusinessPilotList");
+          if (!list) return window.__renderBusinessPilotListBaseV4937?.();
+          const pilots = typeof LOCAL_BUSINESS_PILOT !== "undefined" ? LOCAL_BUSINESS_PILOT : [
+            { type:"Rosticería", icon:"🍗", name:"Rosticería", zone:"Chapultepec", features:["Menú", "Carrito", "Pedido interno"] },
+            { type:"Consultoría tecnológica", icon:"💼", name:"Consultoría tecnológica", zone:"Chapultepec", features:["Citas", "Solicitud", "Chat interno"] }
+          ];
+          list.innerHTML = pilots.map(biz => `<article class="local-business-card"><span class="business-card-icon">${esc(biz.icon || "🏪")}</span><div><small>${esc(biz.type)} · ${esc(biz.zone || "")}</small><strong>${esc(biz.name)}</strong><p>${(biz.features||[]).map(esc).join(" · ")}</p></div><button type="button" class="btn-small btn-outline" onclick="openBusinessMessagingConfigV4937({businessName:'${esc(biz.name)}', type:'${esc(biz.type)}', municipality:'${esc(biz.zone || "Chapultepec")}'} )">Configurar flujo</button></article>`).join("");
+        };
+      }
+    } catch (error) { console.warn("No se pudo ajustar pilotos de negocios", error); }
+    try {
+      if (typeof renderMyPublications === "function" && !window.__renderMyPublicationsBaseV4937) {
+        window.__renderMyPublicationsBaseV4937 = renderMyPublications;
+        renderMyPublications = function() { const result = window.__renderMyPublicationsBaseV4937(); setTimeout(renderOwnerPanel, 20); return result; };
+      }
+    } catch (error) { console.warn("No se pudo reforzar Mis publicaciones", error); }
+    try {
+      if (typeof renderPublications === "function" && !window.__renderPublicationsBaseV4937) {
+        window.__renderPublicationsBaseV4937 = renderPublications;
+        renderPublications = function() { const result = window.__renderPublicationsBaseV4937(); setTimeout(renderPublicPanel, 40); return result; };
+      }
+    } catch (error) { console.warn("No se pudo reforzar publicaciones", error); }
+    try {
+      if (typeof showSection === "function" && !window.__showSectionBaseV4937) {
+        window.__showSectionBaseV4937 = showSection;
+        showSection = function(section, push = true) {
+          ensureSections();
+          const result = window.__showSectionBaseV4937(section, push);
+          const target = typeof sectionAliasV4936 === "function" ? sectionAliasV4936(section) : section;
+          if (["businessMessagingConfig", "businessMessagingClient", "businessMessagingPanel"].includes(target)) {
+            document.getElementById("mainTitle") && (document.getElementById("mainTitle").textContent = target === "businessMessagingPanel" ? "Panel del negocio" : "Chat interno de negocio");
+          }
+          if (target === "misPublicaciones") setTimeout(renderOwnerPanel, 80);
+          if (target === "negocios" || target === "publicaciones") setTimeout(renderPublicPanel, 80);
+          return result;
+        };
+      }
+    } catch (error) { console.warn("No se pudo reforzar showSection", error); }
+  }
+
+  function seedIfEmpty() {
+    if (getConfigs().length) return;
+    // No auto-publicar para no invadir la app; solo deja disponible el botón de ejemplo en el configurador.
+  }
+
+  function init() {
+    ensureSections();
+    overrideLegacy();
+    cleanupLegacyPanels();
+    seedIfEmpty();
+    document.body.dataset.businessMessagingVersion = VERSION;
+    setTimeout(() => { try { renderOwnerPanel(); renderPublicPanel(); renderBusinessPilotList?.(); } catch {} }, 250);
+  }
+
+  window.openBusinessMessagingConfigV4937 = openConfig;
+  window.saveBusinessMessagingConfigV4937 = saveConfig;
+  window.toggleBusinessMenuEditorV4937 = toggleMenuEditor;
+  window.seedRosticeriaDemoV4937 = seedRosticeriaDemo;
+  window.editBusinessMessagingConfigV4937 = editConfig;
+  window.openBusinessPublicationV4937 = openPublication;
+  window.startBusinessInteractionV4937 = startInteraction;
+  window.submitBusinessOrderV4937 = submitOrder;
+  window.submitBusinessAppointmentV4937 = submitAppointment;
+  window.submitBusinessDirectMessageV4937 = submitDirectMessage;
+  window.openBusinessChatV4937 = openChat;
+  window.sendBusinessChatMessageV4937 = sendChatMessage;
+  window.openBusinessMessagingPanelV4937 = renderPanelPage;
+  window.updateBusinessItemStatusV4937 = updateStatus;
+  window.activateBusinessMessagingConfigV4937 = forceActiveConfig;
+  window.renderBusinessMessagingOwnerPanelV4937 = renderOwnerPanel;
+  window.renderBusinessMessagingPublicPanelV4937 = renderPublicPanel;
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+  window.addEventListener("pageshow", () => setTimeout(() => { renderOwnerPanel(); renderPublicPanel(); }, 180));
+})();

@@ -1,31 +1,38 @@
-# Conecta Servicios v4.9.36.8
+# Conecta Servicios v4.9.37-chat-interno-negocios
 
-Hotfix de flujo de Chat negocio y membresía.
+Entrega preparada sin despliegue automático.
 
-## Cambios
+## Qué cambia
 
-- El Chat negocio ya no se publica libremente para usuarios sin membresía.
-- Al terminar el flujo, el usuario recibe una pantalla para pagar/activar membresía anual.
-- El chat queda como borrador pendiente y aparece en Mi acceso.
-- Admin puede probar y supervisar sin límite, sin requerir membresía.
-- Se conserva la publicación ilimitada para membresías activas.
+Esta versión sustituye la lógica anterior de “Chat negocio / Responder filtro” por un sistema interno de negocio por publicación:
 
-## Archivos
+- **Pedidos con menú**: productos, cantidades, carrito, total automático, entrega/pickup, pedido y chat de seguimiento.
+- **Citas**: fecha, horario, necesidad, solicitud y chat interno.
+- **Contacto directo**: mensaje interno al negocio y conversación.
+- **Panel del negocio** en “Mis publicaciones”: pedidos, citas, mensajes, estados y respuestas.
+- **Admin libre**: el admin puede probar y supervisar sin pagar membresía.
+- **Membresías**: usuario sin membresía puede dejar el flujo como borrador; usuario con membresía activa o admin puede activarlo.
 
-Reemplazar en la raíz:
+## Archivos cambiados
 
-- `app.js`
-- `styles.css`
-- `service-worker.js`
-- `manifest.json`
-- `vercel.json`
+- app.js
+- styles.css
+- service-worker.js
+- manifest.json
+- vercel.json
+- PATCH-INDEX-v4.9.37.txt
+- supabase-business-messaging.sql
 
-Aplicar `PATCH-INDEX-v4.9.36.8.txt` sobre `index.html`.
+## Persistencia
 
-## SQL
+Funciona en modo piloto con `localStorage`.
 
-No requiere SQL nuevo.
+No requiere SQL nuevo para probar interfaz y flujo localmente o en Vercel. El archivo `supabase-business-messaging.sql` es opcional para producción real multiusuario en Supabase.
+
+## Versión
+
+`v4.9.37-chat-interno-negocios`
 
 ## Commit sugerido
 
-`Agregar gate de membresía a Chat negocio y liberar Admin v4.9.36.8`
+`Implementar mensajería interna y pedidos por publicación para negocios`

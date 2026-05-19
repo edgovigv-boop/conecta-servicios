@@ -3,40 +3,120 @@
     {
       "source": "/index.html",
       "headers": [
-        { "key": "Content-Type", "value": "text/html; charset=utf-8" },
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+        {
+          "key": "Content-Type",
+          "value": "text/html; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
       ]
     },
     {
       "source": "/app.js",
       "headers": [
-        { "key": "Content-Type", "value": "application/javascript; charset=utf-8" },
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+        {
+          "key": "Content-Type",
+          "value": "application/javascript; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
       ]
     },
     {
       "source": "/styles.css",
       "headers": [
-        { "key": "Content-Type", "value": "text/css; charset=utf-8" },
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+        {
+          "key": "Content-Type",
+          "value": "text/css; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
       ]
     },
     {
       "source": "/service-worker.js",
       "headers": [
-        { "key": "Content-Type", "value": "application/javascript; charset=utf-8" },
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+        {
+          "key": "Content-Type",
+          "value": "application/javascript; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
       ]
     }
   ],
   "rewrites": [
-    { "source": "/embajadores", "destination": "/index.html" },
-    { "source": "/embajadores/", "destination": "/index.html" },
-    { "source": "/membresia", "destination": "/index.html" },
-    { "source": "/membresia/", "destination": "/index.html" },
-    { "source": "/mi-acceso", "destination": "/index.html" },
-    { "source": "/mi-acceso/", "destination": "/index.html" },
-    { "source": "/acceso", "destination": "/index.html" },
-    { "source": "/acceso/", "destination": "/index.html" }
+    {
+      "source": "/embajadores",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/embajadores/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/membresia",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/membresia/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/mi-acceso",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/mi-acceso/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/acceso",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/acceso/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/negocios",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/negocios/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/chat-negocios",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/chat-negocios/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/pedido",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/pedido/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/citas",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/citas/",
+      "destination": "/index.html"
+    }
   ]
 }
