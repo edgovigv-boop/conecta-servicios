@@ -1,0 +1,22 @@
+Codex, aplicar v4.9.40-publicar-con-asistente-integrado sobre el proyecto actual.
+
+Objetivo:
+Integrar el Asistente de publicación en la navegación inferior y en el flujo de Publicar, usando modelo freemium.
+
+Reglas:
+1. No desplegar automáticamente.
+2. No romper Home, Publicaciones cerca de mí, Oportunidades para ti, Mis publicaciones, Oficina, Embajadores, Admin ni Supabase Storage.
+3. Mantener el botón + de Publicar.
+4. Permitir publicación básica gratuita.
+5. Mantener subida de foto opcional.
+6. El asistente avanzado requiere membresía para activarse públicamente.
+7. Usuario sin membresía puede guardar borrador/vista previa del asistente.
+8. Admin puede publicar y activar asistentes sin restricciones.
+9. Eliminar visualmente el asistente flotante.
+10. Sustituir el acceso de asistente/orientación de la barra inferior por “Asistente”.
+
+Archivos:
+- Reemplazar app.js, styles.css, service-worker.js y manifest.json.
+- Aplicar PATCH-INDEX-v4.9.40.txt.
+
+No requiere SQL nuevo para piloto.

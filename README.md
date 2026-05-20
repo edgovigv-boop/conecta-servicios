@@ -1,55 +1,65 @@
-# Conecta Servicios v4.9.39-asistente-publicaciones
+# Conecta Servicios v4.9.40 — Publicar con Asistente integrado
 
-Esta versión corrige el alcance del asistente configurable: no es sólo para negocios. Ahora el asistente aplica a **todas las publicaciones**.
+## Objetivo
+Integrar el **Asistente de publicación** dentro del modelo principal de la app, sin botones flotantes, y establecer el modelo freemium:
 
-## Flujos disponibles
+- **Gratis:** publicación básica sencilla.
+- **Membresía:** Asistente avanzado para recibir pedidos, citas, cotizaciones, solicitudes o mensajes filtrados.
 
-1. Pedido con menú
-2. Cita
-3. Contacto directo
-4. Cotización
-5. Solicitud de servicio
-6. Solicitud de viaje compartido
-7. Solicitud de envío o mensajería
-8. Ofrecer ayuda / responder necesidad
+## Cambios principales
 
-## Dónde aparece
+1. **Publicación básica gratis**
+   - Título.
+   - Descripción.
+   - Categoría.
+   - Municipio / zona.
+   - Foto opcional.
+   - Contacto básico.
+   - Visibilidad normal.
 
-- En **Mis publicaciones**, cada publicación propia muestra **Configurar asistente**.
-- En la vista pública, una publicación con asistente activo muestra el botón que corresponda:
-  - Hacer pedido
-  - Agendar cita
-  - Solicitar cotización
-  - Solicitar lugar
-  - Cotizar envío
-  - Ofrecer ayuda
-  - Mensaje al publicante
-- En **Mis publicaciones** se agrega el panel **Solicitudes recibidas por mis publicaciones**.
+2. **Asistente avanzado con membresía**
+   - Pedido con menú.
+   - Cita.
+   - Contacto directo.
+   - Cotización.
+   - Solicitud de servicio.
+   - Viaje compartido.
+   - Envío o mensajería.
+   - Ofrecer ayuda / responder necesidad.
 
-## Membresías
+3. **Integración en barra inferior**
+   - Se elimina el acceso flotante del asistente.
+   - El acceso anterior de asistente/orientación de la barra inferior se sustituye por **Asistente**.
+   - El botón abre el centro de solicitudes y asistentes de publicaciones.
 
-- Admin puede probar sin membresía.
-- Usuario sin membresía puede guardar borrador.
-- Usuario con membresía activa puede activar asistentes.
+4. **Flujo de publicar**
+   - El botón `+` se mantiene.
+   - Ya no se bloquea la publicación básica por falta de membresía.
+   - En la pantalla final se muestra el mensaje freemium:
 
-## Datos
+   > Tu publicación básica es gratis. Activa la membresía para recibir pedidos, citas, cotizaciones o mensajes filtrados.
 
-Funciona en modo piloto con localStorage.
+5. **Admin libre**
+   - Admin puede publicar, activar asistentes, probar flujos y supervisar sin membresía.
 
-**No requiere SQL nuevo para probar.**
+## SQL
 
-Se incluye `supabase-publication-assistant.sql` como base opcional para producción multiusuario.
+No requiere SQL nuevo para probar en piloto.
+
+El archivo `supabase-publication-assistant.sql` queda como base opcional futura para producción real multiusuario.
 
 ## Archivos modificados
 
-- app.js
-- styles.css
-- service-worker.js
-- manifest.json
-- vercel.json
-- PATCH-INDEX-v4.9.39.txt
-- supabase-publication-assistant.sql
+- `app.js`
+- `styles.css`
+- `service-worker.js`
+- `manifest.json`
+- `PATCH-INDEX-v4.9.40.txt`
+- `CHECKLIST-v4.9.40.txt`
+- `INSTRUCCIONES-CODEX-v4.9.40.txt`
 
 ## Commit sugerido
 
-Extender asistente configurable a todas las publicaciones
+```text
+Integrar modelo freemium y Asistente de publicación en barra inferior v4.9.40
+```

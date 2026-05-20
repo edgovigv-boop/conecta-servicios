@@ -1,0 +1,27 @@
+PATCH index.html para v4.9.40-publicar-con-asistente-integrado
+
+1) Reemplazar CSS:
+<link rel="stylesheet" href="styles.css?v=4.9.40-publicar-con-asistente-integrado">
+
+2) Reemplazar JS:
+<script src="app.js?v=4.9.40-publicar-con-asistente-integrado" defer></script>
+
+3) Actualizar body:
+<body data-version="4.9.40-publicar-con-asistente-integrado">
+
+4) Actualizar title si aplica:
+<title>Conecta Servicios v4.9.40</title>
+
+5) Validar barra inferior:
+- El acceso anterior de asistente/orientación de la barra inferior debe decir “Asistente”.
+- Debe abrir el centro de Asistente de publicación.
+- No debe quedar botón flotante del asistente.
+
+6) Validar publicación:
+- El botón + sigue abriendo Publicar.
+- La publicación básica ya no debe pedir membresía.
+- La pantalla final debe mostrar:
+  “Tu publicación básica es gratis. Activa la membresía para recibir pedidos, citas, cotizaciones o mensajes filtrados.”
+
+IMPORTANTE:
+Si index.html no se actualiza, el navegador o service worker puede cargar app.js/styles.css viejos aunque Vercel esté en Ready.

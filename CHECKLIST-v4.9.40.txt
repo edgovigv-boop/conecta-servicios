@@ -1,0 +1,50 @@
+CHECKLIST v4.9.40 — Publicar con Asistente integrado
+
+1. Reemplazar archivos en la raíz:
+   - app.js
+   - styles.css
+   - service-worker.js
+   - manifest.json
+   - vercel.json si aplica
+
+2. Aplicar PATCH-INDEX-v4.9.40.txt en index.html.
+
+3. Confirmar que index.html cargue:
+   - styles.css?v=4.9.40-publicar-con-asistente-integrado
+   - app.js?v=4.9.40-publicar-con-asistente-integrado
+   - body data-version="4.9.40-publicar-con-asistente-integrado"
+
+4. Probar barra inferior:
+   - El botón anterior de asistente/orientación debe decir “Asistente”.
+   - Debe abrir el centro de Asistente de publicación.
+   - No debe aparecer botón flotante de asistente.
+
+5. Probar publicación básica gratis:
+   - Entrar con el botón +.
+   - Crear publicación con título, descripción, categoría, zona, contacto y foto opcional.
+   - Llegar a revisar/publicar.
+   - Confirmar que NO pide membresía para publicar básico.
+   - Confirmar que muestra el mensaje freemium.
+
+6. Probar asistente sin membresía:
+   - Desde la pantalla final, tocar “Ver asistente / guardar borrador”.
+   - Configurar asistente.
+   - Confirmar que queda como borrador o vista previa.
+   - Confirmar que no se activa públicamente sin membresía.
+
+7. Probar usuario con membresía/Admin:
+   - Activar membresía local o ingresar Admin.
+   - Configurar asistente.
+   - Confirmar que se activa.
+   - Probar pedido, cita y mensaje.
+
+8. Probar Mis publicaciones:
+   - Ver panel “Solicitudes recibidas por mis publicaciones”.
+   - Abrir Asistente.
+   - Cambiar estados.
+   - Responder internamente.
+
+9. Probar caché:
+   - Abrir en incógnito.
+   - Usar URL con ?v=4940.
+   - Si persiste versión vieja, borrar datos del sitio/service worker.

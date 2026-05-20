@@ -1,12 +1,12 @@
-// Conecta Servicios v4.9.39 — Service Worker Asistente de publicaciones
-const CACHE_NAME = "conecta-servicios-4.9.39-asistente-publicaciones";
+// Conecta Servicios v4.9.40 — Service Worker Publicar con Asistente integrado
+const CACHE_NAME = "conecta-servicios-v4.9.40-publicar-con-asistente-integrado";
 const ASSETS = [
   "/",
   "/index.html",
-  "/styles.css?v=4.9.39-asistente-publicaciones",
-  "/app.js?v=4.9.39-asistente-publicaciones",
-  "/manifest.json?v=4.9.39-asistente-publicaciones",
-  "/service-worker.js?v=4.9.39-asistente-publicaciones"
+  "/styles.css?v=4.9.40-publicar-con-asistente-integrado",
+  "/app.js?v=4.9.40-publicar-con-asistente-integrado",
+  "/manifest.json?v=4.9.40-publicar-con-asistente-integrado",
+  "/service-worker.js?v=4.9.40-publicar-con-asistente-integrado"
 ];
 self.addEventListener("install", event => {
   self.skipWaiting();
