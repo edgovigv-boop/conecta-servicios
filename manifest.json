@@ -1,8 +1,8 @@
 {
-  "name": "Conecta Servicios v4.9.49",
+  "name": "Conecta Servicios v4.9.50",
   "short_name": "Conecta",
-  "description": "Conecta Servicios con DOLA, asistente interno por publicación.",
-  "start_url": "/?source=pwa&v=v4.9.48-bots-por-perfil",
+  "description": "Conecta Servicios con DOLA contextual, publicaciones, recomendaciones y contacto filtrado.",
+  "start_url": "/?source=pwa&v=v4.9.50-dola-contextual-conecta",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -35,5 +35,5 @@
       "purpose": "maskable"
     }
   ],
-  "id": "/?v=v4.9.48-bots-por-perfil"
+  "id": "/?v=v4.9.50-dola-contextual-conecta"
 }

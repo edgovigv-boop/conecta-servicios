@@ -1,0 +1,22 @@
+CHECKLIST v4.9.50 — DOLA contextual Conecta
+
+1. Entrar desde plantilla “Busco mensajero cerca”.
+2. Confirmar que DOLA inicia con contexto de búsqueda.
+3. Confirmar que DOLA recomienda publicaciones relacionadas si existen.
+4. Confirmar que si no hay resultados ofrece crear publicación gratis.
+5. Crear publicación con DOLA y obtener bloque “Copia este texto y pégalo en Conecta”.
+6. Pegar texto en Conecta y generar publicación organizada.
+7. Confirmar que Conecta sugiere imagen/video del banco manual si existe.
+8. Confirmar que si no hay media no se rompe.
+9. Entrar desde Embajadores y confirmar que DOLA explica el programa.
+10. Entrar desde Mandados verificados y confirmar que DOLA explica requisitos.
+11. Entrar desde Aprendizaje y confirmar que DOLA guía recursos.
+12. Tocar “Mensaje” en una publicación y abrir DOLA con contexto del anunciante.
+13. Confirmar que DOLA filtra la solicitud.
+14. Confirmar que DOLA genera texto listo para WhatsApp cuando corresponde.
+15. Confirmar que no se sale del contexto de Conecta Servicios.
+16. Confirmar que al preguntar algo externo responde como agente especializado de Conecta.
+17. Confirmar que publicación gratis dura 30 días.
+18. Confirmar que membresía $98 se muestra correctamente.
+19. Confirmar que admin no tiene restricciones.
+20. Confirmar que no aparecen botones flotantes ni secciones repetidas.

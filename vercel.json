@@ -141,6 +141,38 @@
     {
       "source": "/pedidos/",
       "destination": "/index.html"
+    },
+    {
+      "source": "/dola",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dola/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dola/crear",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dola/crear/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dola/contactar",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dola/contactar/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dola/guia",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dola/guia/",
+      "destination": "/index.html"
     }
   ]
 }

@@ -1,12 +1,12 @@
-// Conecta Servicios v4.9.48 — Bots por perfil
-const CACHE_NAME = "conecta-servicios-v4.9.49-dola-asistente-interno";
+// Conecta Servicios v4.9.50-dola-contextual-conecta
+const CACHE_NAME = "conecta-servicios-v4.9.50-dola-contextual-conecta";
 const ASSETS = [
   "/",
   "/index.html",
-  "/styles.css?v=v4.9.49-dola-asistente-interno",
-  "/app.js?v=v4.9.49-dola-asistente-interno",
-  "/manifest.json?v=v4.9.49-dola-asistente-interno",
-  "/service-worker.js?v=v4.9.49-dola-asistente-interno"
+  "/styles.css?v=v4.9.50-dola-contextual-conecta",
+  "/app.js?v=v4.9.50-dola-contextual-conecta",
+  "/manifest.json?v=v4.9.50-dola-contextual-conecta",
+  "/service-worker.js?v=v4.9.50-dola-contextual-conecta"
 ];
 self.addEventListener("install", event => {
   self.skipWaiting();

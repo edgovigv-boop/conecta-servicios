@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.48-bots-por-perfil";
+const PWA_VERSION = "v4.9.50-dola-contextual-conecta";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -13226,4 +13226,670 @@ try {
 
   window.showDolaNoticeV4949 = showDolaNotice;
   window.dolaCopyV4949 = dolaCopy;
+})();
+
+
+// ------------------------------------------------------------------
+// v4.9.50 — DOLA contextual Conecta
+// - DOLA se abre con contexto desde plantillas, secciones y publicaciones.
+// - Recomienda publicaciones internas relacionadas antes de crear nuevas.
+// - Genera texto listo para copiar y pegar en Conecta.
+// - Filtra interesados y prepara mensajes claros para WhatsApp cuando corresponde.
+// - Mantiene Conecta como feed limpio y DOLA como asistente contextual especializado.
+// ------------------------------------------------------------------
+(function dolaContextualConectaV4950(){
+  const VERSION = "v4.9.50-dola-contextual-conecta";
+  const NOTICE_KEY = "conecta_dola_contextual_notice_v4950";
+  const CHAT_KEY = "conecta_dola_contextual_chats_v4950";
+  const DRAFT_KEY = "conecta_dola_generated_publications_v4950";
+  const REQUEST_KEY = "conecta_dola_filtered_requests_v4950";
+  const FREE_TRIAL_KEY = "conecta_publicacion_gratis_30_dias_v4950";
+  const MEDIA_BASE = "assets/dola-media/";
+
+  const STAR_SECTIONS = {
+    para_ti: { label: "Para ti", help: "Publicaciones, recomendaciones y opciones útiles según lo que buscas." },
+    solicitantes: { label: "Solicitantes", help: "Personas que necesitan ayuda, productos, servicios, mandados o respuestas." },
+    agentes: { label: "Agentes", help: "Personas que pueden atender mandados, entregas, viajes, servicios o apoyos locales." },
+    negocios: { label: "Negocios", help: "Comercios, profesionales o empresas que quieren recibir clientes, pedidos, citas o cotizaciones." },
+    mandados: { label: "Mandados verificados", help: "Flujo de confianza para mandados, compras y entregas con seguimiento o revisión manual cuando aplique." },
+    comision: { label: "Conseguir clientes por comisión", help: "Ruta para ayudar a negocios, agentes o usuarios a publicar y recibir comisión por membresía." },
+    embajadores: { label: "Embajadores", help: "Programa para invitar usuarios, explicar membresías y apoyar publicaciones por comisión." },
+    aprendizaje: { label: "Aprendizaje", help: "Recursos y rutas para mejorar habilidades, publicar mejor y ofrecer mejores servicios." }
+  };
+
+  const TEMPLATE_CONTEXTS = {
+    "necesito-algo": { type: "solicitante", category: "Solicitud", intention: "crear", title: "Necesito algo", keywords: ["necesito", "busco", "ayuda"] },
+    "busco-mensajero": { type: "solicitante", category: "Mandados verificados", intention: "buscar", title: "Busco mensajero cerca", keywords: ["mensajero", "mandado", "entrega", "envio", "envío"] },
+    "pedir-comida": { type: "solicitante", category: "Comida", intention: "buscar", title: "Quiero pedir comida", keywords: ["comida", "tacos", "rosticeria", "rosticería", "pedido"] },
+    "encontrar-agente": { type: "solicitante", category: "Agentes", intention: "buscar", title: "Quiero encontrar un agente", keywords: ["agente", "mandados", "entregas", "viajes"] },
+    "publicar-negocio": { type: "negocio", category: "Negocios", intention: "publicar", title: "Quiero publicar mi negocio", keywords: ["negocio", "clientes", "venta", "pedidos"] },
+    "ganar-dinero": { type: "agente", category: "Agentes en crecimiento", intention: "aprender", title: "Quiero ganar dinero", keywords: ["ganar", "comision", "comisión", "agente"] },
+    "embajadores": { section: "embajadores", type: "agente", category: "Embajadores", intention: "guia", title: "Quiero ser embajador", keywords: ["embajador", "comision", "membresia"] },
+    "mandados-verificados": { section: "mandados", type: "agente", category: "Mandados verificados", intention: "guia", title: "Mandados verificados", keywords: ["mandados", "verificados", "entregas"] },
+    "aprendizaje": { section: "aprendizaje", type: "agente", category: "Aprendizaje", intention: "guia", title: "Aprendizaje", keywords: ["aprendizaje", "cursos", "capacitar"] }
+  };
+
+  const CREATE_QUESTIONS = {
+    solicitante: ["¿Qué necesitas exactamente?", "¿En qué zona o municipio aplica?", "¿Para cuándo lo necesitas?", "¿Qué presupuesto, pago o condición quieres mencionar?", "¿Quieres agregar algún detalle importante?"],
+    agente: ["¿Qué puedes hacer o atender?", "¿En qué zona trabajas?", "¿Qué horarios tienes disponibles?", "¿Qué costo, rango o condición quieres mencionar?", "¿Qué detalle te gustaría que sepan las personas?"],
+    negocio: ["¿Qué negocio, producto o servicio quieres publicar?", "¿Dónde atiendes o en qué zona entregas?", "¿Qué horario manejas?", "¿Qué beneficios, promociones o formas de pago quieres mencionar?", "¿Quieres agregar algún detalle para tus clientes?"]
+  };
+
+  const CONTACT_QUESTIONS = {
+    solicitante: ["¿Puedes ayudar con esta solicitud?", "¿Desde qué zona puedes apoyar?", "¿Para cuándo puedes hacerlo?", "¿Cuánto cobrarías o qué propones?", "¿Quieres agregar algún detalle?"],
+    agente: ["¿Qué necesitas que realice el agente?", "¿Dónde se recoge o inicia?", "¿Dónde se entrega o termina?", "¿Para qué fecha u horario?", "¿Cuál es tu presupuesto aproximado?", "¿Hay algún detalle importante?"],
+    negocio: ["¿Qué producto, servicio, cita o cotización necesitas?", "¿Para qué día u horario lo necesitas?", "¿Cantidad, alcance o detalles principales?", "¿Cuál es tu nombre o contacto?", "¿Quieres agregar algún comentario?"]
+  };
+
+  const FOOD_MENU = [
+    { name: "Pollo asado con ensalada, salsas y tortillas", price: 235 },
+    { name: "Quesadillas", price: 50 },
+    { name: "Refrescos", price: 35 },
+    { name: "Papas fritas", price: 40 }
+  ];
+
+  function qs(sel, root=document){ return root.querySelector(sel); }
+  function qsa(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
+  function esc(value=""){
+    try { if (typeof escapeHtml === "function") return escapeHtml(value); } catch {}
+    return String(value ?? "").replace(/[&<>\"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch]));
+  }
+  function toast(message){ try { if (typeof showToast === "function") return showToast(message); } catch {} try { alert(message); } catch {} }
+  function norm(value=""){ return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+  function read(key, fallback){ try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch { return fallback; } }
+  function write(key, value){ try { localStorage.setItem(key, JSON.stringify(value)); } catch {} }
+  function uid(prefix="DOLA"){ return `${prefix}-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(16).slice(2,7).toUpperCase()}`; }
+  function cleanPhoneLocal(value=""){ try { if (typeof cleanPhone === "function") return cleanPhone(value); } catch {} return String(value || "").replace(/\D/g, ""); }
+
+  function getAllPublications(){
+    const rows = [];
+    try { if (Array.isArray(publicationsCache)) rows.push(...publicationsCache); } catch {}
+    try { if (Array.isArray(PILOT_PUBLICATIONS)) rows.push(...getPilotPublications?.() || PILOT_PUBLICATIONS); } catch {}
+    [
+      "conecta_publicaciones_basicas_locales_v4943",
+      "conecta_publicaciones_social_v4944",
+      "conecta_publications_v4942",
+      "conecta_business_chat_publicaciones_v49367",
+      "conecta_dola_generated_publications_v4950"
+    ].forEach(key => {
+      const local = read(key, []);
+      if (Array.isArray(local)) rows.push(...local);
+    });
+    const seen = new Set();
+    return rows.filter(item => {
+      const id = String(item?.id || item?.local_id || item?.publication_id || item?.titulo || item?.title || Math.random());
+      const status = norm(item?.estado || item?.status || "activo");
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return !/(rechaz|elimin|borrado|inactivo)/.test(status);
+    });
+  }
+
+  function itemText(item={}){
+    return norm([
+      item.titulo, item.title, item.nombre_publico, item.name, item.descripcion, item.description,
+      item.categoria_principal, item.category, item.subcategoria, item.subcategory,
+      item.municipio, item.locality, item.localidad, item.zona, item.state, item.estado_nombre,
+      item.roleLabel, item.pilotType, item.intencion
+    ].filter(Boolean).join(" "));
+  }
+
+  function pubId(item={}){ return String(item.id || item.local_id || item.publication_id || item.folio || ""); }
+  function pubTitle(item={}){ return item.titulo || item.title || item.nombre_publico || item.name || "Publicación"; }
+  function pubType(item={}){
+    const text = itemText(item);
+    if (/negocio|tienda|comida|rosticer|panader|consultor|doctor|estetica|ferreter|venta|cliente/.test(text)) return "Negocio";
+    if (/agente|mandado|mensajer|entrega|repart|viaje|ofrezco|hago|disponible/.test(text)) return "Agente";
+    return "Solicitante";
+  }
+  function pubZone(item={}){ return [item.municipio, item.localidad || item.locality, item.estado_nombre || item.state].filter(Boolean).join(", ") || "Zona por confirmar"; }
+  function contextKeywords(ctx={}){
+    const template = TEMPLATE_CONTEXTS[ctx.template_id] || TEMPLATE_CONTEXTS[ctx.plantilla] || {};
+    const raw = [ctx.template_name, ctx.template, ctx.section_origin, ctx.seccion, ctx.category, ctx.categoria, ctx.query, ctx.intention, template.title, template.category, ...(template.keywords || [])].filter(Boolean).join(" ");
+    return norm(raw).split(/\s+/).filter(w => w.length > 3).slice(0, 12);
+  }
+
+  function recommendPublications(ctx={}, limit=5){
+    const words = contextKeywords(ctx);
+    const municipio = norm(ctx.municipality || ctx.municipio || ctx.zone || ctx.zona || "");
+    const rows = getAllPublications();
+    return rows.map(item => {
+      const text = itemText(item);
+      let score = 0;
+      words.forEach(w => { if (text.includes(w)) score += 2; });
+      if (municipio && text.includes(municipio)) score += 5;
+      if (/mensajer|mandado|entrega|envio|envío/.test(words.join(" ")) && /mensajer|mandado|entrega|envio|envío|repart/.test(text)) score += 6;
+      if (/comida|tacos|rosticer/.test(words.join(" ")) && /comida|tacos|pollo|rosticer|pedido/.test(text)) score += 6;
+      if (/embajador/.test(words.join(" ")) && /embajador|comision|membresia/.test(text)) score += 3;
+      return { item, score };
+    }).filter(row => row.score > 0).sort((a,b) => b.score - a.score).slice(0, limit).map(row => row.item);
+  }
+
+  function inferTemplateFromText(text=""){
+    const value = norm(text);
+    if (/mensajer|mandado|entrega|envio|envío/.test(value)) return "busco-mensajero";
+    if (/comida|taco|pollo|rosticer|cenar|pedido/.test(value)) return "pedir-comida";
+    if (/embajador|comision|comisión/.test(value)) return "embajadores";
+    if (/curso|aprend|capacita/.test(value)) return "aprendizaje";
+    if (/negocio|cliente|empresa|tienda/.test(value)) return "publicar-negocio";
+    if (/ganar|dinero|agente/.test(value)) return "ganar-dinero";
+    return "necesito-algo";
+  }
+
+  function parseContextFromLocation(){
+    const params = new URLSearchParams(location.search || "");
+    const path = String(location.pathname || "").toLowerCase();
+    const isDola = path.includes("/dola") || params.get("dola") === "1" || params.get("section") === "dola";
+    if (!isDola) return null;
+    const mode = path.includes("/contactar") ? "contactar" : path.includes("/guia") ? "guia" : "crear";
+    const template_id = params.get("plantilla") || params.get("template") || inferTemplateFromText([params.get("q"), params.get("categoria"), params.get("seccion")].join(" "));
+    return {
+      mode,
+      origin: params.get("origen") || "ruta",
+      template_id,
+      template_name: params.get("template_name") || TEMPLATE_CONTEXTS[template_id]?.title || template_id,
+      section_origin: params.get("seccion") || params.get("section") || TEMPLATE_CONTEXTS[template_id]?.section || "",
+      type: params.get("tipo") || TEMPLATE_CONTEXTS[template_id]?.type || "solicitante",
+      category: params.get("categoria") || TEMPLATE_CONTEXTS[template_id]?.category || "",
+      municipality: params.get("municipio") || params.get("zona") || "",
+      publication_id: params.get("publicacion") || params.get("pub") || params.get("id") || "",
+      query: params.get("q") || ""
+    };
+  }
+
+  function showNotice(){
+    if (localStorage.getItem(NOTICE_KEY) === "1") return Promise.resolve(true);
+    return new Promise(resolve => {
+      const old = qs(".dola-notice-overlay-v4950");
+      if (old) old.remove();
+      const overlay = document.createElement("div");
+      overlay.className = "dola-notice-overlay-v4950";
+      overlay.innerHTML = `<div class="dola-notice-card-v4950">
+        <div class="dola-logo-v4950">DOLA</div>
+        <h3>Tu asistente dentro de Conecta Servicios</h3>
+        <p>DOLA organizará la información que escribas o dictes para ayudarte a crear publicaciones, encontrar opciones dentro de Conecta Servicios y filtrar solicitudes.</p>
+        <p class="dola-muted-v4950">No compartas datos sensibles. Puedes revisar y editar la información antes de usarla o publicarla.</p>
+        <div class="dola-actions-v4950"><button class="btn-small btn-purple" type="button" data-accept>Entendido, continuar</button><button class="btn-small btn-ghost" type="button" data-cancel>Cancelar</button></div>
+      </div>`;
+      document.body.appendChild(overlay);
+      qs("[data-accept]", overlay)?.addEventListener("click", () => { localStorage.setItem(NOTICE_KEY, "1"); overlay.remove(); resolve(true); });
+      qs("[data-cancel]", overlay)?.addEventListener("click", () => { overlay.remove(); resolve(false); });
+    });
+  }
+
+  const Dola = {
+    ctx: {},
+    messages: [],
+    recommendations: [],
+    phase: "home",
+    flow: null,
+    answers: [],
+    currentQuestion: 0,
+    generated: ""
+  };
+
+  function addMessage(role, html){ Dola.messages.push({ role, html, at: Date.now() }); }
+  function resetConversation(ctx={}){
+    Dola.ctx = enrichContext(ctx);
+    Dola.messages = [];
+    Dola.recommendations = recommendPublications(Dola.ctx);
+    Dola.phase = Dola.ctx.mode === "contactar" ? "contact" : "home";
+    Dola.flow = null;
+    Dola.answers = [];
+    Dola.currentQuestion = 0;
+    Dola.generated = "";
+    addMessage("bot", introForContext(Dola.ctx));
+    if (Dola.ctx.mode === "contactar") startContactFlow(false);
+    else if (["embajadores", "mandados", "aprendizaje"].includes(Dola.ctx.section_origin) || Dola.ctx.mode === "guia") addMessage("bot", guideForSection(Dola.ctx.section_origin || Dola.ctx.template_id));
+  }
+
+  function enrichContext(ctx={}){
+    const template = TEMPLATE_CONTEXTS[ctx.template_id] || TEMPLATE_CONTEXTS[ctx.plantilla] || {};
+    return {
+      origin: ctx.origin || ctx.origen || "manual",
+      mode: ctx.mode || ctx.modo || template.intention || "crear",
+      template_id: ctx.template_id || ctx.plantilla || inferTemplateFromText(ctx.template_name || ctx.query || ""),
+      template_name: ctx.template_name || ctx.template || template.title || "Conecta Servicios",
+      section_origin: ctx.section_origin || ctx.seccion || ctx.section || template.section || "",
+      type: ctx.type || ctx.tipo || template.type || "solicitante",
+      category: ctx.category || ctx.categoria || template.category || "",
+      municipality: ctx.municipality || ctx.municipio || ctx.zone || ctx.zona || "",
+      publication_id: ctx.publication_id || ctx.publicacion || ctx.pub || ctx.id || "",
+      query: ctx.query || ctx.q || ""
+    };
+  }
+
+  function introForContext(ctx={}){
+    const name = esc(ctx.template_name || ctx.section_origin || "Conecta Servicios");
+    if (ctx.mode === "contactar") return `Veo que quieres contactar al anunciante de esta publicación. Te haré unas preguntas rápidas para preparar una solicitud clara.`;
+    if (ctx.section_origin === "embajadores" || ctx.template_id === "embajadores") return `Veo que vienes de Embajadores. Te puedo explicar cómo invitar usuarios, compartir membresías y orientar negocios o agentes.`;
+    if (ctx.section_origin === "aprendizaje" || ctx.template_id === "aprendizaje") return `Veo que vienes de Aprendizaje. Te puedo orientar hacia recursos y pasos para mejorar tus publicaciones o servicios.`;
+    if (ctx.section_origin === "mandados" || ctx.template_id === "mandados-verificados") return `Veo que vienes de Mandados verificados. Te explicaré cómo funciona y puedo ayudarte a encontrar o crear publicaciones relacionadas.`;
+    const recText = Dola.recommendations?.length ? ` Primero puedo mostrarte publicaciones relacionadas en Conecta.` : ` Si no hay publicaciones útiles, puedo ayudarte a crear una publicación gratis por 30 días.`;
+    return `Veo que vienes de “${name}”. DOLA ya tiene ese contexto.${recText}`;
+  }
+
+  function guideForSection(section=""){
+    const key = norm(section);
+    if (/embajador/.test(key)) return `<strong>Embajadores</strong><br>Un embajador ayuda a invitar usuarios, orientar negocios/agentes y compartir enlaces de membresía. La comisión piloto sugerida es de $50 MXN por membresía anual referida de $98 MXN, sujeta a validación administrativa.`;
+    if (/mandado/.test(key)) return `<strong>Mandados verificados</strong><br>Este rubro busca más confianza en compras, entregas y encargos. La verificación puede requerir revisión manual, evidencia o reglas adicionales antes de activar completamente el flujo.`;
+    if (/aprendiz/.test(key)) return `<strong>Aprendizaje</strong><br>DOLA puede orientarte con rutas, recursos o cursos permitidos para mejorar tus servicios, publicaciones y atención. Si el recurso es externo, debe mostrarse como enlace externo y no como contenido propio.`;
+    if (/comision|clientes/.test(key)) return `<strong>Conseguir clientes por comisión</strong><br>DOLA puede ayudarte a explicar a negocios o agentes cómo publicar, activar membresía y recibir clientes o solicitudes filtradas.`;
+    return `<strong>Conecta Servicios</strong><br>Puedo ayudarte a publicar, buscar contactos, entender la membresía o usar las secciones principales de la app.`;
+  }
+
+  function renderMessages(){
+    return Dola.messages.map(m => `<div class="dola-bubble-v4950 ${m.role === "user" ? "user" : "bot"}">${m.html}</div>`).join("");
+  }
+
+  function recommendationHtml(){
+    if (!Dola.recommendations.length) return `<div class="dola-empty-v4950">No encontré publicaciones relacionadas por ahora. Puedo ayudarte a crear una publicación gratis por 30 días.</div>`;
+    return `<div class="dola-recs-v4950">${Dola.recommendations.slice(0,5).map(item => `<article class="dola-rec-v4950">
+      <strong>${esc(pubTitle(item))}</strong>
+      <small>${esc(pubType(item))} · ${esc(pubZone(item))}</small>
+      <p>${esc(item.descripcion || item.description || "").slice(0,120)}</p>
+      <button class="btn-small btn-outline" type="button" onclick="focusDolaPublicationV4950('${esc(pubId(item))}', '${esc(pubTitle(item))}')">Ver publicación</button>
+    </article>`).join("")}</div>`;
+  }
+
+  function renderActions(){
+    if (Dola.phase === "create") return createQuestionHtml();
+    if (Dola.phase === "contact") return contactQuestionHtml();
+    if (Dola.phase === "generated") return generatedHtml();
+    if (Dola.phase === "recommendations") return `${recommendationHtml()}<div class="dola-actions-v4950"><button class="btn-small btn-purple" onclick="startDolaCreateV4950()">Crear publicación gratis</button><button class="btn-small btn-ghost" onclick="dolaBackHomeV4950()">Volver</button></div>`;
+    return `<div class="dola-actions-v4950">
+      <button class="btn-small btn-purple" type="button" onclick="showDolaRecommendationsV4950()">Ver publicaciones relacionadas</button>
+      <button class="btn-small btn-outline" type="button" onclick="startDolaCreateV4950()">Crear publicación gratis</button>
+      <button class="btn-small btn-ghost" type="button" onclick="showDolaGuideV4950()">Explicarme cómo funciona</button>
+    </div>`;
+  }
+
+  function renderDolaModal(){
+    const html = `<div class="dola-modal-v4950">
+      <header class="dola-head-v4950"><div class="dola-mark-v4950">DOLA</div><div><h2>DOLA contextual</h2><p>Asistente especializado de Conecta Servicios</p></div></header>
+      <div class="dola-context-v4950"><span>Origen: ${esc(Dola.ctx.template_name || Dola.ctx.section_origin || "Conecta")}</span><span>Tipo: ${esc(Dola.ctx.type || "")}</span><span>${esc(Dola.ctx.category || "")}</span></div>
+      <div class="dola-chat-v4950" id="dolaChatScrollV4950">${renderMessages()}</div>
+      <div class="dola-panel-v4950">${renderActions()}</div>
+    </div>`;
+    if (typeof openModal === "function") openModal(html);
+    else fallbackModal(html);
+    setTimeout(() => { const sc = qs("#dolaChatScrollV4950"); if (sc) sc.scrollTop = sc.scrollHeight; }, 30);
+  }
+
+  function fallbackModal(html){
+    qsa(".dola-fallback-overlay-v4950").forEach(el => el.remove());
+    const wrap = document.createElement("div");
+    wrap.className = "dola-fallback-overlay-v4950";
+    wrap.innerHTML = `<div class="dola-fallback-card-v4950"><button class="dola-close-v4950" onclick="this.closest('.dola-fallback-overlay-v4950').remove()">×</button>${html}</div>`;
+    document.body.appendChild(wrap);
+  }
+
+  async function openDola(ctx={}){
+    const ok = await showNotice();
+    if (!ok) return;
+    resetConversation(ctx);
+    renderDolaModal();
+    saveConversation();
+  }
+
+  function showRecommendations(){
+    Dola.phase = "recommendations";
+    addMessage("bot", Dola.recommendations.length ? "Encontré estas publicaciones relacionadas dentro de Conecta Servicios:" : "No encontré coincidencias útiles en este momento.");
+    renderDolaModal();
+  }
+
+  function startCreateFlow(render=true){
+    Dola.phase = "create";
+    Dola.flow = { type: Dola.ctx.type || "solicitante", questions: CREATE_QUESTIONS[Dola.ctx.type] || CREATE_QUESTIONS.solicitante };
+    Dola.answers = [];
+    Dola.currentQuestion = 0;
+    addMessage("bot", `Vamos a crear una publicación de tipo <strong>${esc(Dola.flow.type)}</strong>. Te haré preguntas cortas y al final te daré el texto listo para pegar en Conecta.`);
+    if (render) renderDolaModal();
+  }
+
+  function startContactFlow(render=true){
+    const item = findPublication(Dola.ctx.publication_id);
+    const typeKey = (pubType(item || {}).toLowerCase() || Dola.ctx.type || "solicitante").includes("negocio") ? "negocio" : (pubType(item || {}).toLowerCase().includes("agente") ? "agente" : "solicitante");
+    Dola.phase = "contact";
+    Dola.flow = { type: typeKey, publication: item, questions: CONTACT_QUESTIONS[typeKey] || CONTACT_QUESTIONS.solicitante };
+    Dola.answers = [];
+    Dola.currentQuestion = 0;
+    if (item) addMessage("bot", `Publicación: <strong>${esc(pubTitle(item))}</strong><br>Te haré preguntas rápidas para preparar una solicitud clara.`);
+    if (render) renderDolaModal();
+  }
+
+  function createQuestionHtml(){
+    const q = Dola.flow?.questions?.[Dola.currentQuestion];
+    if (!q) return `<button class="btn-small btn-purple" onclick="finishDolaCreateV4950()">Generar publicación</button>`;
+    return `<form class="dola-answer-form-v4950" onsubmit="submitDolaAnswerV4950(event)">
+      <label>${esc(q)}<textarea id="dolaAnswerInputV4950" rows="3" placeholder="Escribe tu respuesta..."></textarea></label>
+      <div class="dola-actions-v4950"><button class="btn-small btn-purple" type="submit">Responder</button><button class="btn-small btn-ghost" type="button" onclick="skipDolaQuestionV4950()">Saltar</button></div>
+    </form>`;
+  }
+
+  function contactQuestionHtml(){
+    const q = Dola.flow?.questions?.[Dola.currentQuestion];
+    if (!q) return `<button class="btn-small btn-purple" onclick="finishDolaContactV4950()">Generar mensaje final</button>`;
+    return `<form class="dola-answer-form-v4950" onsubmit="submitDolaAnswerV4950(event)">
+      <label>${esc(q)}<textarea id="dolaAnswerInputV4950" rows="3" placeholder="Responde para filtrar la solicitud..."></textarea></label>
+      <div class="dola-quick-v4950">${quickAnswersForQuestion(q).map(a => `<button type="button" onclick="quickDolaAnswerV4950('${esc(a)}')">${esc(a)}</button>`).join("")}</div>
+      <div class="dola-actions-v4950"><button class="btn-small btn-purple" type="submit">Responder</button><button class="btn-small btn-ghost" type="button" onclick="skipDolaQuestionV4950()">Saltar</button></div>
+    </form>`;
+  }
+
+  function quickAnswersForQuestion(q=""){
+    const t = norm(q);
+    if (/puedes|ayudar|realice|necesitas/.test(t)) return ["Sí, puedo", "Quiero cotizar", "Quiero pedir", "Necesito información"];
+    if (/zona|donde|entrega|recoge/.test(t)) return ["Chapultepec", "Centro", "Cerca de mí", "Lo confirmo después"];
+    if (/fecha|horario|cuando|hora/.test(t)) return ["Hoy", "Mañana", "Por la mañana", "Por la tarde"];
+    if (/presupuesto|cobrarias|costo/.test(t)) return ["A negociar", "$50 - $100", "$100 - $200", "Precio justo"];
+    return ["Sí", "No", "A negociar", "Quiero agregar detalles"];
+  }
+
+  function submitAnswer(event){
+    event?.preventDefault?.();
+    const input = qs("#dolaAnswerInputV4950");
+    const answer = input?.value?.trim?.() || "";
+    if (!answer) return toast("Escribe una respuesta o toca Saltar.");
+    addAnswer(answer);
+  }
+
+  function addAnswer(answer){
+    const question = Dola.flow?.questions?.[Dola.currentQuestion] || "Pregunta";
+    Dola.answers.push({ question, answer });
+    addMessage("user", esc(answer));
+    Dola.currentQuestion += 1;
+    if (Dola.currentQuestion >= (Dola.flow?.questions?.length || 0)) {
+      if (Dola.phase === "create") finishCreate(false); else finishContact(false);
+    }
+    renderDolaModal();
+  }
+
+  function skipQuestion(){
+    Dola.answers.push({ question: Dola.flow?.questions?.[Dola.currentQuestion] || "Pregunta", answer: "" });
+    addMessage("user", "Prefiero omitirlo por ahora.");
+    Dola.currentQuestion += 1;
+    if (Dola.currentQuestion >= (Dola.flow?.questions?.length || 0)) {
+      if (Dola.phase === "create") finishCreate(false); else finishContact(false);
+    }
+    renderDolaModal();
+  }
+
+  function answerMap(){
+    const map = {};
+    Dola.answers.forEach((a, i) => { map[`q${i+1}`] = a.answer || "Por confirmar"; });
+    return map;
+  }
+
+  function finishCreate(render=true){
+    const type = Dola.flow?.type || Dola.ctx.type || "solicitante";
+    const m = answerMap();
+    const zone = m.q2 || Dola.ctx.municipality || "Zona por confirmar";
+    let title = "Publicación generada por DOLA";
+    let category = Dola.ctx.category || "General";
+    let description = "";
+    if (type === "negocio") {
+      title = m.q1 || "Negocio local";
+      category = category || "Negocios";
+      description = `Ofrezco: ${m.q1}. Zona de atención: ${zone}. Horario: ${m.q3}. Beneficios, formas de pago o promociones: ${m.q4}. Detalles adicionales: ${m.q5}.`;
+    } else if (type === "agente") {
+      title = m.q1 || "Agente disponible";
+      category = category || "Agentes";
+      description = `Ofrezco apoyo con: ${m.q1}. Zona: ${zone}. Horarios: ${m.q3}. Costo o condiciones: ${m.q4}. Detalles adicionales: ${m.q5}.`;
+    } else {
+      title = m.q1 || Dola.ctx.template_name || "Necesito apoyo";
+      category = category || "Solicitantes";
+      description = `Necesito: ${m.q1}. Zona: ${zone}. Fecha u horario: ${m.q3}. Presupuesto o condición: ${m.q4}. Detalles adicionales: ${m.q5}.`;
+    }
+    const questions = suggestedQuestionsFor(type, Dola.ctx.template_id);
+    Dola.generated = `=== PUBLICACIÓN GENERADA POR DOLA ===\nTipo: ${capitalize(type)}\nCategoría: ${category}\nTítulo: ${title}\nZona: ${zone}\nDescripción:\n${description}\n\nCanal recomendado: DOLA\nPreguntas sugeridas:\n${questions.map((q,i)=>`${i+1}. ${q}`).join("\n")}\n=== FIN ===`;
+    Dola.phase = "generated";
+    addMessage("bot", "Listo. Preparé tu publicación. Puedes copiarla y pegarla en Conecta para que la app la organice.");
+    saveGeneratedDraft(type, category, title, zone, description, questions);
+    saveConversation();
+    if (render) renderDolaModal();
+  }
+
+  function suggestedQuestionsFor(type="solicitante", template=""){
+    if (template === "pedir-comida" || /comida|taco|rosticer/.test(norm(template))) return ["¿Qué quieres pedir?", "¿Cuántos productos necesitas?", "¿Entrega o recoger?", "¿Para qué hora?", "¿Quieres agregar indicaciones?"];
+    if (type === "negocio") return CONTACT_QUESTIONS.negocio;
+    if (type === "agente") return CONTACT_QUESTIONS.agente;
+    return CONTACT_QUESTIONS.solicitante;
+  }
+
+  function finishContact(render=true){
+    const item = Dola.flow?.publication || findPublication(Dola.ctx.publication_id) || {};
+    const lines = Dola.answers.filter(a => a.answer).map(a => `- ${a.question}: ${a.answer}`);
+    const message = `Hola, vi tu publicación en Conecta Servicios: “${pubTitle(item)}”.\n\nEstoy interesado y DOLA organizó esta información:\n${lines.join("\n")}\n\nGracias.`;
+    Dola.generated = message;
+    Dola.phase = "generated";
+    addMessage("bot", "Ya tengo la información necesaria. Preparé un mensaje claro para continuar el contacto.");
+    const requests = read(REQUEST_KEY, []);
+    requests.unshift({ id: uid("REQ"), publication_id: pubId(item), publication_title: pubTitle(item), message, answers: Dola.answers, status: "Nueva", created_at: new Date().toISOString() });
+    write(REQUEST_KEY, requests.slice(0, 200));
+    saveConversation();
+    if (render) renderDolaModal();
+  }
+
+  function generatedHtml(){
+    const isContact = Dola.ctx.mode === "contactar" || Dola.flow?.publication;
+    return `<div class="dola-generated-v4950"><p><strong>${isContact ? "Mensaje preparado" : "Copia este texto y pégalo en Conecta"}</strong></p><textarea readonly rows="10" id="dolaGeneratedTextV4950">${esc(Dola.generated)}</textarea><div class="dola-actions-v4950"><button class="btn-small btn-purple" onclick="copyDolaGeneratedV4950()">Copiar</button>${isContact ? whatsappButtonHtml() : `<button class="btn-small btn-outline" onclick="pasteDolaToConectaV4950()">Pegar en Conecta</button>`}<button class="btn-small btn-ghost" onclick="dolaBackHomeV4950()">Volver a DOLA</button></div></div>`;
+  }
+
+  function whatsappButtonHtml(){
+    const item = Dola.flow?.publication || {};
+    const phone = cleanPhoneLocal(item.telefono || item.phone || item.whatsapp || "");
+    if (!phone || phone.length < 10) return "";
+    const url = `https://wa.me/52${phone.slice(-10)}?text=${encodeURIComponent(Dola.generated)}`;
+    return `<a class="btn-small btn-outline" target="_blank" rel="noopener" href="${esc(url)}">Abrir WhatsApp</a>`;
+  }
+
+  function saveGeneratedDraft(type, category, title, zone, description, questions){
+    const rows = read(DRAFT_KEY, []);
+    rows.unshift({ id: uid("DRAFT"), type, category, title, zone, description, questions, generated: Dola.generated, media: suggestedMedia(category, title), created_at: new Date().toISOString() });
+    write(DRAFT_KEY, rows.slice(0, 80));
+  }
+
+  function suggestedMedia(category="", title=""){
+    const text = norm(`${category} ${title}`);
+    if (/comida|taco|rosticer|pollo/.test(text)) return `${MEDIA_BASE}comida-01.jpg`;
+    if (/mandado|mensajer|entrega|envio|envío/.test(text)) return `${MEDIA_BASE}mandados-01.jpg`;
+    if (/embajador/.test(text)) return `${MEDIA_BASE}embajadores-01.jpg`;
+    if (/aprendiz|curso/.test(text)) return `${MEDIA_BASE}aprendizaje-01.jpg`;
+    if (/agente/.test(text)) return `${MEDIA_BASE}agente-01.jpg`;
+    if (/negocio|comercio|cliente/.test(text)) return `${MEDIA_BASE}negocio-01.jpg`;
+    return "";
+  }
+
+  function capitalize(v=""){ return String(v).charAt(0).toUpperCase()+String(v).slice(1); }
+
+  function saveConversation(){
+    const rows = read(CHAT_KEY, []);
+    rows.unshift({ id: uid("CHAT"), ctx: Dola.ctx, messages: Dola.messages, generated: Dola.generated, updated_at: new Date().toISOString() });
+    write(CHAT_KEY, rows.slice(0, 60));
+  }
+
+  function findPublication(idValue){
+    const rows = getAllPublications();
+    return rows.find(item => String(pubId(item)) === String(idValue)) || rows.find(item => norm(pubTitle(item)).includes(norm(idValue))) || null;
+  }
+
+  function focusPublication(idValue, title=""){
+    try { if (typeof showSection === "function") showSection("publicaciones"); } catch {}
+    setTimeout(() => {
+      const input = qs("#publicationSearch, #searchInput, input[type='search']");
+      if (input) { input.value = title || idValue; input.dispatchEvent(new Event("input", { bubbles: true })); }
+      const id = CSS.escape(String(idValue || ""));
+      const card = qs(`#pub-${id}, #my-pub-${id}`);
+      if (card) card.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 180);
+  }
+
+  function pasteToConecta(){
+    const text = Dola.generated || qs("#dolaGeneratedTextV4950")?.value || "";
+    try { if (typeof showSection === "function") showSection("registro"); } catch {}
+    setTimeout(() => {
+      const title = text.match(/Título:\s*(.+)/i)?.[1]?.trim() || "Publicación generada por DOLA";
+      const zone = text.match(/Zona:\s*(.+)/i)?.[1]?.trim() || "";
+      const cat = text.match(/Categoría:\s*(.+)/i)?.[1]?.trim() || "General";
+      const desc = text.match(/Descripción:\s*([\s\S]*?)\n\nCanal recomendado:/i)?.[1]?.trim() || text;
+      const titleEl = qs("#pubTitle"); if (titleEl) titleEl.value = title;
+      const descEl = qs("#pubDescription, #pubDescriptionGeneral, textarea[name='descripcion']"); if (descEl) descEl.value = desc;
+      const catEl = qs("#pubCategory"); if (catEl) catEl.value = cat;
+      const locEl = qs("#pubLocality"); if (locEl && zone) locEl.value = zone;
+      const media = suggestedMedia(cat, title);
+      const mediaEl = qs("#pubMediaUrl"); if (mediaEl && media) mediaEl.value = media;
+      [titleEl, descEl, catEl, locEl, mediaEl].filter(Boolean).forEach(el => el.dispatchEvent(new Event("input", { bubbles: true })));
+      toast("Texto de DOLA pegado en Conecta. Revisa y publica cuando esté listo.");
+    }, 220);
+  }
+
+  function copyGenerated(){
+    const text = Dola.generated || qs("#dolaGeneratedTextV4950")?.value || "";
+    if (!text) return toast("No hay texto para copiar.");
+    navigator.clipboard?.writeText(text).then(() => toast("Texto copiado."), () => fallbackCopy(text));
+  }
+  function fallbackCopy(text){
+    const ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); toast("Texto copiado."); } catch { toast("Selecciona y copia el texto manualmente."); }
+    ta.remove();
+  }
+
+  function routeToDola(ctx={}){ openDola(ctx); }
+
+  function wireTemplates(){
+    qsa("button, a, [role='button']").forEach(el => {
+      if (el.__dolaWiredV4950) return;
+      const text = norm(el.textContent || el.getAttribute("aria-label") || el.title || "");
+      const href = el.getAttribute?.("href") || "";
+      const candidate = `${text} ${href}`;
+      let template = "";
+      if (/busco.*mensajer|mensajer.*cerca/.test(candidate)) template = "busco-mensajero";
+      else if (/pedir.*comida|tacos|rosticer/.test(candidate)) template = "pedir-comida";
+      else if (/necesito algo|solicitante/.test(candidate)) template = "necesito-algo";
+      else if (/quiero ganar|ganar dinero|agente/.test(candidate)) template = "ganar-dinero";
+      else if (/embajador/.test(candidate)) template = "embajadores";
+      else if (/mandados verificados/.test(candidate)) template = "mandados-verificados";
+      else if (/aprendizaje|aprende/.test(candidate)) template = "aprendizaje";
+      else if (/publicar.*negocio|negocio/.test(candidate)) template = "publicar-negocio";
+      if (!template) return;
+      el.__dolaWiredV4950 = true;
+      if (!/embajadores|aprendizaje|mandados|publicaciones/.test(href)) {
+        el.addEventListener("click", event => {
+          event.preventDefault();
+          const base = TEMPLATE_CONTEXTS[template] || {};
+          openDola({ template_id: template, template_name: base.title, section_origin: base.section || "plantilla", type: base.type, category: base.category, mode: base.intention === "guia" ? "guia" : "crear" });
+        }, true);
+      }
+    });
+  }
+
+  function wireMessageButtons(){
+    ["openConectaChatbotV4946", "openConectaChatbotV4944"].forEach(name => {
+      const previous = window[name];
+      if (typeof previous === "function" && !previous.__dolaContextualWrappedV4950) {
+        const wrapped = function(idValue){ openDola({ mode: "contactar", publication_id: idValue, template_name: "Contactar anunciante", type: "solicitante" }); return false; };
+        wrapped.__dolaContextualWrappedV4950 = true;
+        window[name] = wrapped;
+      }
+    });
+    qsa("button, a").forEach(btn => {
+      if (/WhatsApp|DOLA|Mensaje|Chatbot/i.test(btn.textContent || "")) {
+        btn.textContent = "💬 Mensaje";
+      }
+    });
+  }
+
+  function addPasteBox(){
+    const candidates = [qs("#registro"), qs("#publishPanel"), qs("#publicationForm")?.parentElement].filter(Boolean);
+    candidates.forEach(root => {
+      if (!root || root.querySelector("#dolaPastePanelV4950")) return;
+      const box = document.createElement("section");
+      box.id = "dolaPastePanelV4950";
+      box.className = "dola-paste-panel-v4950";
+      box.innerHTML = `<div><strong>✨ Crear con DOLA</strong><p>Pega aquí el texto generado por DOLA. Conecta intentará organizar la publicación automáticamente.</p></div><textarea id="dolaPasteTextV4950" rows="5" placeholder="Pega aquí la PUBLICACIÓN GENERADA POR DOLA..."></textarea><div class="dola-actions-v4950"><button type="button" class="btn-small btn-purple" onclick="parseDolaPasteIntoPublishV4950()">Organizar publicación</button><button type="button" class="btn-small btn-ghost" onclick="openDolaContextV4950({mode:'crear', template_id:'necesito-algo', template_name:'Crear publicación'})">Abrir DOLA</button></div>`;
+      const form = qs("#publicationForm", root);
+      if (form) form.insertAdjacentElement("beforebegin", box); else root.prepend(box);
+    });
+  }
+
+  function parsePasteIntoPublish(){
+    const val = qs("#dolaPasteTextV4950")?.value || "";
+    if (!val.trim()) return toast("Pega primero el texto generado por DOLA.");
+    Dola.generated = val;
+    pasteToConecta();
+  }
+
+  function showDolaEntryPoints(){
+    // No agrega barras flotantes; solo normaliza lenguaje si existen accesos a DOLA.
+    qsa(".dola-global-floating, .assistant-floating, .right-floating-icons, .floating-assistant").forEach(el => el.remove());
+    qsa("h1,h2,h3,strong,button,a,span,p").forEach(el => {
+      if (!el || ["SCRIPT","STYLE","TEXTAREA","INPUT"].includes(el.tagName)) return;
+      const before = el.textContent || "";
+      if (/Chatbot Conecta|Chat negocio|Responder filtro|Asistente configurable|Asistente de publicación/.test(before)) {
+        el.textContent = before.replace(/Chatbot Conecta/g,"DOLA").replace(/Chat negocio/g,"DOLA").replace(/Responder filtro/g,"Mensaje").replace(/Asistente configurable/g,"DOLA").replace(/Asistente de publicación/g,"DOLA");
+      }
+    });
+  }
+
+  function addDolaRequestsPanel(){
+    const root = qs("#misPublicaciones");
+    if (!root || root.querySelector("#dolaRequestsPanelV4950")) return;
+    const rows = read(REQUEST_KEY, []);
+    const panel = document.createElement("section");
+    panel.id = "dolaRequestsPanelV4950";
+    panel.className = "dola-requests-panel-v4950";
+    panel.innerHTML = `<div class="dola-panel-title-v4950"><h3>Solicitudes filtradas por DOLA</h3><p>Aquí aparecerán las solicitudes organizadas antes de contactar al anunciante.</p></div>${rows.length ? rows.slice(0,10).map(r => `<article class="dola-request-card-v4950"><strong>${esc(r.publication_title || "Publicación")}</strong><small>${esc(r.status || "Nueva")} · ${new Date(r.created_at).toLocaleString("es-MX")}</small><pre>${esc(r.message || "")}</pre><button class="btn-small btn-outline" onclick="updateDolaRequestStatusV4950('${esc(r.id)}','Atendida')">Marcar atendida</button></article>`).join("") : `<div class="empty-state">Aún no hay solicitudes filtradas por DOLA.</div>`}`;
+    root.appendChild(panel);
+  }
+
+  function updateRequestStatus(id, status){
+    const rows = read(REQUEST_KEY, []);
+    rows.forEach(r => { if (r.id === id) r.status = status; });
+    write(REQUEST_KEY, rows);
+    qs("#dolaRequestsPanelV4950")?.remove();
+    addDolaRequestsPanel();
+    toast("Solicitud actualizada.");
+  }
+
+  function patchVercelDolaRoute(){
+    try { document.body.dataset.dolaContextualVersion = VERSION; } catch {}
+  }
+
+  function init(){
+    patchVercelDolaRoute();
+    showDolaEntryPoints();
+    wireTemplates();
+    wireMessageButtons();
+    addPasteBox();
+    addDolaRequestsPanel();
+    try { localStorage.setItem("conecta_dola_contextual_version", VERSION); } catch {}
+    const routeCtx = parseContextFromLocation();
+    if (routeCtx && !window.__dolaRouteOpenedV4950) {
+      window.__dolaRouteOpenedV4950 = true;
+      setTimeout(() => openDola(routeCtx), 250);
+    }
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+  window.addEventListener("pageshow", () => setTimeout(init, 120));
+  document.addEventListener("click", () => setTimeout(init, 120), true);
+  document.addEventListener("change", () => setTimeout(init, 80), true);
+
+  window.openDolaContextV4950 = openDola;
+  window.showDolaRecommendationsV4950 = showRecommendations;
+  window.startDolaCreateV4950 = () => startCreateFlow(true);
+  window.submitDolaAnswerV4950 = submitAnswer;
+  window.quickDolaAnswerV4950 = addAnswer;
+  window.skipDolaQuestionV4950 = skipQuestion;
+  window.finishDolaCreateV4950 = () => finishCreate(true);
+  window.finishDolaContactV4950 = () => finishContact(true);
+  window.copyDolaGeneratedV4950 = copyGenerated;
+  window.pasteDolaToConectaV4950 = pasteToConecta;
+  window.focusDolaPublicationV4950 = focusPublication;
+  window.dolaBackHomeV4950 = () => { Dola.phase = "home"; renderDolaModal(); };
+  window.showDolaGuideV4950 = () => { addMessage("bot", guideForSection(Dola.ctx.section_origin || Dola.ctx.template_id)); renderDolaModal(); };
+  window.parseDolaPasteIntoPublishV4950 = parsePasteIntoPublish;
+  window.updateDolaRequestStatusV4950 = updateRequestStatus;
 })();

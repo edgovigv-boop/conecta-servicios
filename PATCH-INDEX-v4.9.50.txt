@@ -1,0 +1,13 @@
+Actualizar index.html para romper caché y cargar la versión v4.9.50-dola-contextual-conecta.
+
+Buscar referencias actuales a styles.css y app.js y reemplazar por:
+
+<link rel="stylesheet" href="styles.css?v=v4.9.50-dola-contextual-conecta">
+<script src="app.js?v=v4.9.50-dola-contextual-conecta" defer></script>
+
+Actualizar body si existe data-version:
+<body data-version="v4.9.50-dola-contextual-conecta">
+
+También actualizar referencias a manifest/service-worker si tienen query de versión:
+manifest.json?v=v4.9.50-dola-contextual-conecta
+service-worker.js?v=v4.9.50-dola-contextual-conecta

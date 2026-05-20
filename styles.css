@@ -4777,3 +4777,70 @@ body.chatbot-conecta-whatsapp-v4946 [class*="floating"][class*="assistant"]{disp
 .dola-chat-overlay-v4949 .wa-bubble-v4946.bot,
 .dola-chat-overlay-v4949 .chatbot-bubble.bot { background:#f2efff; border-color:rgba(93,67,255,.18); }
 .dola-asistente-interno-v4949 .contact-main-v4944 { font-weight:700; }
+
+/* ------------------------------------------------------------------
+   v4.9.50 — DOLA contextual Conecta
+------------------------------------------------------------------ */
+.dola-notice-overlay-v4950,
+.dola-fallback-overlay-v4950{
+  position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,.58);
+  display:flex; align-items:center; justify-content:center; padding:18px;
+}
+.dola-notice-card-v4950,
+.dola-fallback-card-v4950{
+  width:min(720px,100%); max-height:88vh; overflow:auto; background:#fff; border-radius:24px;
+  box-shadow:0 24px 80px rgba(15,23,42,.28); padding:20px;
+}
+.dola-logo-v4950,
+.dola-mark-v4950{
+  display:inline-flex; align-items:center; justify-content:center; min-width:58px; height:42px;
+  border-radius:16px; background:linear-gradient(135deg,#5b22cf,#7c3aed); color:#fff; font-weight:900;
+  letter-spacing:.08em; box-shadow:0 10px 24px rgba(91,34,207,.22);
+}
+.dola-muted-v4950{ color:#64748b; font-size:.92rem; }
+.dola-actions-v4950{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:12px; }
+.dola-close-v4950{ float:right; border:0; background:#f1f5f9; border-radius:999px; width:34px; height:34px; font-size:22px; }
+.dola-modal-v4950{ max-width:760px; margin:0 auto; }
+.dola-head-v4950{ display:flex; gap:12px; align-items:center; margin-bottom:14px; }
+.dola-head-v4950 h2{ margin:0; font-size:1.35rem; }
+.dola-head-v4950 p{ margin:3px 0 0; color:#64748b; }
+.dola-context-v4950{ display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 14px; }
+.dola-context-v4950 span{ background:#f3f0ff; color:#4c1d95; padding:6px 10px; border-radius:999px; font-size:.82rem; }
+.dola-chat-v4950{ background:#f8fafc; border:1px solid #e2e8f0; border-radius:22px; padding:14px; max-height:46vh; overflow:auto; }
+.dola-bubble-v4950{ width:fit-content; max-width:86%; padding:10px 12px; border-radius:18px; margin:8px 0; line-height:1.42; white-space:normal; }
+.dola-bubble-v4950.bot{ background:#fff; border:1px solid #e2e8f0; color:#0f172a; border-bottom-left-radius:6px; }
+.dola-bubble-v4950.user{ background:#5b22cf; color:#fff; margin-left:auto; border-bottom-right-radius:6px; }
+.dola-panel-v4950{ margin-top:14px; }
+.dola-recs-v4950{ display:grid; gap:10px; margin:10px 0; }
+.dola-rec-v4950,
+.dola-request-card-v4950{ border:1px solid #e2e8f0; border-radius:18px; padding:12px; background:#fff; box-shadow:0 8px 24px rgba(15,23,42,.04); }
+.dola-rec-v4950 small,
+.dola-request-card-v4950 small{ display:block; color:#64748b; margin:3px 0 7px; }
+.dola-rec-v4950 p{ margin:0 0 8px; color:#334155; }
+.dola-empty-v4950{ border:1px dashed #cbd5e1; border-radius:18px; padding:14px; color:#64748b; background:#fff; }
+.dola-answer-form-v4950 label{ display:block; font-weight:700; color:#1e293b; }
+.dola-answer-form-v4950 textarea,
+.dola-generated-v4950 textarea,
+#dolaPasteTextV4950{
+  width:100%; margin-top:8px; border:1px solid #cbd5e1; border-radius:16px; padding:12px;
+  font:inherit; resize:vertical; background:#fff;
+}
+.dola-quick-v4950{ display:flex; gap:8px; flex-wrap:wrap; margin:10px 0; }
+.dola-quick-v4950 button{ border:1px solid #ddd6fe; color:#5b22cf; background:#f5f3ff; border-radius:999px; padding:7px 11px; }
+.dola-generated-v4950 textarea{ font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace; font-size:.88rem; }
+.dola-paste-panel-v4950,
+.dola-requests-panel-v4950{
+  border:1px solid #e9d5ff; border-radius:22px; padding:14px; margin:14px 0; background:linear-gradient(180deg,#faf5ff,#fff);
+}
+.dola-paste-panel-v4950 strong,
+.dola-panel-title-v4950 h3{ color:#4c1d95; }
+.dola-request-card-v4950 pre{ white-space:pre-wrap; background:#f8fafc; border-radius:12px; padding:10px; font-size:.86rem; }
+body[data-dola-contextual-version="v4.9.50-dola-contextual-conecta"] .dola-global-floating,
+body[data-dola-contextual-version="v4.9.50-dola-contextual-conecta"] .assistant-floating,
+body[data-dola-contextual-version="v4.9.50-dola-contextual-conecta"] .right-floating-icons,
+body[data-dola-contextual-version="v4.9.50-dola-contextual-conecta"] .floating-assistant{ display:none!important; }
+@media (max-width:640px){
+  .dola-notice-card-v4950,.dola-fallback-card-v4950{ border-radius:20px; padding:16px; }
+  .dola-bubble-v4950{ max-width:94%; }
+  .dola-chat-v4950{ max-height:52vh; }
+}
