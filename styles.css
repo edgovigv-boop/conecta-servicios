@@ -4689,3 +4689,91 @@ body.chatbot-conecta-whatsapp-v4946 [class*="floating"][class*="assistant"]{disp
 .voice-bubble-v4947{max-width:86%;padding:10px 12px;border-radius:17px;line-height:1.38;font-size:.94rem;white-space:pre-wrap;box-shadow:0 2px 8px rgba(0,0,0,.06)}.voice-bubble-v4947.bot{align-self:flex-start;background:#fff;border-top-left-radius:4px;color:#2a2135}.voice-bubble-v4947.user{align-self:flex-end;background:#dcf8c6;border-top-right-radius:4px;color:#1d3420}.voice-preview-pre-v4947{white-space:pre-wrap;font-family:inherit;font-size:.9rem;margin:8px 0 0;background:#f8f7fb;border-radius:14px;padding:10px;max-height:240px;overflow:auto}
 .voice-manual-box-v4947{background:#f7f2ea;border-top:1px solid rgba(0,0,0,.06);padding:10px}.voice-manual-box-v4947 textarea{width:100%;border:1px solid rgba(7,94,84,.18);border-radius:16px;padding:10px;font:inherit;resize:vertical;background:#fff}.voice-manual-actions-v4947{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:8px}.voice-choices-v4947{display:flex;gap:8px;flex-wrap:wrap;background:#f7f2ea;padding:0 10px 12px}.voice-choices-v4947 button{border:0;border-radius:999px;background:#fff;color:#075e54;font-weight:900;padding:9px 12px;box-shadow:0 4px 12px rgba(0,0,0,.08)}
 @media(max-width:640px){.voice-publish-overlay-v4947{padding:0;align-items:stretch}.voice-sheet-v4947{border-radius:0;max-height:100vh;height:100vh}.voice-conversation-v4947{min-height:0;flex:1}.voice-bubble-v4947{max-width:92%}.voice-actions-v4947 .btn-primary,.voice-actions-v4947 .btn-ghost{width:100%;justify-content:center}}
+
+
+/* v4.9.48 — Bots por perfil */
+.bots-por-perfil-v4948 #contactChannelPanelV4946 .bot-context-note-v4948{
+  display:block;
+  margin-top:6px;
+  font-size:12px;
+  color:#5f5870;
+  font-style:normal;
+  line-height:1.35;
+}
+.bots-por-perfil-v4948 .bot-config-title-v4948{
+  display:grid;
+  gap:4px;
+  padding:10px 12px;
+  margin:0 0 10px;
+  border-radius:16px;
+  background:rgba(91,34,207,.08);
+  border:1px solid rgba(91,34,207,.16);
+}
+.bots-por-perfil-v4948 .bot-config-title-v4948 strong{
+  color:#2d1468;
+  font-size:15px;
+}
+.bots-por-perfil-v4948 .bot-config-title-v4948 span{
+  color:#615a72;
+  font-size:13px;
+  line-height:1.35;
+}
+.bots-por-perfil-v4948 .chatbot-wa-overlay-v4946[data-bot-profile="negocio"] .chatbot-wa-header-v4946{
+  background:linear-gradient(135deg,#4f46e5,#7c3aed);
+}
+.bots-por-perfil-v4948 .chatbot-wa-overlay-v4946[data-bot-profile="agente"] .chatbot-wa-header-v4946{
+  background:linear-gradient(135deg,#2563eb,#0f766e);
+}
+.bots-por-perfil-v4948 .chatbot-wa-overlay-v4946[data-bot-profile="solicitante"] .chatbot-wa-header-v4946{
+  background:linear-gradient(135deg,#7c3aed,#be185d);
+}
+
+
+/* ============================================================
+   v4.9.49 — DOLA asistente interno
+   ============================================================ */
+.dola-asistente-interno-v4949 .dola-create-helper-v4949,
+.dola-asistente-interno-v4949 .dola-recommended-v4949 {
+  border: 1px solid rgba(93, 67, 255, .18);
+  background: linear-gradient(135deg, rgba(93,67,255,.08), rgba(7,196,142,.08));
+  border-radius: 18px;
+  padding: 12px;
+  margin: 10px 0;
+}
+.dola-create-helper-v4949 strong { display:block; color:#352a7d; margin-bottom:4px; }
+.dola-create-helper-v4949 p { margin:0; color:#52606d; font-size:.92rem; line-height:1.35; }
+.dola-notice-overlay-v4949 {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(12, 18, 32, .54);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+.dola-notice-card-v4949 {
+  width: min(430px, 96vw);
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 24px 80px rgba(0,0,0,.24);
+  padding: 22px;
+  text-align: center;
+}
+.dola-notice-icon-v4949 {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  margin: 0 auto 8px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #5d43ff, #07c48e);
+  color: #fff;
+  font-size: 1.45rem;
+}
+.dola-notice-card-v4949 h3 { margin: 6px 0; font-size: 1.45rem; color:#172033; }
+.dola-notice-card-v4949 p { color:#4b5563; line-height:1.42; margin:8px 0; }
+.dola-notice-small-v4949 { font-size:.9rem; background:#f6f7fb; border-radius:14px; padding:10px; }
+.dola-notice-actions-v4949 { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:14px; }
+.dola-chat-overlay-v4949 .wa-bubble-v4946.bot,
+.dola-chat-overlay-v4949 .chatbot-bubble.bot { background:#f2efff; border-color:rgba(93,67,255,.18); }
+.dola-asistente-interno-v4949 .contact-main-v4944 { font-weight:700; }

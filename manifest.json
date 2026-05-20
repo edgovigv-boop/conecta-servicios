@@ -1,8 +1,8 @@
 {
-  "name": "Conecta Servicios",
+  "name": "Conecta Servicios v4.9.49",
   "short_name": "Conecta",
-  "description": "Conecta Servicios v4.9.47 - Publicar por voz con preguntas guiadas, Chatbot Conecta o WhatsApp.",
-  "start_url": "/?source=pwa&v=v4.9.47-publicar-por-voz-guiado",
+  "description": "Conecta Servicios con DOLA, asistente interno por publicación.",
+  "start_url": "/?source=pwa&v=v4.9.48-bots-por-perfil",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -35,5 +35,5 @@
       "purpose": "maskable"
     }
   ],
-  "id": "/?v=v4.9.47-publicar-por-voz-guiado"
+  "id": "/?v=v4.9.48-bots-por-perfil"
 }

@@ -1,4 +1,10 @@
-No requiere SQL nuevo para probar v4.9.47.
+No requiere SQL nuevo para probar v4.9.49 en modo piloto.
 
-La publicación guiada por voz usa el formulario actual y localStorage para guardar borradores de la guía.
-Si la publicación final se envía, usa el flujo actual de publicaciones/Supabase.
+DOLA usa localStorage para:
+- canal elegido por publicación;
+- configuración de preguntas;
+- respuestas recibidas;
+- aceptación del aviso de DOLA;
+- control de publicación gratis de 30 días.
+
+Para producción real multiusuario, se recomienda crear tablas en Supabase en una versión posterior.

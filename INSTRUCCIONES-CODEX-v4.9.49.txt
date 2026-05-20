@@ -1,0 +1,20 @@
+INSTRUCCIONES CODEX v4.9.49
+
+Objetivo:
+Renombrar Chatbot Conecta a DOLA y ordenar el asistente interno por publicación.
+
+Archivos a reemplazar en raíz:
+- app.js
+- styles.css
+- service-worker.js
+- manifest.json
+- vercel.json
+
+Además aplicar PATCH-INDEX-v4.9.49.txt sobre index.html.
+
+No desplegar automáticamente.
+No aplicar SQL automáticamente.
+No requiere SQL nuevo para probar en modo piloto.
+
+Commit sugerido:
+Renombrar Chatbot Conecta a DOLA y ordenar asistente interno por publicación

@@ -1,0 +1,17 @@
+Aplicar en index.html para v4.9.49-dola-asistente-interno:
+
+1. Cambiar la referencia CSS a:
+styles.css?v=4.9.49-dola-asistente-interno
+
+2. Cambiar la referencia JS a:
+app.js?v=4.9.49-dola-asistente-interno
+
+3. Cambiar data-version del body a:
+v4.9.49-dola-asistente-interno
+
+4. Confirmar que no queden referencias visibles principales a:
+- Chatbot Conecta
+- Chat negocio
+- Responder filtro
+
+El nombre visible principal debe ser DOLA.

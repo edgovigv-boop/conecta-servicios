@@ -1,0 +1,20 @@
+CHECKLIST v4.9.49 — DOLA asistente interno
+
+1. Crear publicación como Solicitante usando DOLA.
+2. Confirmar que el botón Mensaje abre DOLA Bot de contacto.
+3. Enviar una respuesta guiada y ver resumen final.
+4. Ver la solicitud en Solicitudes recibidas por DOLA.
+5. Crear publicación como Agente usando DOLA.
+6. Confirmar que abre DOLA Bot de atención a solicitudes.
+7. Crear publicación como Negocio usando DOLA.
+8. Confirmar que abre DOLA Bot de atención a clientes.
+9. Probar plantilla de negocio de comida / rosticería.
+10. Crear publicación usando WhatsApp.
+11. Confirmar que no aparece DOLA en esa publicación.
+12. Confirmar que solo aparece un botón Mensaje.
+13. Confirmar que la publicación gratis dura 30 días.
+14. Confirmar que admin no tiene restricciones.
+15. Confirmar que foto sigue funcionando.
+16. Confirmar que no hay botones flotantes laterales.
+17. Confirmar que no aparece Chatbot Conecta, Chat negocio ni Responder filtro como acciones principales.
+18. Confirmar que aparece el aviso de uso de DOLA solo la primera vez.

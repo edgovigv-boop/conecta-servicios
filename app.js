@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.47-publicar-por-voz-guiado";
+const PWA_VERSION = "v4.9.48-bots-por-perfil";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -9463,7 +9463,7 @@ try {
     const orders = getOrders().filter(o => !configId || o.configId === configId);
     const appointments = getAppointments().filter(a => !configId || a.configId === configId);
     const directThreads = Object.values(getMessages().filter(m => !m.orderId && !m.appointmentId && (!configId || m.configId === configId)).reduce((acc, m) => { acc[m.threadId || m.id] = acc[m.threadId || m.id] || m; return acc; }, {}));
-    openModal(`<span class="ba-kicker-v4939">Solicitudes de mis publicaciones</span><h2>Solicitudes recibidas por mis publicaciones</h2><p>Administra pedidos, citas, cotizaciones, viajes, envíos, ayuda y mensajes internos por publicación.</p>${membershipHtml()}<div class="ba-actions-v4939"><button class="ba-btn-v4939 ba-primary-v4939" onclick="openBusinessAssistantConfigV4939()">Crear asistente</button><button class="ba-btn-v4939 ba-outline-v4939" onclick="openBusinessAssistantHubV4939()">Ver publicaciones</button></div><div class="ba-mini-metrics-v4939"><span>${configs.length} publicaciones</span><span>${orders.length} pedidos</span><span>${appointments.length} citas</span><span>${directThreads.length} mensajes</span></div><h3>Publicaciones con asistente</h3><p class="ba-subcopy-v4939">Cada publicación puede tener su propio flujo configurable.</p><div class="ba-card-grid-v4939">${configs.map(c => configCardHtml(c, "owner")).join("") || `<div class="ba-empty-v4939">Aún no hay asistentes configurados.</div>`}</div>${ordersTable(orders)}${appointmentsTable(appointments)}${messagesTable(directThreads)}`);
+    openModal(`<span class="ba-kicker-v4939">Solicitudes de mis publicaciones</span><h2>Solicitudes recibidas por DOLA</h2><p>Administra pedidos, citas, cotizaciones, viajes, envíos, ayuda y mensajes internos por publicación.</p>${membershipHtml()}<div class="ba-actions-v4939"><button class="ba-btn-v4939 ba-primary-v4939" onclick="openBusinessAssistantConfigV4939()">Crear asistente</button><button class="ba-btn-v4939 ba-outline-v4939" onclick="openBusinessAssistantHubV4939()">Ver publicaciones</button></div><div class="ba-mini-metrics-v4939"><span>${configs.length} publicaciones</span><span>${orders.length} pedidos</span><span>${appointments.length} citas</span><span>${directThreads.length} mensajes</span></div><h3>Publicaciones con asistente</h3><p class="ba-subcopy-v4939">Cada publicación puede tener su propio flujo configurable.</p><div class="ba-card-grid-v4939">${configs.map(c => configCardHtml(c, "owner")).join("") || `<div class="ba-empty-v4939">Aún no hay asistentes configurados.</div>`}</div>${ordersTable(orders)}${appointmentsTable(appointments)}${messagesTable(directThreads)}`);
     injectVisibleAccess();
   }
   function ordersTable(rows) { return `<section class="ba-table-v4939"><h3>Pedidos recibidos</h3>${rows.map(o => `<article class="ba-row-v4939"><strong>${esc(o.customer_name)} · ${money(o.total)}</strong><small>${dateLabel(o.created_at)} · ${esc(o.delivery_type)}</small><p>${(o.items || []).map(i => `${esc(i.item_name)} x${i.quantity}`).join(" · ")}</p><div class="ba-actions-v4939">${statusSelect("order", o.id, o.status, ORDER_STATUSES)}<button class="ba-btn-v4939 ba-outline-v4939" onclick="openBusinessAssistantChatV4939('order','${esc(o.id)}')">Responder</button></div></article>`).join("") || `<div class="ba-empty-v4939">Sin pedidos todavía.</div>`}</section>`; }
@@ -9770,7 +9770,7 @@ try {
     panel.className = "assistant-integrated-panel-v4940";
     panel.innerHTML = `<div>
       <span>🤖 Asistente de publicaciones</span>
-      <h3>Solicitudes recibidas por mis publicaciones</h3>
+      <h3>Solicitudes recibidas por DOLA</h3>
       <p>Administra pedidos, citas, cotizaciones, mensajes, viajes, envíos y ayuda desde un solo lugar.</p>
     </div>
     <div class="assistant-integrated-actions-v4940">
@@ -9966,7 +9966,7 @@ try {
     return `<section id="publicationRequestsPanelV4941" class="publication-requests-panel-v4941">
       <div class="publication-requests-copy-v4941">
         <span class="publication-requests-kicker-v4941">Mis publicaciones</span>
-        <h3>Solicitudes recibidas por mis publicaciones</h3>
+        <h3>Solicitudes recibidas por DOLA</h3>
         <p>Administra pedidos, citas, cotizaciones, mensajes, viajes, envíos y respuestas de ayuda desde las publicaciones que tú creaste.</p>
       </div>
       <div class="publication-requests-metrics-v4941">
@@ -11031,10 +11031,10 @@ try {
 
 
 // ------------------------------------------------------------------
-// v4.9.44 — Chatbot Conecta + publicación social simplificada
-// - Una publicación gratis por 30 días con Chatbot Conecta incluido.
-// - Membresía anual: publicaciones ilimitadas y Chatbot Conecta en todos los rubros.
-// - El botón de mensaje de cada publicación usa un solo canal: Chatbot Conecta o WhatsApp.
+// v4.9.44 — DOLA + publicación social simplificada
+// - Una publicación gratis por 30 días con DOLA incluido.
+// - Membresía anual: publicaciones ilimitadas y DOLA en todos los rubros.
+// - El botón de mensaje de cada publicación usa un solo canal: DOLA o WhatsApp.
 // - WhatsApp es opcional y sustituye al Chatbot, nunca aparecen ambos.
 // - Publicaciones con interacción tipo red social: reaccionar, compartir y publicar algo parecido.
 // - Perfil de publicación simplificado: Solicitante, Agente o Negocio.
@@ -11047,8 +11047,8 @@ try {
   const STAR_STATE_KEY = "conecta_star_sections_seen_v4944";
   const TRIAL_DAYS = 30;
   const CONTACT_CHANNELS = {
-    chatbot: { label: "Chatbot Conecta", icon: "💬", hint: "Recibe respuestas filtradas dentro de Conecta." },
-    whatsapp: { label: "WhatsApp", icon: "🟢", hint: "El botón de mensaje abrirá WhatsApp y no mostrará Chatbot Conecta." }
+    chatbot: { label: "DOLA", icon: "💬", hint: "Recibe respuestas filtradas dentro de Conecta." },
+    whatsapp: { label: "WhatsApp", icon: "🟢", hint: "El botón de mensaje abrirá WhatsApp y no mostrará DOLA." }
   };
   const PROFILE_TYPES = {
     solicitante: { label: "Solicitante", icon: "🙋", hint: "Necesito algo y quiero recibir propuestas claras." },
@@ -11102,15 +11102,15 @@ try {
   function freeTrialUsed(){ return Boolean(freeTrial()?.used); }
   function canCreatePublication(){ return isAdmin() || hasMembership() || !freeTrialUsed() || !freeTrialActive(); }
   function trialMessage(){
-    if (isAdmin()) return "Admin libre: publicaciones y Chatbot Conecta sin límite.";
-    if (hasMembership()) return "Membresía activa: publicaciones ilimitadas con Chatbot Conecta.";
+    if (isAdmin()) return "Admin libre: publicaciones y DOLA sin límite.";
+    if (hasMembership()) return "Membresía activa: publicaciones ilimitadas con DOLA.";
     const trial=freeTrial();
     if (trial?.used && freeTrialActive()) {
       const days=Math.max(1, Math.ceil((new Date(trial.expires_at).getTime()-Date.now())/86400000));
       return `Ya tienes una publicación gratis activa. Vence en ${days} día${days===1?"":"s"}. Activa membresía para publicar sin límite.`;
     }
     if (trial?.used && !freeTrialActive()) return "Tu publicación gratis de 30 días ya venció. Activa membresía para publicar sin límite.";
-    return "Puedes crear 1 publicación gratis por 30 días con Chatbot Conecta incluido.";
+    return "Puedes crear 1 publicación gratis por 30 días con DOLA incluido.";
   }
   function recordFreeTrial(saved){
     if (isAdmin() || hasMembership()) return;
@@ -11151,9 +11151,9 @@ try {
   }
   function chatbotLabelForItem(item={}){
     const profile=profileFromItem(item);
-    if (profile === "negocio") return "Chatbot Conecta";
-    if (profile === "agente") return "Chatbot Conecta";
-    return "Chatbot Conecta";
+    if (profile === "negocio") return "DOLA";
+    if (profile === "agente") return "DOLA";
+    return "DOLA";
   }
 
   function controlsHtml(){
@@ -11164,8 +11164,8 @@ try {
       <div class="chatbot-panel-head-v4944">
         <span>💬</span>
         <div>
-          <strong>Chatbot Conecta para tu publicación</strong>
-          <p>Publica fácil como en una red social. El botón de mensajes será Chatbot Conecta por defecto; si eliges WhatsApp, sustituye al chatbot y no aparecen ambos.</p>
+          <strong>DOLA para tu publicación</strong>
+          <p>Publica fácil como en una red social. El botón de mensajes será DOLA por defecto; si eliges WhatsApp, sustituye al chatbot y no aparecen ambos.</p>
         </div>
       </div>
       <div class="chatbot-status-v4944 ${active ? "active" : canFree ? "trial" : "locked"}">${esc(status)}</div>
@@ -11178,11 +11178,11 @@ try {
       </label>
       <div class="chatbot-contact-choice-v4944">
         <span>Botón de mensaje de esta publicación</span>
-        <label><input type="radio" name="contactChannelV4944" value="chatbot" checked> 💬 Chatbot Conecta <small>recomendado</small></label>
+        <label><input type="radio" name="contactChannelV4944" value="chatbot" checked> 💬 DOLA <small>recomendado</small></label>
         <label><input type="radio" name="contactChannelV4944" value="whatsapp"> 🟢 WhatsApp <small>sustituye al chatbot</small></label>
       </div>
       <label class="chatbot-field-v4944" id="chatbotModeFieldV4944">
-        <span>¿Qué debe filtrar el Chatbot Conecta?</span>
+        <span>¿Qué debe filtrar el DOLA?</span>
         <select id="publicationChatbotTypeV4944">
           <option value="solicitante">Solicitudes para ayudarme</option>
           <option value="agente">Mandados, entregas, viajes o apoyo local</option>
@@ -11190,7 +11190,7 @@ try {
           <option value="general">Mensaje filtrado general</option>
         </select>
       </label>
-      <p class="chatbot-note-v4944">Con membresía anual de $98: publicaciones ilimitadas con Chatbot Conecta en Solicitantes, Agentes, Negocios, Agentes en crecimiento y Mandados verificados.</p>
+      <p class="chatbot-note-v4944">Con membresía anual de $98: publicaciones ilimitadas con DOLA en Solicitantes, Agentes, Negocios, Agentes en crecimiento y Mandados verificados.</p>
     </section>`;
   }
 
@@ -11290,7 +11290,7 @@ try {
     if(!payload.titulo || payload.titulo.length < 4){ toast("Escribe un título claro para tu publicación."); return false; }
     if(!payload.descripcion || payload.descripcion.length < 10){ toast("Agrega una descripción breve para que la publicación sea útil."); return false; }
     if(!payload.municipio){ toast("Elige municipio o zona para mostrar la publicación."); return false; }
-    if(payload.contact_channel === "whatsapp" && !cleanPhoneLocal(payload.telefono)){ toast("Elegiste WhatsApp. Agrega un número o cambia a Chatbot Conecta."); return false; }
+    if(payload.contact_channel === "whatsapp" && !cleanPhoneLocal(payload.telefono)){ toast("Elegiste WhatsApp. Agrega un número o cambia a DOLA."); return false; }
     if(!isAdmin() && !hasMembership()){
       const trial=freeTrial();
       if(trial?.used){
@@ -11332,12 +11332,12 @@ try {
       const remote=Array.isArray(response) ? response[0] : response;
       saved=saveLocal({...payload, ...(remote||{}), id:remote?.id || payload.id}, "sincronizado");
       recordFreeTrial(saved);
-      toast(payload.contact_channel === "whatsapp" ? "Publicación guardada. El botón de mensaje abrirá WhatsApp." : "Publicación guardada con Chatbot Conecta activo.");
+      toast(payload.contact_channel === "whatsapp" ? "Publicación guardada. El botón de mensaje abrirá WhatsApp." : "Publicación guardada con DOLA activo.");
     } catch(error){
       console.warn("No se pudo sincronizar; guardando local v4.9.44", error);
       saved=saveLocal(payload, "borrador_local");
       recordFreeTrial(saved);
-      toast("Tu publicación se guardó como borrador local con Chatbot Conecta. Revisa conexión o vuelve a intentar sincronizar.");
+      toast("Tu publicación se guardó como borrador local con DOLA. Revisa conexión o vuelve a intentar sincronizar.");
     }
     try { if (typeof resetWizardForm === "function") resetWizardForm(); } catch {}
     try { if (typeof renderPublications === "function") renderPublications(); } catch {}
@@ -11377,8 +11377,8 @@ try {
         window.__myPublicationCardBaseV4944=myPublicationCard;
         myPublicationCard=function(item){
           let html=window.__myPublicationCardBaseV4944(item);
-          html=html.replace(/Configurar asistente/g, "Configurar Chatbot Conecta");
-          html=html.replace(/Asistente/g, "Chatbot Conecta");
+          html=html.replace(/Configurar asistente/g, "Configurar DOLA");
+          html=html.replace(/Asistente/g, "DOLA");
           return html;
         };
       }
@@ -11403,19 +11403,19 @@ try {
   function chatbotQuestions(item){ return CHATBOT_MODES[profileFromItem(item)] || CHATBOT_MODES.general; }
   function openChatbot(idValue){
     const item=findPublication(idValue);
-    if(!item) return toast("No encontré la publicación para abrir Chatbot Conecta.");
+    if(!item) return toast("No encontré la publicación para abrir DOLA.");
     const questions=chatbotQuestions(item);
     const overlay=document.createElement("div");
     overlay.className="chatbot-modal-overlay-v4944";
     overlay.innerHTML=`<div class="chatbot-modal-v4944" role="dialog" aria-modal="true">
       <button type="button" class="chatbot-close-v4944" aria-label="Cerrar" onclick="this.closest('.chatbot-modal-overlay-v4944').remove()">×</button>
-      <div class="chatbot-modal-head-v4944"><span>💬</span><div><strong>Chatbot Conecta</strong><p>${esc(item.title || item.titulo || "Publicación")}</p></div></div>
+      <div class="chatbot-modal-head-v4944"><span>💬</span><div><strong>DOLA</strong><p>${esc(item.title || item.titulo || "Publicación")}</p></div></div>
       <p class="chatbot-modal-intro-v4944">Responde estas preguntas para que el anunciante reciba una solicitud clara y pueda atenderte mejor.</p>
       <label>Tu nombre<input id="ccNameV4944" type="text" placeholder="Nombre" autocomplete="name"></label>
       <label>Contacto opcional<input id="ccPhoneV4944" type="tel" placeholder="Teléfono o WhatsApp opcional"></label>
       ${questions.map((q,i)=>`<label>${esc(q)}<textarea id="ccAnswer${i}V4944" rows="2" placeholder="Escribe tu respuesta"></textarea></label>`).join("")}
       <div class="chatbot-modal-actions-v4944">
-        <button type="button" class="btn-small btn-purple" onclick="saveConectaChatbotResponseV4944('${esc(item.id || item.local_id)}')">Enviar por Chatbot Conecta</button>
+        <button type="button" class="btn-small btn-purple" onclick="saveConectaChatbotResponseV4944('${esc(item.id || item.local_id)}')">Enviar por DOLA</button>
         <button type="button" class="btn-small btn-ghost" onclick="this.closest('.chatbot-modal-overlay-v4944').remove()">Cancelar</button>
       </div>
     </div>`;
@@ -11433,7 +11433,7 @@ try {
     };
     write(RESPONSES_KEY, [row, ...rows].slice(0,200));
     qsa(".chatbot-modal-overlay-v4944").forEach(el => el.remove());
-    toast("Solicitud enviada por Chatbot Conecta.");
+    toast("Solicitud enviada por DOLA.");
     renderChatbotResponsesPanel();
   }
   function renderChatbotResponsesPanel(){
@@ -11449,8 +11449,8 @@ try {
       else section.appendChild(panel);
     }
     const responses=read(RESPONSES_KEY, []);
-    panel.innerHTML=`<div class="responses-head-v4944"><div><span>💬 Chatbot Conecta</span><h3>Solicitudes recibidas por mis publicaciones</h3><p>Aquí llegan pedidos, citas, cotizaciones o mensajes filtrados.</p></div><button type="button" class="btn-small btn-ghost" onclick="renderChatbotResponsesPanelV4944()">Actualizar</button></div>
-    ${responses.length ? `<div class="responses-list-v4944">${responses.map(r => `<article class="response-card-v4944"><div><strong>${esc(r.publication_title)}</strong><small>${esc(r.customer_name)} · ${esc(r.customer_contact || "sin contacto")}</small></div><span>${esc(r.status)}</span><ul>${r.answers.map(a=>`<li><b>${esc(a.question)}</b><br>${esc(a.answer)}</li>`).join("")}</ul><div class="response-actions-v4944"><button type="button" class="btn-small btn-outline" onclick="changeChatbotResponseStatusV4944('${esc(r.id)}','atendido')">Marcar atendido</button></div></article>`).join("")}</div>` : `<div class="empty-state">Aún no hay solicitudes recibidas por Chatbot Conecta.</div>`}`;
+    panel.innerHTML=`<div class="responses-head-v4944"><div><span>💬 DOLA</span><h3>Solicitudes recibidas por DOLA</h3><p>Aquí llegan pedidos, citas, cotizaciones o mensajes filtrados.</p></div><button type="button" class="btn-small btn-ghost" onclick="renderChatbotResponsesPanelV4944()">Actualizar</button></div>
+    ${responses.length ? `<div class="responses-list-v4944">${responses.map(r => `<article class="response-card-v4944"><div><strong>${esc(r.publication_title)}</strong><small>${esc(r.customer_name)} · ${esc(r.customer_contact || "sin contacto")}</small></div><span>${esc(r.status)}</span><ul>${r.answers.map(a=>`<li><b>${esc(a.question)}</b><br>${esc(a.answer)}</li>`).join("")}</ul><div class="response-actions-v4944"><button type="button" class="btn-small btn-outline" onclick="changeChatbotResponseStatusV4944('${esc(r.id)}','atendido')">Marcar atendido</button></div></article>`).join("")}</div>` : `<div class="empty-state">Aún no hay solicitudes recibidas por DOLA.</div>`}`;
   }
   function changeResponseStatus(idValue, status){
     const rows=read(RESPONSES_KEY, []);
@@ -11486,7 +11486,7 @@ try {
         if(match) btn.setAttribute("onclick",`makePilotReal('${match[1]}')`);
       }
       if (/Configurar asistente|Asistente de publicación|Asistente configurable/i.test(text)) {
-        btn.textContent=text.replace(/Configurar asistente/i,"Configurar Chatbot Conecta").replace(/Asistente de publicación|Asistente configurable/i,"Chatbot Conecta");
+        btn.textContent=text.replace(/Configurar asistente/i,"Configurar DOLA").replace(/Asistente de publicación|Asistente configurable/i,"DOLA");
       }
     });
     qsa("[data-feed-filter='servicios']").forEach(el => { el.style.display="none"; });
@@ -11543,7 +11543,7 @@ try {
 //   Mandados verificados, Conseguir clientes por comisión, Embajadores y Aprendizaje.
 // - Quita accesos flotantes/laterales que estorban el feed.
 // - Limpia Perfil y Explorar para que no repitan el Asistente.
-// - Refuerza que el Chatbot Conecta se configure durante la publicación.
+// - Refuerza que el DOLA se configure durante la publicación.
 // ------------------------------------------------------------------
 (function layoutFeedChatbotConectaV4945(){
   const VERSION = "v4.9.45-layout-feed-chatbot-conecta";
@@ -11656,7 +11656,7 @@ try {
     const title = qs("#homeFeedTitle");
     const hint = qs("#homeFeedHint");
     if (title) title.textContent = labelFor(current);
-    if (hint) hint.textContent = current ? "Publicaciones y plantillas reales para familiarizarte con Conecta." : "Publica fácil, recibe respuestas y usa Chatbot Conecta cuando quieras filtrar solicitudes.";
+    if (hint) hint.textContent = current ? "Publicaciones y plantillas reales para familiarizarte con Conecta." : "Publica fácil, recibe respuestas y usa DOLA cuando quieras filtrar solicitudes.";
     try { feed.innerHTML = posts.length ? posts.map(post => homeFeedPostCardV4918(post)).join("") : `<div class="empty-state">Aún no hay plantillas de ${esc(labelFor(current))}.</div>`; } catch {}
     markActiveTab();
     decorateLanguage();
@@ -11724,7 +11724,7 @@ try {
       if (!text) return;
       if (/^Servicios$/.test(text)) el.textContent = "Agentes";
       if (/Ofrecer un servicio/i.test(text)) el.textContent = text.replace(/Ofrecer un servicio/i, "Agente");
-      if (/Chat negocio|Responder filtro|Asistente de publicación/i.test(text)) el.textContent = text.replace(/Chat negocio/gi, "Chatbot Conecta").replace(/Responder filtro/gi, "Mensaje").replace(/Asistente de publicación/gi, "Chatbot Conecta");
+      if (/Chat negocio|Responder filtro|Asistente de publicación/i.test(text)) el.textContent = text.replace(/Chat negocio/gi, "DOLA").replace(/Responder filtro/gi, "Mensaje").replace(/Asistente de publicación/gi, "DOLA");
     });
     qsa("[data-feed-filter='servicios']").forEach(el => el.remove());
   }
@@ -11751,7 +11751,7 @@ try {
     if (!hasCards && !/Cargando/i.test(list.textContent || "")) {
       let samples = [];
       try { samples = postsForFilter("").slice(0, 8); } catch {}
-      if (samples.length) list.innerHTML = `<div class="explore-template-note-v4945"><strong>Plantillas reales</strong><p>Úsalas para publicar algo parecido con Chatbot Conecta.</p></div>${samples.map(post => homeFeedPostCardV4918(post)).join("")}`;
+      if (samples.length) list.innerHTML = `<div class="explore-template-note-v4945"><strong>Plantillas reales</strong><p>Úsalas para publicar algo parecido con DOLA.</p></div>${samples.map(post => homeFeedPostCardV4918(post)).join("")}`;
     }
     decorateLanguage();
   }
@@ -11850,10 +11850,10 @@ try {
     const profile = saved.profile || profileTypeFromCurrentPublish();
     const defaultQuestions = (saved.questions && saved.questions.length ? saved.questions : currentQuestions()).join("\n");
     box.innerHTML = `<div class="chatbot-config-head-v4945">
-      <span>💬</span><div><strong>Chatbot Conecta de esta publicación</strong><p>Edita las preguntas que filtrarán la comunicación. También puedes elegir WhatsApp, pero no se mostrarán ambos canales.</p></div>
+      <span>💬</span><div><strong>DOLA de esta publicación</strong><p>Edita las preguntas que filtrarán la comunicación. También puedes elegir WhatsApp, pero no se mostrarán ambos canales.</p></div>
     </div>
     <div class="contact-mode-v4945" role="group" aria-label="Canal de contacto">
-      <label><input type="radio" name="contactChannelV4945" value="chatbot" ${(saved.channel || "chatbot") === "chatbot" ? "checked" : ""}> Chatbot Conecta recomendado</label>
+      <label><input type="radio" name="contactChannelV4945" value="chatbot" ${(saved.channel || "chatbot") === "chatbot" ? "checked" : ""}> DOLA recomendado</label>
       <label><input type="radio" name="contactChannelV4945" value="whatsapp" ${saved.channel === "whatsapp" ? "checked" : ""}> WhatsApp opcional</label>
     </div>
     <label>Tipo de publicación
@@ -11863,7 +11863,7 @@ try {
         <option value="negocio" ${profile === "negocio" ? "selected" : ""}>Negocio</option>
       </select>
     </label>
-    <label>Preguntas o filtros editables para el Chatbot Conecta
+    <label>Preguntas o filtros editables para el DOLA
       <textarea id="chatbotQuestionsTextV4945" rows="5" placeholder="Una pregunta por línea">${esc(defaultQuestions)}</textarea>
     </label>
     <div class="quick-chatbot-presets-v4945">
@@ -11879,7 +11879,7 @@ try {
       <button type="button" class="btn-small btn-purple" onclick="saveChatbotPublishDraftV4945()">Guardar configuración del Chatbot</button>
       <button type="button" class="btn-small btn-ghost" onclick="clearChatbotPublishDraftV4945()">Limpiar</button>
     </div>
-    <p class="chatbot-config-note-v4945">La publicación gratis dura 30 días e incluye Chatbot Conecta. La membresía anual activa publicaciones ilimitadas en Solicitantes, Agentes, Negocios, Agentes en crecimiento y Mandados verificados.</p>`;
+    <p class="chatbot-config-note-v4945">La publicación gratis dura 30 días e incluye DOLA. La membresía anual activa publicaciones ilimitadas en Solicitantes, Agentes, Negocios, Agentes en crecimiento y Mandados verificados.</p>`;
   }
 
   function applyPreset(type){
@@ -11901,7 +11901,7 @@ try {
     const questions = String(qs("#chatbotQuestionsTextV4945")?.value || "").split(/\n+/).map(v => v.trim()).filter(Boolean);
     const menu = String(qs("#chatbotMenuTextV4945")?.value || "").trim();
     try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ version: VERSION, channel, profile, questions, menu, updated_at: new Date().toISOString() })); } catch {}
-    if (show) toast(channel === "whatsapp" ? "Se usará WhatsApp como canal único de contacto." : "Chatbot Conecta guardado para esta publicación.");
+    if (show) toast(channel === "whatsapp" ? "Se usará WhatsApp como canal único de contacto." : "DOLA guardado para esta publicación.");
   }
 
   function clearDraft(){
@@ -11977,10 +11977,10 @@ try {
 
 
 // ------------------------------------------------------------------
-// v4.9.46 — Chatbot Conecta tipo WhatsApp + canal único por publicación
-// - Cada publicación usa UN solo canal principal: Chatbot Conecta o WhatsApp.
+// v4.9.46 — DOLA tipo WhatsApp + canal único por publicación
+// - Cada publicación usa UN solo canal principal: DOLA o WhatsApp.
 // - El botón visible en la tarjeta se normaliza como “Mensaje”.
-// - Chatbot Conecta se muestra como conversación con burbujas y respuestas rápidas.
+// - DOLA se muestra como conversación con burbujas y respuestas rápidas.
 // - El anunciante configura preguntas/filtros durante la publicación con plantillas simples.
 // ------------------------------------------------------------------
 (function chatbotConectaTipoWhatsAppV4946(){
@@ -11990,8 +11990,8 @@ try {
   const RESPONSES_KEY = "conecta_chatbot_conecta_responses_v4944";
   const LOCAL_PUBLICATIONS_KEY = "conecta_publicaciones_basicas_locales_v4943";
   const CHANNELS = {
-    chatbot: { icon: "💬", label: "Chatbot Conecta", help: "Recibe respuestas filtradas dentro de la app con preguntas rápidas tipo chat." },
-    whatsapp: { icon: "🟢", label: "WhatsApp", help: "Recibe mensajes directos en tu WhatsApp. Sustituye al Chatbot Conecta." }
+    chatbot: { icon: "💬", label: "DOLA", help: "Recibe respuestas filtradas dentro de la app con preguntas rápidas tipo chat." },
+    whatsapp: { icon: "🟢", label: "WhatsApp", help: "Recibe mensajes directos en tu WhatsApp. Sustituye al DOLA." }
   };
   const PRESETS = {
     solicitante: ["¿Qué necesitas exactamente?", "¿En qué zona estás?", "¿Para qué hora lo necesitas?", "¿Cuánto ofreces o quieres negociar?", "¿Quieres agregar algún detalle?"],
@@ -12053,7 +12053,7 @@ try {
     const draft = { version: VERSION, channel, profile, preset, questions, menu, updated_at: new Date().toISOString() };
     write(DRAFT_KEY, draft);
     write(LEGACY_DRAFT_KEY, draft);
-    if (showToastFlag) toast(channel === "whatsapp" ? "WhatsApp quedó como canal único de contacto." : "Chatbot Conecta configurado como conversación tipo WhatsApp.");
+    if (showToastFlag) toast(channel === "whatsapp" ? "WhatsApp quedó como canal único de contacto." : "DOLA configurado como conversación tipo WhatsApp.");
     syncLegacyControls(channel, profile, preset);
     return draft;
   }
@@ -12070,7 +12070,7 @@ try {
     const phone = qs("#pubPhone");
     if (phone) {
       phone.required = channel === "whatsapp";
-      phone.placeholder = channel === "whatsapp" ? "WhatsApp para recibir mensajes" : "WhatsApp opcional; Chatbot Conecta recibirá respuestas";
+      phone.placeholder = channel === "whatsapp" ? "WhatsApp para recibir mensajes" : "WhatsApp opcional; DOLA recibirá respuestas";
       phone.closest("label")?.classList?.toggle("required-channel-v4946", channel === "whatsapp");
     }
     const chatbotBox = qs("#chatbotQuestionsAreaV4946");
@@ -12093,19 +12093,19 @@ try {
         <span>💬</span>
         <div>
           <strong>¿Cómo quieres recibir respuestas?</strong>
-          <p>Elige un solo canal. Chatbot Conecta es recomendado; WhatsApp es opcional para publicaciones rápidas.</p>
+          <p>Elige un solo canal. DOLA es recomendado; WhatsApp es opcional para publicaciones rápidas.</p>
         </div>
       </div>
       <div class="channel-options-v4946" role="radiogroup" aria-label="Canal de contacto">
         <label class="channel-option-v4946 recommended ${channel === "chatbot" ? "selected" : ""}">
           <input type="radio" name="contactChannelV4944" value="chatbot" ${channel === "chatbot" ? "checked" : ""}>
-          <b>💬 Chatbot Conecta</b>
+          <b>💬 DOLA</b>
           <small>Recibe respuestas filtradas dentro de la app con preguntas rápidas tipo chat.</small>
         </label>
         <label class="channel-option-v4946 ${channel === "whatsapp" ? "selected" : ""}">
           <input type="radio" name="contactChannelV4944" value="whatsapp" ${channel === "whatsapp" ? "checked" : ""}>
           <b>🟢 WhatsApp</b>
-          <small>Recibe mensajes directos en tu WhatsApp. No se mostrará Chatbot Conecta.</small>
+          <small>Recibe mensajes directos en tu WhatsApp. No se mostrará DOLA.</small>
         </label>
       </div>
       <div id="whatsappOnlyNoteV4946" class="whatsapp-only-note-v4946" ${channel !== "whatsapp" ? "hidden" : ""}>
@@ -12128,7 +12128,7 @@ try {
             <option value="negocio" ${preset === "negocio" ? "selected" : ""}>Negocio general</option>
           </select>
         </label>
-        <label>Preguntas editables del Chatbot Conecta
+        <label>Preguntas editables del DOLA
           <textarea id="chatbotQuestionsTextV4946" rows="5" placeholder="Una pregunta por línea">${esc(questions.join("\n"))}</textarea>
         </label>
         <label>Menú, productos o servicios <small>Opcional</small>
@@ -12140,7 +12140,7 @@ try {
           <button type="button" data-preset="negocio_comida">Rosticería</button>
           <button type="button" data-preset="negocio_servicio">Consulta</button>
         </div>
-        <p class="channel-note-v4946">Puedes usar estas preguntas sugeridas o editarlas para que tu Chatbot Conecta filtre mejor las respuestas. La interacción pública será tipo WhatsApp, con burbujas y botones rápidos.</p>
+        <p class="channel-note-v4946">Puedes usar estas preguntas sugeridas o editarlas para que tu DOLA filtre mejor las respuestas. La interacción pública será tipo WhatsApp, con burbujas y botones rápidos.</p>
       </div>
     </section>`;
   }
@@ -12252,7 +12252,7 @@ try {
   }
   function openChatbot(idValue){
     const item = findPublication(idValue);
-    if (!item) return toast("No encontré la publicación para abrir Chatbot Conecta.");
+    if (!item) return toast("No encontré la publicación para abrir DOLA.");
     const questions = questionsForItem(item);
     const state = { id: String(idValue), item, questions, index: -1, answers: [], started: false };
     const overlay = document.createElement("div");
@@ -12260,7 +12260,7 @@ try {
     overlay.innerHTML = `<div class="chatbot-wa-sheet-v4946" role="dialog" aria-modal="true">
       <header class="chatbot-wa-header-v4946">
         <button type="button" aria-label="Cerrar" onclick="this.closest('.chatbot-wa-overlay-v4946').remove()">‹</button>
-        <div><strong>💬 Chatbot Conecta</strong><small>${esc(item.titulo || item.title || "Publicación")}</small></div>
+        <div><strong>💬 DOLA</strong><small>${esc(item.titulo || item.title || "Publicación")}</small></div>
       </header>
       <div class="chatbot-wa-messages-v4946" id="chatbotMessagesV4946"></div>
       <div class="chatbot-wa-replies-v4946" id="chatbotRepliesV4946"></div>
@@ -12399,8 +12399,8 @@ try {
 // v4.9.47 — Publicación guiada por voz
 // - Mejora el flujo de publicar: el usuario puede hablar o escribir una idea inicial.
 // - La app clasifica como Solicitud u Oferta y hace preguntas guiadas.
-// - Genera una publicación clara, editable y compatible con Chatbot Conecta o WhatsApp.
-// - No sustituye Chatbot Conecta: lo alimenta con una publicación mejor redactada.
+// - Genera una publicación clara, editable y compatible con DOLA o WhatsApp.
+// - No sustituye DOLA: lo alimenta con una publicación mejor redactada.
 // ------------------------------------------------------------------
 (function publicarPorVozGuiadoV4947(){
   const VERSION = "v4.9.47-publicar-por-voz-guiado";
@@ -12690,7 +12690,7 @@ try {
     if (descEl) { descEl.value = final.description; descEl.dispatchEvent(new Event("input", { bubbles:true })); }
     if (!getField("pubLocality") && answerAtLocal(0)) setField("pubLocality", answerAtLocal(0));
     if (!getField("pubName")) setField("pubName", final.profile === "negocio" ? "Mi negocio" : "Usuario Conecta");
-    // Canal recomendado por defecto: Chatbot Conecta. El usuario puede cambiarlo a WhatsApp.
+    // Canal recomendado por defecto: DOLA. El usuario puede cambiarlo a WhatsApp.
     qsa("input[name='contactChannelV4944'],input[name='contactChannelV4945'],input[name='contactChannelV4946']").forEach(input => { input.checked = input.value === "chatbot"; });
     try { if (typeof saveChatbotPublishDraftV4946 === "function") saveChatbotPublishDraftV4946(false); } catch {}
     try { if (typeof updateCategoryDetails === "function") updateCategoryDetails(); } catch {}
@@ -12745,4 +12745,485 @@ try {
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
   window.addEventListener("pageshow", () => setTimeout(init, 120));
+})();
+
+
+// ------------------------------------------------------------------
+// v4.9.48 — Bots por perfil
+// - Mantiene la publicación como pieza principal del feed.
+// - Cambia el nombre visible del bot según el tipo de publicación:
+//   Solicitante: DOLA Bot de contacto
+//   Agente: DOLA Bot de atención a solicitudes
+//   Negocio: DOLA Bot de atención a clientes
+// - DOLA queda como tecnología interna/general, pero el usuario ve un nombre más claro.
+// - Conserva la regla de canal único: Bot interno o WhatsApp, nunca ambos.
+// ------------------------------------------------------------------
+(function botsPorPerfilV4948(){
+  const VERSION = "v4.9.48-bots-por-perfil";
+  const LOCAL_PUBLICATIONS_KEY = "conecta_publicaciones_basicas_locales_v4943";
+  const RESPONSES_KEY = "conecta_chatbot_conecta_responses_v4944";
+
+  function qs(sel, root=document){ return root.querySelector(sel); }
+  function qsa(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
+  function esc(value=""){
+    try { if (typeof escapeHtml === "function") return escapeHtml(value); } catch {}
+    return String(value ?? "").replace(/[&<>\"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch]));
+  }
+  function normalize(value=""){
+    return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+  function read(key, fallback){ try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch { return fallback; } }
+  function write(key, value){ try { localStorage.setItem(key, JSON.stringify(value)); } catch {} }
+
+  const BOT_COPY = {
+    solicitante: {
+      short: "DOLA Bot de contacto",
+      label: "DOLA Bot de contacto",
+      icon: "💬",
+      help: "Recibe respuestas claras de personas que pueden ayudarte.",
+      intro: "Hola, vi tu publicación. Te haré unas preguntas rápidas para que el anunciante reciba una respuesta clara.",
+      menuHelp: "Ideal para necesidades rápidas, favores, mandados o solicitudes locales."
+    },
+    agente: {
+      short: "Bot de solicitudes",
+      label: "DOLA Bot de atención a solicitudes",
+      icon: "🧾",
+      help: "Filtra encargos, mandados, entregas, viajes o apoyos antes de atenderlos.",
+      intro: "Hola, vi que te interesa este agente. Te haré unas preguntas rápidas para ordenar tu solicitud.",
+      menuHelp: "Ideal para agentes que reciben encargos, mandados, viajes, entregas o trabajos por zona."
+    },
+    negocio: {
+      short: "Bot de clientes",
+      label: "DOLA Bot de atención a clientes",
+      icon: "🤖",
+      help: "Atiende pedidos, citas, cotizaciones o dudas de clientes dentro de Conecta.",
+      intro: "Hola, vi que te interesa este negocio. Te haré unas preguntas rápidas para atenderte mejor.",
+      menuHelp: "Ideal para negocios que reciben pedidos, citas, cotizaciones o consultas."
+    },
+    general: {
+      short: "Bot Conecta",
+      label: "Bot Conecta",
+      icon: "💬",
+      help: "Recibe mensajes filtrados dentro de la app.",
+      intro: "Hola, te haré unas preguntas rápidas para enviar una solicitud clara.",
+      menuHelp: "Usa preguntas rápidas para ordenar respuestas."
+    }
+  };
+
+  function botCopy(profile){ return BOT_COPY[profile] || BOT_COPY.general; }
+
+  function currentProfileFromForm(){
+    const explicit = qs("#chatbotProfileTypeV4946")?.value || qs("#publicationProfileTypeV4944")?.value || qs("#publicationProfileTypeV4945")?.value;
+    if (explicit) return explicit;
+    const bag = normalize([
+      qs("#pubCategory")?.value,
+      qs("#pubIntent")?.value,
+      qs("#pubTitle")?.value,
+      qs("#pubDescription")?.value,
+      qs("#pubDescriptionDelivery")?.value
+    ].join(" "));
+    if (/negocio|tienda|comida|rosticer|panader|consultorio|doctor|estetica|ferreter|venta/.test(bag)) return "negocio";
+    if (/agente|mandado|entrega|viaje|mensajer|repart|ofrezco|disponible/.test(bag)) return "agente";
+    return "solicitante";
+  }
+
+  function allLocalRows(){ return read(LOCAL_PUBLICATIONS_KEY, []); }
+  function allPublications(){
+    const rows=[];
+    try { if (Array.isArray(publicationsCache)) rows.push(...publicationsCache); } catch {}
+    try { if (Array.isArray(adminCache)) rows.push(...adminCache); } catch {}
+    rows.push(...allLocalRows());
+    return rows;
+  }
+  function findPublication(idValue){
+    const id=String(idValue || "");
+    return allPublications().find(p => String(p.id || p.local_id || p.folio || "") === id || String(p.local_id || "") === id) || null;
+  }
+  function profileFromItem(item={}){
+    const ref = normalize(item.referencia || item.reference || "");
+    if (/perfil_publicacion\s*=\s*negocio|profile_type\s*=\s*negocio/.test(ref) || item.profile_type === "negocio") return "negocio";
+    if (/perfil_publicacion\s*=\s*agente|profile_type\s*=\s*agente/.test(ref) || item.profile_type === "agente") return "agente";
+    if (/perfil_publicacion\s*=\s*solicitante|profile_type\s*=\s*solicitante/.test(ref) || item.profile_type === "solicitante") return "solicitante";
+    const bag = normalize([item.categoria_principal, item.category, item.intencion, item.intent, item.titulo, item.title, item.descripcion, item.description].join(" "));
+    if (/negocio|tienda|comida|rosticer|panader|consultorio|doctor|estetica|ferreter|venta|cliente/.test(bag)) return "negocio";
+    if (/agente|mandado|entrega|viaje|mensajer|repart|ofrezco|disponible/.test(bag)) return "agente";
+    return "solicitante";
+  }
+
+  function updatePublishPanelLabels(){
+    const panel = qs("#contactChannelPanelV4946");
+    if (!panel) return;
+    const profile = currentProfileFromForm();
+    const copy = botCopy(profile);
+    panel.dataset.botProfile = profile;
+    panel.dataset.botLabel = copy.label;
+
+    const head = qs(".channel-head-v4946 strong", panel);
+    if (head) head.textContent = "¿Cómo quieres recibir respuestas?";
+    const intro = qs(".channel-head-v4946 p", panel);
+    if (intro) intro.textContent = `Elige un solo canal. ${copy.label} es recomendado; WhatsApp es opcional para publicaciones rápidas.`;
+
+    const chatbotOption = qsa(".channel-option-v4946", panel).find(el => qs("input[value='chatbot']", el));
+    if (chatbotOption) {
+      const title = qs("b", chatbotOption);
+      if (title) title.textContent = `${copy.icon} ${copy.label}`;
+      const help = qs("small", chatbotOption);
+      if (help) help.textContent = copy.help;
+      let note = qs(".bot-context-note-v4948", chatbotOption);
+      if (!note) {
+        note = document.createElement("em");
+        note.className = "bot-context-note-v4948";
+        chatbotOption.appendChild(note);
+      }
+      note.textContent = copy.menuHelp;
+    }
+
+    qsa("#chatbotProfileTypeV4946 option", panel).forEach(opt => {
+      if (opt.value === "solicitante") opt.textContent = "Solicitante · DOLA Bot de contacto";
+      if (opt.value === "agente") opt.textContent = "Agente · DOLA Bot de atención a solicitudes";
+      if (opt.value === "negocio") opt.textContent = "Negocio · DOLA Bot de atención a clientes";
+    });
+
+    const area = qs("#chatbotQuestionsAreaV4946", panel);
+    if (area) {
+      let title = qs(".bot-config-title-v4948", area);
+      if (!title) {
+        title = document.createElement("div");
+        title.className = "bot-config-title-v4948";
+        area.prepend(title);
+      }
+      title.innerHTML = `<strong>${esc(copy.icon)} ${esc(copy.label)}</strong><span>${esc(copy.help)}</span>`;
+    }
+  }
+
+  function patchOverlayAfterOpen(idValue){
+    const item = findPublication(idValue) || {};
+    const profile = profileFromItem(item);
+    const copy = botCopy(profile);
+    const overlay = qsa(".chatbot-wa-overlay-v4946").at(-1);
+    if (!overlay) return;
+    overlay.dataset.botProfile = profile;
+    overlay.dataset.botLabel = copy.label;
+    const strong = qs(".chatbot-wa-header-v4946 strong", overlay);
+    if (strong) strong.textContent = `${copy.icon} ${copy.label}`;
+    const input = qs("#chatbotFreeTextV4946", overlay);
+    if (input) input.placeholder = "Escribe una respuesta breve";
+    const firstBot = qs(".wa-bubble-v4946.bot", overlay);
+    if (firstBot && /Hola, vi que te interesa/.test(firstBot.textContent || "")) firstBot.textContent = copy.intro;
+  }
+
+  function wrapOpeners(){
+    if (window.__botPerfilOpenersWrappedV4948) return;
+    window.__botPerfilOpenersWrappedV4948 = true;
+    const previous46 = window.openConectaChatbotV4946;
+    const previous44 = window.openConectaChatbotV4944;
+    if (typeof previous46 === "function") {
+      window.openConectaChatbotV4946 = function(idValue){
+        const result = previous46.apply(this, arguments);
+        setTimeout(() => patchOverlayAfterOpen(idValue), 40);
+        setTimeout(() => patchOverlayAfterOpen(idValue), 160);
+        return result;
+      };
+    }
+    if (typeof previous44 === "function") {
+      window.openConectaChatbotV4944 = function(idValue){
+        const result = previous44.apply(this, arguments);
+        setTimeout(() => patchOverlayAfterOpen(idValue), 40);
+        setTimeout(() => patchOverlayAfterOpen(idValue), 160);
+        return result;
+      };
+    }
+  }
+
+  function normalizeVisibleText(){
+    // Evita cambiar WhatsApp. Solo contextualiza etiquetas donde antes se veía genérico.
+    qsa(".contact-main-v4944").forEach(btn => {
+      btn.textContent = "💬 Mensaje";
+      btn.title = "Abrir el canal de contacto elegido por el anunciante";
+    });
+    qsa("#contactChannelPanelV4946 .channel-option-v4946").forEach(label => {
+      label.classList.toggle("bot-profile-aware-v4948", Boolean(qs("input[value='chatbot']", label)));
+    });
+  }
+
+  function annotateResponsesPanel(){
+    const rows = read(RESPONSES_KEY, []);
+    if (Array.isArray(rows) && rows.length) {
+      const enriched = rows.map(row => row.bot_label ? row : ({ ...row, bot_label: botCopy(row.profile_type || "general").label }));
+      write(RESPONSES_KEY, enriched);
+    }
+  }
+
+  function refresh(){
+    document.body.dataset.version = VERSION;
+    document.body.classList.add("bots-por-perfil-v4948");
+    updatePublishPanelLabels();
+    normalizeVisibleText();
+    annotateResponsesPanel();
+    try { localStorage.setItem("conecta_bots_por_perfil_version", VERSION); } catch {}
+  }
+
+  function init(){
+    wrapOpeners();
+    refresh();
+    qsa("#chatbotProfileTypeV4946,#publicationProfileTypeV4944,#publicationProfileTypeV4945,#pubCategory,#pubIntent,#pubTitle,#pubDescription,#pubDescriptionDelivery").forEach(el => {
+      if (!el.__botsPerfilListenerV4948) {
+        el.__botsPerfilListenerV4948 = true;
+        el.addEventListener("input", refresh);
+        el.addEventListener("change", refresh);
+      }
+    });
+    setTimeout(refresh, 200);
+    setTimeout(refresh, 800);
+    setTimeout(refresh, 1600);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+  window.addEventListener("pageshow", () => setTimeout(init, 120));
+  document.addEventListener("change", ev => {
+    if (ev.target && /chatbotProfileTypeV4946|publicationProfileTypeV4944|publicationProfileTypeV4945|contactChannelV4944/.test(ev.target.id || ev.target.name || "")) setTimeout(refresh, 30);
+  });
+})();
+
+
+// ============================================================
+// v4.9.49 — DOLA asistente interno por publicación
+// - Renombra Chatbot Conecta a DOLA como identidad principal.
+// - Mantiene publicación + botón único Mensaje + DOLA o WhatsApp.
+// - Agrega aviso de uso de DOLA y contextualiza por perfil.
+// - No agrega botones flotantes ni secciones nuevas confusas.
+// ============================================================
+(function(){
+  const VERSION = "v4.9.49-dola-asistente-interno";
+  const NOTICE_KEY = "conecta_dola_notice_accepted_v4949";
+  const RESPONSES_KEY = "conecta_chatbot_conecta_responses_v4944";
+  const BOT_CONFIG_KEY = "conecta_chatbot_configs_v4945";
+
+  const qs = (s, r=document) => r.querySelector(s);
+  const qsa = (s, r=document) => Array.from(r.querySelectorAll(s));
+  const esc = (v) => String(v ?? "").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
+  const read = (k, f) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : f; } catch { return f; } };
+  const write = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+  const toast = (msg) => { if (typeof window.showToast === "function") window.showToast(msg); else console.log(msg); };
+
+  function profileFromItem(item={}){
+    const raw = String(item.profile_type || item.publication_type || item.tipo_perfil || item.tipo || item.category || item.categoria || "").toLowerCase();
+    const txt = `${raw} ${String(item.title || item.titulo || "").toLowerCase()} ${String(item.description || item.descripcion || "").toLowerCase()}`;
+    if (/negocio|empresa|local|comercio|tienda|restaurante|rosticer|panader|consultor|doctor|cl[ií]nica/.test(txt)) return "negocio";
+    if (/agente|mandado|entrega|repart|viaje|conductor|ayudante|ofrezco|hago/.test(txt)) return "agente";
+    return "solicitante";
+  }
+
+  function dolaCopy(profile){
+    if (profile === "negocio") return {
+      icon: "🤝",
+      label: "DOLA Bot de atención a clientes",
+      short: "DOLA",
+      intro: "Hola, soy DOLA. Vi que te interesa esta publicación. Te haré unas preguntas rápidas para que el negocio reciba tu solicitud clara.",
+      help: "DOLA ayuda a recibir pedidos, citas, cotizaciones o mensajes ordenados.",
+      questions: ["¿Qué necesitas o qué te interesa?", "¿Para qué día u horario lo necesitas?", "¿Buscas pedido, cita, cotización o información?", "¿Cuál es tu nombre y contacto?", "¿Quieres agregar algún detalle?"]
+    };
+    if (profile === "agente") return {
+      icon: "🛵",
+      label: "DOLA Bot de atención a solicitudes",
+      short: "DOLA",
+      intro: "Hola, soy DOLA. Te ayudo a explicar tu solicitud para que el agente pueda responder mejor.",
+      help: "DOLA filtra encargos, mandados, entregas, viajes o servicios.",
+      questions: ["¿Qué necesitas que realice?", "¿Dónde se recoge o inicia?", "¿Dónde se entrega o termina?", "¿Para qué fecha u horario?", "¿Cuál es tu presupuesto aproximado?", "¿Hay algún detalle importante?"]
+    };
+    return {
+      icon: "💬",
+      label: "DOLA Bot de contacto",
+      short: "DOLA",
+      intro: "Hola, soy DOLA. Te ayudaré a responder esta publicación con la información necesaria.",
+      help: "DOLA ayuda a recibir respuestas claras de personas que pueden apoyar.",
+      questions: ["¿Puedes ayudar con esta solicitud?", "¿Desde qué zona puedes apoyar?", "¿Para cuándo puedes hacerlo?", "¿Cuánto cobrarías o qué propones?", "¿Quieres agregar algún detalle?"]
+    };
+  }
+
+  function showDolaNotice(){
+    if (localStorage.getItem(NOTICE_KEY) === "1") return Promise.resolve(true);
+    return new Promise(resolve => {
+      const existing = qs(".dola-notice-overlay-v4949");
+      if (existing) existing.remove();
+      const wrap = document.createElement("div");
+      wrap.className = "dola-notice-overlay-v4949";
+      wrap.innerHTML = `
+        <div class="dola-notice-card-v4949">
+          <div class="dola-notice-icon-v4949">✨</div>
+          <h3>DOLA</h3>
+          <p><strong>Tu asistente dentro de Conecta Servicios.</strong></p>
+          <p>DOLA organizará la información que escribas o dictes para ayudarte a crear publicaciones y atender solicitudes dentro de Conecta Servicios.</p>
+          <p class="dola-notice-small-v4949">No compartas datos sensibles. Puedes revisar y editar la información antes de publicarla o enviarla.</p>
+          <div class="dola-notice-actions-v4949">
+            <button type="button" class="btn-small btn-purple" data-dola-accept>Entendido, continuar</button>
+            <button type="button" class="btn-small btn-ghost" data-dola-cancel>Cancelar</button>
+          </div>
+        </div>`;
+      document.body.appendChild(wrap);
+      qs("[data-dola-accept]", wrap).addEventListener("click", () => {
+        localStorage.setItem(NOTICE_KEY, "1");
+        wrap.remove();
+        resolve(true);
+      });
+      qs("[data-dola-cancel]", wrap).addEventListener("click", () => { wrap.remove(); resolve(false); });
+    });
+  }
+
+  function normalizeStaticText(root=document){
+    const walker = document.createTreeWalker(root.body || root, NodeFilter.SHOW_TEXT, {
+      acceptNode(node){
+        const p = node.parentElement;
+        if (!p || /SCRIPT|STYLE|TEXTAREA|INPUT/.test(p.tagName)) return NodeFilter.FILTER_REJECT;
+        return /Chatbot Conecta|Chat negocio|Responder filtro|Asistente configurable|Asistente de publicación/.test(node.nodeValue || "") ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+      }
+    });
+    const nodes=[]; while(walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(n => {
+      n.nodeValue = n.nodeValue
+        .replace(/Chatbot Conecta/g, "DOLA")
+        .replace(/Chat negocio/g, "DOLA")
+        .replace(/Responder filtro/g, "Mensaje")
+        .replace(/Asistente de publicación/g, "DOLA")
+        .replace(/Asistente configurable/g, "DOLA");
+    });
+  }
+
+  function updateChannelPanel(){
+    qsa("#contactChannelPanelV4946, .contact-channel-panel-v4946, .contact-panel-v4944, .chatbot-social-panel-v4944").forEach(panel => {
+      const title = qs("h3, strong, b", panel);
+      if (title && /DOLA|Chatbot|Mensaje|canal/i.test(title.textContent || "")) title.textContent = "¿Cómo quieres recibir respuestas?";
+      qsa("label, small, p, b, span", panel).forEach(el => {
+        el.innerHTML = el.innerHTML
+          .replace(/Chatbot Conecta/g, "DOLA")
+          .replace(/chatbot/g, "DOLA")
+          .replace(/DOLA es recomendado/gi, "DOLA es recomendado")
+          .replace(/DOLA será recomendado/gi, "DOLA será recomendado");
+      });
+      const chatbotRadio = qs("input[value='chatbot']", panel);
+      if (chatbotRadio) {
+        const label = chatbotRadio.closest("label");
+        if (label) label.classList.add("dola-recommended-v4949");
+      }
+    });
+  }
+
+  function updatePublishHelpers(){
+    const forms = qsa("form, .publish-panel, #publishPanel, #publishForm, .publication-flow-v4944, .publication-unified-v4943");
+    forms.forEach(form => {
+      if (!form || form.__dolaHelperAddedV4949) return;
+      const hasPublishInputs = qs("input, textarea, select", form) && /public|pub|title|titulo|description|descripcion|categoria|category/i.test(form.innerHTML || "");
+      if (!hasPublishInputs) return;
+      const target = qs("#contactChannelPanelV4946", form) || qs("textarea, select, input", form)?.parentElement;
+      if (!target) return;
+      const helper = document.createElement("div");
+      helper.className = "dola-create-helper-v4949";
+      helper.innerHTML = `<strong>✨ Crear con ayuda de DOLA</strong><p>DOLA puede ayudarte a ordenar tu publicación, elegir preguntas rápidas y recibir solicitudes filtradas. También puedes continuar manualmente.</p>`;
+      target.insertAdjacentElement("beforebegin", helper);
+      form.__dolaHelperAddedV4949 = true;
+    });
+  }
+
+  function findPublication(idValue){
+    if (typeof window.findPublicationV4944 === "function") return window.findPublicationV4944(idValue);
+    const buckets = [
+      "conecta_publicaciones_locales_v4943",
+      "conecta_publicaciones_social_v4944",
+      "conecta_publications_v4942",
+      "conecta_mis_publicaciones"
+    ];
+    for (const k of buckets) {
+      const rows = read(k, []);
+      if (Array.isArray(rows)) {
+        const found = rows.find(x => String(x.id || x.local_id || x.publication_id) === String(idValue));
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+
+  function patchOverlay(idValue){
+    const item = findPublication(idValue) || {};
+    const copy = dolaCopy(profileFromItem(item));
+    const overlay = qsa(".chatbot-wa-overlay-v4946, .chatbot-modal-v4944, .chatbot-modal-overlay-v4944").at(-1);
+    if (!overlay) return;
+    overlay.classList.add("dola-chat-overlay-v4949");
+    overlay.dataset.dolaLabel = copy.label;
+    qsa("strong, h3, h2", overlay).forEach(el => {
+      if (/DOLA|Chatbot|Bot de|Mensaje/i.test(el.textContent || "")) el.textContent = `${copy.icon} ${copy.label}`;
+    });
+    const firstBot = qs(".wa-bubble-v4946.bot, .chatbot-bubble.bot, .bot", overlay);
+    if (firstBot && /Hola|interesa|DOLA|Chatbot/i.test(firstBot.textContent || "")) firstBot.textContent = copy.intro;
+    qsa("button", overlay).forEach(btn => {
+      btn.textContent = btn.textContent.replace(/Enviar por DOLA|Enviar por Chatbot Conecta|Enviar solicitud/i, "Enviar solicitud");
+    });
+  }
+
+  function wrapOpeners(){
+    if (window.__dolaOpenersWrappedV4949) return;
+    window.__dolaOpenersWrappedV4949 = true;
+    ["openConectaChatbotV4946", "openConectaChatbotV4944"].forEach(name => {
+      const previous = window[name];
+      if (typeof previous === "function") {
+        window[name] = async function(idValue){
+          const ok = await showDolaNotice();
+          if (!ok) return false;
+          const result = previous.apply(this, arguments);
+          setTimeout(() => patchOverlay(idValue), 40);
+          setTimeout(() => patchOverlay(idValue), 180);
+          return result;
+        };
+      }
+    });
+  }
+
+  function enrichResponses(){
+    const rows = read(RESPONSES_KEY, []);
+    if (!Array.isArray(rows)) return;
+    const next = rows.map(r => {
+      const profile = r.profile_type || r.profile || profileFromItem(findPublication(r.publication_id) || {});
+      const copy = dolaCopy(profile);
+      return { ...r, bot_label: copy.label, dola_label: copy.label, channel_label: "DOLA" };
+    });
+    write(RESPONSES_KEY, next);
+  }
+
+  function patchCards(){
+    qsa(".contact-main-v4944, [onclick*='openConectaChatbot'], [onclick*='openWhatsapp'], .btn-message").forEach(btn => {
+      if (/WhatsApp/i.test(btn.textContent || "")) {
+        btn.textContent = "💬 Mensaje";
+        btn.title = "Abrir WhatsApp";
+      } else if (/DOLA|Chatbot|Mensaje|Bot/i.test(btn.textContent || "")) {
+        btn.textContent = "💬 Mensaje";
+        btn.title = "Abrir DOLA";
+      }
+    });
+  }
+
+  function refresh(){
+    document.body.dataset.version = VERSION;
+    document.body.classList.add("dola-asistente-interno-v4949");
+    normalizeStaticText();
+    updateChannelPanel();
+    updatePublishHelpers();
+    patchCards();
+    enrichResponses();
+    try { localStorage.setItem("conecta_dola_version", VERSION); } catch {}
+  }
+
+  function init(){
+    wrapOpeners();
+    refresh();
+    setTimeout(refresh, 250);
+    setTimeout(refresh, 900);
+    setTimeout(refresh, 1800);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+  window.addEventListener("pageshow", () => setTimeout(init, 120));
+  document.addEventListener("click", () => setTimeout(refresh, 120), true);
+  document.addEventListener("change", () => setTimeout(refresh, 80), true);
+
+  window.showDolaNoticeV4949 = showDolaNotice;
+  window.dolaCopyV4949 = dolaCopy;
 })();

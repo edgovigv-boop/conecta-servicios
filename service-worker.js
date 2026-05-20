@@ -1,12 +1,12 @@
-// Conecta Servicios v4.9.47 — Publicación guiada por voz
-const CACHE_NAME = "conecta-servicios-v4.9.47-publicar-por-voz-guiado";
+// Conecta Servicios v4.9.48 — Bots por perfil
+const CACHE_NAME = "conecta-servicios-v4.9.49-dola-asistente-interno";
 const ASSETS = [
   "/",
   "/index.html",
-  "/styles.css?v=v4.9.47-publicar-por-voz-guiado",
-  "/app.js?v=v4.9.47-publicar-por-voz-guiado",
-  "/manifest.json?v=v4.9.47-publicar-por-voz-guiado",
-  "/service-worker.js?v=v4.9.47-publicar-por-voz-guiado"
+  "/styles.css?v=v4.9.49-dola-asistente-interno",
+  "/app.js?v=v4.9.49-dola-asistente-interno",
+  "/manifest.json?v=v4.9.49-dola-asistente-interno",
+  "/service-worker.js?v=v4.9.49-dola-asistente-interno"
 ];
 self.addEventListener("install", event => {
   self.skipWaiting();
