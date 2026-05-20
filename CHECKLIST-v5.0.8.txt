@@ -1,0 +1,12 @@
+Checklist v5.0.8 - Logo Home y PWA
+
+1. Abrir Home y confirmar que el logo oficial aparece en el encabezado.
+2. Confirmar que el logo no se deforma en móvil.
+3. Tocar el logo/plus y verificar que ejecuta Instalar app o muestra instrucciones.
+4. Confirmar que manifest.json usa icon-192.png e icon-512.png generados desde el logo oficial.
+5. Confirmar que favicon.ico y favicon-32.png cargan correctamente.
+6. Confirmar que apple-touch-icon.png existe.
+7. Confirmar que service-worker.js usa cache conecta-servicios-v5-0-8-logo-home-pwa.
+8. Confirmar que Inicio, Explorar, Publicar, Mis publicaciones y Perfil no se rompen.
+9. Confirmar que la PWA puede instalarse con el nuevo icono.
+10. Confirmar que no hay despliegue automático.

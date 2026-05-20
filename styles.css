@@ -120,3 +120,27 @@ img,video{max-width:100%;display:block}
 .module-card span{font-size:2rem;line-height:1}.module-card b{font-size:1rem}.module-card small{color:var(--muted);font-weight:750;line-height:1.28}.module-card.primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border:0}.module-card.primary small{color:rgba(255,255,255,.82)}.module-card:active{transform:translateY(1px)}
 .modal-content .button-row{margin-top:14px}
 @media (max-width:420px){.module-grid{grid-template-columns:1fr}.module-card{min-height:118px}}
+
+/* v5.0.8 - logo oficial en Home y PWA */
+.official-brand .logo-mark,
+.logo-mark.install-mark{
+  background:#fff;
+  border:1px solid var(--line);
+  overflow:hidden;
+  padding:2px;
+}
+.logo-mark img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+  border-radius:inherit;
+}
+.official-brand h1{color:#08246b;font-weight:900;letter-spacing:-.03em}
+.official-brand p{font-weight:650}
+.install-mark:after{content:'instalar'}
+@media (max-width:390px){
+  .official-brand .logo-mark{width:44px;height:44px;border-radius:16px}
+  .official-brand h1{font-size:1rem}
+  .official-brand p{font-size:.76rem}
+}

@@ -1,0 +1,18 @@
+CHECKLIST v5.0.9 - Prompts DOLA con contexto cerrado
+
+1. Entrar a Aprendizaje.
+2. Copiar prompt para DOLA.
+3. Confirmar que el prompt indica ROL, OBJETIVO, CONTEXTO y REGLAS.
+4. Confirmar que incluye la liga https://conecta-servicios.vercel.app/.
+5. Confirmar que pide no salirse del contexto de Conecta Servicios.
+6. Confirmar que orienta a publicar gratis por 30 días, Agentes en crecimiento, Mandados verificados y Embajadores.
+7. Entrar a Publicar > Crear con DOLA.
+8. Confirmar que el prompt de plantilla incluye rol especializado, contexto cerrado y una pregunta a la vez.
+9. Confirmar que el prompt pide solo la publicación final, sin repetir conversación.
+10. Tocar Mensaje en una publicación con DOLA.
+11. Confirmar que el prompt de contacto incluye título, tipo, zona, categoría y descripción de la publicación.
+12. Confirmar que el prompt de contacto pide no recomendar herramientas externas.
+13. Entrar a Conseguir clientes por comisión.
+14. Confirmar que el prompt de DOLA no inventa pagos, contratos ni reglas.
+15. Confirmar que no se rompe Inicio, Explorar, Publicar, Mis publicaciones, Perfil ni módulos estrella.
+16. Confirmar que no requiere SQL nuevo.

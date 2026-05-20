@@ -1,10 +1,10 @@
-const CACHE_NAME = 'conecta-servicios-v5-0-7-publicar-limpio-modulos-utiles';
+const CACHE_NAME = 'conecta-servicios-v5-0-9-prompts-dola-contexto-cerrado';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=5.0.7-publicar-limpio-modulos-utiles',
-  '/app.js?v=5.0.7-publicar-limpio-modulos-utiles',
-  '/manifest.json?v=5.0.7-publicar-limpio-modulos-utiles',
+  '/styles.css?v=5.0.9-prompts-dola-contexto-cerrado',
+  '/app.js?v=5.0.9-prompts-dola-contexto-cerrado',
+  '/manifest.json?v=5.0.9-prompts-dola-contexto-cerrado',
   '/assets/dola-media/comida-01.jpg',
   '/assets/dola-media/mandados-01.jpg',
   '/assets/dola-media/agente-01.jpg',
@@ -12,7 +12,15 @@ const CORE_ASSETS = [
   '/assets/dola-media/embajadores-01.jpg',
   '/assets/dola-media/aprendizaje-01.jpg',
   '/assets/dola-media/mandados-verificados-01.jpg',
-  '/assets/dola-media/solicitante-01.jpg'
+  '/assets/dola-media/solicitante-01.jpg',
+  '/assets/icons/favicon.ico',
+  '/assets/icons/favicon-64.png',
+  '/assets/icons/favicon-32.png',
+  '/assets/icons/apple-touch-icon.png',
+  '/assets/icons/icon-512.png',
+  '/assets/icons/icon-192.png',
+  '/assets/icons/conecta-logo-mark.png',
+  '/assets/icons/conecta-logo-oficial.png'
 ];
 
 self.addEventListener('install', (event) => {

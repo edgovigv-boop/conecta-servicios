@@ -1,10 +1,11 @@
-/* Conecta Servicios v5.0.7 - navegación publicar limpia y módulos estrella útiles */
+/* Conecta Servicios v5.0.9 - prompts DOLA con contexto cerrado */
 (() => {
   'use strict';
 
-  const VERSION = 'v5.0.7-publicar-limpio-modulos-utiles';
-  const CACHE_HINT = 'conecta-servicios-v5-0-7-publicar-limpio-modulos-utiles';
+  const VERSION = 'v5.0.9-prompts-dola-contexto-cerrado';
+  const CACHE_HINT = 'conecta-servicios-v5-0-9-prompts-dola-contexto-cerrado';
   const DOLA_EXTERNAL_URL = 'https://dola.com';
+  const CONNECTA_APP_URL = 'https://conecta-servicios.vercel.app/';
   const MEMBERSHIP_PRICE = 98;
   const FREE_DAYS = 30;
   const ADMIN_PIN = '3145';
@@ -258,9 +259,14 @@
 
   function topbar(title='Conecta Servicios', subtitle='Red local para publicar y conectar', opts={}){
     return `<div class="topbar">
-      <div class="brand">
-        <button class="logo-mark install-mark ${opts.small?'small':''}" data-action="install-app" title="Instalar app" aria-label="Instalar app"><span>+</span></button>
-        <div><h1>${escapeHtml(title)}</h1><p>${escapeHtml(subtitle)}</p></div>
+      <div class="brand official-brand">
+        <button class="logo-mark install-mark ${opts.small?'small':''}" data-action="install-app" title="Instalar app" aria-label="Instalar app">
+          <img src="assets/icons/conecta-logo-mark.png" alt="" loading="eager" />
+        </button>
+        <div>
+          <h1>${escapeHtml(title)}</h1>
+          <p>${escapeHtml(subtitle)}</p>
+        </div>
       </div>
       <button class="icon-btn notify-btn" data-action="notify" aria-label="Notificaciones">🔔${unreadNotifications()?`<span class="notify-dot">${unreadNotifications()}</span>`:""}</button>
     </div>`;
@@ -351,9 +357,9 @@
       <div class="card hero-card compact-center">
         <div class="template-badge"><span>${tpl.icon}</span><div><b>${escapeHtml(tpl.title)}</b><small>${escapeHtml(tpl.category)} · ${escapeHtml(tpl.type)}</small></div></div>
         <h2>Crear con DOLA</h2>
-        <p class="muted short-copy">Copia el prompt, abre DOLA, responde una pregunta a la vez y pega aquí solo la publicación final.</p>
+        <p class="muted short-copy">Copia el prompt enfocado en Conecta, abre DOLA y pega aquí solo la publicación final.</p>
         ${publishLimitNotice()}
-        <div class="notice slim"><b>Antes de abrir DOLA:</b> inicia sesión o entra con tu cuenta para evitar límites de uso como invitado.</div>
+        <div class="notice slim"><b>Antes de abrir DOLA:</b> inicia sesión o entra con tu cuenta para evitar límites de uso como invitado. El prompt ya incluye rol, objetivo, contexto y la regla de no salirse de Conecta Servicios.</div>
         <div class="button-row"><button class="btn ghost" data-action="reset-publish-flow">Cambiar plantilla</button><button class="btn" data-action="start-manual-template">Manual</button></div>
       </div>
       <div class="card">
@@ -399,25 +405,72 @@
     </section>`;
   }
 
-  function createDolaPrompt(tpl){
-    return `Vengo de Conecta Servicios. Elegí la plantilla: ${tpl.title}.
+  function dolaBasePrompt({ section='Publicar', objective='Ayudar al usuario dentro de Conecta Servicios.', extra='' } = {}){
+    return `ROL:
+Eres DOLA, asistente especializado de Conecta Servicios.
 
+OBJETIVO:
+${objective}
+
+CONTEXTO:
+Conecta Servicios es una red local para publicar, encontrar y contactar solicitantes, agentes y negocios.
+La app permite una publicación gratis por 30 días, explorar publicaciones, contactar por DOLA o WhatsApp, y participar en módulos como Embajadores, Agentes en crecimiento, Mandados verificados y Aprendizaje.
+Liga de referencia de la app:
+${CONNECTA_APP_URL}
+
+SECCIÓN DE ORIGEN:
+${section}
+
+REGLA PRINCIPAL:
+No te salgas del contexto de Conecta Servicios.
+No recomiendes herramientas externas, empleos externos, plataformas externas, WhatsApp Business, cursos externos o soluciones ajenas, salvo que el usuario lo pida explícitamente.
+Primero orienta siempre hacia las funciones de Conecta Servicios.
+
+SI EL USUARIO ESTÁ CONFUNDIDO:
+Explícale cómo puede avanzar dentro de Conecta Servicios:
+- publicar gratis por 30 días;
+- crear una publicación con DOLA;
+- publicar como solicitante;
+- publicar como agente;
+- publicar un negocio;
+- buscar publicaciones cercanas;
+- participar en Agentes en crecimiento;
+- revisar Mandados verificados;
+- conocer Embajadores;
+- usar Aprendizaje para mejorar habilidades;
+- activar membresía anual de $${MEMBERSHIP_PRICE} si quiere publicar sin límites.
+
+SI EL USUARIO PREGUNTA ALGO FUERA DEL CONTEXTO:
+Responde: “Soy DOLA, tu asistente dentro de Conecta Servicios. Puedo ayudarte a publicar, encontrar contactos, usar la app, entender la membresía, aprender a ofrecer servicios, participar como agente, conocer embajadores o revisar mandados verificados.”
+
+${extra}`.trim();
+  }
+
+  function createDolaPrompt(tpl){
+    const extra = `CONTEXTO DE LA PLANTILLA:
+Vengo de Conecta Servicios.
+Elegí la plantilla: ${tpl.title}.
 Tipo de publicación sugerido: ${tpl.type}.
 Categoría sugerida: ${tpl.category}.
 
+TAREA:
 Ayúdame a crear una publicación clara, atractiva y lista para pegar en Conecta Servicios.
 
+REGLAS DE CONVERSACIÓN:
 Hazme una sola pregunta a la vez.
 Espera mi respuesta antes de continuar.
 No me muestres toda la estructura de golpe.
 No uses tablas.
 No uses JSON.
 No entregues campos técnicos.
-No repitas este prompt al final.
+No repitas este prompt.
 No incluyas toda nuestra conversación al final.
-No agregues explicaciones fuera de la publicación final.
+No recomiendes herramientas externas ni plataformas ajenas.
+Mantente dentro del contexto de Conecta Servicios.
 
+SALIDA FINAL:
 Cuando tengas la información suficiente, genera ÚNICAMENTE la publicación final lista para copiar y pegar en Conecta Servicios.
+No agregues explicaciones fuera de la publicación final.
 
 El resultado final debe verse bonito, claro y fácil de leer, con emojis moderados, saltos de línea y secciones ordenadas.
 
@@ -438,6 +491,7 @@ Usa un formato parecido a este:
 [Indica cómo responder desde Conecta, DOLA o WhatsApp según corresponda]
 
 Devuélveme solo ese texto final. Nada antes y nada después.`;
+    return dolaBasePrompt({ section:'Publicar / Crear publicación con DOLA', objective:'Ayudar a crear una publicación clara para Conecta Servicios.', extra });
   }
 
   function dolaPreviewCard(draft){
@@ -973,7 +1027,27 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
   function createSimilar(id){ const p = getPosts().find(x=>x.id===id); if (!p) return; state.publishMode='manual'; state.publishDraft={ type:p.type, category:p.category, zone:p.zone, title:`Similar a: ${p.title}`.slice(0,90), description:'Quiero publicar algo parecido. ', channel:p.channel }; navigate('/publicar'); }
   function messagePost(id){ const p = getPosts().find(x=>x.id===id); if (!p) return; if (p.channel === 'whatsapp') { const msg = encodeURIComponent(`Hola, vi tu publicación en Conecta Servicios: “${p.title}”. Me interesa coordinar contigo.`); const phone = normalizePhone(p.whatsapp); if (!phone) return toast('Esta publicación no tiene WhatsApp válido.'); openExternal(`https://wa.me/${phone}?text=${msg}`); return; } openDolaContact(p); }
   function openDolaContact(p){
-    const prompt = `Vengo de Conecta Servicios. Quiero contactar al anunciante de esta publicación: “${p.title}”.\n\nDescripción: ${p.description}\nZona: ${p.zone}\nTipo: ${p.type}\nCategoría: ${p.category}\n\nAyúdame a ordenar mi solicitud. Hazme una sola pregunta a la vez, no repitas este prompt y al final dame únicamente un mensaje final listo para enviar al anunciante.`;
+    const prompt = dolaBasePrompt({
+      section:'Contactar anunciante',
+      objective:'Ayudar al interesado a ordenar su solicitud para contactar a un anunciante de Conecta Servicios.',
+      extra:`CONTEXTO DE LA PUBLICACIÓN:
+Vengo de Conecta Servicios y quiero contactar al anunciante de esta publicación.
+Título: ${p.title}
+Tipo: ${p.type}
+Zona: ${p.zone}
+Categoría: ${p.category}
+Descripción: ${p.description}
+
+TAREA:
+Ayúdame a ordenar mi solicitud para que el anunciante reciba un mensaje claro y concreto.
+
+REGLAS:
+Hazme una sola pregunta a la vez.
+No te salgas del contexto de Conecta Servicios.
+No recomiendes herramientas externas.
+No inventes información.
+Cuando tengas todo, genera solo un mensaje final listo para copiar y enviar al anunciante.`
+    });
     state.modal = { type:'dola-contact', postId:p.id, prompt };
     renderModal(state.modal);
   }
@@ -1013,7 +1087,7 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
   function activateMembership(){ const expires = addDays(new Date(), 365); setJSON(KEYS.membership,{active:true,startedAt:new Date().toISOString(),expiresAt:expires,ambassadorCode:'CON-LOCAL'}); toast('Membresía piloto activa'); render(); }
   function enableAdmin(){ const pin = prompt('Ingresa PIN admin'); if (pin === ADMIN_PIN) { localStorage.setItem(KEYS.admin,'true'); toast('Admin activo'); render(); } else if (pin) toast('PIN incorrecto'); }
   function clearLocal(){ if (!confirm('Esto borrará datos locales del piloto. ¿Continuar?')) return; Object.values(KEYS).forEach(k=>localStorage.removeItem(k)); toast('Datos locales borrados'); render(); }
-  function showPrivacy(){ alert('DOLA es una herramienta externa. No compartas datos sensibles. Revisa el texto antes de pegarlo en Conecta. Conecta facilita publicaciones y contacto, no garantiza ventas ni resultados.'); }
+  function showPrivacy(){ alert('DOLA es una herramienta externa. Conecta le envía prompts enfocados en Conecta Servicios, pero no compartas datos sensibles. Revisa el texto antes de pegarlo. Conecta facilita publicaciones y contacto, no garantiza ventas ni resultados.'); }
   function editProfile(){
     const profile = getJSON(KEYS.profile,{name:'Usuario', zone:'', phone:''});
     const name = prompt('Nombre', profile.name || 'Usuario'); if (!name) return;
@@ -1102,7 +1176,24 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
   }
 
   function learningPrompt(){
-    const text = 'Vengo de Conecta Servicios. Ayúdame a crear un plan sencillo de aprendizaje para mejorar mis publicaciones, atender mejor a clientes y ofrecer mejores servicios como agente o negocio local. Hazme una pregunta a la vez y dame pasos prácticos.';
+    const text = dolaBasePrompt({
+      section:'Aprendizaje',
+      objective:'Ayudar al usuario a aprender cómo usar Conecta Servicios para empezar, mejorar publicaciones, ofrecer servicios, convertirse en agente o encontrar oportunidades dentro de la app.',
+      extra:`TAREA DESDE APRENDIZAJE:
+Si el usuario dice que no tiene trabajo o no sabe qué hacer, oriéntalo primero a:
+1. Crear una publicación gratis por 30 días.
+2. Publicarse como Agente.
+3. Revisar Agentes en crecimiento.
+4. Aprender habilidades útiles para ofrecer servicios locales.
+5. Explorar Mandados verificados.
+6. Conocer Embajadores si quiere ganar por comisión.
+
+REGLAS ESPECÍFICAS:
+No recomiendes WhatsApp Business, plataformas externas, empleos externos ni herramientas ajenas salvo que el usuario lo pida explícitamente.
+No conviertas la respuesta en una búsqueda de empleo genérica.
+Enfócate en pasos dentro de Conecta Servicios.
+Responde de forma sencilla, paso a paso y enfocada en Conecta Servicios.`
+    });
     copyText(text).then(()=>toast('Prompt de aprendizaje copiado'));
   }
 
@@ -1182,9 +1273,17 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
   }
 
   function commissionDolaPrompt(){
-    const text = 'Vengo de Conecta Servicios. Quiero crear una publicación para conseguir clientes por comisión. Ayúdame a redactar una campaña clara para explicar qué se ofrece, qué tipo de clientes busco, cómo sería la comisión y qué datos necesito. Hazme una pregunta a la vez y al final dame solo la publicación final lista para pegar en Conecta.';
+    const text = dolaBasePrompt({
+      section:'Conseguir clientes por comisión',
+      objective:'Ayudar a redactar una campaña clara dentro de Conecta Servicios para conseguir clientes por comisión.',
+      extra:`TAREA:
+Quiero crear una publicación para conseguir clientes por comisión dentro de Conecta Servicios.
+Ayúdame a explicar qué se ofrece, qué tipo de clientes busco, cómo sería la comisión y qué datos necesito.
+Hazme una pregunta a la vez y al final dame solo la publicación final lista para pegar en Conecta.
+No inventes pagos, contratos ni reglas no definidas.`
+    });
     copyText(text).then(()=>{
-      showInfo('Prompt copiado para DOLA', `<p class="muted">Ya copié el prompt para redactar una campaña por comisión.</p><div class="button-row"><button class="btn green" data-action="open-dola">Abrir DOLA</button><button class="btn ghost" data-action="create-commission-post">Crear manualmente</button></div>`);
+      showInfo('Prompt copiado para DOLA', `<p class="muted">Ya copié el prompt para redactar una campaña por comisión con contexto cerrado de Conecta.</p><div class="button-row"><button class="btn green" data-action="open-dola">Abrir DOLA</button><button class="btn ghost" data-action="create-commission-post">Crear manualmente</button></div>`);
     });
   }
 

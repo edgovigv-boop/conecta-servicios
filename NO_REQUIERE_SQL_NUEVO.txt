@@ -1,1 +1,4 @@
-Conecta Servicios v5.0.7 no requiere SQL nuevo. Funciona en modo piloto con localStorage.
+No requiere SQL nuevo para la corrección v5.0.9.
+
+Los cambios se limitan a prompts generados para DOLA, textos de interfaz y versionado/cache.
+El modo piloto continúa funcionando con localStorage.
