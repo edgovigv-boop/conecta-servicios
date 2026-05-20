@@ -1,10 +1,10 @@
-const CACHE_NAME = 'conecta-servicios-v5-0-2-dola-flujo-plantillas-limpio';
+const CACHE_NAME = 'conecta-servicios-v5-0-3-plus-simple-dola-final-media';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=5.0.2-dola-flujo-plantillas-limpio',
-  '/app.js?v=5.0.2-dola-flujo-plantillas-limpio',
-  '/manifest.json?v=5.0.2-dola-flujo-plantillas-limpio'
+  '/styles.css?v=5.0.3-plus-simple-dola-final-media',
+  '/app.js?v=5.0.3-plus-simple-dola-final-media',
+  '/manifest.json?v=5.0.3-plus-simple-dola-final-media'
 ];
 
 self.addEventListener('install', (event) => {

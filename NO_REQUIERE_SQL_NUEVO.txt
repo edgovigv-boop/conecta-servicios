@@ -1,1 +1,3 @@
-No requiere SQL nuevo para v5.0.2. Esta corrección funciona en modo piloto con localStorage.
+Conecta Servicios v5.0.3 no requiere SQL nuevo para probar en modo piloto local.
+
+Los cambios se concentran en experiencia de publicación, prompt hacia DOLA, vista previa, limpieza del estado del flujo y banco manual de imágenes/videos.

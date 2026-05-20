@@ -1,0 +1,30 @@
+CHECKLIST v5.0.3 - Plus simple, DOLA final y media sugerida
+
+1. Entrar a + Publicar.
+2. Ver solo plantillas reales de publicación: Necesito algo, Busco mensajero cerca, Quiero pedir comida, Quiero encontrar un agente, Quiero publicar mi negocio, Quiero ofrecerme como agente.
+3. Confirmar que Embajadores, Agentes en crecimiento, Mandados verificados y Aprendizaje no aparecen como plantillas de anuncio, sino como módulos propios.
+4. Seleccionar una plantilla.
+5. Confirmar que aparece una pantalla simple con dos círculos: DOLA y Manual.
+6. Tocar DOLA.
+7. Ver aviso breve para iniciar sesión en DOLA y evitar límites de invitado.
+8. Copiar prompt.
+9. Confirmar que el prompt pide una pregunta a la vez y que DOLA devuelva solo la publicación final.
+10. Abrir DOLA.
+11. Pegar en Conecta únicamente la publicación final.
+12. Confirmar que Conecta la usa como descripción completa, respetando saltos de línea.
+13. Confirmar que se genera vista previa.
+14. Publicar ahora.
+15. Confirmar que redirige a Mis publicaciones.
+16. Volver a + Publicar y confirmar que el flujo empieza limpio.
+17. Seleccionar una plantilla y tocar Manual.
+18. Confirmar que abre formulario simple con tipo/categoría de la plantilla.
+19. Publicar manualmente y confirmar que redirige a Mis publicaciones.
+20. Ver publicación en Inicio y Explorar.
+21. Confirmar que la descripción conserva formato visual.
+22. Confirmar que si no hay imagen del usuario, intenta usar banco assets/dola-media/ según categoría.
+23. Confirmar que si no existe la imagen en el banco, no se rompe y aparece placeholder.
+24. Confirmar que WhatsApp sigue funcionando como canal opcional.
+25. Confirmar que no hay botones flotantes laterales.
+26. Confirmar que admin no tiene restricciones.
+
+No requiere SQL nuevo para piloto local.

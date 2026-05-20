@@ -58,7 +58,7 @@ img,video{max-width:100%;display:block}
 .modal-backdrop{position:fixed;inset:0;background:rgba(17,9,42,.45);display:grid;place-items:end center;z-index:100;padding:18px}.modal{width:min(100%,500px);background:#fff;border-radius:30px 30px 24px 24px;padding:18px;box-shadow:0 -18px 48px rgba(22,10,50,.22);max-height:88vh;overflow:auto}.modal h3{margin:0 0 8px}.modal-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.tabs{display:flex;gap:8px;background:#eee8ff;border-radius:18px;padding:5px;margin-bottom:14px}.tab{flex:1;border-radius:14px;padding:10px;font-weight:850;color:#5a4a89}.tab.active{background:#fff;color:var(--primary);box-shadow:0 6px 16px rgba(42,22,90,.09)}.searchbar{display:flex;gap:9px;align-items:center}.searchbar .input{min-height:42px}.filter-btn{height:42px;border-radius:16px;background:#fff;border:1px solid var(--line);padding:0 12px}.version{font-size:.72rem;color:#9a94a9;text-align:center;margin-top:22px}.notice{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:20px;padding:12px}.success{background:#ecfdf5;border:1px solid #bbf7d0;color:#047857;border-radius:20px;padding:12px}.danger{background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:20px;padding:12px}
 @media (min-width:760px){.app-shell{max-width:1040px}.page{padding-left:24px;padding-right:24px}.desktop-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;align-items:start}.feed.two{grid-template-columns:repeat(2,minmax(0,1fr))}.bottom-nav{border-radius:28px 28px 0 0}.post-media{height:210px}}
 
-/* v5.0.2 - Flujo limpio de plantillas con DOLA */
+/* v5.0.3 - Flujo limpio de plantillas con DOLA */
 .copy-panel{position:relative;display:block}
 .copy-corner{position:absolute;right:9px;top:9px;width:36px;height:36px;border-radius:14px;background:#fff;color:var(--primary);box-shadow:0 8px 18px rgba(20,10,60,.12);border:1px solid var(--line);z-index:2;display:grid;place-items:center}
 .copy-panel .prompt-box{padding-top:50px}
@@ -70,7 +70,7 @@ img,video{max-width:100%;display:block}
 .sticky-actions{position:sticky;bottom:calc(86px + var(--safe-bottom));background:rgba(255,255,255,.94);backdrop-filter:blur(10px);padding:10px;border:1px solid var(--line);border-radius:20px;box-shadow:0 12px 30px rgba(45,25,90,.10)}
 @media (max-width:520px){.button-row{display:grid}.button-row .btn{width:100%}.sticky-actions{bottom:calc(78px + var(--safe-bottom))}}
 
-/* v5.0.2 - Página limpia de DOLA por plantilla */
+/* v5.0.3 - Página limpia de DOLA por plantilla */
 .dola-clean-page{display:grid;gap:14px}
 .hero-card{background:linear-gradient(135deg,#fff,#f5efff);border-color:#e5d7ff}
 .template-badge{display:flex;gap:12px;align-items:center;margin-bottom:10px}
@@ -80,3 +80,16 @@ img,video{max-width:100%;display:block}
 .dola-clean-page .paste-box{min-height:190px;font-size:.94rem;line-height:1.45}
 .dola-clean-page .prompt-box{line-height:1.45}
 .preview-card .post-desc{white-space:pre-line}
+
+/* v5.0.3 - plus simple DOLA / Manual, formato y media sugerida */
+.dola-choice-page{display:grid;gap:14px}
+.compact-center{text-align:center}
+.compact-center .template-badge{justify-content:center;text-align:left}
+.short-copy{max-width:360px;margin-left:auto;margin-right:auto}
+.choice-circles{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:8px 0 14px}
+.circle-choice{aspect-ratio:1/1;border-radius:999px;background:#fff;border:1px solid var(--line);box-shadow:0 14px 34px rgba(45,25,90,.10);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:18px;text-align:center;min-height:150px}
+.circle-choice span{font-size:2.4rem}.circle-choice b{font-size:1.18rem}.circle-choice small{color:var(--muted);font-weight:800}.circle-choice.dola{background:linear-gradient(135deg,#f6f0ff,#fff);border-color:#ded0ff}.circle-choice.manual{background:linear-gradient(135deg,#ecfdf5,#fff);border-color:#bdf4d3}.circle-choice:active{transform:translateY(1px)}
+.notice.slim{font-size:.86rem;text-align:left;margin-top:12px}
+.post-desc,.preview-card .post-desc,.modal p{white-space:pre-line}
+.post-media img[alt=""],.post-media img[src=""]{display:none}
+@media (max-width:420px){.choice-circles{gap:12px}.circle-choice{min-height:130px;padding:12px}.circle-choice span{font-size:2rem}}
