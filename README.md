@@ -1,38 +1,53 @@
-# Conecta Servicios v4.9.37-chat-interno-negocios
+# Conecta Servicios v4.9.38 — Asistente de negocio configurable
 
 Entrega preparada sin despliegue automático.
 
-## Qué cambia
+## Objetivo
+Convertir el antiguo concepto de “Chat negocio” en una herramienta de mayor valor para la membresía: un asistente interno configurable por negocio, sin depender de WhatsApp Business ni proveedores externos.
 
-Esta versión sustituye la lógica anterior de “Chat negocio / Responder filtro” por un sistema interno de negocio por publicación:
+## Qué incluye
 
-- **Pedidos con menú**: productos, cantidades, carrito, total automático, entrega/pickup, pedido y chat de seguimiento.
-- **Citas**: fecha, horario, necesidad, solicitud y chat interno.
-- **Contacto directo**: mensaje interno al negocio y conversación.
-- **Panel del negocio** en “Mis publicaciones”: pedidos, citas, mensajes, estados y respuestas.
-- **Admin libre**: el admin puede probar y supervisar sin pagar membresía.
-- **Membresías**: usuario sin membresía puede dejar el flujo como borrador; usuario con membresía activa o admin puede activarlo.
+- Asistente de negocio configurable.
+- Flujos internos por publicación:
+  - Pedidos con menú.
+  - Citas.
+  - Mensaje filtrado al negocio.
+- Ejemplo de Rosticería:
+  - Pollo asado con ensalada, salsas y tortillas: $235 MXN.
+  - Quesadillas: $50 MXN.
+  - Refrescos: $35 MXN.
+  - Papas fritas: $40 MXN.
+- Carrito con total automático.
+- Datos de cliente.
+- Pickup o entrega.
+- Pago pendiente / acordar con negocio.
+- Panel del negocio para pedidos, citas, mensajes y estados.
+- Admin libre para probar sin membresía.
+- Usuario sin membresía puede guardar borrador; para publicar se invita a activar membresía.
+- Modo piloto con localStorage.
 
-## Archivos cambiados
+## Archivos modificados
 
 - app.js
 - styles.css
 - service-worker.js
 - manifest.json
 - vercel.json
-- PATCH-INDEX-v4.9.37.txt
-- supabase-business-messaging.sql
 
-## Persistencia
+## Archivo de patch
 
-Funciona en modo piloto con `localStorage`.
+- PATCH-INDEX-v4.9.38.txt
 
-No requiere SQL nuevo para probar interfaz y flujo localmente o en Vercel. El archivo `supabase-business-messaging.sql` es opcional para producción real multiusuario en Supabase.
+## SQL
+
+No requiere SQL nuevo para probar el piloto.
+
+Se incluye `supabase-business-messaging.sql` como base opcional para producción real multiusuario en Supabase.
 
 ## Versión
 
-`v4.9.37-chat-interno-negocios`
+`v4.9.38-asistente-negocio-configurable`
 
 ## Commit sugerido
 
-`Implementar mensajería interna y pedidos por publicación para negocios`
+`Implementar asistente de negocio configurable v4.9.38`

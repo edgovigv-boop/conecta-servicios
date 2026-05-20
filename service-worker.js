@@ -1,11 +1,12 @@
-// Conecta Servicios v4.9.37 — Service Worker chat interno negocios
-const CACHE_NAME = "conecta-servicios-v4.9.37-chat-interno-negocios";
+// Conecta Servicios v4.9.38 — Service Worker Asistente de negocio configurable
+const CACHE_NAME = "conecta-servicios-4.9.38-asistente-negocio-configurable";
 const ASSETS = [
   "/",
   "/index.html",
-  "/styles.css?v=4.9.37-chat-interno-negocios",
-  "/app.js?v=4.9.37-chat-interno-negocios",
-  "/manifest.json?v=4.9.37-chat-interno-negocios"
+  "/styles.css?v=4.9.38-asistente-negocio-configurable",
+  "/app.js?v=4.9.38-asistente-negocio-configurable",
+  "/manifest.json?v=4.9.38-asistente-negocio-configurable",
+  "/service-worker.js?v=4.9.38-asistente-negocio-configurable"
 ];
 self.addEventListener("install", event => {
   self.skipWaiting();

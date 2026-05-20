@@ -1,5 +1,8 @@
+-- SQL opcional para Conecta Servicios v4.9.38 - Asistente de negocio configurable
+-- No es necesario para probar el piloto localStorage.
+
 -- supabase-business-messaging.sql
--- SQL OPCIONAL para producción real multiusuario de Conecta Servicios v4.9.37.
+-- SQL OPCIONAL para producción real multiusuario de Conecta Servicios v4.9.38.
 -- La versión entregada funciona en modo piloto con localStorage.
 -- Aplicar este SQL solo cuando se decida persistir pedidos, citas y mensajes en Supabase.
 

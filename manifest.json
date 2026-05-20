@@ -1,8 +1,8 @@
 {
   "name": "Conecta Servicios",
   "short_name": "Conecta",
-  "description": "Conecta Servicios v4.9.37 - Chat interno de negocios con pedidos, citas y mensajes por publicación.",
-  "start_url": "/?source=pwa&v=4.9.37-chat-interno-negocios",
+  "description": "Conecta Servicios v4.9.38 - Asistente de negocio configurable con pedidos, citas y mensajes internos por publicación.",
+  "start_url": "/?source=pwa&v=4.9.38-asistente-negocio-configurable",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -35,5 +35,5 @@
       "purpose": "maskable"
     }
   ],
-  "id": "/?v=4.9.37-chat-interno-negocios"
+  "id": "/?v=4.9.38-asistente-negocio-configurable"
 }

@@ -1,0 +1,20 @@
+Codex:
+
+Aplicar esta entrega sobre el proyecto actual de Conecta Servicios.
+
+No desplegar automáticamente.
+
+Reemplazar archivos de raíz:
+- app.js
+- styles.css
+- service-worker.js
+- manifest.json
+- vercel.json
+
+Después aplicar PATCH-INDEX-v4.9.38.txt sobre index.html.
+
+Esta entrega trabaja en modo piloto con localStorage. No requiere SQL para prueba local/Vercel.
+El SQL incluido es opcional para producción real multiusuario.
+
+Después de aplicar, actualizar commit con:
+Implementar asistente de negocio configurable v4.9.38

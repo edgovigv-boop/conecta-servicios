@@ -117,6 +117,30 @@
     {
       "source": "/citas/",
       "destination": "/index.html"
+    },
+    {
+      "source": "/asistente-negocio",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/asistente-negocio/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/negocio",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/negocio/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/pedidos",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/pedidos/",
+      "destination": "/index.html"
     }
   ]
 }

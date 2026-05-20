@@ -1,0 +1,48 @@
+CHECKLIST v4.9.38 — Asistente de negocio configurable
+
+1. Reemplazar en la raíz:
+   - app.js
+   - styles.css
+   - service-worker.js
+   - manifest.json
+   - vercel.json
+
+2. Aplicar PATCH-INDEX-v4.9.38.txt.
+
+3. Confirmar que index.html cargue:
+   - styles.css?v=4.9.38-asistente-negocio-configurable
+   - app.js?v=4.9.38-asistente-negocio-configurable
+
+4. Limpiar caché o probar en incógnito.
+
+5. Abrir la app y verificar que aparezca:
+   - Asistente de negocio configurable
+   - Configurar asistente
+   - Pedidos / Citas / Mensajes
+
+6. Prueba de rosticería:
+   - Crear ejemplo Rosticería.
+   - Guardar asistente.
+   - Abrir Hacer pedido.
+   - Elegir pollo, quesadillas, refrescos y papas.
+   - Confirmar total.
+   - Elegir pickup o entrega.
+   - Confirmar pedido.
+   - Revisar pedido en Panel del negocio.
+   - Cambiar estado del pedido.
+   - Enviar respuesta interna.
+
+7. Prueba de citas:
+   - Crear asistente tipo Citas.
+   - Agendar cita.
+   - Revisar solicitud en Panel del negocio.
+   - Cambiar estado.
+
+8. Prueba de mensaje:
+   - Crear asistente tipo Mensaje filtrado.
+   - Enviar mensaje como cliente.
+   - Revisar mensaje en Panel del negocio.
+
+9. Confirmar que Admin puede probar sin membresía.
+
+10. Confirmar que usuario sin membresía guarda borrador y ve invitación a activar membresía.

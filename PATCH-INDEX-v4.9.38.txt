@@ -1,0 +1,23 @@
+PATCH index.html para v4.9.38-asistente-negocio-configurable
+
+Aplicar en la raíz del proyecto:
+
+1) Reemplazar la referencia de CSS por:
+<link rel="stylesheet" href="styles.css?v=4.9.38-asistente-negocio-configurable">
+
+2) Reemplazar la referencia de JS por:
+<script src="app.js?v=4.9.38-asistente-negocio-configurable" defer></script>
+
+3) Actualizar body:
+<body data-version="4.9.38-asistente-negocio-configurable">
+
+4) Actualizar title si aplica:
+<title>Conecta Servicios v4.9.38</title>
+
+5) Texto recomendado para la sección Negocios locales:
+Cambiar "Abrir chat de negocios" por "Configurar asistente de negocio".
+Cambiar "Chat negocio" por "Asistente de negocio".
+Cambiar "Responder filtro" por el botón correcto según flujo: "Hacer pedido", "Agendar cita" o "Mensaje al negocio".
+
+IMPORTANTE:
+Si no se actualizan las referencias del index.html, el navegador o service worker puede seguir cargando app.js/styles.css viejos aunque GitHub/Vercel ya tenga archivos nuevos.
