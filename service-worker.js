@@ -1,12 +1,12 @@
-// Conecta Servicios v4.9.43 — Publicar unificado real
-const CACHE_NAME = "conecta-servicios-4.9.43-publicar-unificado-real";
+// Conecta Servicios v4.9.44 — Chatbot Conecta + publicación social simplificada
+const CACHE_NAME = "conecta-servicios-v4.9.44-chatbot-conecta-publicacion-social";
 const ASSETS = [
   "/",
   "/index.html",
-  "/styles.css?v=4.9.43-publicar-unificado-real",
-  "/app.js?v=4.9.43-publicar-unificado-real",
-  "/manifest.json?v=4.9.43-publicar-unificado-real",
-  "/service-worker.js?v=4.9.43-publicar-unificado-real"
+  "/styles.css?v=4.9.44-chatbot-conecta-publicacion-social",
+  "/app.js?v=4.9.44-chatbot-conecta-publicacion-social",
+  "/manifest.json?v=4.9.44-chatbot-conecta-publicacion-social",
+  "/service-worker.js?v=4.9.44-chatbot-conecta-publicacion-social"
 ];
 self.addEventListener("install", event => {
   self.skipWaiting();

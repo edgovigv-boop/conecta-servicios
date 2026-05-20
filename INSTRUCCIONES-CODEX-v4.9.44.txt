@@ -1,0 +1,26 @@
+INSTRUCCIONES CODEX v4.9.44
+
+Objetivo:
+Simplificar la app alrededor de publicaciones tipo red social con Chatbot Conecta.
+
+Cambios clave:
+- Una publicación gratis por 30 días con Chatbot Conecta incluido.
+- Membresía anual de $98 para publicaciones ilimitadas en todos los rubros.
+- El contacto principal de cada publicación es único: Chatbot Conecta o WhatsApp. Nunca ambos.
+- WhatsApp es opcional. Si el anunciante elige WhatsApp, sustituye al Chatbot Conecta.
+- Solo tres perfiles de publicación: Solicitante, Agente o Negocio.
+- Los apartados estrella se mantienen: Embajadores, Agentes en crecimiento, Mandados verificados y Aprendizaje.
+- Reacciones, compartir y publicar algo parecido reemplazan el enfoque de guardadas.
+
+Archivos a reemplazar en raíz:
+- app.js
+- styles.css
+- service-worker.js
+- manifest.json
+
+Aplicar también PATCH-INDEX-v4.9.44.txt sobre index.html.
+
+No requiere SQL nuevo para probar. El control de prueba gratis y respuestas de Chatbot Conecta funciona en modo piloto con localStorage.
+
+Commit sugerido:
+Simplificar publicación social con Chatbot Conecta v4.9.44

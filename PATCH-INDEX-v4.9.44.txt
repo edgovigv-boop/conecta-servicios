@@ -1,0 +1,15 @@
+PATCH-INDEX-v4.9.44
+
+Actualizar index.html para romper caché y cargar la versión nueva:
+
+1. Reemplazar cualquier referencia anterior de styles.css por:
+   styles.css?v=4.9.44-chatbot-conecta-publicacion-social
+
+2. Reemplazar cualquier referencia anterior de app.js por:
+   app.js?v=4.9.44-chatbot-conecta-publicacion-social
+
+3. Reemplazar data-version del body por:
+   data-version="v4.9.44-chatbot-conecta-publicacion-social"
+
+4. Si aparece título con versión anterior, actualizar a:
+   Conecta Servicios v4.9.44

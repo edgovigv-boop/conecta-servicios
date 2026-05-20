@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.41-limpieza-navegacion-asistente";
+const PWA_VERSION = "v4.9.44-chatbot-conecta-publicacion-social";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -11026,5 +11026,512 @@ try {
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
+  window.addEventListener("pageshow", () => setTimeout(init, 120));
+})();
+
+
+// ------------------------------------------------------------------
+// v4.9.44 — Chatbot Conecta + publicación social simplificada
+// - Una publicación gratis por 30 días con Chatbot Conecta incluido.
+// - Membresía anual: publicaciones ilimitadas y Chatbot Conecta en todos los rubros.
+// - El botón de mensaje de cada publicación usa un solo canal: Chatbot Conecta o WhatsApp.
+// - WhatsApp es opcional y sustituye al Chatbot, nunca aparecen ambos.
+// - Publicaciones con interacción tipo red social: reaccionar, compartir y publicar algo parecido.
+// - Perfil de publicación simplificado: Solicitante, Agente o Negocio.
+// ------------------------------------------------------------------
+(function chatbotConectaSocialV4944(){
+  const VERSION = "v4.9.44-chatbot-conecta-publicacion-social";
+  const FREE_TRIAL_KEY = "conecta_free_trial_publication_v4944";
+  const LOCAL_PUBLICATIONS_KEY = "conecta_publicaciones_basicas_locales_v4943";
+  const RESPONSES_KEY = "conecta_chatbot_conecta_responses_v4944";
+  const STAR_STATE_KEY = "conecta_star_sections_seen_v4944";
+  const TRIAL_DAYS = 30;
+  const CONTACT_CHANNELS = {
+    chatbot: { label: "Chatbot Conecta", icon: "💬", hint: "Recibe respuestas filtradas dentro de Conecta." },
+    whatsapp: { label: "WhatsApp", icon: "🟢", hint: "El botón de mensaje abrirá WhatsApp y no mostrará Chatbot Conecta." }
+  };
+  const PROFILE_TYPES = {
+    solicitante: { label: "Solicitante", icon: "🙋", hint: "Necesito algo y quiero recibir propuestas claras." },
+    agente: { label: "Agente", icon: "🚀", hint: "Ofrezco hacer mandados, entregas, viajes, trámites o apoyo local." },
+    negocio: { label: "Negocio", icon: "🏪", hint: "Tengo un negocio, producto o servicio y quiero recibir pedidos, citas o cotizaciones." }
+  };
+  const CHATBOT_MODES = {
+    solicitante: ["¿Qué necesitas?", "¿En qué zona se realiza?", "¿Para cuándo lo necesitas?", "¿Tienes presupuesto o pago sugerido?"],
+    agente: ["¿Qué tipo de servicio o mandado te piden?", "¿En qué zona puedes atender?", "¿En qué horario estás disponible?", "¿Cómo quieres acordar el costo?"],
+    negocio: ["¿Qué producto, servicio o cita necesita el cliente?", "¿Cantidad o alcance aproximado?", "¿Entrega, pickup, cita o contacto?", "¿Horario preferido?"],
+    general: ["¿Qué necesitas o qué quieres responder?", "¿Zona o referencia?", "¿Horario preferido?", "Detalles importantes"]
+  };
+
+  function qs(sel, root=document){ return root.querySelector(sel); }
+  function qsa(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
+  function esc(value=""){
+    try { if (typeof escapeHtml === "function") return escapeHtml(value); } catch {}
+    return String(value ?? "").replace(/[&<>\"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch]));
+  }
+  function toast(msg){ try { if (typeof showToast === "function") return showToast(msg); } catch {} console.log(msg); }
+  function cleanPhoneLocal(value=""){ try { if (typeof cleanPhone === "function") return cleanPhone(value); } catch {} return String(value||"").replace(/\D/g,""); }
+  function now(){ return new Date().toISOString(); }
+  function addDays(date, days){ const d=new Date(date); d.setDate(d.getDate()+days); return d; }
+  function read(key, fallback){ try { const raw=localStorage.getItem(key); if(!raw) return fallback; const parsed=JSON.parse(raw); return parsed ?? fallback; } catch { return fallback; } }
+  function write(key, value){ try { localStorage.setItem(key, JSON.stringify(value)); } catch {} }
+  function uid(prefix="CS"){ return `${prefix}-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(16).slice(2,7).toUpperCase()}`; }
+  function formValue(id){ return qs(`#${id}`)?.value?.trim?.() || ""; }
+  function descriptionValue(){
+    const ids=["pubDescription","pubDescriptionRide","pubDetails","publicationDescription"];
+    for (const id of ids){ const v=formValue(id); if(v) return v; }
+    const ta=qs("#publicationForm textarea"); return ta?.value?.trim?.() || "";
+  }
+  function isAdmin(){
+    try { if (typeof isAdminSupervisorActiveV49368 === "function" && isAdminSupervisorActiveV49368()) return true; } catch {}
+    try { if (typeof adminAccessAvailableV4936 === "function" && adminAccessAvailableV4936()) return true; } catch {}
+    try { if (typeof adminUnlocked !== "undefined" && adminUnlocked) return true; } catch {}
+    try { return localStorage.getItem("conecta_admin_access_v4936") === "1" || localStorage.getItem("conecta_admin_access") === "1"; } catch { return false; }
+  }
+  function hasMembership(){
+    if (isAdmin()) return true;
+    try { if (typeof userMembershipIsActiveV4936 === "function" && userMembershipIsActiveV4936()) return true; } catch {}
+    try { if (typeof hasActivePublishMembership === "function" && hasActivePublishMembership()) return true; } catch {}
+    try { return localStorage.getItem("conecta_membership_status_v4936") === "active" || localStorage.getItem("conecta_membresia_activa") === "1"; } catch { return false; }
+  }
+  function freeTrial(){ return read(FREE_TRIAL_KEY, null); }
+  function freeTrialActive(){
+    const trial=freeTrial();
+    if(!trial || !trial.expires_at) return false;
+    return new Date(trial.expires_at).getTime() > Date.now();
+  }
+  function freeTrialUsed(){ return Boolean(freeTrial()?.used); }
+  function canCreatePublication(){ return isAdmin() || hasMembership() || !freeTrialUsed() || !freeTrialActive(); }
+  function trialMessage(){
+    if (isAdmin()) return "Admin libre: publicaciones y Chatbot Conecta sin límite.";
+    if (hasMembership()) return "Membresía activa: publicaciones ilimitadas con Chatbot Conecta.";
+    const trial=freeTrial();
+    if (trial?.used && freeTrialActive()) {
+      const days=Math.max(1, Math.ceil((new Date(trial.expires_at).getTime()-Date.now())/86400000));
+      return `Ya tienes una publicación gratis activa. Vence en ${days} día${days===1?"":"s"}. Activa membresía para publicar sin límite.`;
+    }
+    if (trial?.used && !freeTrialActive()) return "Tu publicación gratis de 30 días ya venció. Activa membresía para publicar sin límite.";
+    return "Puedes crear 1 publicación gratis por 30 días con Chatbot Conecta incluido.";
+  }
+  function recordFreeTrial(saved){
+    if (isAdmin() || hasMembership()) return;
+    const existing=freeTrial();
+    if (existing?.used && freeTrialActive()) return;
+    const created=new Date();
+    write(FREE_TRIAL_KEY, {
+      used:true,
+      id:saved.id || saved.local_id || uid("FREE"),
+      title:saved.titulo || saved.title || "Publicación gratis",
+      created_at:created.toISOString(),
+      expires_at:addDays(created, TRIAL_DAYS).toISOString(),
+      version:VERSION
+    });
+  }
+  function normalizeProfileFromCategory(category="", intent=""){
+    const c=String(category||"").toLowerCase();
+    const i=String(intent||"").toLowerCase();
+    if (/negocio|alimento|venta|tienda|comercio|consultor|profesional/.test(c)) return "negocio";
+    if (/agente|mandado|entrega|viaje|mensajer|envío|movilidad/.test(c)) return "agente";
+    if (/busco|necesito|solicit/.test(i)) return "solicitante";
+    return "solicitante";
+  }
+  function profileChoice(){ return qs("#publicationProfileTypeV4944")?.value || normalizeProfileFromCategory(formValue("pubCategory"), formValue("pubIntent")); }
+  function contactChoice(){ return qs("input[name='contactChannelV4944']:checked")?.value || "chatbot"; }
+  function chatbotTypeChoice(){ return qs("#publicationChatbotTypeV4944")?.value || profileChoice() || "general"; }
+  function channelFromItem(item={}){
+    const reference=String(item.reference || item.referencia || "").toLowerCase();
+    if (/contact_channel\s*=\s*whatsapp|canal\s*:\s*whatsapp|whatsapp principal/.test(reference)) return "whatsapp";
+    if (item.contact_channel === "whatsapp") return "whatsapp";
+    return "chatbot";
+  }
+  function profileFromItem(item={}){
+    const reference=String(item.reference || item.referencia || "").toLowerCase();
+    const m=reference.match(/perfil_publicacion\s*=\s*(solicitante|agente|negocio)/);
+    if (m) return m[1];
+    return normalizeProfileFromCategory(item.category || item.categoria_principal, item.intent || item.intencion || item.title);
+  }
+  function chatbotLabelForItem(item={}){
+    const profile=profileFromItem(item);
+    if (profile === "negocio") return "Chatbot Conecta";
+    if (profile === "agente") return "Chatbot Conecta";
+    return "Chatbot Conecta";
+  }
+
+  function controlsHtml(){
+    const active=hasMembership() || isAdmin();
+    const canFree=!freeTrialUsed() || !freeTrialActive();
+    const status=trialMessage();
+    return `<section id="chatbotConectaPublishPanelV4944" class="chatbot-publish-panel-v4944">
+      <div class="chatbot-panel-head-v4944">
+        <span>💬</span>
+        <div>
+          <strong>Chatbot Conecta para tu publicación</strong>
+          <p>Publica fácil como en una red social. El botón de mensajes será Chatbot Conecta por defecto; si eliges WhatsApp, sustituye al chatbot y no aparecen ambos.</p>
+        </div>
+      </div>
+      <div class="chatbot-status-v4944 ${active ? "active" : canFree ? "trial" : "locked"}">${esc(status)}</div>
+      <label class="chatbot-field-v4944">
+        <span>¿Quién publica?</span>
+        <select id="publicationProfileTypeV4944">
+          ${Object.entries(PROFILE_TYPES).map(([key, val]) => `<option value="${key}">${val.icon} ${val.label}</option>`).join("")}
+        </select>
+        <small>Usamos solo tres perfiles para evitar confusión: Solicitante, Agente o Negocio.</small>
+      </label>
+      <div class="chatbot-contact-choice-v4944">
+        <span>Botón de mensaje de esta publicación</span>
+        <label><input type="radio" name="contactChannelV4944" value="chatbot" checked> 💬 Chatbot Conecta <small>recomendado</small></label>
+        <label><input type="radio" name="contactChannelV4944" value="whatsapp"> 🟢 WhatsApp <small>sustituye al chatbot</small></label>
+      </div>
+      <label class="chatbot-field-v4944" id="chatbotModeFieldV4944">
+        <span>¿Qué debe filtrar el Chatbot Conecta?</span>
+        <select id="publicationChatbotTypeV4944">
+          <option value="solicitante">Solicitudes para ayudarme</option>
+          <option value="agente">Mandados, entregas, viajes o apoyo local</option>
+          <option value="negocio">Pedidos, citas, cotizaciones o mensajes de negocio</option>
+          <option value="general">Mensaje filtrado general</option>
+        </select>
+      </label>
+      <p class="chatbot-note-v4944">Con membresía anual de $98: publicaciones ilimitadas con Chatbot Conecta en Solicitantes, Agentes, Negocios, Agentes en crecimiento y Mandados verificados.</p>
+    </section>`;
+  }
+
+  function ensurePublishControls(){
+    const form=qs("#publicationForm");
+    if(!form) return;
+    qsa("#publicationAssistantGateV4943,#publicationAssistantGateV4942,#publicationAssistantGateV4940,#publicationAssistantPanelV4939").forEach(el => { el.style.display="none"; });
+    let panel=qs("#chatbotConectaPublishPanelV4944", form);
+    if(!panel){
+      const wrap=document.createElement("div");
+      wrap.innerHTML=controlsHtml();
+      panel=wrap.firstElementChild;
+      const anchor=qs("#publicationMembershipGate", form) || qs(".wizard-review", form) || form.querySelector("button[type='submit']") || form.lastElementChild;
+      if(anchor?.parentElement) anchor.parentElement.insertBefore(panel, anchor);
+      else form.appendChild(panel);
+    }
+    const title=qs("#publicationFormTitle") || qs("#registro h2") || qs("#registro h1");
+    if(title && /crear oportunidad|publicar/i.test(title.textContent||"")) title.textContent="Crear publicación";
+    const phone=qs("#pubPhone");
+    if(phone){ phone.required=false; phone.placeholder="WhatsApp opcional si eliges WhatsApp"; }
+    const category=qs("#pubCategory");
+    if(category && category.dataset.v4944Normalized!=="1"){
+      category.dataset.v4944Normalized="1";
+      qsa("option", category).forEach(opt => {
+        if (/^Servicios$/i.test(opt.textContent||"")) opt.textContent="Negocio o agente independiente";
+      });
+    }
+    const syncVisibility=()=>{
+      const channel=contactChoice();
+      const mode=qs("#chatbotModeFieldV4944");
+      if(mode) mode.style.display = channel === "whatsapp" ? "none" : "grid";
+      if(phone){
+        phone.required = channel === "whatsapp";
+        phone.closest("label")?.classList?.toggle("required-channel-v4944", channel === "whatsapp");
+      }
+      const profile=profileChoice();
+      const chatbotSelect=qs("#publicationChatbotTypeV4944");
+      if(chatbotSelect && chatbotSelect.value === "general") chatbotSelect.value=profile;
+    };
+    qsa("input[name='contactChannelV4944'],#publicationProfileTypeV4944", panel).forEach(el => { if(el.dataset.v4944Bound!=="1"){ el.dataset.v4944Bound="1"; el.addEventListener("change", syncVisibility); }});
+    syncVisibility();
+  }
+
+  function buildPayload(){
+    let raw={};
+    try { if (typeof formPayload === "function") raw=formPayload() || {}; } catch (error) { console.warn("formPayload falló en v4.9.44; se leerá el formulario directo", error); }
+    const profile=profileChoice();
+    const channel=contactChoice();
+    const chatbotMode=channel === "chatbot" ? chatbotTypeChoice() : "none";
+    const phone=cleanPhoneLocal(raw.telefono || formValue("pubPhone"));
+    const title=raw.titulo || formValue("pubTitle");
+    const description=raw.descripcion || descriptionValue();
+    const category=raw.categoria_principal || formValue("pubCategory") || (profile === "negocio" ? "Negocios locales" : profile === "agente" ? "Agentes de crecimiento" : "Solicitantes");
+    const referenceParts=[
+      raw.referencia || "",
+      VERSION,
+      `perfil_publicacion=${profile}`,
+      `contact_channel=${channel}`,
+      `chatbot_conecta=${channel === "chatbot" ? "activo" : "sustituido_por_whatsapp"}`,
+      `chatbot_tipo=${chatbotMode}`,
+      hasMembership() || isAdmin() ? "modelo=membresia_ilimitada" : "modelo=gratis_30_dias"
+    ].filter(Boolean);
+    return {
+      nombre_publico: raw.nombre_publico || formValue("pubName") || "Usuario Conecta",
+      titulo: title,
+      descripcion: description,
+      categoria_principal: category,
+      subcategoria: raw.subcategoria || "",
+      intencion: raw.intencion || formValue("pubIntent") || profile,
+      estado_nombre: raw.estado_nombre || formValue("pubState") || "México",
+      municipio: raw.municipio || formValue("pubMunicipality"),
+      localidad: raw.localidad || formValue("pubLocality"),
+      telefono: channel === "whatsapp" ? phone : (phone || ""),
+      ruta: raw.ruta || formValue("pubRoute"),
+      salida: raw.salida || formValue("pubDeparture"),
+      hora: raw.hora || formValue("pubTime"),
+      medio: raw.medio || formValue("pubTransport"),
+      presupuesto: Number(raw.presupuesto || formValue("pubBudget") || 0),
+      latitud: raw.latitud ?? (formValue("pubLat") ? Number(formValue("pubLat")) : null),
+      longitud: raw.longitud ?? (formValue("pubLng") ? Number(formValue("pubLng")) : null),
+      ubicacion_aproximada: Boolean(raw.ubicacion_aproximada || (formValue("pubLat") && formValue("pubLng"))),
+      radio_servicio_km: raw.radio_servicio_km || 10,
+      estado: "activo",
+      referencia: referenceParts.join(" · ").slice(0, 900),
+      image_url: raw.image_url || "",
+      media_type: raw.media_type || "",
+      media_path: raw.media_path || "",
+      media_created_at: raw.media_created_at || "",
+      profile_type: profile,
+      contact_channel: channel,
+      chatbot_conecta: channel === "chatbot",
+      chatbot_type: chatbotMode,
+      source_version: VERSION
+    };
+  }
+  function validatePayload(payload){
+    if(!payload.titulo || payload.titulo.length < 4){ toast("Escribe un título claro para tu publicación."); return false; }
+    if(!payload.descripcion || payload.descripcion.length < 10){ toast("Agrega una descripción breve para que la publicación sea útil."); return false; }
+    if(!payload.municipio){ toast("Elige municipio o zona para mostrar la publicación."); return false; }
+    if(payload.contact_channel === "whatsapp" && !cleanPhoneLocal(payload.telefono)){ toast("Elegiste WhatsApp. Agrega un número o cambia a Chatbot Conecta."); return false; }
+    if(!isAdmin() && !hasMembership()){
+      const trial=freeTrial();
+      if(trial?.used){
+        if(freeTrialActive()) toast("Ya tienes una publicación gratis activa por 30 días. Activa la membresía anual de $98 para publicar sin límite.");
+        else toast("Tu publicación gratis de 30 días ya venció. Activa la membresía anual de $98 para seguir publicando.");
+        return false;
+      }
+    }
+    return true;
+  }
+  const REMOTE_FIELDS=["nombre_publico","titulo","descripcion","categoria_principal","subcategoria","intencion","estado_nombre","municipio","localidad","telefono","ruta","salida","hora","medio","presupuesto","latitud","longitud","ubicacion_aproximada","radio_servicio_km","estado","referencia","image_url","media_type","media_path","media_created_at"];
+  function remotePayload(payload){ const out={}; REMOTE_FIELDS.forEach(k => { if(payload[k] !== undefined && payload[k] !== null && payload[k] !== "") out[k]=payload[k]; }); return out; }
+  function localRows(){ return read(LOCAL_PUBLICATIONS_KEY, []); }
+  function saveLocal(payload, status="local"){
+    const id=payload.id || payload.local_id || uid("PUB");
+    const row={...payload, id, local_id:id, sync_status:status, created_at:payload.created_at || now(), updated_at:now()};
+    write(LOCAL_PUBLICATIONS_KEY, [row, ...localRows().filter(x => x.id !== id && x.local_id !== id)].slice(0,100));
+    try {
+      const mapped=typeof mapPublication === "function" ? mapPublication(row) : null;
+      if(mapped){ mapped.contact_channel=payload.contact_channel; mapped.profile_type=payload.profile_type; mapped.chatbot_type=payload.chatbot_type; }
+      if(mapped && typeof publicationsCache !== "undefined" && Array.isArray(publicationsCache)) publicationsCache=[mapped, ...publicationsCache.filter(p => p.id !== mapped.id)];
+    } catch {}
+    return row;
+  }
+  async function submitV4944(event){
+    const form=qs("#publicationForm");
+    if(!form || event.target !== form) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    ensurePublishControls();
+    const payload=buildPayload();
+    if(!validatePayload(payload)) return false;
+    let saved=null;
+    try {
+      const response = typeof insertPublicationWithMediaFallbackV4931 === "function"
+        ? await insertPublicationWithMediaFallbackV4931(remotePayload(payload))
+        : await supabaseRequest("publicaciones", { method:"POST", body:JSON.stringify(remotePayload(payload)) });
+      const remote=Array.isArray(response) ? response[0] : response;
+      saved=saveLocal({...payload, ...(remote||{}), id:remote?.id || payload.id}, "sincronizado");
+      recordFreeTrial(saved);
+      toast(payload.contact_channel === "whatsapp" ? "Publicación guardada. El botón de mensaje abrirá WhatsApp." : "Publicación guardada con Chatbot Conecta activo.");
+    } catch(error){
+      console.warn("No se pudo sincronizar; guardando local v4.9.44", error);
+      saved=saveLocal(payload, "borrador_local");
+      recordFreeTrial(saved);
+      toast("Tu publicación se guardó como borrador local con Chatbot Conecta. Revisa conexión o vuelve a intentar sincronizar.");
+    }
+    try { if (typeof resetWizardForm === "function") resetWizardForm(); } catch {}
+    try { if (typeof renderPublications === "function") renderPublications(); } catch {}
+    try { if (typeof renderMyPublications === "function") renderMyPublications(); } catch {}
+    try { if (typeof showSection === "function") showSection("misPublicaciones"); } catch {}
+    setTimeout(() => { renderChatbotResponsesPanel(); renderStarSections(); decorateSocialButtons(); ensurePublishControls(); }, 120);
+    return false;
+  }
+
+  function contactButton(item){
+    const channel=channelFromItem(item);
+    if(channel === "whatsapp") return `<button class="btn-small btn-green contact-main-v4944" type="button" onclick="contactPublication('${esc(item.id)}')">🟢 WhatsApp</button>`;
+    return `<button class="btn-small btn-purple contact-main-v4944" type="button" onclick="openConectaChatbotV4944('${esc(item.id)}')">💬 ${chatbotLabelForItem(item)}</button>`;
+  }
+  function removeLegacyContactHtml(html){
+    return String(html || "")
+      .replace(/<button[^>]+onclick="contactPublication\('[^']+'\)"[^>]*>[\s\S]*?<\/button>/g, "")
+      .replace(/<button[^>]+onclick="configurePublicationAssistantForItemV4939[\s\S]*?<\/button>/g, "")
+      .replace(/<button[^>]*>\s*(?:Responder filtro|Chat negocio|Abrir chat de negocios|Contactar)\s*<\/button>/gi, "");
+  }
+  function installCardWrappers(){
+    try {
+      if (typeof compactPublicationCard === "function" && !window.__compactPublicationCardBaseV4944) {
+        window.__compactPublicationCardBaseV4944=compactPublicationCard;
+        compactPublicationCard=function(item){
+          let html=window.__compactPublicationCardBaseV4944(item);
+          html=removeLegacyContactHtml(html);
+          html=html.replace(/(<button class="btn-small btn-green" onclick="openRealPublicationFeedDetail\('[^']+'\)">Ver publicación<\/button>)/, `$1 ${contactButton(item)}`);
+          html=html.replace(/(<div class="detail-actions">)/, `$1 ${contactButton(item)}`);
+          html=html.replace(/Publicar algo parecido/g, "Publicar algo parecido");
+          return html;
+        };
+      }
+    } catch(error){ console.warn("No se pudo envolver compactPublicationCard v4.9.44", error); }
+    try {
+      if (typeof myPublicationCard === "function" && !window.__myPublicationCardBaseV4944) {
+        window.__myPublicationCardBaseV4944=myPublicationCard;
+        myPublicationCard=function(item){
+          let html=window.__myPublicationCardBaseV4944(item);
+          html=html.replace(/Configurar asistente/g, "Configurar Chatbot Conecta");
+          html=html.replace(/Asistente/g, "Chatbot Conecta");
+          return html;
+        };
+      }
+    } catch(error){ console.warn("No se pudo envolver myPublicationCard v4.9.44", error); }
+    try {
+      if (typeof homeFeedPostCardV4918 === "function" && !window.__homeFeedPostCardBaseV4944) {
+        window.__homeFeedPostCardBaseV4944=homeFeedPostCardV4918;
+        homeFeedPostCardV4918=function(post){
+          let html=window.__homeFeedPostCardBaseV4944(post);
+          html=html.replace(/Guardar plantilla/g,"Publicar algo parecido").replace(/>▢ <small>Guardar<\/small>/g,">＋ <small>Publicar parecido</small>");
+          html=html.replace(/savePilotTemplate\('/g,"makePilotReal('");
+          return html;
+        };
+      }
+    } catch(error){ console.warn("No se pudo envolver homeFeedPostCard v4.9.44", error); }
+  }
+
+  function findPublication(id){
+    try { return (publicationsCache || []).find(p => String(p.id) === String(id)) || (adminCache || []).find(p => String(p.id) === String(id)); } catch {}
+    return localRows().find(p => String(p.id) === String(id) || String(p.local_id) === String(id));
+  }
+  function chatbotQuestions(item){ return CHATBOT_MODES[profileFromItem(item)] || CHATBOT_MODES.general; }
+  function openChatbot(idValue){
+    const item=findPublication(idValue);
+    if(!item) return toast("No encontré la publicación para abrir Chatbot Conecta.");
+    const questions=chatbotQuestions(item);
+    const overlay=document.createElement("div");
+    overlay.className="chatbot-modal-overlay-v4944";
+    overlay.innerHTML=`<div class="chatbot-modal-v4944" role="dialog" aria-modal="true">
+      <button type="button" class="chatbot-close-v4944" aria-label="Cerrar" onclick="this.closest('.chatbot-modal-overlay-v4944').remove()">×</button>
+      <div class="chatbot-modal-head-v4944"><span>💬</span><div><strong>Chatbot Conecta</strong><p>${esc(item.title || item.titulo || "Publicación")}</p></div></div>
+      <p class="chatbot-modal-intro-v4944">Responde estas preguntas para que el anunciante reciba una solicitud clara y pueda atenderte mejor.</p>
+      <label>Tu nombre<input id="ccNameV4944" type="text" placeholder="Nombre" autocomplete="name"></label>
+      <label>Contacto opcional<input id="ccPhoneV4944" type="tel" placeholder="Teléfono o WhatsApp opcional"></label>
+      ${questions.map((q,i)=>`<label>${esc(q)}<textarea id="ccAnswer${i}V4944" rows="2" placeholder="Escribe tu respuesta"></textarea></label>`).join("")}
+      <div class="chatbot-modal-actions-v4944">
+        <button type="button" class="btn-small btn-purple" onclick="saveConectaChatbotResponseV4944('${esc(item.id || item.local_id)}')">Enviar por Chatbot Conecta</button>
+        <button type="button" class="btn-small btn-ghost" onclick="this.closest('.chatbot-modal-overlay-v4944').remove()">Cancelar</button>
+      </div>
+    </div>`;
+    document.body.appendChild(overlay);
+  }
+  function saveResponse(idValue){
+    const item=findPublication(idValue);
+    const answers=chatbotQuestions(item||{}).map((q,i)=>({ question:q, answer:qs(`#ccAnswer${i}V4944`)?.value?.trim?.() || "" })).filter(x => x.answer);
+    if(!answers.length) return toast("Agrega al menos una respuesta para enviar la solicitud.");
+    const rows=read(RESPONSES_KEY, []);
+    const row={
+      id:uid("RESP"), publication_id:idValue, publication_title:item?.title || item?.titulo || "Publicación", profile_type:profileFromItem(item||{}),
+      customer_name:qs("#ccNameV4944")?.value?.trim?.() || "Interesado", customer_contact:qs("#ccPhoneV4944")?.value?.trim?.() || "", answers,
+      status:"nuevo", created_at:now(), version:VERSION
+    };
+    write(RESPONSES_KEY, [row, ...rows].slice(0,200));
+    qsa(".chatbot-modal-overlay-v4944").forEach(el => el.remove());
+    toast("Solicitud enviada por Chatbot Conecta.");
+    renderChatbotResponsesPanel();
+  }
+  function renderChatbotResponsesPanel(){
+    const section=qs("#misPublicaciones");
+    if(!section) return;
+    let panel=qs("#chatbotResponsesPanelV4944", section);
+    if(!panel){
+      panel=document.createElement("section");
+      panel.id="chatbotResponsesPanelV4944";
+      panel.className="chatbot-responses-panel-v4944";
+      const anchor=qs("#myPublicationsList", section) || section.firstElementChild;
+      if(anchor?.parentElement) anchor.parentElement.insertBefore(panel, anchor);
+      else section.appendChild(panel);
+    }
+    const responses=read(RESPONSES_KEY, []);
+    panel.innerHTML=`<div class="responses-head-v4944"><div><span>💬 Chatbot Conecta</span><h3>Solicitudes recibidas por mis publicaciones</h3><p>Aquí llegan pedidos, citas, cotizaciones o mensajes filtrados.</p></div><button type="button" class="btn-small btn-ghost" onclick="renderChatbotResponsesPanelV4944()">Actualizar</button></div>
+    ${responses.length ? `<div class="responses-list-v4944">${responses.map(r => `<article class="response-card-v4944"><div><strong>${esc(r.publication_title)}</strong><small>${esc(r.customer_name)} · ${esc(r.customer_contact || "sin contacto")}</small></div><span>${esc(r.status)}</span><ul>${r.answers.map(a=>`<li><b>${esc(a.question)}</b><br>${esc(a.answer)}</li>`).join("")}</ul><div class="response-actions-v4944"><button type="button" class="btn-small btn-outline" onclick="changeChatbotResponseStatusV4944('${esc(r.id)}','atendido')">Marcar atendido</button></div></article>`).join("")}</div>` : `<div class="empty-state">Aún no hay solicitudes recibidas por Chatbot Conecta.</div>`}`;
+  }
+  function changeResponseStatus(idValue, status){
+    const rows=read(RESPONSES_KEY, []);
+    write(RESPONSES_KEY, rows.map(r => r.id === idValue ? {...r, status, updated_at:now()} : r));
+    renderChatbotResponsesPanel();
+  }
+
+  function renderStarSections(){
+    const home=qs("#inicio");
+    if(!home || qs("#starSectionsV4944", home)) return;
+    const section=document.createElement("section");
+    section.id="starSectionsV4944";
+    section.className="star-sections-v4944";
+    section.innerHTML=`<div class="star-head-v4944"><span>⭐</span><div><strong>Apartados estrella</strong><p>Crece dentro de Conecta Servicios con membresía anual de $98.</p></div></div>
+    <div class="star-grid-v4944">
+      <button type="button" onclick="showSection('embajadoresLanding')">🤝 Embajadores</button>
+      <button type="button" onclick="openPilotType('crecimiento')">🚀 Agentes en crecimiento</button>
+      <button type="button" onclick="startSurveyFlow && startSurveyFlow('mandadoSolicitud')">🧺 Mandados verificados</button>
+      <button type="button" onclick="showSection('aprende')">🎓 Aprendizaje</button>
+    </div>`;
+    const anchor=qs("#homeSocialFeed", home) || home.lastElementChild;
+    if(anchor?.parentElement) anchor.parentElement.insertBefore(section, anchor);
+    else home.appendChild(section);
+  }
+  function decorateSocialButtons(){
+    qsa("button").forEach(btn => {
+      const text=(btn.textContent||"").trim();
+      const onclick=String(btn.getAttribute("onclick")||"");
+      if (/^Guardar$|Guardar plantilla/i.test(text) || /savePilotTemplate/i.test(onclick)) {
+        btn.innerHTML="＋ <small>Publicar parecido</small>";
+        btn.setAttribute("aria-label","Publicar algo parecido");
+        const match=onclick.match(/savePilotTemplate\('([^']+)'\)/);
+        if(match) btn.setAttribute("onclick",`makePilotReal('${match[1]}')`);
+      }
+      if (/Configurar asistente|Asistente de publicación|Asistente configurable/i.test(text)) {
+        btn.textContent=text.replace(/Configurar asistente/i,"Configurar Chatbot Conecta").replace(/Asistente de publicación|Asistente configurable/i,"Chatbot Conecta");
+      }
+    });
+    qsa("[data-feed-filter='servicios']").forEach(el => { el.style.display="none"; });
+  }
+  function wrapShowAndRender(){
+    try {
+      if (typeof showSection === "function" && !window.__showSectionBaseV4944) {
+        window.__showSectionBaseV4944=showSection;
+        showSection=function(section,push=true){
+          const result=window.__showSectionBaseV4944.apply(this, arguments);
+          setTimeout(() => { ensurePublishControls(); renderChatbotResponsesPanel(); renderStarSections(); decorateSocialButtons(); }, 80);
+          return result;
+        };
+      }
+    } catch {}
+    try {
+      if (typeof renderPublications === "function" && !window.__renderPublicationsBaseV4944) {
+        window.__renderPublicationsBaseV4944=renderPublications;
+        renderPublications=function(){ const result=window.__renderPublicationsBaseV4944.apply(this, arguments); setTimeout(decorateSocialButtons,40); return result; };
+      }
+    } catch {}
+    try {
+      if (typeof renderMyPublications === "function" && !window.__renderMyPublicationsBaseV4944) {
+        window.__renderMyPublicationsBaseV4944=renderMyPublications;
+        renderMyPublications=function(){ const result=window.__renderMyPublicationsBaseV4944.apply(this, arguments); setTimeout(renderChatbotResponsesPanel,40); return result; };
+      }
+    } catch {}
+  }
+  function init(){
+    installCardWrappers();
+    wrapShowAndRender();
+    document.addEventListener("submit", submitV4944, true);
+    ensurePublishControls();
+    renderChatbotResponsesPanel();
+    renderStarSections();
+    decorateSocialButtons();
+    try { localStorage.setItem("conecta_version_chatbot_conecta", VERSION); } catch {}
+    setTimeout(() => { ensurePublishControls(); renderChatbotResponsesPanel(); renderStarSections(); decorateSocialButtons(); try { if (typeof renderPublications === "function") renderPublications(); } catch {} }, 250);
+    setTimeout(() => { ensurePublishControls(); renderChatbotResponsesPanel(); renderStarSections(); decorateSocialButtons(); }, 1200);
+  }
+  window.openConectaChatbotV4944=openChatbot;
+  window.saveConectaChatbotResponseV4944=saveResponse;
+  window.renderChatbotResponsesPanelV4944=renderChatbotResponsesPanel;
+  window.changeChatbotResponseStatusV4944=changeResponseStatus;
+  window.startChatbotConectaPublishV4944=function(){ try { showSection("registro"); } catch {} setTimeout(ensurePublishControls,80); };
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
   window.addEventListener("pageshow", () => setTimeout(init, 120));
 })();

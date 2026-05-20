@@ -1,0 +1,16 @@
+CHECKLIST v4.9.44 - Chatbot Conecta + publicación social
+
+1. Abrir app con ?v=4944 en incógnito.
+2. Tocar + Publicar.
+3. Confirmar que aparece "Crear publicación" y el panel "Chatbot Conecta para tu publicación".
+4. Crear una publicación como Solicitante: "Quiero que me traigan tacos para cenar".
+5. Dejar canal en Chatbot Conecta y guardar.
+6. Confirmar que la publicación aparece en Mis publicaciones y Explorar.
+7. Abrir el icono/botón de mensaje de la publicación. Debe abrir Chatbot Conecta.
+8. Crear otra publicación o intentar publicar con la prueba activa sin membresía. Debe pedir membresía si ya existe la publicación gratis activa por 30 días.
+9. Crear publicación seleccionando WhatsApp. Confirmar que el botón de mensaje es WhatsApp y no aparece Chatbot al mismo tiempo.
+10. Confirmar que Guardar/Guardadas fue sustituido por Publicar algo parecido donde aplique.
+11. Confirmar reacciones y compartir.
+12. Confirmar apartados estrella: Embajadores, Agentes en crecimiento, Mandados verificados y Aprendizaje.
+13. Confirmar que Admin puede publicar sin límite.
+14. Confirmar que subida de foto sigue funcionando.
