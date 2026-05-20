@@ -1,2 +1,1 @@
-No requiere SQL nuevo para esta corrección.
-La versión v5.0.6 funciona en modo piloto con localStorage, PWA básica y notificaciones internas/locales.
+Conecta Servicios v5.0.7 no requiere SQL nuevo. Funciona en modo piloto con localStorage.

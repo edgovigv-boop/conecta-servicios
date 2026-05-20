@@ -1,9 +1,9 @@
-/* Conecta Servicios v5.0.6 - PWA, notificaciones, módulos estrella y perfil */
+/* Conecta Servicios v5.0.7 - navegación publicar limpia y módulos estrella útiles */
 (() => {
   'use strict';
 
-  const VERSION = 'v5.0.6-pwa-notificaciones-modulos-perfil';
-  const CACHE_HINT = 'conecta-servicios-v5-0-6-pwa-notificaciones-modulos-perfil';
+  const VERSION = 'v5.0.7-publicar-limpio-modulos-utiles';
+  const CACHE_HINT = 'conecta-servicios-v5-0-7-publicar-limpio-modulos-utiles';
   const DOLA_EXTERNAL_URL = 'https://dola.com';
   const MEMBERSHIP_PRICE = 98;
   const FREE_DAYS = 30;
@@ -572,55 +572,51 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
   function pageAgents(){
     return `<main class="page">
       ${backbar('Agentes en crecimiento','Empieza a generar ingresos')}
-      <section class="hero"><h2>Ofrece lo que puedes hacer.</h2><p>Mandados, entregas, trámites, viajes locales o apoyo por horas.</p></section>
-      <div class="list">
-        ${infoItem('🛵','Hago mandados','Publica tu disponibilidad y zona de atención.')}
-        ${infoItem('📦','Hago entregas','Recibe solicitudes más claras con DOLA o WhatsApp.')}
-        ${infoItem('🤝','Apoyo local','Acompañamiento, trámites o ayuda por horas.')}
-        ${infoItem('📈','Mejora tu perfil','Aprende cómo presentarte mejor para recibir solicitudes.')}
+      <section class="hero"><h2>Empieza como agente.</h2><p>Publica lo que puedes hacer y encuentra solicitudes cercanas.</p></section>
+      <div class="module-grid">
+        <button class="module-card primary" data-action="create-agent-post"><span>🛵</span><b>Crear publicación</b><small>Ofrece mandados, entregas o apoyo local.</small></button>
+        <button class="module-card" data-action="find-nearby-requests"><span>🔎</span><b>Ver solicitudes</b><small>Explora necesidades cercanas de solicitantes.</small></button>
+        <button class="module-card" data-action="agent-dola-prompt"><span>🤖</span><b>Redactar con DOLA</b><small>Copia un prompt para presentarte mejor.</small></button>
+        <button class="module-card" data-action="agent-growth-tips"><span>📈</span><b>Guía rápida</b><small>Consejos prácticos sin salirte del flujo.</small></button>
       </div>
-      <div class="card"><div class="button-row"><button class="btn primary" data-action="create-agent-post">Crear publicación como agente</button><button class="btn ghost" data-action="find-nearby-requests">Ver solicitudes cercanas</button></div><div class="button-row"><button class="btn green" data-action="agent-dola-prompt">Usar DOLA</button><button class="btn ghost" data-action="agent-growth-tips">Tips de crecimiento</button></div></div>
     </main>`;
   }
 
   function pageMandados(){
     return `<main class="page">
       ${backbar('Mandados verificados','Confianza local')}
-      <section class="hero"><h2>Más claridad para mandados y entregas.</h2><p>En esta etapa, la validación puede requerir revisión manual.</p></section>
-      <div class="list">
-        ${infoItem('🛡️','¿Qué es un mandado verificado?','Programa para conectar solicitudes con agentes revisados o identificados.')}
-        ${infoItem('📋','Solicitar mandado','Crea una publicación clara con lugar, horario y presupuesto.')}
-        ${infoItem('🙋','Postularme como agente','Registra tu zona y disponibilidad para participar.')}
-        ${infoItem('❓','Requisitos y preguntas','La revisión puede ser manual durante el piloto.')}
+      <section class="hero"><h2>Mandados con más confianza.</h2><p>Solicita apoyo o postúlate. La validación puede requerir revisión manual.</p></section>
+      <div class="module-grid">
+        <button class="module-card primary" data-action="request-verified-errand"><span>📋</span><b>Solicitar mandado</b><small>Crea una solicitud clara con zona y horario.</small></button>
+        <button class="module-card" data-action="apply-verified-agent"><span>🙋</span><b>Postularme</b><small>Registra tus datos como agente verificado piloto.</small></button>
+        <button class="module-card" data-action="verified-requirements"><span>🛡️</span><b>Ver requisitos</b><small>Consulta evidencia y validación manual.</small></button>
+        <button class="module-card" data-action="verified-faq"><span>❓</span><b>Preguntas frecuentes</b><small>Resuelve dudas antes de participar.</small></button>
       </div>
-      <div class="card"><div class="button-row"><button class="btn primary" data-action="request-verified-errand">Solicitar mandado</button><button class="btn green" data-action="apply-verified-agent">Postularme como agente</button></div><div class="button-row"><button class="btn ghost" data-action="verified-requirements">Ver requisitos</button><button class="btn ghost" data-action="verified-faq">Preguntas frecuentes</button></div></div>
     </main>`;
   }
 
   function pageLearning(){
     return `<main class="page">
       ${backbar('Aprendizaje','Crece y mejora')}
-      <section class="hero"><h2>Aprende a publicar, atender y vender mejor.</h2><p>Recursos recomendados para agentes, negocios y embajadores.</p></section>
-      <div class="list">
-        ${infoItem('🎓','Cursos gratuitos recomendados','Recursos externos permitidos para mejorar habilidades.')}
-        ${infoItem('📝','Cómo mejorar tu publicación','Títulos claros, fotos, zona y contacto correcto.')}
-        ${infoItem('🤖','Cómo usar DOLA','DOLA ayuda a redactar y filtrar mejor tus contactos.')}
-        ${infoItem('💬','Cómo atender mejor','Responde claro, confirma detalles y cuida la confianza.')}
+      <section class="hero"><h2>Aprende y mejora.</h2><p>Guías simples para publicar mejor, atender solicitudes y usar DOLA.</p></section>
+      <div class="module-grid">
+        <button class="module-card primary" data-action="learning-resources"><span>🎓</span><b>Ver recursos</b><small>Consejos rápidos para publicar y atender mejor.</small></button>
+        <button class="module-card" data-action="learning-dola-plan"><span>🤖</span><b>Plan con DOLA</b><small>Copia un prompt para que DOLA te guíe paso a paso.</small></button>
+        <button class="module-card" data-route="/publicar"><span>📝</span><b>Practicar publicando</b><small>Crea una publicación con DOLA o Manual.</small></button>
       </div>
-      <div class="notice">Los recursos externos deben identificarse como externos y no como propiedad de Conecta.</div><div class="card"><div class="button-row"><button class="btn primary" data-action="learning-resources">Ver recursos</button><button class="btn green" data-action="learning-dola-plan">Plan con DOLA</button></div><button class="btn ghost full" data-action="copy-learning-prompt" style="margin-top:10px">Copiar prompt para DOLA</button></div>
+      <div class="notice slim">Si se muestran recursos externos, deben identificarse como externos y no como propiedad de Conecta.</div>
     </main>`;
   }
 
   function pageCommission(){
     return `<main class="page">
       ${backbar('Conseguir clientes','Por comisión')}
-      <section class="hero"><h2>Ayuda a negocios a conseguir clientes.</h2><p>Publica campañas o consigue prospectos con pago por resultado.</p></section>
-      <div class="list">
-        ${infoItem('💼','Agentes por comisión','Conecta negocios con personas que puedan promoverlos.')}
-        ${infoItem('📣','Campañas locales','Crea publicaciones para atraer prospectos medibles.')}
-        ${infoItem('🤝','Sin pago adelantado','El enfoque puede ser por resultado acordado entre partes.')}
+      <section class="hero"><h2>Conseguir clientes por comisión.</h2><p>Crea campañas locales o ayuda a negocios a publicar mejor.</p></section>
+      <div class="module-grid">
+        <button class="module-card primary" data-action="create-commission-post"><span>📣</span><b>Crear campaña</b><small>Publica una oportunidad de clientes por comisión.</small></button>
+        <button class="module-card" data-action="commission-dola-prompt"><span>🤖</span><b>Redactar con DOLA</b><small>Copia un prompt para explicar la campaña.</small></button>
+        <button class="module-card" data-action="share-ambassador-message"><span>🔗</span><b>Compartir membresía</b><small>Copia un mensaje para invitar negocios.</small></button>
       </div>
-      <div class="card"><button class="btn primary full" data-route="/publicar">Crear publicación</button></div>
     </main>`;
   }
 
@@ -638,7 +634,7 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
 
   function pageNotFound(){ return `<main class="page">${backbar('Página no encontrada')}<div class="empty">Esta ruta no existe. <button class="btn primary" data-route="/">Ir al inicio</button></div></main>`; }
 
-  function infoItem(icon,title,desc){ return `<div class="list-item"><div class="left"><div class="list-icon">${icon}</div><div><b>${escapeHtml(title)}</b><p class="tiny muted">${escapeHtml(desc)}</p></div></div><span>›</span></div>`; }
+  function infoItem(icon,title,desc){ return `<div class="info-item"><div class="left"><div class="list-icon">${icon}</div><div><b>${escapeHtml(title)}</b><p class="tiny muted">${escapeHtml(desc)}</p></div></div></div>`; }
 
   function empty(title, desc){ return `<div class="empty"><b>${escapeHtml(title)}</b><p>${escapeHtml(desc)}</p><button class="btn primary" data-route="/publicar">Publicar gratis</button></div>`; }
 
@@ -741,7 +737,16 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
 
   function onClick(e){
     const routeBtn = e.target.closest('[data-route]');
-    if (routeBtn) { e.preventDefault(); navigate(routeBtn.dataset.route, routeBtn.dataset.filter ? {filter:routeBtn.dataset.filter} : {}); return; }
+    if (routeBtn) {
+      e.preventDefault();
+      const targetRoute = routeBtn.dataset.route;
+      const opts = routeBtn.dataset.filter ? {filter:routeBtn.dataset.filter} : {};
+      // Cuando el usuario toca el botón inferior + Publicar o cualquier acceso genérico a publicar,
+      // siempre debe comenzar desde la pantalla inicial, no desde el último paso usado.
+      if (targetRoute === '/publicar') resetPublishState();
+      navigate(targetRoute, opts);
+      return;
+    }
     const filterBtn = e.target.closest('[data-filter-only]');
     if (filterBtn) { state.filter = filterBtn.dataset.filterOnly; render(); return; }
     const mode = e.target.closest('[data-publish-mode]');
@@ -813,17 +818,19 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
     if (action === 'notify') notificationPanel();
     if (action === 'share-ambassador-message') shareAmbassadorMessage();
     if (action === 'register-referral') registerReferral();
-    if (action === 'ambassador-guide') alert('Guía rápida: 1) Invita a un negocio o agente. 2) Ayúdale a publicar. 3) Comparte el enlace de membresía. 4) Registra el referido en modo piloto.');
+    if (action === 'ambassador-guide') showAmbassadorGuide();
     if (action === 'create-agent-post') createAgentPost();
     if (action === 'find-nearby-requests') { state.filter='Solicitante'; navigate('/explorar'); }
     if (action === 'agent-dola-prompt') agentDolaPrompt();
-    if (action === 'agent-growth-tips') alert('Tips: usa una foto clara, explica tu zona, horarios, costo aproximado y responde rápido. DOLA puede ayudarte a redactar tu presentación.');
+    if (action === 'agent-growth-tips') showAgentTips();
     if (action === 'request-verified-errand') requestVerifiedErrand();
     if (action === 'apply-verified-agent') applyVerifiedAgent();
-    if (action === 'verified-requirements') alert('Requisitos piloto: nombre, zona, disponibilidad, contacto y revisión manual. No es certificación automática.');
-    if (action === 'verified-faq') alert('Preguntas frecuentes: la verificación puede requerir revisión manual; se recomienda evidencia del mandado y comunicación clara.');
-    if (action === 'learning-resources') alert('Recursos sugeridos: mejorar publicaciones, atención a clientes, ventas locales, seguridad digital y uso de DOLA. Los enlaces externos deben identificarse como externos.');
-    if (action === 'learning-dola-plan' || action === 'copy-learning-prompt') learningPrompt();
+    if (action === 'verified-requirements') showVerifiedRequirements();
+    if (action === 'verified-faq') showVerifiedFaq();
+    if (action === 'learning-resources') showLearningResources();
+    if (action === 'learning-dola-plan' || action === 'copy-learning-prompt') showLearningDolaPlan();
+    if (action === 'create-commission-post') createCommissionPost();
+    if (action === 'commission-dola-prompt') commissionDolaPrompt();
     if (action === 'go-back') goBack();
   }
 
@@ -986,6 +993,8 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
     } else if (modal.type==='post') {
       const p = getPosts().find(x=>x.id===modal.postId);
       div.innerHTML = `<div class="modal"><h3>${escapeHtml(p?.title||'Publicación')}</h3><p class="muted">${escapeHtml(p?.zone||'')} · ${escapeHtml(p?.category||'')}</p><p>${escapeHtml(p?.description||'')}</p><div class="modal-actions"><button class="btn primary" data-message-post="${p?.id}">Mensaje</button><button class="btn ghost" data-modal-close>Cerrar</button></div></div>`;
+    } else if (modal.type==='info') {
+      div.innerHTML = `<div class="modal"><h3>${escapeHtml(modal.title || 'Información')}</h3><div class="modal-content">${modal.html || ''}</div><div class="modal-actions"><button class="btn primary" data-modal-close>Entendido</button></div></div>`;
     } else if (modal.type==='install-help') {
       div.innerHTML = `<div class="modal"><h3>Instalar Conecta Servicios</h3><p class="muted">Si tu navegador no muestra instalación automática, abre el menú del navegador y elige “Agregar a pantalla de inicio”.</p><div class="notice">En iPhone usa Compartir → Agregar a pantalla de inicio. En Android usa el menú ⋮ → Instalar app o Agregar a pantalla principal.</div><div class="modal-actions"><button class="btn primary" data-modal-close>Entendido</button></div></div>`;
     } else if (modal.type==='notifications') {
@@ -1095,6 +1104,88 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
   function learningPrompt(){
     const text = 'Vengo de Conecta Servicios. Ayúdame a crear un plan sencillo de aprendizaje para mejorar mis publicaciones, atender mejor a clientes y ofrecer mejores servicios como agente o negocio local. Hazme una pregunta a la vez y dame pasos prácticos.';
     copyText(text).then(()=>toast('Prompt de aprendizaje copiado'));
+  }
+
+  function showInfo(title, html){
+    state.modal = { type:'info', title, html };
+    renderModal(state.modal);
+  }
+
+  function showAmbassadorGuide(){
+    showInfo('Guía rápida para embajadores', `
+      <div class="info-stack">
+        <div class="info-item"><div class="left"><div class="list-icon">1</div><div><b>Invita</b><p class="tiny muted">Comparte tu enlace con negocios, agentes o solicitantes.</p></div></div></div>
+        <div class="info-item"><div class="left"><div class="list-icon">2</div><div><b>Ayuda a publicar</b><p class="tiny muted">Dales el puente de DOLA o acompáñalos en la publicación manual.</p></div></div></div>
+        <div class="info-item"><div class="left"><div class="list-icon">3</div><div><b>Registra referido</b><p class="tiny muted">Guarda el nombre y contacto en el piloto para dar seguimiento.</p></div></div></div>
+      </div>
+      <div class="button-row"><button class="btn primary" data-action="share-ambassador-message">Copiar mensaje</button><button class="btn ghost" data-action="register-referral">Registrar referido</button></div>
+    `);
+  }
+
+  function showAgentTips(){
+    showInfo('Tips para crecer como agente', `
+      <div class="info-stack">
+        <div class="info-item"><div class="left"><div class="list-icon">📍</div><div><b>Define zona y horario</b><p class="tiny muted">Aclara dónde puedes ayudar y en qué horarios.</p></div></div></div>
+        <div class="info-item"><div class="left"><div class="list-icon">💬</div><div><b>Explica costos aproximados</b><p class="tiny muted">Evita mensajes incompletos y mejora la confianza.</p></div></div></div>
+        <div class="info-item"><div class="left"><div class="list-icon">🤖</div><div><b>Usa DOLA</b><p class="tiny muted">Te ayuda a redactar una presentación clara.</p></div></div></div>
+      </div>
+      <div class="button-row"><button class="btn primary" data-action="agent-dola-prompt">Usar DOLA</button><button class="btn ghost" data-action="create-agent-post">Crear publicación</button></div>
+    `);
+  }
+
+  function showVerifiedRequirements(){
+    showInfo('Requisitos de mandados verificados', `
+      <div class="info-stack">
+        <div class="info-item"><div class="left"><div class="list-icon">🪪</div><div><b>Identificación o datos básicos</b><p class="tiny muted">En piloto puede requerir revisión manual.</p></div></div></div>
+        <div class="info-item"><div class="left"><div class="list-icon">📍</div><div><b>Zona de apoyo</b><p class="tiny muted">Indica dónde puedes atender mandados.</p></div></div></div>
+        <div class="info-item"><div class="left"><div class="list-icon">🧾</div><div><b>Evidencia del mandado</b><p class="tiny muted">Fotos de producto, ticket o entrega cuando aplique.</p></div></div></div>
+      </div>
+      <div class="button-row"><button class="btn primary" data-action="apply-verified-agent">Postularme</button><button class="btn ghost" data-action="request-verified-errand">Solicitar mandado</button></div>
+    `);
+  }
+
+  function showVerifiedFaq(){
+    showInfo('Preguntas frecuentes', `
+      <div class="info-stack">
+        <div class="info-item"><div class="left"><div class="list-icon">❓</div><div><b>¿Es certificación automática?</b><p class="tiny muted">No. En esta etapa puede requerir revisión manual.</p></div></div></div>
+        <div class="info-item"><div class="left"><div class="list-icon">🛡️</div><div><b>¿Qué busca el programa?</b><p class="tiny muted">Dar más claridad y evidencia en mandados locales.</p></div></div></div>
+        <div class="info-item"><div class="left"><div class="list-icon">📦</div><div><b>¿Puedo solicitar un mandado?</b><p class="tiny muted">Sí, crea una solicitud con zona, horario y detalles.</p></div></div></div>
+      </div>
+    `);
+  }
+
+  function showLearningResources(){
+    showInfo('Recursos de aprendizaje', `
+      <div class="info-stack">
+        <div class="info-item"><div class="left"><div class="list-icon">📝</div><div><b>Mejora tu publicación</b><p class="tiny muted">Título claro, foto útil, zona y condiciones.</p></div></div></div>
+        <div class="info-item"><div class="left"><div class="list-icon">💬</div><div><b>Atiende mejor</b><p class="tiny muted">Responde rápido, confirma detalles y acuerda condiciones.</p></div></div></div>
+        <div class="info-item"><div class="left"><div class="list-icon">🤖</div><div><b>Practica con DOLA</b><p class="tiny muted">Pide un plan paso a paso para mejorar tu perfil.</p></div></div></div>
+      </div>
+      <div class="button-row"><button class="btn primary" data-action="copy-learning-prompt">Copiar prompt para DOLA</button><button class="btn green" data-action="open-dola">Abrir DOLA</button></div>
+    `);
+  }
+
+  function showLearningDolaPlan(){
+    learningPrompt();
+    showInfo('Prompt copiado para DOLA', `
+      <p class="muted">Ya copié un prompt para que DOLA te arme un plan de aprendizaje paso a paso.</p>
+      <div class="button-row"><button class="btn green" data-action="open-dola">Abrir DOLA</button><button class="btn ghost" data-route="/publicar">Practicar publicando</button></div>
+    `);
+  }
+
+  function createCommissionPost(){
+    pushInternalNavigationSnapshot();
+    state.publishMode='manual';
+    state.publishTemplate = null;
+    state.publishDraft={type:'Negocio', category:'Conseguir clientes por comisión', title:'Busco agentes para conseguir clientes por comisión', description:'', channel:'dola'};
+    navigate('/publicar');
+  }
+
+  function commissionDolaPrompt(){
+    const text = 'Vengo de Conecta Servicios. Quiero crear una publicación para conseguir clientes por comisión. Ayúdame a redactar una campaña clara para explicar qué se ofrece, qué tipo de clientes busco, cómo sería la comisión y qué datos necesito. Hazme una pregunta a la vez y al final dame solo la publicación final lista para pegar en Conecta.';
+    copyText(text).then(()=>{
+      showInfo('Prompt copiado para DOLA', `<p class="muted">Ya copié el prompt para redactar una campaña por comisión.</p><div class="button-row"><button class="btn green" data-action="open-dola">Abrir DOLA</button><button class="btn ghost" data-action="create-commission-post">Crear manualmente</button></div>`);
+    });
   }
 
   function addPublishNotification(){

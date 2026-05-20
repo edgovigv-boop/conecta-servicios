@@ -41,3 +41,12 @@ Activar PWA, notificaciones, módulos estrella y perfil v5.0.6
 ## SQL
 
 No requiere SQL nuevo para el piloto local.
+
+
+## v5.0.7 - Publicar limpio y módulos útiles
+
+- El botón Publicar siempre inicia desde la pantalla principal “¿Qué quieres publicar?” cuando se toca desde la navegación.
+- Se evita que el flujo quede congelado en DOLA / Manual.
+- Los módulos estrella se simplifican para no parecer listas de botones inactivos.
+- Se agregan acciones reales y modales útiles para Embajadores, Agentes, Mandados verificados, Aprendizaje y Conseguir clientes.
+- No requiere SQL nuevo para piloto local.

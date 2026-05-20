@@ -1,10 +1,10 @@
-const CACHE_NAME = 'conecta-servicios-v5-0-6-pwa-notificaciones-modulos-perfil';
+const CACHE_NAME = 'conecta-servicios-v5-0-7-publicar-limpio-modulos-utiles';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=5.0.6-pwa-notificaciones-modulos-perfil',
-  '/app.js?v=5.0.6-pwa-notificaciones-modulos-perfil',
-  '/manifest.json?v=5.0.6-pwa-notificaciones-modulos-perfil',
+  '/styles.css?v=5.0.7-publicar-limpio-modulos-utiles',
+  '/app.js?v=5.0.7-publicar-limpio-modulos-utiles',
+  '/manifest.json?v=5.0.7-publicar-limpio-modulos-utiles',
   '/assets/dola-media/comida-01.jpg',
   '/assets/dola-media/mandados-01.jpg',
   '/assets/dola-media/agente-01.jpg',

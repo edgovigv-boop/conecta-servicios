@@ -1,0 +1,12 @@
+Checklist v5.0.7
+
+1. Entrar a Publicar, elegir plantilla y llegar a DOLA / Manual.
+2. Ir a Inicio y volver a tocar Publicar: debe abrir ¿Qué quieres publicar? limpio.
+3. Probar botón + inferior desde varias pantallas: siempre inicia publicar desde cero.
+4. Verificar que los módulos estrella no muestran listas que parezcan botones sin acción.
+5. Embajadores: copiar enlace, crear mensaje, registrar referido y guía rápida.
+6. Agentes: crear publicación, ver solicitudes, usar DOLA y guía rápida.
+7. Mandados verificados: solicitar mandado, postularme, requisitos y FAQ.
+8. Aprendizaje: ver recursos, plan con DOLA y abrir DOLA.
+9. Conseguir clientes: crear campaña y redactar con DOLA.
+10. Confirmar que no requiere SQL nuevo y no se desplegó automáticamente.
