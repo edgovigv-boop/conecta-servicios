@@ -1,0 +1,27 @@
+# CHECKLIST v5.0.2 — DOLA flujo de plantillas limpio
+
+1. Tocar + Publicar.
+2. Ver lista de plantillas.
+3. Seleccionar “Busco mensajero cerca”.
+4. Confirmar que abre página limpia “Crear publicación con DOLA”.
+5. Confirmar que el prompt tiene botón de copiar arriba a la derecha.
+6. Confirmar que el prompt pide una sola pregunta a la vez.
+7. Confirmar que el prompt pide NO usar tablas, JSON ni campos técnicos.
+8. Copiar prompt.
+9. Abrir DOLA.
+10. Pegar resultado final en Conecta.
+11. Tocar “Usar como descripción”.
+12. Confirmar que se genera vista previa.
+13. Confirmar que no manda al formulario manual completo.
+14. Publicar.
+15. Ver publicación en Inicio.
+16. Ver publicación en Explorar.
+17. Ver publicación en Mis publicaciones.
+18. Probar “Necesito algo”.
+19. Probar “Quiero publicar mi negocio”.
+20. Probar “Quiero ofrecerme como agente”.
+21. Confirmar que ninguna plantilla queda sin acción.
+22. Confirmar que WhatsApp sigue funcionando si se elige manualmente.
+23. Confirmar que DOLA_EXTERNAL_URL abre DOLA.
+24. Confirmar que el banco assets/dola-media no rompe si está vacío.
+25. Confirmar que admin sigue sin restricciones.

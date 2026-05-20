@@ -1,9 +1,9 @@
-/* Conecta Servicios v5.0.1 - DOLA pegado inteligente */
+/* Conecta Servicios v5.0.2 - DOLA flujo plantillas limpio */
 (() => {
   'use strict';
 
-  const VERSION = 'v5.0.1-dola-pegado-inteligente';
-  const CACHE_HINT = 'conecta-servicios-v5-0-1-dola-pegado-inteligente';
+  const VERSION = 'v5.0.2-dola-flujo-plantillas-limpio';
+  const CACHE_HINT = 'conecta-servicios-v5-0-2-dola-flujo-plantillas-limpio';
   const DOLA_EXTERNAL_URL = 'https://dola.com';
   const MEMBERSHIP_PRICE = 98;
   const FREE_DAYS = 30;
@@ -24,6 +24,7 @@
     filter: 'Todas',
     publishMode: 'dola',
     publishTemplate: null,
+    dolaFlowActive: false,
     publishDraft: null,
     dolaPreview: null,
     dolaText: '',
@@ -247,29 +248,78 @@
 
   function publishWithDola(){
     if (state.dolaPreview) return dolaPreviewCard(state.dolaPreview);
+    if (!state.dolaFlowActive) return dolaTemplateStart();
     const tpl = state.publishTemplate || templates[0];
     const prompt = createDolaPrompt(tpl);
-    return `<section class="desktop-grid">
-      <div>
-        <div class="section-title"><h2>Elige plantilla</h2><span class="tiny muted">DOLA usará este contexto</span></div>
-        <div class="template-list">
-          ${templates.map(t => `<button class="template ${tpl.id===t.id?'active':''}" data-template="${t.id}"><span><b>${t.icon} ${t.title}</b><small>${t.desc}</small></span><span>›</span></button>`).join('')}
-        </div>
+    return `<section class="dola-clean-page">
+      <div class="card hero-card">
+        <div class="template-badge"><span>${tpl.icon}</span><div><b>${escapeHtml(tpl.title)}</b><small>${escapeHtml(tpl.category)} · ${escapeHtml(tpl.type)}</small></div></div>
+        <h2>Crear publicación con DOLA</h2>
+        <p class="muted">DOLA te ayudará a redactar una publicación clara. Copia el prompt, abre DOLA, responde una pregunta a la vez y pega aquí el texto final.</p>
+        ${publishLimitNotice()}
+        <div class="button-row"><button class="btn ghost" data-action="choose-other-template">Cambiar plantilla</button><button class="btn" data-action="manual-from-template">Crear manualmente</button></div>
       </div>
       <div class="card">
-        <h3>Puente con DOLA</h3>
-        <p class="muted">Copia el prompt, abre DOLA, conversa allá una pregunta a la vez y pega aquí el bloque final.</p>
-        <div class="bridge-steps">
-          <div class="step"><div class="step-no">1</div><div><b>Copia este prompt</b><div class="copy-panel"><button class="copy-corner" data-action="copy-dola-prompt" aria-label="Copiar prompt">📋</button><div class="prompt-box" id="dolaPrompt">${escapeHtml(prompt)}</div></div><button class="btn primary full" data-action="copy-dola-prompt">Copiar prompt</button></div></div>
-          <div class="step"><div class="step-no">2</div><div><b>Abre DOLA</b><button class="btn green full" data-action="open-dola">Abrir DOLA</button><p class="tiny muted">DOLA es externo. Cuando termine, copia solo el bloque final.</p></div></div>
-          <div class="step"><div class="step-no">3</div><div><b>Pega aquí el texto generado por DOLA</b><p class="tiny muted">Cuando DOLA termine, copia el bloque final y pégalo aquí.</p><textarea class="input paste-box" id="dolaResult" placeholder="=== PUBLICACIÓN GENERADA PARA CONECTA SERVICIOS ===&#10;Tipo:&#10;Categoría:&#10;Título:&#10;Zona:&#10;Descripción:&#10;Canal recomendado:&#10;Preguntas sugeridas:&#10;=== FIN ===">${escapeHtml(state.dolaText||'')}</textarea><div class="button-row"><button class="btn primary" data-action="use-dola-result">Usar este texto</button><button class="btn ghost" data-action="preview-dola-result">Ver vista previa</button><button class="btn" data-action="clear-dola-result">Limpiar</button></div></div></div>
-        </div>
+        <h3>1. Copia este prompt para DOLA</h3>
+        <div class="copy-panel"><button class="copy-corner" data-action="copy-dola-prompt" aria-label="Copiar prompt">📋</button><div class="prompt-box tall" id="dolaPrompt">${escapeHtml(prompt)}</div></div>
+        <div class="button-row"><button class="btn primary" data-action="copy-dola-prompt">Copiar prompt</button><button class="btn green" data-action="open-dola">Abrir DOLA</button></div>
+      </div>
+      <div class="card">
+        <h3>2. Pega aquí la publicación que DOLA generó</h3>
+        <p class="tiny muted">DOLA debe entregarte un texto visualmente ordenado. Pégalo completo aquí; Conecta lo usará como descripción principal.</p>
+        <textarea class="input paste-box" id="dolaResult" placeholder="Pega aquí la publicación final que DOLA generó...">${escapeHtml(state.dolaText||'')}</textarea>
+        <div class="button-row"><button class="btn primary" data-action="use-dola-result">Usar como descripción</button><button class="btn ghost" data-action="preview-dola-result">Ver vista previa</button><button class="btn" data-action="clear-dola-result">Limpiar</button></div>
+      </div>
+    </section>`;
+  }
+
+  function dolaTemplateStart(){
+    return `<section class="card">
+      <h2>Crear con ayuda de DOLA</h2>
+      <p class="muted">Elige una plantilla. Cada opción abrirá una página limpia para copiar el prompt, abrir DOLA y pegar tu publicación final.</p>
+      <div class="template-list clean">
+        ${templates.map(t => `<button class="template template-large" data-template="${t.id}"><span><b>${t.icon} ${t.title}</b><small>${t.desc}</small></span><span>›</span></button>`).join('')}
       </div>
     </section>`;
   }
 
   function createDolaPrompt(tpl){
-    return `Vengo de Conecta Servicios. Elegí la plantilla “${tpl.title}”. Tipo sugerido: ${tpl.type}. Categoría sugerida: ${tpl.category}.\n\nAyúdame a crear una publicación clara para Conecta Servicios.\n\nHazme una sola pregunta a la vez. Espera mi respuesta antes de continuar. No me muestres toda la estructura de golpe. Conversa conmigo de forma sencilla, como si fuera un chat. Cuando tengas la información suficiente, genera un texto final listo para copiar y pegar en Conecta Servicios.\n\nEl texto final debe venir exactamente con este formato:\n\n=== PUBLICACIÓN GENERADA PARA CONECTA SERVICIOS ===\nTipo: ${tpl.type}\nCategoría: ${tpl.category}\nTítulo: [título claro]\nZona: [municipio o zona]\nDescripción:\n[descripción ordenada]\n\nCanal recomendado: DOLA\nPreguntas sugeridas:\n1. [pregunta]\n2. [pregunta]\n3. [pregunta]\n4. [pregunta]\n=== FIN ===\n\nNo agregues explicaciones fuera del bloque final cuando termines.`;
+    return `Vengo de Conecta Servicios. Elegí la plantilla: ${tpl.title}.
+
+Tipo sugerido: ${tpl.type}.
+Categoría sugerida: ${tpl.category}.
+
+Ayúdame a crear una publicación clara y atractiva para Conecta Servicios.
+
+Hazme una sola pregunta a la vez.
+Espera mi respuesta antes de continuar.
+No me muestres toda la estructura de golpe.
+No uses tablas.
+No uses JSON.
+No entregues campos técnicos para que otra app los separe.
+Conversa conmigo de forma sencilla, como si fuera un chat.
+
+Cuando tengas la información suficiente, genera una publicación final lista para copiar y pegar en Conecta.
+
+El resultado final debe verse bonito, claro y fácil de leer, con emojis moderados y secciones ordenadas.
+
+Usa un formato parecido a este:
+
+[TÍTULO CORTO DE LA PUBLICACIÓN]
+
+📍 Zona:
+[Zona o municipio]
+
+📝 Descripción:
+[Texto claro y completo]
+
+✅ Detalles importantes:
+[Lista breve de detalles]
+
+💬 Contacto:
+[Indicar que pueden responder por Conecta, DOLA o WhatsApp según corresponda]
+
+Texto final listo para copiar y pegar en Conecta Servicios.`;
   }
 
   function dolaPreviewCard(draft){
@@ -514,7 +564,7 @@
     const mode = e.target.closest('[data-publish-mode]');
     if (mode) { state.publishMode = mode.dataset.publishMode; state.dolaPreview = null; render(); return; }
     const tpl = e.target.closest('[data-template]');
-    if (tpl) { state.publishTemplate = templates.find(t=>t.id===tpl.dataset.template) || templates[0]; state.dolaPreview = null; render(); return; }
+    if (tpl) { state.publishTemplate = templates.find(t=>t.id===tpl.dataset.template) || templates[0]; state.dolaPreview = null; state.dolaFlowActive = true; render(); return; }
     const channel = e.target.closest('[data-channel-choice]');
     if (channel) { selectChannel(channel.dataset.channelChoice); return; }
     const react = e.target.closest('[data-react-post]');
@@ -558,6 +608,8 @@
     if (action === 'copy-dola-prompt') copyText(createDolaPrompt(tpl)).then(()=>toast('Prompt copiado. Ahora puedes abrir DOLA.'));
     if (action === 'copy-dola-raw') copyText(state.dolaPreview?.rawText || state.dolaText || '');
     if (action === 'open-dola') openExternal(DOLA_EXTERNAL_URL);
+    if (action === 'choose-other-template') { state.dolaFlowActive = false; state.dolaPreview = null; render(); }
+    if (action === 'manual-from-template') { const t = state.publishTemplate || templates[0]; state.publishMode='manual'; state.publishDraft={type:t.type, category:t.category, title:'', description:'', channel:'dola'}; render(); }
     if (action === 'use-dola-result' || action === 'preview-dola-result') useDolaResult();
     if (action === 'clear-dola-result') { state.dolaText=''; state.dolaPreview=null; render(); }
     if (action === 'publish-dola-preview') publishDolaPreview();
@@ -586,47 +638,54 @@
     state.dolaText = text;
     const parsed = parseDolaText(text);
     state.dolaPreview = parsed;
-    toast(parsed.needsReview ? 'Texto conservado. Completa lo que falte antes de publicar.' : 'Texto organizado. Revisa la vista previa.');
+    toast(parsed.needsReview ? 'Texto usado como descripción. Revisa la zona antes de publicar.' : 'Texto usado como descripción. Revisa la vista previa.');
     render();
   }
 
   function parseDolaText(text){
-    const clean = String(text || '').replace(/\r\n/g, '\n');
-    const getSingle = (...labels) => {
-      for (const label of labels) {
-        const pattern = new RegExp(`(?:^|\\n)\\s*${label}\\s*:\\s*([^\\n]+)`, 'i');
-        const m = clean.match(pattern);
-        if (m && m[1]) return m[1].trim();
-      }
-      return '';
-    };
-    const getBlock = (labelRegex, stopRegex) => {
-      const pattern = new RegExp(`(?:^|\\n)\\s*${labelRegex}\\s*:\\s*([\\s\\S]*?)(?=\\n\\s*(?:${stopRegex})\\s*:|\\n\\s*===\\s*FIN|$)`, 'i');
-      const m = clean.match(pattern);
-      return m ? m[1].trim() : '';
-    };
-    const type = normalizeType(getSingle('Tipo')) || '';
-    const category = getSingle('Categor[ií]a', 'Categoria');
-    const title = getSingle('T[ií]tulo', 'Titulo');
-    const zone = getSingle('Zona', 'Ubicaci[oó]n', 'Municipio');
-    const description = getBlock('Descripci[oó]n', 'Canal recomendado|Preguntas sugeridas|Tipo|Categor[ií]a|Categoria|T[ií]tulo|Titulo|Zona|Ubicaci[oó]n|Municipio') || clean.replace(/===.*?===/g,'').trim();
-    const channelLine = getSingle('Canal recomendado', 'Canal');
-    const questionsBlock = getBlock('Preguntas sugeridas', 'Canal recomendado|Tipo|Categor[ií]a|Categoria|T[ií]tulo|Titulo|Zona|Ubicaci[oó]n|Municipio|Descripci[oó]n');
-    const questions = questionsBlock ? questionsBlock.split('\n').map(q => q.replace(/^\s*[-•]?\s*\d*[.)]?\s*/,'').trim()).filter(Boolean) : [];
-    const fallbackDescription = description || clean;
-    const parsed = {
-      type: type || 'Solicitante',
-      category: category || '',
-      title: title || firstSentence(fallbackDescription) || 'Publicación creada con DOLA',
+    const clean = String(text || '').replace(/\r\n/g, '\n').trim();
+    const tpl = state.publishTemplate || templates[0];
+    const lines = clean.split('\n').map(l => l.trim()).filter(Boolean);
+    const title = cleanTitle(lines[0] || tpl.title || 'Publicación creada con DOLA');
+    const zone = detectZone(clean);
+    return {
+      type: tpl.type || 'Solicitante',
+      category: tpl.category || 'General',
+      title: title || tpl.title || 'Publicación creada con DOLA',
       zone: zone || '',
-      description: fallbackDescription,
-      channel: /whats/i.test(channelLine) ? 'whatsapp' : 'dola',
-      questions,
+      description: clean,
+      channel: 'dola',
+      questions: [],
       rawText: clean,
-      needsReview: !(type && category && title && zone && description)
+      needsReview: !zone
     };
-    return parsed;
   }
+
+  function detectZone(text=''){
+    const clean = String(text || '');
+    const patterns = [
+      /(?:📍\s*)?Zona\s*:\s*([^\n]+)/i,
+      /(?:📍\s*)?Ubicaci[oó]n\s*:\s*([^\n]+)/i,
+      /(?:📍\s*)?Municipio\s*:\s*([^\n]+)/i,
+      /(?:estoy en|ubicad[oa] en|zona de)\s+([^\.\n]+)/i
+    ];
+    for (const p of patterns) {
+      const m = clean.match(p);
+      if (m && m[1]) return m[1].trim().replace(/^[-: ]+/, '').slice(0,90);
+    }
+    return '';
+  }
+
+  function cleanTitle(line=''){
+    return String(line || '')
+      .replace(/^#+\s*/, '')
+      .replace(/^\*+|\*+$/g, '')
+      .replace(/^\[[^\]]*\]\s*/, '')
+      .replace(/^[\p{Emoji_Presentation}\p{Extended_Pictographic}\s]+/u, '')
+      .trim()
+      .slice(0,90);
+  }
+
   function normalizeType(t=''){ return /agente/i.test(t) ? 'Agente' : /negocio/i.test(t) ? 'Negocio' : /solicit/i.test(t) ? 'Solicitante' : ''; }
   function firstSentence(s=''){ return String(s||'').split(/[.\n]/).map(x=>x.trim()).filter(Boolean)[0]?.slice(0,90); }
 

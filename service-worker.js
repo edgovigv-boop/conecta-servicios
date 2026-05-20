@@ -1,10 +1,10 @@
-const CACHE_NAME = 'conecta-servicios-v5-0-1-dola-pegado-inteligente';
+const CACHE_NAME = 'conecta-servicios-v5-0-2-dola-flujo-plantillas-limpio';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=5.0.1-dola-pegado-inteligente',
-  '/app.js?v=5.0.1-dola-pegado-inteligente',
-  '/manifest.json?v=5.0.1-dola-pegado-inteligente'
+  '/styles.css?v=5.0.2-dola-flujo-plantillas-limpio',
+  '/app.js?v=5.0.2-dola-flujo-plantillas-limpio',
+  '/manifest.json?v=5.0.2-dola-flujo-plantillas-limpio'
 ];
 
 self.addEventListener('install', (event) => {

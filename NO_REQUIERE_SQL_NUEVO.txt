@@ -1,3 +1,1 @@
-No requiere SQL nuevo para esta corrección v5.0.1.
-
-La corrección funciona en modo piloto con localStorage.
+No requiere SQL nuevo para v5.0.2. Esta corrección funciona en modo piloto con localStorage.

@@ -1,27 +1,25 @@
-# Conecta Servicios v5.0.1 — DOLA pegado inteligente
+# Conecta Servicios v5.0.2 — DOLA flujo de plantillas limpio
 
-Versión limpia de Conecta Servicios con corrección del flujo **Crear con ayuda de DOLA**.
+Corrección enfocada en que el botón **+ Publicar** y todas las plantillas abran una página clara de creación con DOLA, sin mandar al usuario al formulario manual ni intentar separar campos de forma pesada.
 
-## Qué cambia en v5.0.1
+## Qué cambia
 
-- El prompt generado para DOLA ahora pide una experiencia conversacional: **una pregunta a la vez**.
-- El prompt pide a DOLA entregar al final un bloque estructurado para copiar y pegar en Conecta.
-- El cuadro de prompt incluye botón/ícono de copiar arriba a la derecha.
-- El flujo de DOLA incluye un área clara: **“Pega aquí el texto generado por DOLA”**.
-- Al pegar el texto, Conecta intenta extraer:
-  - Tipo
-  - Categoría
-  - Título
-  - Zona
-  - Descripción
-  - Canal recomendado
-  - Preguntas sugeridas
-- Conecta ya no manda directo al formulario manual: muestra una **vista previa de publicación**.
-- Desde la vista previa puedes:
-  - Publicar ahora
-  - Editar
-  - Volver a DOLA
-- Si el texto no se puede interpretar completo, Conecta conserva el texto y pide completar solo lo faltante.
+- Al entrar a **Publicar → Crear con DOLA**, primero se muestran las plantillas.
+- Al seleccionar cualquier plantilla, se abre una página limpia llamada **Crear publicación con DOLA**.
+- El prompt para DOLA ahora pide:
+  - una sola pregunta a la vez;
+  - no usar tablas;
+  - no usar JSON;
+  - no entregar campos técnicos;
+  - generar una publicación final visualmente ordenada.
+- Conecta ya no intenta separar obligatoriamente el resultado de DOLA en muchos campos.
+- Conecta usa:
+  - la plantilla elegida para tipo/categoría/intención;
+  - la primera línea del texto de DOLA como título sugerido;
+  - todo el texto pegado como descripción principal.
+- Después de pegar el texto, se muestra **Vista previa de tu publicación**.
+- Desde la vista previa se puede publicar, editar o volver a DOLA.
+- Todas las plantillas tienen acción. Ninguna debe quedarse sin hacer nada.
 
 ## Cómo probar localmente
 
@@ -36,19 +34,20 @@ Abrir:
 http://localhost:8080
 ```
 
-## Checklist de prueba
+## Checklist rápido
 
-1. Entrar a **Publicar**.
-2. Elegir **Crear con DOLA**.
-3. Seleccionar plantilla “Busco mensajero cerca”.
-4. Copiar prompt.
-5. Confirmar que el prompt pide: “Hazme una sola pregunta a la vez”.
-6. Pegar un bloque generado por DOLA.
-7. Tocar **Usar este texto** o **Ver vista previa**.
-8. Confirmar que aparece **Vista previa de tu publicación**.
-9. Publicar desde la vista previa.
-10. Confirmar que aparece en **Mis publicaciones**, **Inicio** y **Explorar**.
-11. Probar un texto incompleto y confirmar que no se pierde.
+1. Tocar **+ Publicar**.
+2. Entrar a **Crear con DOLA**.
+3. Seleccionar **Busco mensajero cerca**.
+4. Confirmar que abre **Crear publicación con DOLA**.
+5. Copiar prompt.
+6. Abrir DOLA.
+7. Pegar en Conecta una publicación final generada por DOLA.
+8. Confirmar que aparece vista previa.
+9. Confirmar que no manda al formulario manual completo.
+10. Publicar.
+11. Confirmar que aparece en Inicio, Explorar y Mis publicaciones.
+12. Probar al menos tres plantillas.
 
 ## Supabase / SQL
 
@@ -61,5 +60,5 @@ No desplegar automáticamente. Probar localmente antes de subir a GitHub/Vercel.
 ## Commit sugerido
 
 ```text
-Corregir pegado inteligente de DOLA y vista previa de publicación v5.0.1
+Corregir flujo de plantillas con DOLA y descripción directa v5.0.2
 ```
