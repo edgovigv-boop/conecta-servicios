@@ -1,0 +1,26 @@
+CHECKLIST v4.9.46 — Chatbot Conecta tipo WhatsApp
+
+1. Abrir la app en incógnito o con ?v=4946.
+2. Tocar + Publicar.
+3. Crear publicación como Solicitante usando Chatbot Conecta.
+4. Confirmar que aparece la pregunta: ¿Cómo quieres recibir respuestas?
+5. Elegir Chatbot Conecta.
+6. Confirmar que se pueden editar preguntas/filtros.
+7. Publicar.
+8. En Explorar o feed, confirmar que aparece un solo botón: Mensaje.
+9. Tocar Mensaje y confirmar que abre conversación tipo WhatsApp.
+10. Probar botones rápidos.
+11. Confirmar resumen final.
+12. Enviar solicitud.
+13. Ver solicitud recibida en Mis publicaciones.
+14. Crear publicación como Solicitante usando WhatsApp.
+15. Confirmar que pide WhatsApp.
+16. Confirmar que esa publicación NO muestra Chatbot Conecta.
+17. Crear publicación como Agente usando Chatbot Conecta.
+18. Crear publicación como Negocio de comida con plantilla rosticería.
+19. Confirmar que solo aparece un canal de contacto por publicación.
+20. Confirmar que Admin no tiene restricciones.
+21. Confirmar que foto sigue funcionando.
+22. Confirmar que no hay barras flotantes laterales.
+23. Confirmar que Explorar muestra publicaciones tipo feed.
+24. Confirmar que Perfil solo conserva Mis publicaciones y Mi acceso / membresía.

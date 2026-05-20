@@ -1,8 +1,8 @@
 {
   "name": "Conecta Servicios",
   "short_name": "Conecta",
-  "description": "Conecta Servicios v4.9.44 - publicación social simple con Chatbot Conecta o WhatsApp como canal único de contacto.",
-  "start_url": "/?source=pwa&v=4.9.44-chatbot-conecta-publicacion-social",
+  "description": "Conecta Servicios v4.9.46 - Chatbot Conecta tipo WhatsApp con canal único por publicación o WhatsApp opcional.",
+  "start_url": "/?source=pwa&v=4.9.46-chatbot-conecta-tipo-whatsapp",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -35,5 +35,5 @@
       "purpose": "maskable"
     }
   ],
-  "id": "/?v=4.9.44-chatbot-conecta-publicacion-social"
+  "id": "/?v=4.9.46-chatbot-conecta-tipo-whatsapp"
 }

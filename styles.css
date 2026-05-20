@@ -2,7 +2,7 @@
 ------------------------------------------------------------------
 PROPIEDAD EXCLUSIVA - DERECHOS RESERVADOS © 2026
 Proyecto: Conecta Servicios
-Versión: v4.9.4 - Lenguaje de plataforma y home ordenado
+Versión: v4.9.46 - Chatbot Conecta tipo WhatsApp
 ------------------------------------------------------------------
 */
 
@@ -4560,3 +4560,119 @@ body[data-publish-model-version="v4.9.42-publicacion-unificada-freemium"] #publi
 .assistant-floating,
 .publication-assistant-floating,
 .right-floating-toolbar { display:none !important; }
+
+
+/* ------------------------------------------------------------------
+   v4.9.45 — Layout limpio, feed social y Chatbot Conecta
+------------------------------------------------------------------ */
+body.layout-feed-chatbot-v4945{--v4945-purple:#5b22cf;--v4945-ink:#171329;--v4945-soft:#f7f4ff;}
+body.layout-feed-chatbot-v4945 .floating-category-dock,
+body.layout-feed-chatbot-v4945 .member-access-floating,
+body.layout-feed-chatbot-v4945 .ba-quick-access-v4939,
+body.layout-feed-chatbot-v4945 .business-assistant-floating,
+body.layout-feed-chatbot-v4945 .publication-assistant-floating,
+body.layout-feed-chatbot-v4945 .assistant-floating-v4940,
+body.layout-feed-chatbot-v4945 .floating-action-stack,
+body.layout-feed-chatbot-v4945 .floating-actions,
+body.layout-feed-chatbot-v4945 .right-floating-icons,
+body.layout-feed-chatbot-v4945 .quick-actions-floating,
+body.layout-feed-chatbot-v4945 .social-post-side-actions,
+body.layout-feed-chatbot-v4945 .v4918-feed-actions,
+body.layout-feed-chatbot-v4945 #starSectionsV4944,
+body.layout-feed-chatbot-v4945 .star-sections-v4944,
+body.layout-feed-chatbot-v4945 .v4945-hidden-noise{display:none!important;visibility:hidden!important;pointer-events:none!important;}
+body.layout-feed-chatbot-v4945 .publicaciones-results{padding-right:0!important;}
+body.layout-feed-chatbot-v4945 .conecta-head-carousel-v4945{display:flex!important;gap:9px;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;padding:6px 14px 10px;background:#f8f9fd;scroll-snap-type:x proximity;}
+body.layout-feed-chatbot-v4945 .conecta-head-carousel-v4945::-webkit-scrollbar{display:none;}
+body.layout-feed-chatbot-v4945 .conecta-head-carousel-v4945 button{border:0;background:transparent;color:#343045;display:grid;justify-items:center;gap:5px;min-width:68px;padding:0;scroll-snap-align:start;font-weight:950;}
+body.layout-feed-chatbot-v4945 .conecta-head-carousel-v4945 span{width:38px;height:38px;border-radius:15px;background:#fff;display:grid;place-items:center;box-shadow:0 9px 19px rgba(45,31,86,.09);font-size:1.04rem;color:var(--v4945-purple);}
+body.layout-feed-chatbot-v4945 .conecta-head-carousel-v4945 small{max-width:82px;text-align:center;font-size:.58rem;line-height:1.02;white-space:normal;color:#303648;font-weight:950;}
+body.layout-feed-chatbot-v4945 .conecta-head-carousel-v4945 button.active span{background:#f1eaff;color:#4b18b9;box-shadow:inset 0 -3px 0 var(--v4945-purple),0 9px 19px rgba(45,31,86,.09);}
+body.layout-feed-chatbot-v4945 .conecta-head-carousel-v4945 button.active small{color:#4b18b9;}
+body.layout-feed-chatbot-v4945 .v4922-action-row{position:static!important;right:auto!important;bottom:auto!important;display:flex!important;flex-wrap:wrap;gap:8px;margin-top:6px;justify-content:flex-start!important;width:100%!important;}
+body.layout-feed-chatbot-v4945 .v4922-action-row button{min-width:46px;min-height:38px;border-radius:15px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(7px);color:#fff;display:inline-grid;place-items:center;font-size:1.08rem;}
+body.layout-feed-chatbot-v4945 .v4922-action-row small{font-size:.58rem;color:#fff;}
+body.layout-feed-chatbot-v4945 .v4922-feed-copy{right:14px!important;}
+body.layout-feed-chatbot-v4945 .explore-social-feed-v4945{display:grid;gap:16px;padding:10px 12px 96px!important;background:#f8f9fd;}
+body.layout-feed-chatbot-v4945 .explore-social-feed-v4945 .real-feed-card,
+body.layout-feed-chatbot-v4945 .explore-social-feed-v4945 .v4918-feed-card{border-radius:26px;background:#fff;box-shadow:0 14px 34px rgba(27,18,60,.09);overflow:hidden;border:1px solid rgba(91,34,207,.07);}
+body.layout-feed-chatbot-v4945 .explore-social-feed-v4945 .real-feed-cover{border-radius:0!important;}
+body.layout-feed-chatbot-v4945 .explore-template-note-v4945{border:1px solid #eadfff;background:#fff;border-radius:22px;padding:14px;box-shadow:0 10px 24px rgba(42,24,91,.06);}
+body.layout-feed-chatbot-v4945 .explore-template-note-v4945 strong{display:block;color:#25173f;font-size:1rem;}
+body.layout-feed-chatbot-v4945 .explore-template-note-v4945 p{margin:4px 0 0;color:#6f6682;font-weight:750;font-size:.84rem;}
+body.layout-feed-chatbot-v4945 .chatbot-config-publish-v4945{margin:14px 0;border:1px solid #e7dcff;background:linear-gradient(180deg,#fff,#fbf9ff);border-radius:24px;padding:15px;box-shadow:0 14px 30px rgba(54,28,118,.08);display:grid;gap:12px;}
+body.layout-feed-chatbot-v4945 .chatbot-config-head-v4945{display:grid;grid-template-columns:auto 1fr;gap:11px;align-items:start;}
+body.layout-feed-chatbot-v4945 .chatbot-config-head-v4945>span{width:48px;height:48px;border-radius:18px;background:#efe8ff;color:#4d18b9;display:grid;place-items:center;font-size:1.45rem;}
+body.layout-feed-chatbot-v4945 .chatbot-config-head-v4945 strong{display:block;color:#211934;font-size:1.05rem;}
+body.layout-feed-chatbot-v4945 .chatbot-config-head-v4945 p{margin:4px 0 0;color:#665b7c;font-size:.84rem;font-weight:700;line-height:1.28;}
+body.layout-feed-chatbot-v4945 .contact-mode-v4945{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+body.layout-feed-chatbot-v4945 .contact-mode-v4945 label{display:flex;align-items:center;gap:7px;padding:10px;border:1px solid #ede7f7;border-radius:15px;background:#fff;color:#2d2441;font-weight:850;font-size:.82rem;}
+body.layout-feed-chatbot-v4945 .chatbot-config-publish-v4945 label{display:grid;gap:6px;color:#342743;font-weight:900;font-size:.84rem;}
+body.layout-feed-chatbot-v4945 .chatbot-config-publish-v4945 input,
+body.layout-feed-chatbot-v4945 .chatbot-config-publish-v4945 select,
+body.layout-feed-chatbot-v4945 .chatbot-config-publish-v4945 textarea{width:100%;border:1px solid #e8e0f5;border-radius:15px;padding:11px 12px;background:#fff;color:#1c142a;font-weight:700;font-family:inherit;}
+body.layout-feed-chatbot-v4945 .quick-chatbot-presets-v4945{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+body.layout-feed-chatbot-v4945 .quick-chatbot-presets-v4945 button{border:1px solid #dcccff;background:#f7f3ff;color:#4a18b1;border-radius:15px;padding:10px;font-weight:950;font-size:.78rem;}
+body.layout-feed-chatbot-v4945 .chatbot-config-actions-v4945{display:flex;gap:8px;flex-wrap:wrap;}
+body.layout-feed-chatbot-v4945 .chatbot-config-note-v4945{margin:0;border-radius:16px;padding:10px 12px;background:#f1fff0;color:#265d1d;font-weight:800;font-size:.78rem;line-height:1.3;}
+body.layout-feed-chatbot-v4945 .v4945-income-options .survey-path-grid button strong{font-size:.95rem;}
+@media(max-width:380px){
+  body.layout-feed-chatbot-v4945 .conecta-head-carousel-v4945 button{min-width:62px;}
+  body.layout-feed-chatbot-v4945 .conecta-head-carousel-v4945 small{max-width:70px;font-size:.54rem;}
+  body.layout-feed-chatbot-v4945 .contact-mode-v4945,
+  body.layout-feed-chatbot-v4945 .quick-chatbot-presets-v4945{grid-template-columns:1fr;}
+}
+
+/* ------------------------------------------------------------------
+   v4.9.46 — Chatbot Conecta tipo WhatsApp + canal único
+------------------------------------------------------------------ */
+.contact-channel-panel-v4946{
+  margin:16px 0;
+  padding:16px;
+  border-radius:22px;
+  background:linear-gradient(180deg,#ffffff 0%,#f7f2ff 100%);
+  border:1px solid rgba(111,52,223,.16);
+  box-shadow:0 14px 32px rgba(54,19,108,.10);
+  display:grid;
+  gap:14px;
+}
+.channel-head-v4946{display:flex;gap:12px;align-items:flex-start}
+.channel-head-v4946>span{width:46px;height:46px;border-radius:17px;display:grid;place-items:center;background:#ede5ff;font-size:1.35rem;box-shadow:inset 0 0 0 1px rgba(111,52,223,.12)}
+.channel-head-v4946 strong{display:block;font-size:1.03rem;color:#20133d;font-weight:950}
+.channel-head-v4946 p{margin:4px 0 0;color:#675b7e;font-size:.88rem;line-height:1.35}
+.channel-options-v4946{display:grid;gap:10px}
+.channel-option-v4946{position:relative;display:grid;gap:4px;padding:13px 14px 13px 42px;border:1px solid #e4daf8;border-radius:18px;background:#fff;color:#2b2440;box-shadow:0 8px 18px rgba(54,19,108,.06)}
+.channel-option-v4946 input{position:absolute;left:14px;top:18px;accent-color:#6f34df}
+.channel-option-v4946 b{font-weight:950;font-size:.98rem}
+.channel-option-v4946 small{color:#746c83;line-height:1.28;font-size:.82rem}
+.channel-option-v4946.selected{border-color:#6f34df;background:#f4efff;box-shadow:0 12px 24px rgba(111,52,223,.12)}
+.channel-option-v4946.recommended::after{content:"Recomendado";position:absolute;right:12px;top:10px;font-size:.68rem;font-weight:900;color:#fff;background:#38b000;border-radius:999px;padding:4px 8px;letter-spacing:.01em}
+.whatsapp-only-note-v4946,.channel-note-v4946{border-radius:16px;background:#eefbe8;border:1px solid rgba(56,176,0,.16);color:#28581a;padding:11px 12px;font-size:.84rem;line-height:1.35;margin:0}
+.chatbot-questions-area-v4946{display:grid;gap:12px}
+.chatbot-questions-area-v4946 label{display:grid;gap:7px;font-weight:850;color:#2d2347;font-size:.9rem}
+.chatbot-questions-area-v4946 select,.chatbot-questions-area-v4946 textarea{width:100%;border:1px solid #ddd2ef;border-radius:16px;padding:11px 12px;background:#fff;color:#24163e;outline:none;resize:vertical}
+.chatbot-questions-area-v4946 textarea:focus,.chatbot-questions-area-v4946 select:focus{border-color:#7b45f0;box-shadow:0 0 0 3px rgba(123,69,240,.12)}
+.preset-buttons-v4946{display:flex;gap:8px;overflow-x:auto;padding-bottom:3px}
+.preset-buttons-v4946 button{border:0;border-radius:999px;padding:9px 12px;background:#ece5ff;color:#39158d;font-weight:900;white-space:nowrap}
+.required-channel-v4946{outline:2px solid rgba(56,176,0,.25);border-radius:16px;padding:6px}
+.legacy-chatbot-panel-hidden-v4946{display:none!important}
+.contact-main-v4944{white-space:nowrap}
+
+.chatbot-wa-overlay-v4946{position:fixed;inset:0;z-index:9999;background:rgba(20,0,71,.35);display:flex;align-items:stretch;justify-content:center;padding:0;backdrop-filter:blur(4px)}
+.chatbot-wa-sheet-v4946{width:100%;max-width:430px;height:100%;background:#efeae2;display:flex;flex-direction:column;box-shadow:0 0 44px rgba(0,0,0,.28);position:relative;overflow:hidden}
+.chatbot-wa-header-v4946{display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 10px;background:#5b22cf;color:#fff;box-shadow:0 8px 22px rgba(20,0,71,.18)}
+.chatbot-wa-header-v4946 button{width:38px;height:38px;border:0;border-radius:14px;background:rgba(255,255,255,.16);color:#fff;font-size:1.8rem;line-height:1;display:grid;place-items:center}
+.chatbot-wa-header-v4946 strong{display:block;font-size:1rem;font-weight:950}
+.chatbot-wa-header-v4946 small{display:block;color:#e2d8ff;font-size:.78rem;max-width:310px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chatbot-wa-messages-v4946{flex:1;overflow:auto;padding:16px 12px 12px;display:flex;flex-direction:column;gap:8px;background:linear-gradient(180deg,#efeae2 0%,#f7f4ef 100%)}
+.wa-bubble-v4946{max-width:84%;border-radius:18px;padding:10px 12px;font-size:.92rem;line-height:1.35;white-space:pre-wrap;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.wa-bubble-v4946.bot{align-self:flex-start;background:#fff;color:#221a30;border-top-left-radius:6px}
+.wa-bubble-v4946.user{align-self:flex-end;background:#dcf8c6;color:#14340a;border-top-right-radius:6px}
+.chatbot-wa-replies-v4946{display:flex;gap:8px;overflow-x:auto;padding:10px 12px;background:rgba(239,234,226,.92);border-top:1px solid rgba(0,0,0,.04)}
+.chatbot-wa-replies-v4946 button{border:1px solid #d3c8e8;border-radius:999px;background:#fff;color:#39158d;font-weight:900;padding:9px 12px;white-space:nowrap;box-shadow:0 6px 14px rgba(54,19,108,.08)}
+.chatbot-wa-input-v4946{display:flex;gap:8px;padding:10px 12px calc(env(safe-area-inset-bottom,0px) + 10px);background:#f8f6f2;border-top:1px solid rgba(0,0,0,.06)}
+.chatbot-wa-input-v4946 input{flex:1;border:0;border-radius:999px;padding:12px 14px;background:#fff;outline:none;color:#231735;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.chatbot-wa-input-v4946 button{border:0;border-radius:999px;background:#38b000;color:#fff;font-weight:950;padding:0 16px;box-shadow:0 8px 18px rgba(56,176,0,.22)}
+body.chatbot-conecta-whatsapp-v4946 .floating-actions,
+body.chatbot-conecta-whatsapp-v4946 .floating-menu,
+body.chatbot-conecta-whatsapp-v4946 [class*="floating"][class*="assistant"]{display:none!important}

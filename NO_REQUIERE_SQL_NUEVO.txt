@@ -1,4 +1,9 @@
-No requiere SQL nuevo.
+No requiere SQL nuevo para probar la v4.9.46.
 
-Esta versión conserva el modo piloto con localStorage para validar la experiencia.
-La persistencia multiusuario en Supabase puede implementarse después con tablas de membresías, usuarios, embajadores y solicitudes.
+Modo piloto:
+- configuración del Chatbot Conecta en localStorage;
+- respuestas recibidas en localStorage;
+- canal elegido por publicación en localStorage / referencia de publicación;
+- publicación gratis de 30 días en localStorage.
+
+Para producción multiusuario real, después convendrá crear tablas en Supabase para chatbot_configs, chatbot_responses y publication_contact_channels.

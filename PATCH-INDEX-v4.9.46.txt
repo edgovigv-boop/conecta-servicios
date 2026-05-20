@@ -1,0 +1,24 @@
+PATCH-INDEX-v4.9.46-chatbot-conecta-tipo-whatsapp
+
+Aplicar en index.html:
+
+1) Reemplazar cualquier referencia anterior de styles.css por:
+   styles.css?v=4.9.46-chatbot-conecta-tipo-whatsapp
+
+2) Reemplazar cualquier referencia anterior de app.js por:
+   app.js?v=4.9.46-chatbot-conecta-tipo-whatsapp
+
+3) Reemplazar cualquier referencia anterior de manifest.json por:
+   manifest.json?v=4.9.46-chatbot-conecta-tipo-whatsapp
+
+4) Reemplazar cualquier referencia anterior de service-worker.js por:
+   service-worker.js?v=4.9.46-chatbot-conecta-tipo-whatsapp
+
+5) Si existe body data-version, dejarlo así:
+   data-version="v4.9.46-chatbot-conecta-tipo-whatsapp"
+
+6) Si el title contiene una versión anterior, actualizar a:
+   Conecta Servicios v4.9.46
+
+Nota:
+Este patch es indispensable para romper caché y evitar que Vercel o el service worker sigan sirviendo versiones anteriores.

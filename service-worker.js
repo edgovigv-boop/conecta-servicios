@@ -1,12 +1,12 @@
-// Conecta Servicios v4.9.44 — Chatbot Conecta + publicación social simplificada
-const CACHE_NAME = "conecta-servicios-v4.9.44-chatbot-conecta-publicacion-social";
+// Conecta Servicios v4.9.46 — Chatbot Conecta tipo WhatsApp + canal único
+const CACHE_NAME = "conecta-servicios-v4.9.46-chatbot-conecta-tipo-whatsapp";
 const ASSETS = [
   "/",
   "/index.html",
-  "/styles.css?v=4.9.44-chatbot-conecta-publicacion-social",
-  "/app.js?v=4.9.44-chatbot-conecta-publicacion-social",
-  "/manifest.json?v=4.9.44-chatbot-conecta-publicacion-social",
-  "/service-worker.js?v=4.9.44-chatbot-conecta-publicacion-social"
+  "/styles.css?v=4.9.46-chatbot-conecta-tipo-whatsapp",
+  "/app.js?v=4.9.46-chatbot-conecta-tipo-whatsapp",
+  "/manifest.json?v=4.9.46-chatbot-conecta-tipo-whatsapp",
+  "/service-worker.js?v=4.9.46-chatbot-conecta-tipo-whatsapp"
 ];
 self.addEventListener("install", event => {
   self.skipWaiting();

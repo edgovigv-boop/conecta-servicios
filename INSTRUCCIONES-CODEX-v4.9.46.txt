@@ -1,0 +1,28 @@
+INSTRUCCIONES PARA CODEX — v4.9.46
+
+1. Reemplazar en raíz:
+   - app.js
+   - styles.css
+   - service-worker.js
+   - manifest.json
+   - vercel.json
+
+2. Aplicar PATCH-INDEX-v4.9.46.txt sobre index.html.
+
+3. No desplegar automáticamente si el usuario quiere revisar antes.
+
+4. Confirmar que no se requiere SQL nuevo para piloto.
+
+5. Probar:
+   - Canal único Chatbot Conecta / WhatsApp.
+   - Botón único “Mensaje”.
+   - Chatbot tipo WhatsApp.
+   - Publicación gratuita 30 días.
+   - Admin sin restricciones.
+   - Subida de fotos.
+
+Versión:
+v4.9.46-chatbot-conecta-tipo-whatsapp
+
+Commit sugerido:
+Implementar Chatbot Conecta tipo WhatsApp con canal único por publicación
