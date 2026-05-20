@@ -1,9 +1,9 @@
-/* Conecta Servicios v5.0.3 - Plus simple, DOLA final y media sugerida */
+/* Conecta Servicios v5.0.4 - Media sugerida y placeholder */
 (() => {
   'use strict';
 
-  const VERSION = 'v5.0.3-plus-simple-dola-final-media';
-  const CACHE_HINT = 'conecta-servicios-v5-0-3-plus-simple-dola-final-media';
+  const VERSION = 'v5.0.4-media-sugerida-y-placeholder';
+  const CACHE_HINT = 'conecta-servicios-v5-0-4-media-sugerida-placeholder';
   const DOLA_EXTERNAL_URL = 'https://dola.com';
   const MEMBERSHIP_PRICE = 98;
   const FREE_DAYS = 30;
@@ -553,23 +553,75 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
     </article>`;
   }
 
-  function renderMedia(p){
-    if (p.mediaData) {
-      if (p.mediaKind === 'video') return `<video src="${p.mediaData}" muted playsinline controls></video>`;
-      return `<img src="${p.mediaData}" alt="${escapeHtml(p.title)}" />`;
+  function renderMedia(p={}){
+    const title = p.title || 'Publicación de Conecta Servicios';
+    const data = String(p.mediaData || '').trim();
+    const kind = String(p.mediaKind || '').toLowerCase();
+    if (data && isUsableMediaSource(data)) {
+      if (kind === 'video' || data.startsWith('data:video')) return `<video src="${escapeHtml(data)}" muted playsinline controls></video>`;
+      return `<img src="${escapeHtml(data)}" alt="${escapeHtml(title)}" loading="lazy" />`;
     }
-    if (p.mediaPath) return p.mediaPath.endsWith('.mp4') ? `<video src="${p.mediaPath}" muted playsinline controls onerror="this.parentElement.innerHTML='${placeholderText(p)}'"></video>` : `<img src="${p.mediaPath}" alt="${escapeHtml(p.title)}" onerror="this.parentElement.innerHTML='${placeholderText(p)}'" />`;
-    return placeholderText(p);
+
+    const path = String(p.mediaPath || suggestedMediaPath(p) || '').trim();
+    const fallback = placeholderText(p);
+    if (path && isUsableMediaSource(path)) {
+      const fallbackHidden = fallback.replace('post-placeholder', 'post-placeholder media-fallback');
+      const fail = `this.style.display='none'; if(this.nextElementSibling){this.nextElementSibling.style.display='grid';}`;
+      if (/\.(mp4|webm)(\?.*)?$/i.test(path)) {
+        return `<video src="${escapeHtml(path)}" muted playsinline controls onerror="${fail}"></video>${fallbackHidden}`;
+      }
+      return `<img src="${escapeHtml(path)}" alt="${escapeHtml(title)}" loading="lazy" onerror="${fail}" />${fallbackHidden}`;
+    }
+    return fallback;
   }
-  function placeholderText(p){ return `<div class="post-placeholder"><div><div style="font-size:2rem">${p.type==='Negocio'?'🏪':p.type==='Agente'?'🛵':'🧡'}</div><div>${escapeHtml(p.mediaLabel||p.category||'Conecta Servicios')}</div></div></div>`; }
+
+  function isUsableMediaSource(src=''){
+    const value = String(src || '').trim();
+    if (!value || value === 'undefined' || value === 'null') return false;
+    if (/[<>"']/.test(value)) return false;
+    return /^(data:image|data:video|blob:|https?:|assets\/)/i.test(value) || /\.(jpg|jpeg|png|webp|gif|svg|mp4|webm)(\?.*)?$/i.test(value);
+  }
+
+  function placeholderText(p={}){
+    const label = mediaLabelFor(p);
+    const icon = mediaIconFor(p);
+    return `<div class="post-placeholder" role="img" aria-label="${escapeHtml(label)}"><div><div class="placeholder-icon">${icon}</div><div>${escapeHtml(label)}</div></div></div>`;
+  }
+
+  function mediaLabelFor(p={}){
+    const text = `${p.title||''} ${p.category||''} ${p.description||''} ${p.mediaLabel||''}`.toLowerCase();
+    if (/comida|taco|carnita|rosticer|pollo|quesadilla|refresco|papa/.test(text)) return 'Publicación de comida';
+    if (/mandado|mensaj|entrega|paquete|recoger|llevar/.test(text)) return 'Mandado local';
+    if (/verificado|validaci/.test(text)) return 'Mandado verificado';
+    if (/agente|viaje|trámite|apoyo/.test(text) || p.type === 'Agente') return 'Agente local';
+    if (/negocio|comercio|cliente|venta|consult/.test(text) || p.type === 'Negocio') return 'Negocio local';
+    if (/embajador|referid|comisi/.test(text)) return 'Embajadores Conecta';
+    if (/aprendiz|curso|capacita/.test(text)) return 'Aprendizaje';
+    return p.mediaLabel || p.category || 'Publicación local';
+  }
+
+  function mediaIconFor(p={}){
+    const label = mediaLabelFor(p).toLowerCase();
+    if (/comida/.test(label)) return '🍽️';
+    if (/mandado verificado/.test(label)) return '🛡️';
+    if (/mandado/.test(label)) return '📦';
+    if (/agente/.test(label)) return '🛵';
+    if (/negocio/.test(label)) return '🏪';
+    if (/embajador/.test(label)) return '🏆';
+    if (/aprendizaje/.test(label)) return '🎓';
+    return '📍';
+  }
+
   function suggestedMediaPath(post={}){
-    const text = `${post.title||''} ${post.category||''} ${post.description||''}`.toLowerCase();
-    if (/comida|taco|rosticer|pollo|quesadilla|refresco|papa/.test(text)) return 'assets/dola-media/comida-01.jpg';
+    const text = `${post.title||''} ${post.category||''} ${post.description||''} ${post.mediaLabel||''}`.toLowerCase();
+    if (/comida|taco|carnita|rosticer|pollo|quesadilla|refresco|papa/.test(text)) return 'assets/dola-media/comida-01.jpg';
+    if (/mandado verificado|verificado|validaci/.test(text)) return 'assets/dola-media/mandados-verificados-01.jpg';
     if (/mandado|mensaj|entrega|paquete|recoger|llevar/.test(text)) return 'assets/dola-media/mandados-01.jpg';
     if (/embajador|referid|comisi/.test(text)) return 'assets/dola-media/embajadores-01.jpg';
     if (/aprendiz|curso|capacita/.test(text)) return 'assets/dola-media/aprendizaje-01.jpg';
-    if (/agente|viaje|trámite|apoyo/.test(text)) return 'assets/dola-media/agente-01.jpg';
+    if (/agente|viaje|trámite|apoyo/.test(text) || post.type === 'Agente') return 'assets/dola-media/agente-01.jpg';
     if (/negocio|comercio|cliente|venta|consult/.test(text) || post.type === 'Negocio') return 'assets/dola-media/negocio-01.jpg';
+    if (post.type === 'Solicitante') return 'assets/dola-media/solicitante-01.jpg';
     return '';
   }
   function truncate(str='', n=150){ return str.length > n ? str.slice(0,n-1)+'…' : str; }

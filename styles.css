@@ -93,3 +93,11 @@ img,video{max-width:100%;display:block}
 .post-desc,.preview-card .post-desc,.modal p{white-space:pre-line}
 .post-media img[alt=""],.post-media img[src=""]{display:none}
 @media (max-width:420px){.choice-circles{gap:12px}.circle-choice{min-height:130px;padding:12px}.circle-choice span{font-size:2rem}}
+
+/* v5.0.4: media segura y formato DOLA */
+.post-media{min-height:168px}
+.post-media .media-fallback{display:none;height:100%}
+.placeholder-icon{font-size:2.35rem;line-height:1;margin-bottom:8px}
+.post-desc,.preview-card .post-desc,.modal p{white-space:pre-line;overflow-wrap:anywhere}
+.prompt-box{white-space:pre-line;overflow-wrap:anywhere}
+.post-media img[src=""],.post-media img:not([src]){display:none}

@@ -1,0 +1,14 @@
+CHECKLIST v5.0.4 — Media sugerida y placeholder
+
+1. Publicar con DOLA sin subir imagen.
+2. Confirmar que aparece imagen sugerida o placeholder.
+3. Confirmar que no aparece `"/>`.
+4. Confirmar que no hay imagen rota.
+5. Probar plantilla de comida.
+6. Probar plantilla de mandados.
+7. Probar plantilla de agente.
+8. Probar publicación manual sin imagen.
+9. Confirmar que Inicio y Explorar muestran bien la tarjeta.
+10. Confirmar que la descripción respeta saltos de línea.
+11. Confirmar que no se rompe WhatsApp ni DOLA_EXTERNAL_URL.
+12. Confirmar que admin no tiene restricciones.

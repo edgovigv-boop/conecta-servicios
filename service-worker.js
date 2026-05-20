@@ -1,10 +1,18 @@
-const CACHE_NAME = 'conecta-servicios-v5-0-3-plus-simple-dola-final-media';
+const CACHE_NAME = 'conecta-servicios-v5-0-4-media-sugerida-placeholder';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=5.0.3-plus-simple-dola-final-media',
-  '/app.js?v=5.0.3-plus-simple-dola-final-media',
-  '/manifest.json?v=5.0.3-plus-simple-dola-final-media'
+  '/styles.css?v=5.0.4-media-sugerida-y-placeholder',
+  '/app.js?v=5.0.4-media-sugerida-y-placeholder',
+  '/manifest.json?v=5.0.4-media-sugerida-y-placeholder',
+  '/assets/dola-media/comida-01.jpg',
+  '/assets/dola-media/mandados-01.jpg',
+  '/assets/dola-media/agente-01.jpg',
+  '/assets/dola-media/negocio-01.jpg',
+  '/assets/dola-media/embajadores-01.jpg',
+  '/assets/dola-media/aprendizaje-01.jpg',
+  '/assets/dola-media/mandados-verificados-01.jpg',
+  '/assets/dola-media/solicitante-01.jpg'
 ];
 
 self.addEventListener('install', (event) => {

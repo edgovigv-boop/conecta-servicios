@@ -1,4 +1,5 @@
-# Conecta Servicios v5.0.3
+# Conecta Servicios v5.0.4 — Media sugerida y placeholder
+
 
 Versión: `v5.0.3-plus-simple-dola-final-media`
 
@@ -78,3 +79,26 @@ Simplificar plus con DOLA o Manual y media sugerida v5.0.3
 ## SQL
 
 No requiere SQL nuevo para piloto local. Funciona con `localStorage`.
+
+## Cambios v5.0.4
+
+- Corrige render de media para evitar imágenes rotas o texto HTML visible como `"/>`.
+- Usa banco manual `assets/dola-media/` con imágenes sugeridas por categoría.
+- Si no existe media válida, muestra un placeholder limpio por tipo/categoría.
+- Conserva saltos de línea y emojis en descripciones generadas por DOLA.
+- No requiere SQL nuevo para el piloto local.
+
+### Banco de media sugerida
+
+Archivos incluidos:
+
+- `comida-01.jpg`
+- `mandados-01.jpg`
+- `agente-01.jpg`
+- `negocio-01.jpg`
+- `embajadores-01.jpg`
+- `aprendizaje-01.jpg`
+- `mandados-verificados-01.jpg`
+- `solicitante-01.jpg`
+
+Puedes reemplazarlos manualmente por fotos/videos propios manteniendo los mismos nombres.
