@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.50-dola-contextual-conecta";
+const PWA_VERSION = "v4.9.51-dola-externo-copiar-pegar";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -13238,7 +13238,7 @@ try {
 // - Mantiene Conecta como feed limpio y DOLA como asistente contextual especializado.
 // ------------------------------------------------------------------
 (function dolaContextualConectaV4950(){
-  const VERSION = "v4.9.50-dola-contextual-conecta";
+  const VERSION = "v4.9.51-dola-externo-copiar-pegar";
   const NOTICE_KEY = "conecta_dola_contextual_notice_v4950";
   const CHAT_KEY = "conecta_dola_contextual_chats_v4950";
   const DRAFT_KEY = "conecta_dola_generated_publications_v4950";
@@ -13892,4 +13892,283 @@ try {
   window.showDolaGuideV4950 = () => { addMessage("bot", guideForSection(Dola.ctx.section_origin || Dola.ctx.template_id)); renderDolaModal(); };
   window.parseDolaPasteIntoPublishV4950 = parsePasteIntoPublish;
   window.updateDolaRequestStatusV4950 = updateRequestStatus;
+})();
+
+/* ============================================================
+   v4.9.51 — Dola.com externo: copiar, abrir y pegar
+   - Conecta no intenta replicar Dola IA dentro de la app.
+   - Plantillas y mensajes abren un puente simple hacia Dola.com.
+   - Conecta genera prompt contextual, el usuario lo copia, abre Dola.com y pega el resultado en Conecta.
+   ============================================================ */
+(function(){
+  const VERSION = "v4.9.51-dola-externo-copiar-pegar";
+  const DOLA_EXTERNAL_URL = "https://www.dola.com/";
+  const MODAL_ID = "dolaExternalBridgeV4951";
+  const PASTE_PANEL_ID = "dolaExternalPastePanelV4951";
+  const ACCEPT_KEY = "conecta_dola_external_notice_ok_v4951";
+
+  const qs = (sel, root=document) => root.querySelector(sel);
+  const qsa = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+  const norm = (v="") => String(v || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const esc = (v="") => String(v ?? "").replace(/[&<>'"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[ch]));
+  const uid = (prefix="DOLA") => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`;
+  const toast = (msg) => { try { if (typeof window.toast === "function") window.toast(msg); else console.log(msg); } catch { console.log(msg); } };
+
+  const TEMPLATE_MAP = [
+    { re:/busco.*mensajer|mensajer.*cerca|mandado|entrega|envio|envío/i, template:"Busco mensajero cerca", type:"Solicitante", intention:"buscar", category:"Mandados / mensajería" },
+    { re:/pedir.*comida|tacos|rosticer|comida|cenar/i, template:"Quiero pedir comida", type:"Solicitante", intention:"buscar o publicar", category:"Comida" },
+    { re:/necesito algo|solicitante|busco ayuda|necesito/i, template:"Necesito algo", type:"Solicitante", intention:"publicar", category:"Solicitudes" },
+    { re:/quiero ganar|ganar dinero|agente|ofrecer.*servicio/i, template:"Agente / quiero ganar dinero", type:"Agente", intention:"publicar", category:"Agentes" },
+    { re:/negocio|publicar.*negocio|clientes|comercio|empresa/i, template:"Quiero publicar mi negocio", type:"Negocio", intention:"publicar", category:"Negocios" },
+    { re:/embajador|comision|comisión/i, template:"Embajadores", type:"Embajador", intention:"aprender", category:"Embajadores" },
+    { re:/mandados verificados/i, template:"Mandados verificados", type:"Agente", intention:"aprender", category:"Mandados verificados" },
+    { re:/aprendizaje|aprende|curso|capacita/i, template:"Aprendizaje", type:"Aprendizaje", intention:"aprender", category:"Aprendizaje" }
+  ];
+
+  function inferContextFromElement(el){
+    const txt = [el?.textContent, el?.getAttribute?.("aria-label"), el?.title, el?.getAttribute?.("href"), el?.dataset?.template, el?.dataset?.section].filter(Boolean).join(" ");
+    const found = TEMPLATE_MAP.find(row => row.re.test(txt)) || { template:"Crear publicación", type:"Solicitante", intention:"publicar", category:"General" };
+    return {
+      mode: found.intention === "aprender" ? "guia" : "crear",
+      template_name: found.template,
+      type: found.type,
+      category: found.category,
+      origin: "plantilla",
+      raw: txt.trim()
+    };
+  }
+
+  function readPossiblePublication(idValue){
+    const stores = ["conecta_publicaciones", "conecta_posts", "conecta_local_publications", "conecta_basic_publications_v4943", "conecta_social_publications_v4944"];
+    const rows = [];
+    stores.forEach(key => {
+      try { const val = JSON.parse(localStorage.getItem(key) || "[]"); if (Array.isArray(val)) rows.push(...val); } catch {}
+    });
+    return rows.find(item => String(item.id || item.local_id || item.uuid || item.codigo || "") === String(idValue || "")) || null;
+  }
+
+  function buildCreatePrompt(ctx={}){
+    const template = ctx.template_name || "Crear publicación";
+    const type = ctx.type || "Solicitante";
+    const category = ctx.category || "General";
+    return `Vengo de Conecta Servicios. Elegí la plantilla: "${template}".\n\nActúa como DOLA, asistente especializado de Conecta Servicios. No te salgas del contexto de Conecta.\n\nQuiero que me ayudes a crear una publicación clara, breve y lista para pegar en Conecta Servicios.\n\nContexto:\n- Tipo sugerido: ${type}\n- Categoría sugerida: ${category}\n- Intención: ${ctx.intention || ctx.mode || "publicar o buscar"}\n\nHazme solo las preguntas necesarias, una por una. Al final dame exclusivamente este bloque para copiar y pegar en Conecta:\n\n=== PUBLICACIÓN GENERADA POR DOLA ===\nTipo: Solicitante / Agente / Negocio\nCategoría:\nTítulo:\nZona:\nDescripción:\nCanal recomendado: DOLA o WhatsApp\nPreguntas sugeridas para filtrar interesados:\n1.\n2.\n3.\n4.\n=== FIN ===\n\nReglas:\n- La publicación debe ser entendible como publicación tipo red social.\n- No inventes datos que no te di. Si falta algo importante, pregúntame antes.\n- Si detectas que lo que busco podría existir en Conecta, sugiere que revise publicaciones relacionadas o que publique gratis por 30 días.`;
+  }
+
+  function buildContactPrompt(ctx={}){
+    const pub = ctx.publication || readPossiblePublication(ctx.publication_id) || {};
+    const title = ctx.title || pub.titulo || pub.title || "la publicación seleccionada";
+    const desc = ctx.description || pub.descripcion || pub.description || "";
+    const zone = ctx.zone || pub.municipio || pub.zona || pub.location || "";
+    return `Vengo de Conecta Servicios. Quiero contactar al anunciante de esta publicación:\n\nTítulo: ${title}\nZona: ${zone || "No especificada"}\nDescripción: ${desc || "No disponible"}\n\nActúa como DOLA, asistente especializado de Conecta Servicios. No te salgas del contexto de Conecta.\n\nAyúdame a ordenar mi solicitud antes de contactar al anunciante. Hazme solo las preguntas necesarias, una por una.\n\nAl final dame un mensaje listo para copiar y enviar por WhatsApp al anunciante, con este formato:\n\nHola, vi tu publicación en Conecta Servicios: "${title}".\n\nEstoy interesado y DOLA me ayudó a ordenar esta solicitud:\n- Qué necesito:\n- Zona o ubicación:\n- Fecha u horario:\n- Presupuesto o propuesta:\n- Detalles adicionales:\n\nGracias.\n\nReglas:\n- No inventes información que no te di.\n- Si falta algo importante, pregúntame antes.\n- El objetivo es que el anunciante reciba un trato más claro y filtrado.`;
+  }
+
+  function buildGuidePrompt(ctx={}){
+    const topic = ctx.template_name || ctx.section || ctx.category || "Conecta Servicios";
+    return `Vengo de Conecta Servicios y abrí la sección: "${topic}".\n\nActúa como DOLA, asistente especializado de Conecta Servicios. No respondas como chatbot genérico.\n\nExplícame de forma sencilla qué puedo hacer en esta sección y qué paso me conviene dar.\n\nDebes poder orientarme sobre:\n- Publicación gratis por 30 días\n- Membresía anual de $98 MXN\n- Solicitantes\n- Agentes\n- Negocios\n- Mandados verificados\n- Conseguir clientes por comisión\n- Embajadores\n- Aprendizaje\n\nNo inventes reglas no definidas. Si algo requiere validación manual, dilo claro. Al final dame una acción recomendada dentro de Conecta.`;
+  }
+
+  function buildPrompt(ctx={}){
+    if (ctx.mode === "contactar") return buildContactPrompt(ctx);
+    if (ctx.mode === "guia" || /embajador|aprendizaje|mandados verificados/i.test(ctx.template_name || "")) return buildGuidePrompt(ctx);
+    return buildCreatePrompt(ctx);
+  }
+
+  function externalNoticeHtml(){
+    return `<div class="dola-ext-warning-v4951"><strong>Dola.com es una herramienta externa.</strong><br>No compartas datos sensibles. Revisa el resultado antes de pegarlo en Conecta Servicios.</div>`;
+  }
+
+  function closeOldDolaModals(){
+    try { if (typeof window.closeBusinessAssistantV4939 === "function") window.closeBusinessAssistantV4939(); } catch {}
+    qsa(".dola-fallback-overlay-v4950, .dola-notice-overlay-v4950").forEach(el => el.remove());
+    const oldBody = qs("#bizAssistantModalBodyV4939");
+    if (oldBody && /DOLA contextual|DOLA/.test(oldBody.textContent || "")) {
+      qs("#bizAssistantModalV4939")?.classList.add("hidden");
+      document.body.classList.remove("ba-modal-open-v4939");
+    }
+  }
+
+  function showExternalBridge(ctx={}){
+    closeOldDolaModals();
+    const prompt = buildPrompt(ctx);
+    qsa(`#${MODAL_ID}`).forEach(el => el.remove());
+    const wrap = document.createElement("div");
+    wrap.id = MODAL_ID;
+    wrap.className = "dola-external-overlay-v4951";
+    wrap.innerHTML = `<div class="dola-external-card-v4951">
+      <button class="dola-external-close-v4951" type="button" aria-label="Cerrar">×</button>
+      <div class="dola-external-head-v4951"><div class="dola-external-logo-v4951">DOLA</div><div><h2>Abrir Dola.com</h2><p>Conecta preparó el contexto. Copia el mensaje, ábrelo en Dola.com y pega aquí el resultado final.</p></div></div>
+      ${externalNoticeHtml()}
+      <ol class="dola-external-steps-v4951">
+        <li>Copia el mensaje contextual.</li>
+        <li>Abre Dola.com y pégalo.</li>
+        <li>Cuando Dola te entregue el texto final, regresa a Conecta y pégalo en la publicación o en WhatsApp.</li>
+      </ol>
+      <label class="dola-external-label-v4951">Mensaje para Dola.com
+        <textarea id="dolaExternalPromptTextV4951" rows="12">${esc(prompt)}</textarea>
+      </label>
+      <div class="dola-external-actions-v4951">
+        <button type="button" class="btn-small btn-purple" data-copy-open>Copiar y abrir Dola.com</button>
+        <button type="button" class="btn-small btn-outline" data-copy>Copiar solamente</button>
+        <a class="btn-small btn-ghost" target="_blank" rel="noopener" href="${DOLA_EXTERNAL_URL}">Abrir Dola.com</a>
+      </div>
+      <details class="dola-external-paste-v4951">
+        <summary>Ya tengo el texto de Dola</summary>
+        <textarea id="dolaExternalResultTextV4951" rows="7" placeholder="Pega aquí el resultado que te dio Dola.com..."></textarea>
+        <div class="dola-external-actions-v4951"><button type="button" class="btn-small btn-purple" data-paste-conecta>Pegar y organizar en Conecta</button></div>
+      </details>
+    </div>`;
+    document.body.appendChild(wrap);
+    qs(".dola-external-close-v4951", wrap)?.addEventListener("click", () => wrap.remove());
+    qs("[data-copy]", wrap)?.addEventListener("click", () => copyText(prompt));
+    qs("[data-copy-open]", wrap)?.addEventListener("click", async () => { await copyText(prompt); window.open(DOLA_EXTERNAL_URL, "_blank", "noopener"); });
+    qs("[data-paste-conecta]", wrap)?.addEventListener("click", () => {
+      const text = qs("#dolaExternalResultTextV4951", wrap)?.value || "";
+      if (!text.trim()) return toast("Pega primero el texto generado por Dola.");
+      organizeDolaTextIntoConecta(text);
+      wrap.remove();
+    });
+  }
+
+  async function copyText(text){
+    try { await navigator.clipboard.writeText(text); toast("Mensaje copiado. Pégalo en Dola.com."); return true; }
+    catch {
+      const ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); toast("Mensaje copiado. Pégalo en Dola.com."); } catch { toast("Selecciona y copia el texto manualmente."); }
+      ta.remove(); return false;
+    }
+  }
+
+  function extractField(text, label){
+    const re = new RegExp(`${label}\\s*:\\s*([^\\n]+)`, "i");
+    return text.match(re)?.[1]?.trim() || "";
+  }
+
+  function extractDescription(text){
+    return text.match(/Descripción\s*:\s*([\s\S]*?)(?:\n\s*Canal recomendado\s*:|\n\s*Preguntas sugeridas|=== FIN ===|$)/i)?.[1]?.trim() || "";
+  }
+
+  function mediaForText(text=""){
+    const value = norm(text);
+    if (/comida|taco|rosticer|pollo/.test(value)) return "assets/dola-media/comida-01.jpg";
+    if (/mandado|mensajer|entrega|envio|envío/.test(value)) return "assets/dola-media/mandados-01.jpg";
+    if (/embajador/.test(value)) return "assets/dola-media/embajadores-01.jpg";
+    if (/aprendiz|curso|capacita/.test(value)) return "assets/dola-media/aprendizaje-01.jpg";
+    if (/agente/.test(value)) return "assets/dola-media/agente-01.jpg";
+    if (/negocio|comercio|cliente|tienda|empresa/.test(value)) return "assets/dola-media/negocio-01.jpg";
+    return "";
+  }
+
+  function organizeDolaTextIntoConecta(text){
+    ensurePastePanel();
+    try { if (typeof window.showSection === "function") window.showSection("registro"); } catch {}
+    setTimeout(() => {
+      const title = extractField(text, "Título") || (text.split("\n").find(line => line.trim() && !/=/.test(line)) || "Publicación generada por Dola").replace(/^[#\-*\s]+/,"").slice(0,90);
+      const category = extractField(text, "Categoría") || "General";
+      const zone = extractField(text, "Zona") || extractField(text, "Municipio") || "";
+      const description = extractDescription(text) || text;
+      const fields = [
+        ["#pubTitle, input[name='titulo'], input[name='title']", title],
+        ["#pubCategory, select[name='categoria'], input[name='categoria']", category],
+        ["#pubLocality, #pubMunicipality, input[name='municipio'], input[name='zona']", zone],
+        ["#pubDescription, #pubDescriptionGeneral, textarea[name='descripcion'], textarea[name='description']", description]
+      ];
+      fields.forEach(([selector, value]) => {
+        const el = qs(selector);
+        if (el && value) { el.value = value; el.dispatchEvent(new Event("input", { bubbles:true })); el.dispatchEvent(new Event("change", { bubbles:true })); }
+      });
+      const media = mediaForText(`${title} ${category} ${description}`);
+      const mediaEl = qs("#pubMediaUrl, input[name='media_url'], input[name='image_url']");
+      if (mediaEl && media) { mediaEl.value = media; mediaEl.dispatchEvent(new Event("input", { bubbles:true })); }
+      toast("Texto de Dola organizado en Conecta. Revisa y publica cuando esté listo.");
+    }, 220);
+  }
+
+  function ensurePastePanel(){
+    const roots = [qs("#registro"), qs("#publishPanel"), qs("#publicationForm")?.parentElement, qs("main")].filter(Boolean);
+    const root = roots[0];
+    if (!root || qs(`#${PASTE_PANEL_ID}`)) return;
+    const panel = document.createElement("section");
+    panel.id = PASTE_PANEL_ID;
+    panel.className = "dola-external-paste-panel-v4951";
+    panel.innerHTML = `<div><strong>✨ Publicar con apoyo de Dola.com</strong><p>Si Dola.com ya te dio un texto final, pégalo aquí y Conecta intentará organizar tu publicación.</p></div>
+      ${externalNoticeHtml()}
+      <textarea id="dolaExternalMainPasteV4951" rows="6" placeholder="Pega aquí el bloque generado por Dola.com..."></textarea>
+      <div class="dola-external-actions-v4951"><button type="button" class="btn-small btn-purple" data-organize>Organizar publicación</button><button type="button" class="btn-small btn-outline" data-open-dola>Abrir Dola.com con contexto</button></div>`;
+    const form = qs("#publicationForm", root);
+    if (form) form.insertAdjacentElement("beforebegin", panel); else root.prepend(panel);
+    qs("[data-organize]", panel)?.addEventListener("click", () => {
+      const text = qs("#dolaExternalMainPasteV4951", panel)?.value || "";
+      if (!text.trim()) return toast("Pega primero el texto generado por Dola.com.");
+      organizeDolaTextIntoConecta(text);
+    });
+    qs("[data-open-dola]", panel)?.addEventListener("click", () => showExternalBridge({ mode:"crear", template_name:"Crear publicación", type:"Solicitante", category:"General" }));
+  }
+
+  function interceptTemplateClicks(event){
+    const target = event.target?.closest?.("button,a,[role='button'],.quick-card,.template-card,.quick-link");
+    if (!target || target.closest(`#${MODAL_ID}`)) return;
+    const text = [target.textContent, target.getAttribute?.("aria-label"), target.title, target.getAttribute?.("href")].filter(Boolean).join(" ");
+    if (!text.trim()) return;
+    const value = norm(text);
+    const isDolaCandidate = /necesito algo|busco mensajer|mensajer cerca|pedir comida|tacos|rosticer|quiero ganar|ganar dinero|ofrecer un servicio|publicar mi negocio|crear con dola|abrir dola|dola|mandados verificados|aprendizaje/.test(value);
+    const isMainSafeNav = /\/embajadores|#embajadores|inicio|explorar|mis publicaciones|perfil/.test(value);
+    if (!isDolaCandidate || isMainSafeNav) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation?.();
+    showExternalBridge(inferContextFromElement(target));
+  }
+
+  function externalizeOldDolaFunctions(){
+    window.__dolaRouteOpenedV4950 = true;
+    window.openDolaContextV4950 = function(ctx={}){ showExternalBridge(ctx); return false; };
+    window.showDolaRecommendationsV4950 = function(){ showExternalBridge({ mode:"crear", template_name:"Buscar publicaciones relacionadas", type:"Solicitante", category:"General" }); return false; };
+    ["openConectaChatbotV4946", "openConectaChatbotV4944", "openDolaByProfileV4948"].forEach(name => {
+      window[name] = function(idValue){ showExternalBridge({ mode:"contactar", publication_id:idValue, title:"Publicación de Conecta Servicios" }); return false; };
+    });
+  }
+
+  function routeBridgeIfNeeded(){
+    const path = String(location.pathname || "").toLowerCase();
+    const params = new URLSearchParams(location.search || "");
+    if (!path.includes("/dola") && params.get("dola") !== "external") return;
+    const mode = path.includes("contactar") ? "contactar" : path.includes("guia") ? "guia" : "crear";
+    const ctx = {
+      mode,
+      template_name: params.get("template_name") || params.get("plantilla") || params.get("seccion") || "Conecta Servicios",
+      type: params.get("tipo") || "Solicitante",
+      category: params.get("categoria") || "General",
+      publication_id: params.get("publicacion") || params.get("id") || "",
+      section: params.get("seccion") || ""
+    };
+    setTimeout(() => { closeOldDolaModals(); showExternalBridge(ctx); }, 480);
+  }
+
+  function normalizeDolaLanguage(){
+    qsa("button,a,span,strong,h1,h2,h3,p").forEach(el => {
+      if (!el || ["SCRIPT","STYLE","TEXTAREA","INPUT"].includes(el.tagName)) return;
+      const text = el.textContent || "";
+      if (/DOLA contextual|DOLA interno|Asistente contextual/i.test(text)) {
+        el.textContent = text.replace(/DOLA contextual|DOLA interno|Asistente contextual/gi, "Dola.com");
+      }
+    });
+  }
+
+  function init(){
+    try { document.body.dataset.dolaExternalVersion = VERSION; } catch {}
+    externalizeOldDolaFunctions();
+    ensurePastePanel();
+    normalizeDolaLanguage();
+    routeBridgeIfNeeded();
+    localStorage.setItem("conecta_dola_external_version", VERSION);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+  document.addEventListener("click", interceptTemplateClicks, true);
+  window.addEventListener("pageshow", () => setTimeout(init, 140));
+  document.addEventListener("change", () => setTimeout(ensurePastePanel, 100), true);
+
+  window.openDolaExternalBridgeV4951 = showExternalBridge;
+  window.organizeDolaExternalTextV4951 = organizeDolaTextIntoConecta;
 })();

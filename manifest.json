@@ -1,39 +1,19 @@
 {
-  "name": "Conecta Servicios v4.9.50",
+  "name": "Conecta Servicios v4.9.51",
   "short_name": "Conecta",
-  "description": "Conecta Servicios con DOLA contextual, publicaciones, recomendaciones y contacto filtrado.",
-  "start_url": "/?source=pwa&v=v4.9.50-dola-contextual-conecta",
+  "description": "Conecta Servicios con puente externo a Dola.com para crear publicaciones y filtrar contactos.",
+  "start_url": "/?source=pwa&v=v4.9.51-dola-externo-copiar-pegar",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#5b22cf",
   "lang": "es-MX",
-  "categories": [
-    "business",
-    "productivity",
-    "social",
-    "utilities"
-  ],
+  "categories": ["business", "productivity", "social", "utilities"],
   "icons": [
-    {
-      "src": "assets/pwa-plus-icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "assets/pwa-plus-icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "assets/pwa-plus-maskable-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
+    { "src": "assets/pwa-plus-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/pwa-plus-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/pwa-plus-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
-  "id": "/?v=v4.9.50-dola-contextual-conecta"
+  "id": "/?v=v4.9.51-dola-externo-copiar-pegar"
 }

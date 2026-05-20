@@ -1,0 +1,20 @@
+CHECKLIST v4.9.51 - Dola.com externo copiar/pegar
+
+1. Abrir la app en incógnito con ?v=4951.
+2. Entrar a una plantilla como “Busco mensajero cerca”.
+3. Confirmar que NO aparece una pantalla larga interna de DOLA.
+4. Confirmar que aparece un puente simple: copiar prompt + abrir Dola.com.
+5. Tocar “Copiar y abrir Dola.com”.
+6. Confirmar que se abre Dola.com en nueva pestaña.
+7. Pegar el prompt en Dola.com y conversar ahí.
+8. Copiar el resultado final de Dola.com.
+9. Volver a Conecta y pegar el resultado en el cuadro limpio.
+10. Confirmar que Conecta organiza título, categoría, zona y descripción cuando sea posible.
+11. Confirmar que se sugiere asset de assets/dola-media/ si corresponde.
+12. Tocar “Mensaje” en una publicación y confirmar que prepara prompt para Dola.com.
+13. Confirmar que Dola.com prepara mensaje listo para WhatsApp cuando corresponda.
+14. Confirmar que no hay botones flotantes laterales.
+15. Confirmar que Home, Explorar, Publicar, Mis publicaciones y Embajadores siguen funcionando.
+16. Confirmar que la ruta /dola o /dola/crear ya no muestra DOLA interno largo sino el puente externo.
+17. Confirmar que admin no queda bloqueado.
+18. Confirmar que la subida de fotos no se rompe.

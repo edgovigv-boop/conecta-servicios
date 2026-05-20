@@ -1,0 +1,13 @@
+Actualizar index.html para romper caché y cargar la versión v4.9.51-dola-externo-copiar-pegar.
+
+Buscar referencias actuales a styles.css y app.js y reemplazar por:
+
+<link rel="stylesheet" href="styles.css?v=v4.9.51-dola-externo-copiar-pegar">
+<script src="app.js?v=v4.9.51-dola-externo-copiar-pegar" defer></script>
+
+Actualizar body si existe data-version:
+<body data-version="v4.9.51-dola-externo-copiar-pegar">
+
+Actualizar referencias a manifest/service-worker si tienen query de versión:
+manifest.json?v=v4.9.51-dola-externo-copiar-pegar
+service-worker.js?v=v4.9.51-dola-externo-copiar-pegar

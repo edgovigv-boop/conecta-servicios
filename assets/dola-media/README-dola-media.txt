@@ -1,6 +1,9 @@
-Carga aquí manualmente imágenes o videos cortos para que DOLA sugiera media por categoría.
+Banco manual de imágenes/videos para publicaciones generadas con apoyo de Dola.com.
 
-Nombres recomendados:
+Carpeta sugerida:
+assets/dola-media/
+
+Nombres esperados por la app:
 - comida-01.jpg o comida-01.mp4
 - mandados-01.jpg o mandados-01.mp4
 - negocio-01.jpg
@@ -8,4 +11,5 @@ Nombres recomendados:
 - embajadores-01.jpg
 - agente-01.jpg
 
-Los videos deben ser cortos, idealmente hasta 6 segundos.
+Los videos sugeridos deben ser cortos, idealmente de hasta 6 segundos.
+Si no existe un recurso, la publicación no debe romperse.

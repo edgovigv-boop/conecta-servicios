@@ -1,12 +1,12 @@
-// Conecta Servicios v4.9.50-dola-contextual-conecta
-const CACHE_NAME = "conecta-servicios-v4.9.50-dola-contextual-conecta";
+// Conecta Servicios v4.9.51-dola-externo-copiar-pegar
+const CACHE_NAME = "conecta-servicios-v4.9.51-dola-externo-copiar-pegar";
 const ASSETS = [
   "/",
   "/index.html",
-  "/styles.css?v=v4.9.50-dola-contextual-conecta",
-  "/app.js?v=v4.9.50-dola-contextual-conecta",
-  "/manifest.json?v=v4.9.50-dola-contextual-conecta",
-  "/service-worker.js?v=v4.9.50-dola-contextual-conecta"
+  "/styles.css?v=v4.9.51-dola-externo-copiar-pegar",
+  "/app.js?v=v4.9.51-dola-externo-copiar-pegar",
+  "/manifest.json?v=v4.9.51-dola-externo-copiar-pegar",
+  "/service-worker.js?v=v4.9.51-dola-externo-copiar-pegar"
 ];
 self.addEventListener("install", event => {
   self.skipWaiting();

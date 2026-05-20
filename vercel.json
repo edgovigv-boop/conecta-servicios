@@ -173,6 +173,14 @@
     {
       "source": "/dola/guia/",
       "destination": "/index.html"
+    },
+    {
+      "source": "/dola-externo",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dola-externo/",
+      "destination": "/index.html"
     }
   ]
 }

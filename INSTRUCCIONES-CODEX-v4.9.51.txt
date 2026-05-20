@@ -1,0 +1,16 @@
+INSTRUCCIONES PARA CODEX - v4.9.51
+
+Objetivo:
+No replicar DOLA dentro de Conecta. Usar Dola.com como herramienta externa, igual que la app puede abrir WhatsApp.
+
+Acciones:
+1. Reemplazar app.js, styles.css, service-worker.js, manifest.json y vercel.json por los archivos de este paquete.
+2. Aplicar PATCH-INDEX-v4.9.51.txt sobre index.html.
+3. No desplegar automáticamente si el flujo de trabajo exige revisión previa.
+4. No aplicar SQL. Esta versión no requiere SQL nuevo.
+5. Verificar que las plantillas abran el puente externo hacia Dola.com.
+6. Verificar que Dola.com se abra en nueva pestaña después de copiar el prompt.
+7. Verificar que Conecta permita pegar el resultado de Dola.com para organizar la publicación.
+
+Commit sugerido:
+Usar Dola.com externo para crear publicaciones y filtrar contactos v4.9.51

@@ -1,11 +1,3 @@
-No requiere SQL nuevo para probar v4.9.50 en modo piloto.
+No requiere SQL nuevo para probar la v4.9.51.
 
-DOLA usa localStorage para:
-- conversaciones;
-- contexto de origen;
-- texto generado para copiar y pegar;
-- solicitudes filtradas;
-- aceptación del aviso;
-- control de publicación gratis de 30 días.
-
-Para producción real multiusuario se incluye SQL opcional en supabase-dola-contextual.sql.
+Esta versión usa Dola.com como herramienta externa mediante copiar/abrir/pegar y mantiene el modo piloto en el navegador.

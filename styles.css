@@ -4835,12 +4835,67 @@ body.chatbot-conecta-whatsapp-v4946 [class*="floating"][class*="assistant"]{disp
 .dola-paste-panel-v4950 strong,
 .dola-panel-title-v4950 h3{ color:#4c1d95; }
 .dola-request-card-v4950 pre{ white-space:pre-wrap; background:#f8fafc; border-radius:12px; padding:10px; font-size:.86rem; }
-body[data-dola-contextual-version="v4.9.50-dola-contextual-conecta"] .dola-global-floating,
-body[data-dola-contextual-version="v4.9.50-dola-contextual-conecta"] .assistant-floating,
-body[data-dola-contextual-version="v4.9.50-dola-contextual-conecta"] .right-floating-icons,
-body[data-dola-contextual-version="v4.9.50-dola-contextual-conecta"] .floating-assistant{ display:none!important; }
+body[data-dola-contextual-version="v4.9.51-dola-externo-copiar-pegar"] .dola-global-floating,
+body[data-dola-contextual-version="v4.9.51-dola-externo-copiar-pegar"] .assistant-floating,
+body[data-dola-contextual-version="v4.9.51-dola-externo-copiar-pegar"] .right-floating-icons,
+body[data-dola-contextual-version="v4.9.51-dola-externo-copiar-pegar"] .floating-assistant{ display:none!important; }
 @media (max-width:640px){
   .dola-notice-card-v4950,.dola-fallback-card-v4950{ border-radius:20px; padding:16px; }
   .dola-bubble-v4950{ max-width:94%; }
   .dola-chat-v4950{ max-height:52vh; }
+}
+
+/* ============================================================
+   v4.9.51 — Dola.com externo: copiar, abrir y pegar
+   ============================================================ */
+.dola-external-overlay-v4951{
+  position:fixed; inset:0; z-index:99999; background:rgba(15,23,42,.58);
+  display:flex; align-items:center; justify-content:center; padding:18px;
+}
+.dola-external-card-v4951{
+  width:min(820px,100%); max-height:92vh; overflow:auto; background:#fff;
+  border-radius:26px; padding:20px; box-shadow:0 28px 90px rgba(15,23,42,.32);
+}
+.dola-external-close-v4951{
+  float:right; width:36px; height:36px; border:0; border-radius:999px;
+  background:#f1f5f9; color:#334155; font-size:24px; line-height:1; cursor:pointer;
+}
+.dola-external-head-v4951{ display:flex; gap:12px; align-items:center; margin-bottom:12px; }
+.dola-external-head-v4951 h2{ margin:0; font-size:1.35rem; color:#111827; }
+.dola-external-head-v4951 p{ margin:4px 0 0; color:#64748b; }
+.dola-external-logo-v4951{
+  min-width:62px; height:46px; display:inline-flex; align-items:center; justify-content:center;
+  border-radius:18px; background:linear-gradient(135deg,#5b22cf,#7c3aed); color:#fff;
+  font-weight:900; letter-spacing:.08em; box-shadow:0 12px 30px rgba(91,34,207,.22);
+}
+.dola-ext-warning-v4951{
+  background:#fff7ed; border:1px solid #fed7aa; color:#7c2d12; border-radius:16px;
+  padding:10px 12px; margin:10px 0; font-size:.92rem;
+}
+.dola-external-steps-v4951{ background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:12px 12px 12px 28px; color:#334155; }
+.dola-external-label-v4951{ display:block; margin-top:12px; font-weight:800; color:#1e293b; }
+.dola-external-label-v4951 textarea,
+.dola-external-paste-v4951 textarea,
+#dolaExternalMainPasteV4951{
+  width:100%; margin-top:8px; border:1px solid #cbd5e1; border-radius:18px;
+  padding:12px; font:inherit; resize:vertical; background:#fff;
+}
+#dolaExternalPromptTextV4951{ font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace; font-size:.86rem; }
+.dola-external-actions-v4951{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:12px; }
+.dola-external-paste-v4951{ margin-top:14px; border:1px solid #e9d5ff; border-radius:18px; padding:12px; background:#faf5ff; }
+.dola-external-paste-v4951 summary{ cursor:pointer; font-weight:900; color:#4c1d95; }
+.dola-external-paste-panel-v4951{
+  border:1px solid #e9d5ff; border-radius:22px; padding:14px; margin:14px 0;
+  background:linear-gradient(180deg,#faf5ff,#fff); box-shadow:0 10px 30px rgba(91,34,207,.06);
+}
+.dola-external-paste-panel-v4951 strong{ color:#4c1d95; }
+.dola-external-paste-panel-v4951 p{ margin:.25rem 0 .5rem; color:#64748b; }
+body[data-dola-external-version="v4.9.51-dola-externo-copiar-pegar"] .dola-global-floating,
+body[data-dola-external-version="v4.9.51-dola-externo-copiar-pegar"] .assistant-floating,
+body[data-dola-external-version="v4.9.51-dola-externo-copiar-pegar"] .right-floating-icons,
+body[data-dola-external-version="v4.9.51-dola-externo-copiar-pegar"] .floating-assistant{ display:none!important; }
+@media (max-width:640px){
+  .dola-external-card-v4951{ border-radius:22px; padding:16px; }
+  .dola-external-head-v4951{ align-items:flex-start; }
+  .dola-external-logo-v4951{ min-width:54px; height:42px; }
 }
