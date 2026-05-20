@@ -1,9 +1,9 @@
-/* Conecta Servicios v5.0 - rediseño estructural desde cero */
+/* Conecta Servicios v5.0.1 - DOLA pegado inteligente */
 (() => {
   'use strict';
 
-  const VERSION = 'v5.0-rediseño-estructural-conecta';
-  const CACHE_HINT = 'conecta-servicios-v5-0-redisenio-estructural';
+  const VERSION = 'v5.0.1-dola-pegado-inteligente';
+  const CACHE_HINT = 'conecta-servicios-v5-0-1-dola-pegado-inteligente';
   const DOLA_EXTERNAL_URL = 'https://dola.com';
   const MEMBERSHIP_PRICE = 98;
   const FREE_DAYS = 30;
@@ -25,6 +25,8 @@
     publishMode: 'dola',
     publishTemplate: null,
     publishDraft: null,
+    dolaPreview: null,
+    dolaText: '',
     modal: null
   };
 
@@ -244,6 +246,7 @@
   }
 
   function publishWithDola(){
+    if (state.dolaPreview) return dolaPreviewCard(state.dolaPreview);
     const tpl = state.publishTemplate || templates[0];
     const prompt = createDolaPrompt(tpl);
     return `<section class="desktop-grid">
@@ -255,18 +258,46 @@
       </div>
       <div class="card">
         <h3>Puente con DOLA</h3>
-        <p class="muted">Copia el prompt, abre DOLA, conversa allá y pega aquí el resultado final.</p>
+        <p class="muted">Copia el prompt, abre DOLA, conversa allá una pregunta a la vez y pega aquí el bloque final.</p>
         <div class="bridge-steps">
-          <div class="step"><div class="step-no">1</div><div><b>Copia este prompt</b><div class="prompt-box" id="dolaPrompt">${escapeHtml(prompt)}</div><button class="btn primary full" data-action="copy-dola-prompt">Copiar prompt</button></div></div>
-          <div class="step"><div class="step-no">2</div><div><b>Abre DOLA</b><button class="btn green full" data-action="open-dola">Abrir DOLA</button><p class="tiny muted">DOLA es externo. Revisa antes de pegar de vuelta.</p></div></div>
-          <div class="step"><div class="step-no">3</div><div><b>Pega el resultado final</b><textarea class="input paste-box" id="dolaResult" placeholder="Pega aquí el texto generado por DOLA..."></textarea><button class="btn primary full" data-action="use-dola-result">Usar este texto</button></div></div>
+          <div class="step"><div class="step-no">1</div><div><b>Copia este prompt</b><div class="copy-panel"><button class="copy-corner" data-action="copy-dola-prompt" aria-label="Copiar prompt">📋</button><div class="prompt-box" id="dolaPrompt">${escapeHtml(prompt)}</div></div><button class="btn primary full" data-action="copy-dola-prompt">Copiar prompt</button></div></div>
+          <div class="step"><div class="step-no">2</div><div><b>Abre DOLA</b><button class="btn green full" data-action="open-dola">Abrir DOLA</button><p class="tiny muted">DOLA es externo. Cuando termine, copia solo el bloque final.</p></div></div>
+          <div class="step"><div class="step-no">3</div><div><b>Pega aquí el texto generado por DOLA</b><p class="tiny muted">Cuando DOLA termine, copia el bloque final y pégalo aquí.</p><textarea class="input paste-box" id="dolaResult" placeholder="=== PUBLICACIÓN GENERADA PARA CONECTA SERVICIOS ===&#10;Tipo:&#10;Categoría:&#10;Título:&#10;Zona:&#10;Descripción:&#10;Canal recomendado:&#10;Preguntas sugeridas:&#10;=== FIN ===">${escapeHtml(state.dolaText||'')}</textarea><div class="button-row"><button class="btn primary" data-action="use-dola-result">Usar este texto</button><button class="btn ghost" data-action="preview-dola-result">Ver vista previa</button><button class="btn" data-action="clear-dola-result">Limpiar</button></div></div></div>
         </div>
       </div>
     </section>`;
   }
 
   function createDolaPrompt(tpl){
-    return `Vengo de Conecta Servicios. Elegí la plantilla “${tpl.title}”. Tipo sugerido: ${tpl.type}. Categoría sugerida: ${tpl.category}.\n\nAyúdame a crear una publicación clara y breve para Conecta Servicios. Hazme las preguntas necesarias y al final dame un texto listo para copiar y pegar en Conecta con este formato exacto:\n\n=== PUBLICACIÓN GENERADA POR DOLA ===\nTipo: ${tpl.type}\nCategoría: ${tpl.category}\nTítulo: [título claro]\nZona: [municipio o zona]\nDescripción:\n[descripción ordenada]\n\nCanal recomendado: DOLA\nPreguntas sugeridas:\n1. [pregunta]\n2. [pregunta]\n3. [pregunta]\n4. [pregunta]\n=== FIN ===`;
+    return `Vengo de Conecta Servicios. Elegí la plantilla “${tpl.title}”. Tipo sugerido: ${tpl.type}. Categoría sugerida: ${tpl.category}.\n\nAyúdame a crear una publicación clara para Conecta Servicios.\n\nHazme una sola pregunta a la vez. Espera mi respuesta antes de continuar. No me muestres toda la estructura de golpe. Conversa conmigo de forma sencilla, como si fuera un chat. Cuando tengas la información suficiente, genera un texto final listo para copiar y pegar en Conecta Servicios.\n\nEl texto final debe venir exactamente con este formato:\n\n=== PUBLICACIÓN GENERADA PARA CONECTA SERVICIOS ===\nTipo: ${tpl.type}\nCategoría: ${tpl.category}\nTítulo: [título claro]\nZona: [municipio o zona]\nDescripción:\n[descripción ordenada]\n\nCanal recomendado: DOLA\nPreguntas sugeridas:\n1. [pregunta]\n2. [pregunta]\n3. [pregunta]\n4. [pregunta]\n=== FIN ===\n\nNo agregues explicaciones fuera del bloque final cuando termines.`;
+  }
+
+  function dolaPreviewCard(draft){
+    const questions = Array.isArray(draft.questions) ? draft.questions : [];
+    const missing = ['type','title','description','zone','category'].filter(k => !String(draft[k]||'').trim());
+    const reviewMsg = missing.length ? `<div class="notice">No pude identificar todos los datos, pero conservé tu texto. Completa lo que falte antes de publicar.</div>` : `<div class="success">Ya organicé tu publicación con el texto de DOLA. Revísala y publica cuando esté lista.</div>`;
+    return `<section class="desktop-grid">
+      <div class="card">
+        <h3>Vista previa de tu publicación</h3>
+        ${publishLimitNotice()}
+        ${reviewMsg}
+        <article class="post-card preview-card">
+          <div class="post-media">${renderMedia({ ...draft, mediaLabel: draft.category || 'Conecta Servicios', mediaType:'placeholder' })}</div>
+          <div class="post-body">
+            <div class="post-meta"><span class="chip ${typeClass(draft.type)}">${escapeHtml(draft.type || 'Solicitante')}</span><span class="chip">${escapeHtml(draft.category || 'General')}</span><span class="chip">${channelLabel(draft.channel || 'dola')}</span></div>
+            <h3 class="post-title">${escapeHtml(draft.title || 'Publicación creada con DOLA')}</h3>
+            <p class="post-desc">${escapeHtml(draft.description || draft.rawText || '')}</p>
+            <p class="tiny muted">${escapeHtml(draft.zone || 'Zona por completar')}</p>
+          </div>
+        </article>
+        ${questions.length ? `<div class="card compact"><b>Preguntas sugeridas de DOLA</b><ol class="question-list">${questions.map(q=>`<li>${escapeHtml(q)}</li>`).join('')}</ol></div>` : ''}
+        <div class="button-row sticky-actions"><button class="btn primary" data-action="publish-dola-preview">Publicar ahora</button><button class="btn ghost" data-action="edit-dola-preview">Editar</button><button class="btn" data-action="back-to-dola">Volver a DOLA</button></div>
+      </div>
+      <div class="card">
+        <h3>Texto pegado desde DOLA</h3>
+        <div class="copy-panel"><button class="copy-corner" data-action="copy-dola-raw" aria-label="Copiar texto">📋</button><div class="prompt-box tall">${escapeHtml(draft.rawText || '')}</div></div>
+      </div>
+    </section>`;
   }
 
   function manualPublishForm(prefill={}){
@@ -283,7 +314,7 @@
           <div class="field"><label>Municipio / zona</label><input class="input" name="zone" value="${escapeHtml(draft.zone||'')}" placeholder="Chapultepec, Toluca..." /></div>
         </div>
         <div class="field"><label>Foto o video opcional</label><input class="input" type="file" name="media" accept="image/*,video/mp4,video/webm" /><div class="media-preview" id="mediaPreview">Puedes subir una foto/video o dejarlo sin media.</div></div>
-        <div class="field"><label>Canal de contacto</label><div class="toggle-row"><button type="button" class="option-card active" data-channel-choice="dola"><h4>🤖 DOLA</h4><p>Recomendado. Ayuda a filtrar mejor.</p></button><button type="button" class="option-card" data-channel-choice="whatsapp"><h4>🟢 WhatsApp</h4><p>Contacto directo y rápido.</p></button></div><input type="hidden" name="channel" value="${draft.channel||'dola'}" /></div>
+        <div class="field"><label>Canal de contacto</label><div class="toggle-row"><button type="button" class="option-card ${(draft.channel||'dola')==='dola'?'active':''}" data-channel-choice="dola"><h4>🤖 DOLA</h4><p>Recomendado. Ayuda a filtrar mejor.</p></button><button type="button" class="option-card ${draft.channel==='whatsapp'?'active':''}" data-channel-choice="whatsapp"><h4>🟢 WhatsApp</h4><p>Contacto directo y rápido.</p></button></div><input type="hidden" name="channel" value="${draft.channel||'dola'}" /></div>
         <div class="field whatsapp-field" style="display:${draft.channel==='whatsapp'?'grid':'none'}"><label>WhatsApp</label><input class="input" name="whatsapp" value="${escapeHtml(draft.whatsapp||'')}" placeholder="Ej. 5217220000000" /></div>
         <button class="btn primary full" type="submit">Publicar</button>
       </form>
@@ -481,9 +512,9 @@
     const filterBtn = e.target.closest('[data-filter-only]');
     if (filterBtn) { state.filter = filterBtn.dataset.filterOnly; render(); return; }
     const mode = e.target.closest('[data-publish-mode]');
-    if (mode) { state.publishMode = mode.dataset.publishMode; render(); return; }
+    if (mode) { state.publishMode = mode.dataset.publishMode; state.dolaPreview = null; render(); return; }
     const tpl = e.target.closest('[data-template]');
-    if (tpl) { state.publishTemplate = templates.find(t=>t.id===tpl.dataset.template) || templates[0]; render(); return; }
+    if (tpl) { state.publishTemplate = templates.find(t=>t.id===tpl.dataset.template) || templates[0]; state.dolaPreview = null; render(); return; }
     const channel = e.target.closest('[data-channel-choice]');
     if (channel) { selectChannel(channel.dataset.channelChoice); return; }
     const react = e.target.closest('[data-react-post]');
@@ -524,9 +555,14 @@
 
   function handleAction(action, el){
     const tpl = state.publishTemplate || templates[0];
-    if (action === 'copy-dola-prompt') copyText(createDolaPrompt(tpl));
+    if (action === 'copy-dola-prompt') copyText(createDolaPrompt(tpl)).then(()=>toast('Prompt copiado. Ahora puedes abrir DOLA.'));
+    if (action === 'copy-dola-raw') copyText(state.dolaPreview?.rawText || state.dolaText || '');
     if (action === 'open-dola') openExternal(DOLA_EXTERNAL_URL);
-    if (action === 'use-dola-result') useDolaResult();
+    if (action === 'use-dola-result' || action === 'preview-dola-result') useDolaResult();
+    if (action === 'clear-dola-result') { state.dolaText=''; state.dolaPreview=null; render(); }
+    if (action === 'publish-dola-preview') publishDolaPreview();
+    if (action === 'edit-dola-preview') editDolaPreview();
+    if (action === 'back-to-dola') { state.dolaPreview=null; render(); }
     if (action === 'search') { const q = $('#searchInput')?.value.trim() || ''; const url = new URL(location.href); if (q) url.searchParams.set('q', q); else url.searchParams.delete('q'); history.replaceState({}, '', url.pathname + url.search); render(); }
     if (action === 'activate-membership') activateMembership();
     if (action === 'copy-ambassador-link') copyText(`${location.origin}/embajadores?ref=CON-LOCAL`);
@@ -547,32 +583,78 @@
   function useDolaResult(){
     const text = $('#dolaResult')?.value.trim();
     if (!text) { toast('Pega primero el resultado de DOLA.'); return; }
+    state.dolaText = text;
     const parsed = parseDolaText(text);
-    state.publishMode = 'manual';
-    state.publishDraft = parsed;
-    toast('Texto organizado. Revisa y publica.');
+    state.dolaPreview = parsed;
+    toast(parsed.needsReview ? 'Texto conservado. Completa lo que falte antes de publicar.' : 'Texto organizado. Revisa la vista previa.');
     render();
   }
 
   function parseDolaText(text){
-    const getLine = (label) => {
-      const m = text.match(new RegExp(`${label}:\\s*(.+)`, 'i'));
+    const clean = String(text || '').replace(/\r\n/g, '\n');
+    const getSingle = (...labels) => {
+      for (const label of labels) {
+        const pattern = new RegExp(`(?:^|\\n)\\s*${label}\\s*:\\s*([^\\n]+)`, 'i');
+        const m = clean.match(pattern);
+        if (m && m[1]) return m[1].trim();
+      }
+      return '';
+    };
+    const getBlock = (labelRegex, stopRegex) => {
+      const pattern = new RegExp(`(?:^|\\n)\\s*${labelRegex}\\s*:\\s*([\\s\\S]*?)(?=\\n\\s*(?:${stopRegex})\\s*:|\\n\\s*===\\s*FIN|$)`, 'i');
+      const m = clean.match(pattern);
       return m ? m[1].trim() : '';
     };
-    const descMatch = text.match(/Descripción:\s*([\s\S]*?)(?:\n\s*Canal recomendado:|\n\s*Preguntas sugeridas:|=== FIN ===|$)/i);
-    const description = descMatch ? descMatch[1].trim() : text;
-    const channelLine = getLine('Canal recomendado');
-    return {
-      type: normalizeType(getLine('Tipo')) || 'Solicitante',
-      category: getLine('Categoría') || '',
-      title: getLine('Título') || firstSentence(description) || 'Publicación creada con DOLA',
-      zone: getLine('Zona') || '',
-      description,
-      channel: /whats/i.test(channelLine) ? 'whatsapp' : 'dola'
+    const type = normalizeType(getSingle('Tipo')) || '';
+    const category = getSingle('Categor[ií]a', 'Categoria');
+    const title = getSingle('T[ií]tulo', 'Titulo');
+    const zone = getSingle('Zona', 'Ubicaci[oó]n', 'Municipio');
+    const description = getBlock('Descripci[oó]n', 'Canal recomendado|Preguntas sugeridas|Tipo|Categor[ií]a|Categoria|T[ií]tulo|Titulo|Zona|Ubicaci[oó]n|Municipio') || clean.replace(/===.*?===/g,'').trim();
+    const channelLine = getSingle('Canal recomendado', 'Canal');
+    const questionsBlock = getBlock('Preguntas sugeridas', 'Canal recomendado|Tipo|Categor[ií]a|Categoria|T[ií]tulo|Titulo|Zona|Ubicaci[oó]n|Municipio|Descripci[oó]n');
+    const questions = questionsBlock ? questionsBlock.split('\n').map(q => q.replace(/^\s*[-•]?\s*\d*[.)]?\s*/,'').trim()).filter(Boolean) : [];
+    const fallbackDescription = description || clean;
+    const parsed = {
+      type: type || 'Solicitante',
+      category: category || '',
+      title: title || firstSentence(fallbackDescription) || 'Publicación creada con DOLA',
+      zone: zone || '',
+      description: fallbackDescription,
+      channel: /whats/i.test(channelLine) ? 'whatsapp' : 'dola',
+      questions,
+      rawText: clean,
+      needsReview: !(type && category && title && zone && description)
     };
+    return parsed;
   }
   function normalizeType(t=''){ return /agente/i.test(t) ? 'Agente' : /negocio/i.test(t) ? 'Negocio' : /solicit/i.test(t) ? 'Solicitante' : ''; }
-  function firstSentence(s=''){ return s.split(/[.\n]/).map(x=>x.trim()).filter(Boolean)[0]?.slice(0,90); }
+  function firstSentence(s=''){ return String(s||'').split(/[.\n]/).map(x=>x.trim()).filter(Boolean)[0]?.slice(0,90); }
+
+  function publishDolaPreview(){
+    const draft = state.dolaPreview;
+    if (!draft) return toast('Primero pega el texto generado por DOLA.');
+    if (!canPublishUnlimited() && freeActiveMine().length >= 1) { toast('Activa membresía para publicar sin límites.'); navigate('/mis-publicaciones'); return; }
+    const post = {
+      id: uid('post'), owner:'Tú', mine:true,
+      type: draft.type || 'Solicitante', category: (draft.category || '').trim() || 'General',
+      title: (draft.title || '').trim() || 'Publicación creada con DOLA',
+      description: (draft.description || draft.rawText || '').trim(), zone: (draft.zone || '').trim() || 'Zona no especificada',
+      channel: draft.channel || 'dola', whatsapp: normalizePhone(draft.whatsapp || ''), questions: draft.questions || [],
+      createdAt: new Date().toISOString(), expiresAt: canPublishUnlimited() ? null : addDays(new Date(), FREE_DAYS), status:'activa', freeTrial: !canPublishUnlimited(), reactions:0, comments:0, shares:0,
+      mediaData:'', mediaKind:'', mediaLabel: draft.category || 'Publicación con DOLA', mediaType:'placeholder'
+    };
+    if (!post.description) return toast('La publicación necesita descripción.');
+    const posts = getPosts(); posts.unshift(post); savePosts(posts); state.dolaPreview=null; state.dolaText=''; toast('Publicación creada desde DOLA'); navigate('/mis-publicaciones');
+  }
+
+  function editDolaPreview(){
+    if (!state.dolaPreview) return;
+    state.publishMode = 'manual';
+    state.publishDraft = state.dolaPreview;
+    state.dolaPreview = null;
+    toast('Puedes editar antes de publicar.');
+    render();
+  }
 
   function submitPublish(form){
     if (!canPublishUnlimited() && freeActiveMine().length >= 1) { toast('Activa membresía para publicar sin límites.'); navigate('/mis-publicaciones'); return; }
@@ -586,7 +668,7 @@
       mediaData: state.pendingMedia?.data || '', mediaKind: state.pendingMedia?.kind || '', mediaLabel:'Publicación local', mediaType:'placeholder'
     };
     if (!post.title || !post.description) { toast('Completa título y descripción.'); return; }
-    const posts = getPosts(); posts.unshift(post); savePosts(posts); state.pendingMedia = null; state.publishDraft = null; toast('Publicación creada'); navigate('/mis-publicaciones');
+    const posts = getPosts(); posts.unshift(post); savePosts(posts); state.pendingMedia = null; state.publishDraft = null; state.dolaPreview = null; state.dolaText = ''; toast('Publicación creada'); navigate('/mis-publicaciones');
   }
 
   function reactPost(id){ const posts = getPosts(); const p = posts.find(x=>x.id===id); if (p) { p.reactions=(p.reactions||0)+1; savePosts(posts); toast('Reacción agregada'); render(); } }

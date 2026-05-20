@@ -1,3 +1,3 @@
-No requiere SQL nuevo para probar la v4.9.51.
+No requiere SQL nuevo para esta corrección v5.0.1.
 
-Esta versión usa Dola.com como herramienta externa mediante copiar/abrir/pegar y mantiene el modo piloto en el navegador.
+La corrección funciona en modo piloto con localStorage.

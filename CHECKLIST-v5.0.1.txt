@@ -1,0 +1,22 @@
+CHECKLIST v5.0.1 - DOLA pegado inteligente
+
+1. Inicio carga correctamente.
+2. Publicar > Crear con DOLA muestra prompt con icono/botón de copiar.
+3. Prompt incluye: “Hazme una sola pregunta a la vez”.
+4. Botón Copiar prompt copia el texto completo.
+5. Botón Abrir DOLA abre DOLA_EXTERNAL_URL.
+6. El área “Pega aquí el texto generado por DOLA” aparece clara.
+7. “Usar este texto” interpreta campos del bloque final.
+8. “Ver vista previa” muestra la vista previa antes de publicar.
+9. La vista previa muestra tipo, título, descripción, zona, categoría y canal.
+10. Preguntas sugeridas aparecen si DOLA las entregó.
+11. Botón “Publicar ahora” guarda en localStorage.
+12. Publicación aparece en Mis publicaciones.
+13. Publicación aparece en Inicio/Explorar.
+14. “Editar” manda al formulario manual con datos prellenados.
+15. “Volver a DOLA” regresa al puente sin perder el enfoque.
+16. Texto incompleto no se pierde y queda en descripción.
+17. No rompe publicación manual.
+18. No rompe WhatsApp.
+19. No rompe DOLA_EXTERNAL_URL.
+20. No requiere SQL nuevo.

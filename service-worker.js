@@ -1,10 +1,10 @@
-const CACHE_NAME = 'conecta-servicios-v5-0-redisenio-estructural';
+const CACHE_NAME = 'conecta-servicios-v5-0-1-dola-pegado-inteligente';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=5.0-redisenio-estructural-conecta',
-  '/app.js?v=5.0-redisenio-estructural-conecta',
-  '/manifest.json?v=5.0-redisenio-estructural-conecta'
+  '/styles.css?v=5.0.1-dola-pegado-inteligente',
+  '/app.js?v=5.0.1-dola-pegado-inteligente',
+  '/manifest.json?v=5.0.1-dola-pegado-inteligente'
 ];
 
 self.addEventListener('install', (event) => {
