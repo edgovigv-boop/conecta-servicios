@@ -1,9 +1,4 @@
-No requiere SQL nuevo para probar la v4.9.46.
+No requiere SQL nuevo para probar v4.9.47.
 
-Modo piloto:
-- configuración del Chatbot Conecta en localStorage;
-- respuestas recibidas en localStorage;
-- canal elegido por publicación en localStorage / referencia de publicación;
-- publicación gratis de 30 días en localStorage.
-
-Para producción multiusuario real, después convendrá crear tablas en Supabase para chatbot_configs, chatbot_responses y publication_contact_channels.
+La publicación guiada por voz usa el formulario actual y localStorage para guardar borradores de la guía.
+Si la publicación final se envía, usa el flujo actual de publicaciones/Supabase.

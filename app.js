@@ -60,7 +60,7 @@ const NOTIFICATION_PREFS_KEY = "conecta_notif_prefs_v483";
 const NOTIFICATION_SEEN_KEY = "conecta_notif_seen_v41";
 const ANALYTICS_SESSION_KEY = "conecta_analytics_session_v42";
 const OPPORTUNITY_PREFS_KEY = "conecta_oportunidades_prefs_v43";
-const PWA_VERSION = "v4.9.46-chatbot-conecta-tipo-whatsapp";
+const PWA_VERSION = "v4.9.47-publicar-por-voz-guiado";
 
 let currentSection = "inicio";
 let publicationsCache = [];
@@ -12389,6 +12389,359 @@ try {
   window.saveChatbotPublishDraftV4946 = saveDraft;
   window.applyChatbotPresetV4946 = applyPreset;
   window.refreshChatbotConectaV4946 = refresh;
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+  window.addEventListener("pageshow", () => setTimeout(init, 120));
+})();
+
+
+// ------------------------------------------------------------------
+// v4.9.47 — Publicación guiada por voz
+// - Mejora el flujo de publicar: el usuario puede hablar o escribir una idea inicial.
+// - La app clasifica como Solicitud u Oferta y hace preguntas guiadas.
+// - Genera una publicación clara, editable y compatible con Chatbot Conecta o WhatsApp.
+// - No sustituye Chatbot Conecta: lo alimenta con una publicación mejor redactada.
+// ------------------------------------------------------------------
+(function publicarPorVozGuiadoV4947(){
+  const VERSION = "v4.9.47-publicar-por-voz-guiado";
+  const STORAGE_KEY = "conecta_publicacion_voz_borradores_v4947";
+  const SESSION_KEY = "conecta_publicacion_voz_session_v4947";
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const QUESTIONS = {
+    oferta: [
+      "¿En qué colonia, zona o ciudad te encuentras ubicado?",
+      "¿Qué productos, servicios o ayuda ofreces?",
+      "¿Cuál es tu horario o disponibilidad?",
+      "¿Tienes beneficios adicionales, entregas, paquetes, citas o condiciones especiales?",
+      "¿Qué formas de pago aceptas o cómo quieres acordar el pago?",
+      "¿Hay promociones, descuentos o algo importante que quieras destacar?",
+      "¿Quieres agregar algún detalle final?"
+    ],
+    solicitud: [
+      "¿En qué colonia, zona o ciudad se necesita?",
+      "¿Qué es exactamente lo que necesitas?",
+      "¿Cuándo lo necesitas? Indica fecha, hora o urgencia.",
+      "¿Qué condiciones o requisitos hay que tomar en cuenta?",
+      "¿Qué presupuesto, pago o acuerdo ofreces?",
+      "¿Hay algo más que sea importante para quien quiera ayudarte?"
+    ]
+  };
+  const LABELS = { oferta: "Oferta / anuncio", solicitud: "Solicitud / necesidad" };
+  let session = null;
+  let recognition = null;
+
+  function qs(sel, root=document){ return root.querySelector(sel); }
+  function qsa(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
+  function esc(value=""){
+    try { if (typeof escapeHtml === "function") return escapeHtml(value); } catch {}
+    return String(value ?? "").replace(/[&<>\"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch]));
+  }
+  function toast(msg){ try { if (typeof showToast === "function") return showToast(msg); } catch {} console.log(msg); }
+  function normalize(value=""){ return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+  function nowId(prefix="VOZ"){ return `${prefix}-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(16).slice(2,7).toUpperCase()}`; }
+  function read(key, fallback){ try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch { return fallback; } }
+  function write(key, value){ try { localStorage.setItem(key, JSON.stringify(value)); } catch {} }
+  function getDescriptionElement(){
+    try { if (typeof activeDescriptionElement === "function") return activeDescriptionElement(); } catch {}
+    return qs("#pubDescription") || qs("#pubDescriptionGeneral") || qs("textarea[name='descripcion']") || qsa("textarea").find(el => /descrip|detalle|neces/i.test(el.placeholder || el.name || el.id || ""));
+  }
+  function setField(id, value){ const el = qs(`#${id}`); if (el && value !== undefined && value !== null) { el.value = String(value); el.dispatchEvent(new Event("input", { bubbles:true })); el.dispatchEvent(new Event("change", { bubbles:true })); } }
+  function getField(id){ return qs(`#${id}`)?.value?.trim?.() || ""; }
+
+  function classify(text=""){
+    const t = normalize(text);
+    const requestWords = /\b(necesito|busco|requiero|solicito|quiero que|me urge|ocupo|alguien que|quien pueda|ayuda para|traigan|lleven|laven|hagan|empleado|trabajador)\b/;
+    const offerWords = /\b(tengo|vendo|ofrezco|me dedico|hago|doy|tenemos|atiendo|realizo|somos|cuento con|servicio de|negocio|tienda|local|verduleria|panaderia|rosticeria|carpinteria)\b/;
+    if (requestWords.test(t) && !offerWords.test(t)) return "solicitud";
+    if (offerWords.test(t) && !requestWords.test(t)) return "oferta";
+    if (/\b(necesito|busco|requiero|solicito|me urge|ocupo)\b/.test(t)) return "solicitud";
+    if (/\b(tengo|vendo|ofrezco|me dedico|hago|tenemos)\b/.test(t)) return "oferta";
+    return "duda";
+  }
+  function inferProfile(mode, text=""){
+    const t = normalize(text);
+    if (mode === "solicitud") return "solicitante";
+    if (/negocio|tienda|local|verduler|panader|rosticer|restaurante|consultorio|doctor|estetica|ferreter|comida|venta|productos/.test(t)) return "negocio";
+    return "agente";
+  }
+  function inferCategory(mode, text=""){
+    const t = normalize(text);
+    if (/mandado|mandados|entrega|entregar|recoger|llevar|traer|tacos|comida|farmacia|comprar/.test(t)) return "Mandados verificados";
+    if (/viaje|traslado|ride|avent[oó]n|auto|camioneta/.test(t)) return "Viajes compartidos";
+    if (/negocio|tienda|local|verduler|panader|rosticer|restaurante|comida|ferreter|estetica|consultorio/.test(t)) return "Negocios";
+    if (mode === "oferta") return "Agentes";
+    return "Solicitantes";
+  }
+  function makeTitle(session){
+    const base = (session.initial || "").trim().replace(/\s+/g, " ");
+    if (!base) return session.mode === "solicitud" ? "Solicitud local" : "Oferta local";
+    let title = base.charAt(0).toUpperCase() + base.slice(1);
+    if (title.length > 78) title = title.slice(0, 75).replace(/\s+\S*$/, "") + "...";
+    return title;
+  }
+  function answerAt(i){ return session?.answers?.[i]?.answer || ""; }
+  function makeDescription(s){
+    const mode = s.mode || classify(s.initial);
+    const lines = [];
+    if (mode === "oferta") {
+      lines.push(`📌 ${makeTitle(s)}`);
+      if (answerAt(0)) lines.push(`📍 Zona: ${answerAt(0)}`);
+      if (answerAt(1)) lines.push(`🧾 Ofrece: ${answerAt(1)}`);
+      if (answerAt(2)) lines.push(`⏰ Horario o disponibilidad: ${answerAt(2)}`);
+      if (answerAt(3)) lines.push(`✅ Beneficios o condiciones: ${answerAt(3)}`);
+      if (answerAt(4)) lines.push(`💳 Pago: ${answerAt(4)}`);
+      if (answerAt(5)) lines.push(`💰 Promociones o destacado: ${answerAt(5)}`);
+      if (answerAt(6)) lines.push(`📝 Detalle extra: ${answerAt(6)}`);
+      lines.push("\n💬 Responde desde el botón Mensaje para iniciar contacto.");
+    } else {
+      lines.push(`📌 ${makeTitle(s)}`);
+      if (answerAt(0)) lines.push(`📍 Zona: ${answerAt(0)}`);
+      if (answerAt(1)) lines.push(`🧾 Necesidad: ${answerAt(1)}`);
+      if (answerAt(2)) lines.push(`⏰ Cuándo: ${answerAt(2)}`);
+      if (answerAt(3)) lines.push(`✅ Condiciones: ${answerAt(3)}`);
+      if (answerAt(4)) lines.push(`💲 Presupuesto o acuerdo: ${answerAt(4)}`);
+      if (answerAt(5)) lines.push(`📝 Detalle extra: ${answerAt(5)}`);
+      lines.push("\n💬 Responde desde el botón Mensaje si puedes ayudar o quieres proponer algo.");
+    }
+    return lines.filter(Boolean).join("\n");
+  }
+  function makeSummary(s){
+    const mode = s.mode || classify(s.initial);
+    return {
+      id: s.id || nowId(),
+      mode,
+      profile: inferProfile(mode, s.initial),
+      category: inferCategory(mode, [s.initial, ...s.answers.map(a=>a.answer)].join(" ")),
+      title: makeTitle(s),
+      description: makeDescription(s),
+      answers: s.answers || [],
+      created_at: new Date().toISOString(),
+      version: VERSION
+    };
+  }
+
+  function panelHtml(){
+    const supported = Boolean(SpeechRecognition);
+    return `<section id="voicePublishPanelV4947" class="voice-publish-panel-v4947">
+      <div class="voice-publish-head-v4947">
+        <span class="voice-icon-v4947">🎙️</span>
+        <div>
+          <strong>Publicar por voz</strong>
+          <p>Habla o escribe tu idea. Conecta te hace preguntas y arma una publicación clara para que solo la revises.</p>
+        </div>
+      </div>
+      <div class="voice-actions-v4947">
+        <button type="button" class="btn-primary voice-start-v4947" onclick="startVoicePublicationGuideV4947()">🎙 Crear publicación por voz</button>
+        <button type="button" class="btn-ghost" onclick="openTextPublicationGuideV4947()">✍️ Escribir y guiarme</button>
+      </div>
+      <p class="voice-note-v4947">${supported ? "Tu navegador permite dictado por micrófono." : "Tu navegador no permite dictado directo aquí; puedes usar la guía escribiendo tus respuestas."}</p>
+    </section>`;
+  }
+  function ensurePanel(){
+    const form = qs("#publicationForm");
+    const section = qs("#registro") || form?.parentElement;
+    if (!section || qs("#voicePublishPanelV4947")) return;
+    if (form) form.insertAdjacentHTML("beforebegin", panelHtml());
+    else section.insertAdjacentHTML("afterbegin", panelHtml());
+  }
+  function renderOverlay(){
+    qsa(".voice-publish-overlay-v4947").forEach(el => el.remove());
+    const overlay = document.createElement("div");
+    overlay.className = "voice-publish-overlay-v4947";
+    overlay.innerHTML = `<div class="voice-sheet-v4947" role="dialog" aria-modal="true">
+      <header class="voice-sheet-head-v4947">
+        <button type="button" aria-label="Cerrar" onclick="closeVoicePublicationGuideV4947()">×</button>
+        <div><strong>🎙 Publicación guiada</strong><small>Habla o escribe. Al final podrás editar todo antes de publicar.</small></div>
+      </header>
+      <div id="voiceConversationV4947" class="voice-conversation-v4947"></div>
+      <div id="voiceManualBoxV4947" class="voice-manual-box-v4947">
+        <textarea id="voiceManualInputV4947" rows="3" placeholder="También puedes escribir aquí tu respuesta"></textarea>
+        <div class="voice-manual-actions-v4947">
+          <button type="button" class="btn-primary" onclick="submitVoiceManualInputV4947()">Usar respuesta</button>
+          <button type="button" class="btn-ghost" onclick="listenVoiceStepV4947()">🎙 Dictar</button>
+        </div>
+      </div>
+      <div id="voiceChoicesV4947" class="voice-choices-v4947"></div>
+    </div>`;
+    document.body.appendChild(overlay);
+    return overlay;
+  }
+  function box(){ return qs("#voiceConversationV4947"); }
+  function addBubble(type, html){
+    const b = box(); if (!b) return;
+    b.insertAdjacentHTML("beforeend", `<div class="voice-bubble-v4947 ${type}">${html}</div>`);
+    b.scrollTop = b.scrollHeight;
+  }
+  function setChoices(items=[]){
+    const c = qs("#voiceChoicesV4947"); if (!c) return;
+    c.innerHTML = items.map(item => `<button type="button" onclick="${item.action}">${esc(item.label)}</button>`).join("");
+  }
+  function start(mode="speech"){
+    session = { id: nowId(), mode: null, initial: "", answers: [], step: -1, created_at: new Date().toISOString(), inputMode: mode };
+    write(SESSION_KEY, session);
+    renderOverlay();
+    addBubble("bot", "Hola. Cuéntame qué quieres publicar. Por ejemplo: <b>Tengo verdulería</b> o <b>Necesito que laven mi auto</b>.");
+    setChoices([
+      { label:"🎙 Dictar ahora", action:"listenVoiceStepV4947()" },
+      { label:"✍️ Escribir", action:"focusVoiceManualInputV4947()" },
+      { label:"Es una solicitud", action:"forceVoiceModeV4947('solicitud')" },
+      { label:"Es algo que ofrezco", action:"forceVoiceModeV4947('oferta')" }
+    ]);
+    if (mode === "speech") setTimeout(() => listen(), 350);
+  }
+  function listen(){
+    const input = qs("#voiceManualInputV4947");
+    if (!SpeechRecognition) { input?.focus(); toast("Este navegador no permite dictado aquí. Puedes escribir tu respuesta."); return; }
+    try { recognition?.abort?.(); } catch {}
+    recognition = new SpeechRecognition();
+    recognition.lang = "es-MX";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    addBubble("bot", "Te escucho... habla con calma.");
+    recognition.onresult = ev => {
+      const text = ev.results?.[0]?.[0]?.transcript || "";
+      if (input) input.value = text;
+      handleText(text);
+    };
+    recognition.onerror = () => { toast("No pude escuchar bien. Puedes escribir tu respuesta."); input?.focus(); };
+    recognition.onend = () => {};
+    recognition.start();
+  }
+  function forceMode(mode){
+    if (!session) start("text");
+    session.mode = mode;
+    if (!session.initial) session.initial = mode === "solicitud" ? "Necesito ayuda local" : "Ofrezco algo local";
+    session.step = -1;
+    addBubble("user", mode === "solicitud" ? "Es una solicitud" : "Es algo que ofrezco");
+    addBubble("bot", `Perfecto. Lo tomaré como <b>${LABELS[mode]}</b>. Te haré preguntas rápidas para ordenar la publicación.`);
+    askNext();
+  }
+  function handleText(text=""){
+    if (!session) start("text");
+    const value = String(text || "").trim();
+    if (!value) return toast("Escribe o dicta una respuesta.");
+    addBubble("user", esc(value));
+    if (!session.mode) {
+      session.initial = value;
+      const mode = classify(value);
+      if (mode === "duda") {
+        addBubble("bot", "Para ordenarlo bien, dime si esto es una solicitud o algo que ofreces.");
+        setChoices([
+          { label:"Es una solicitud", action:"forceVoiceModeV4947('solicitud')" },
+          { label:"Es algo que ofrezco", action:"forceVoiceModeV4947('oferta')" }
+        ]);
+        write(SESSION_KEY, session);
+        return;
+      }
+      session.mode = mode;
+      addBubble("bot", `Perfecto. Entendí que es <b>${LABELS[mode]}</b>. Vamos paso a paso y yo ordeno la información.`);
+      askNext();
+      return;
+    }
+    if (session.step >= 0) {
+      const question = QUESTIONS[session.mode][session.step];
+      session.answers[session.step] = { question, answer: value };
+      askNext();
+    }
+    write(SESSION_KEY, session);
+  }
+  function askNext(){
+    if (!session?.mode) return;
+    session.step += 1;
+    const list = QUESTIONS[session.mode] || QUESTIONS.solicitud;
+    if (session.step >= list.length) return showFinal();
+    addBubble("bot", esc(list[session.step]));
+    setChoices([
+      { label:"🎙 Responder por voz", action:"listenVoiceStepV4947()" },
+      { label:"✍️ Escribir respuesta", action:"focusVoiceManualInputV4947()" },
+      { label:"Saltar", action:"skipVoiceQuestionV4947()" }
+    ]);
+  }
+  function skip(){
+    if (!session?.mode || session.step < 0) return;
+    const question = QUESTIONS[session.mode][session.step];
+    session.answers[session.step] = { question, answer: "" };
+    addBubble("user", "Saltar");
+    askNext();
+  }
+  function showFinal(){
+    const final = makeSummary(session);
+    session.final = final;
+    write(SESSION_KEY, session);
+    addBubble("bot", `<b>Vista previa de tu publicación:</b><br><br><strong>${esc(final.title)}</strong><br><pre class="voice-preview-pre-v4947">${esc(final.description)}</pre>`);
+    setChoices([
+      { label:"✅ Usar esta publicación", action:"applyVoicePublicationV4947()" },
+      { label:"✏️ Editar en el formulario", action:"applyVoicePublicationV4947(true)" },
+      { label:"Empezar de nuevo", action:"startVoicePublicationGuideV4947()" }
+    ]);
+  }
+  function saveDraft(final){
+    const rows = read(STORAGE_KEY, []);
+    write(STORAGE_KEY, [final, ...rows].slice(0, 50));
+  }
+  function apply(editOnly=false){
+    if (!session?.final) session.final = makeSummary(session || {});
+    const final = session.final;
+    saveDraft(final);
+    setField("pubTitle", final.title);
+    setField("pubCategory", final.category);
+    setField("pubIntent", final.mode === "solicitud" ? "Busco / Necesito" : "Ofrezco / Tengo disponible");
+    const descEl = getDescriptionElement();
+    if (descEl) { descEl.value = final.description; descEl.dispatchEvent(new Event("input", { bubbles:true })); }
+    if (!getField("pubLocality") && answerAtLocal(0)) setField("pubLocality", answerAtLocal(0));
+    if (!getField("pubName")) setField("pubName", final.profile === "negocio" ? "Mi negocio" : "Usuario Conecta");
+    // Canal recomendado por defecto: Chatbot Conecta. El usuario puede cambiarlo a WhatsApp.
+    qsa("input[name='contactChannelV4944'],input[name='contactChannelV4945'],input[name='contactChannelV4946']").forEach(input => { input.checked = input.value === "chatbot"; });
+    try { if (typeof saveChatbotPublishDraftV4946 === "function") saveChatbotPublishDraftV4946(false); } catch {}
+    try { if (typeof updateCategoryDetails === "function") updateCategoryDetails(); } catch {}
+    try { if (typeof renderPublicationPreview === "function") renderPublicationPreview(); } catch {}
+    close();
+    toast(editOnly ? "La publicación guiada quedó en el formulario para editar." : "Publicación por voz lista. Revisa y publica.");
+    try { qs("#pubTitle")?.scrollIntoView({ behavior:"smooth", block:"center" }); } catch {}
+  }
+  function answerAtLocal(i){ return session?.answers?.[i]?.answer || ""; }
+  function close(){ try { recognition?.abort?.(); } catch {} qsa(".voice-publish-overlay-v4947").forEach(el => el.remove()); }
+
+  function wrapNavigation(){
+    try {
+      if (typeof showSection === "function" && !window.__showSectionBaseV4947) {
+        window.__showSectionBaseV4947 = showSection;
+        showSection = function(section, push=true){ const r = window.__showSectionBaseV4947.apply(this, arguments); setTimeout(refresh, 80); return r; };
+        window.showSection = showSection;
+      }
+    } catch {}
+    try {
+      if (typeof updateWizard === "function" && !window.__updateWizardBaseV4947) {
+        window.__updateWizardBaseV4947 = updateWizard;
+        updateWizard = function(){ const r = window.__updateWizardBaseV4947.apply(this, arguments); setTimeout(refresh, 80); return r; };
+        window.updateWizard = updateWizard;
+      }
+    } catch {}
+  }
+  function refresh(){
+    document.body.dataset.version = VERSION;
+    document.body.classList.add("publicar-por-voz-v4947");
+    ensurePanel();
+    try { localStorage.setItem("conecta_publicar_voz_version", VERSION); } catch {}
+  }
+  function init(){
+    wrapNavigation();
+    refresh();
+    setTimeout(refresh, 250);
+    setTimeout(refresh, 900);
+    setTimeout(refresh, 1800);
+  }
+
+  window.startVoicePublicationGuideV4947 = () => start("speech");
+  window.openTextPublicationGuideV4947 = () => start("text");
+  window.closeVoicePublicationGuideV4947 = close;
+  window.listenVoiceStepV4947 = listen;
+  window.submitVoiceManualInputV4947 = () => { const input = qs("#voiceManualInputV4947"); const val = input?.value || ""; if (input) input.value = ""; handleText(val); };
+  window.focusVoiceManualInputV4947 = () => qs("#voiceManualInputV4947")?.focus();
+  window.forceVoiceModeV4947 = forceMode;
+  window.skipVoiceQuestionV4947 = skip;
+  window.applyVoicePublicationV4947 = apply;
+  window.refreshVoicePublicationGuideV4947 = refresh;
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
   window.addEventListener("pageshow", () => setTimeout(init, 120));

@@ -1,0 +1,27 @@
+Codex, aplicar v4.9.47-publicar-por-voz-guiado.
+
+Objetivo:
+Agregar publicación guiada por voz/escritura al flujo de publicar, sin sustituir Chatbot Conecta.
+
+Archivos a reemplazar:
+- app.js
+- styles.css
+- service-worker.js
+- manifest.json
+- vercel.json
+
+Aplicar además:
+- PATCH-INDEX-v4.9.47.txt
+
+Reglas:
+- No desplegar automáticamente.
+- No romper Home, Explorar, Publicar, Mis publicaciones, Perfil, Embajadores, Admin, membresías ni Supabase Storage.
+- No aplicar SQL.
+- Mantener canal único: Chatbot Conecta o WhatsApp.
+- Chatbot Conecta sigue siendo el canal recomendado.
+
+Versión/cache:
+v4.9.47-publicar-por-voz-guiado
+
+Commit sugerido:
+Implementar publicación guiada por voz v4.9.47

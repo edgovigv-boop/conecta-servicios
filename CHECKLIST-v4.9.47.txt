@@ -1,0 +1,17 @@
+CHECKLIST v4.9.47 — Publicar por voz guiado
+
+1. Abrir Publicar desde el botón +.
+2. Confirmar que aparece el panel “Publicar por voz”.
+3. Probar “Crear publicación por voz” en navegador compatible.
+4. Probar “Escribir y guiarme” como alternativa sin micrófono.
+5. Dictar/escribir: “Necesito que alguien me traiga tacos para cenar”.
+6. Confirmar que lo clasifica como solicitud.
+7. Responder preguntas guiadas.
+8. Confirmar que genera título y descripción ordenada.
+9. Tocar “Usar esta publicación”.
+10. Confirmar que el formulario se llena automáticamente.
+11. Confirmar que Chatbot Conecta queda como canal recomendado.
+12. Cambiar a WhatsApp si se desea y confirmar que no aparecen ambos canales.
+13. Publicar con foto opcional.
+14. Confirmar que la publicación se ve en Mis publicaciones o como borrador local si falla Supabase.
+15. Confirmar que admin no queda bloqueado.

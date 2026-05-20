@@ -1,12 +1,12 @@
-// Conecta Servicios v4.9.46 — Chatbot Conecta tipo WhatsApp + canal único
-const CACHE_NAME = "conecta-servicios-v4.9.46-chatbot-conecta-tipo-whatsapp";
+// Conecta Servicios v4.9.47 — Publicación guiada por voz
+const CACHE_NAME = "conecta-servicios-v4.9.47-publicar-por-voz-guiado";
 const ASSETS = [
   "/",
   "/index.html",
-  "/styles.css?v=4.9.46-chatbot-conecta-tipo-whatsapp",
-  "/app.js?v=4.9.46-chatbot-conecta-tipo-whatsapp",
-  "/manifest.json?v=4.9.46-chatbot-conecta-tipo-whatsapp",
-  "/service-worker.js?v=4.9.46-chatbot-conecta-tipo-whatsapp"
+  "/styles.css?v=v4.9.47-publicar-por-voz-guiado",
+  "/app.js?v=v4.9.47-publicar-por-voz-guiado",
+  "/manifest.json?v=v4.9.47-publicar-por-voz-guiado",
+  "/service-worker.js?v=v4.9.47-publicar-por-voz-guiado"
 ];
 self.addEventListener("install", event => {
   self.skipWaiting();
