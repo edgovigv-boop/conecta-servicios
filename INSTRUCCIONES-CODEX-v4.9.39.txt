@@ -1,0 +1,25 @@
+INSTRUCCIONES CODEX - v4.9.39-asistente-publicaciones
+
+Aplicar esta versión sobre la base actual.
+
+Objetivo:
+Extender el asistente configurable a TODAS las publicaciones.
+
+No desplegar automáticamente.
+No modificar conexión Supabase.
+No romper Supabase Storage.
+No bloquear admin.
+
+Aplicar archivos:
+- app.js
+- styles.css
+- service-worker.js
+- manifest.json
+- vercel.json
+- PATCH-INDEX-v4.9.39.txt
+- supabase-publication-assistant.sql
+
+Después, actualizar index.html según PATCH-INDEX-v4.9.39.txt.
+
+Commit sugerido:
+Extender asistente configurable a todas las publicaciones

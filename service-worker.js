@@ -1,12 +1,12 @@
-// Conecta Servicios v4.9.38 — Service Worker Asistente de negocio configurable
-const CACHE_NAME = "conecta-servicios-4.9.38-asistente-negocio-configurable";
+// Conecta Servicios v4.9.39 — Service Worker Asistente de publicaciones
+const CACHE_NAME = "conecta-servicios-4.9.39-asistente-publicaciones";
 const ASSETS = [
   "/",
   "/index.html",
-  "/styles.css?v=4.9.38-asistente-negocio-configurable",
-  "/app.js?v=4.9.38-asistente-negocio-configurable",
-  "/manifest.json?v=4.9.38-asistente-negocio-configurable",
-  "/service-worker.js?v=4.9.38-asistente-negocio-configurable"
+  "/styles.css?v=4.9.39-asistente-publicaciones",
+  "/app.js?v=4.9.39-asistente-publicaciones",
+  "/manifest.json?v=4.9.39-asistente-publicaciones",
+  "/service-worker.js?v=4.9.39-asistente-publicaciones"
 ];
 self.addEventListener("install", event => {
   self.skipWaiting();

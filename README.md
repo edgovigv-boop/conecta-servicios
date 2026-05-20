@@ -1,30 +1,44 @@
-# Conecta Servicios v4.9.38 — Asistente de negocio configurable
+# Conecta Servicios v4.9.39-asistente-publicaciones
 
-Entrega preparada sin despliegue automático.
+Esta versión corrige el alcance del asistente configurable: no es sólo para negocios. Ahora el asistente aplica a **todas las publicaciones**.
 
-## Objetivo
-Convertir el antiguo concepto de “Chat negocio” en una herramienta de mayor valor para la membresía: un asistente interno configurable por negocio, sin depender de WhatsApp Business ni proveedores externos.
+## Flujos disponibles
 
-## Qué incluye
+1. Pedido con menú
+2. Cita
+3. Contacto directo
+4. Cotización
+5. Solicitud de servicio
+6. Solicitud de viaje compartido
+7. Solicitud de envío o mensajería
+8. Ofrecer ayuda / responder necesidad
 
-- Asistente de negocio configurable.
-- Flujos internos por publicación:
-  - Pedidos con menú.
-  - Citas.
-  - Mensaje filtrado al negocio.
-- Ejemplo de Rosticería:
-  - Pollo asado con ensalada, salsas y tortillas: $235 MXN.
-  - Quesadillas: $50 MXN.
-  - Refrescos: $35 MXN.
-  - Papas fritas: $40 MXN.
-- Carrito con total automático.
-- Datos de cliente.
-- Pickup o entrega.
-- Pago pendiente / acordar con negocio.
-- Panel del negocio para pedidos, citas, mensajes y estados.
-- Admin libre para probar sin membresía.
-- Usuario sin membresía puede guardar borrador; para publicar se invita a activar membresía.
-- Modo piloto con localStorage.
+## Dónde aparece
+
+- En **Mis publicaciones**, cada publicación propia muestra **Configurar asistente**.
+- En la vista pública, una publicación con asistente activo muestra el botón que corresponda:
+  - Hacer pedido
+  - Agendar cita
+  - Solicitar cotización
+  - Solicitar lugar
+  - Cotizar envío
+  - Ofrecer ayuda
+  - Mensaje al publicante
+- En **Mis publicaciones** se agrega el panel **Solicitudes recibidas por mis publicaciones**.
+
+## Membresías
+
+- Admin puede probar sin membresía.
+- Usuario sin membresía puede guardar borrador.
+- Usuario con membresía activa puede activar asistentes.
+
+## Datos
+
+Funciona en modo piloto con localStorage.
+
+**No requiere SQL nuevo para probar.**
+
+Se incluye `supabase-publication-assistant.sql` como base opcional para producción multiusuario.
 
 ## Archivos modificados
 
@@ -33,21 +47,9 @@ Convertir el antiguo concepto de “Chat negocio” en una herramienta de mayor 
 - service-worker.js
 - manifest.json
 - vercel.json
-
-## Archivo de patch
-
-- PATCH-INDEX-v4.9.38.txt
-
-## SQL
-
-No requiere SQL nuevo para probar el piloto.
-
-Se incluye `supabase-business-messaging.sql` como base opcional para producción real multiusuario en Supabase.
-
-## Versión
-
-`v4.9.38-asistente-negocio-configurable`
+- PATCH-INDEX-v4.9.39.txt
+- supabase-publication-assistant.sql
 
 ## Commit sugerido
 
-`Implementar asistente de negocio configurable v4.9.38`
+Extender asistente configurable a todas las publicaciones

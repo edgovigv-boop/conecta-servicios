@@ -1,0 +1,21 @@
+PATCH index.html para v4.9.39-asistente-publicaciones
+
+1) Reemplazar CSS:
+<link rel="stylesheet" href="styles.css?v=4.9.39-asistente-publicaciones">
+
+2) Reemplazar JS:
+<script src="app.js?v=4.9.39-asistente-publicaciones" defer></script>
+
+3) Actualizar body:
+<body data-version="4.9.39-asistente-publicaciones">
+
+4) Actualizar title si aplica:
+<title>Conecta Servicios v4.9.39</title>
+
+5) Revisión visual:
+- El concepto principal debe ser “Asistente de publicación”.
+- En Mis publicaciones debe aparecer “Configurar asistente”.
+- En vista pública, si la publicación tiene asistente activo, debe mostrar la acción configurada.
+
+IMPORTANTE:
+Si no se actualiza index.html, el navegador o service worker puede cargar app.js/styles.css viejos aunque Vercel esté en Ready.

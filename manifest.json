@@ -1,8 +1,8 @@
 {
   "name": "Conecta Servicios",
   "short_name": "Conecta",
-  "description": "Conecta Servicios v4.9.38 - Asistente de negocio configurable con pedidos, citas y mensajes internos por publicación.",
-  "start_url": "/?source=pwa&v=4.9.38-asistente-negocio-configurable",
+  "description": "Conecta Servicios v4.9.39 - Asistente configurable para todas las publicaciones con pedidos, citas, cotizaciones, viajes, envíos, ayuda y mensajes internos.",
+  "start_url": "/?source=pwa&v=4.9.39-asistente-publicaciones",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -35,5 +35,5 @@
       "purpose": "maskable"
     }
   ],
-  "id": "/?v=4.9.38-asistente-negocio-configurable"
+  "id": "/?v=4.9.39-asistente-publicaciones"
 }

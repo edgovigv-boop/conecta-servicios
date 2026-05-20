@@ -1,0 +1,42 @@
+CHECKLIST v4.9.39-asistente-publicaciones
+
+1. Reemplazar en raíz:
+   - app.js
+   - styles.css
+   - service-worker.js
+   - manifest.json
+   - vercel.json
+
+2. Aplicar PATCH-INDEX-v4.9.39.txt en index.html.
+
+3. Probar en incógnito:
+   https://conecta-servicios.vercel.app/?v=4939
+
+4. En Mis publicaciones:
+   - Buscar una publicación propia.
+   - Abrir detalle.
+   - Tocar “Configurar asistente”.
+   - Elegir flujo.
+   - Guardar.
+
+5. Probar flujos:
+   - Pedido con menú
+   - Cita
+   - Contacto directo
+   - Cotización
+   - Solicitud de servicio
+   - Solicitud de viaje compartido
+   - Solicitud de envío o mensajería
+   - Ofrecer ayuda / responder necesidad
+
+6. Validar vista pública:
+   - La publicación configurada debe mostrar el botón correcto.
+
+7. Validar solicitudes:
+   - Revisar “Solicitudes recibidas por mis publicaciones”.
+   - Cambiar estado.
+   - Responder internamente.
+
+8. Confirmar que admin no queda bloqueado.
+
+9. Confirmar que usuario sin membresía guarda borrador.

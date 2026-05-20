@@ -1,0 +1,180 @@
+.ba-modal-v4939 {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  align-items: end;
+  background: rgba(22, 12, 36, .46);
+  padding: 10px;
+}
+.ba-modal-v4939.hidden,
+.hidden {
+  display: none !important;
+}
+.ba-modal-card-v4939 {
+  width: min(760px, 100%);
+  max-height: min(88vh, 860px);
+  margin: 0 auto;
+  overflow: auto;
+  border-radius: 28px 28px 20px 20px;
+  padding: 20px;
+  background: #fff;
+  color: #2c174c;
+  box-shadow: 0 -16px 60px rgba(14, 4, 30, .30);
+  position: relative;
+}
+.ba-close-v4939 {
+  position: sticky;
+  top: 0;
+  float: right;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 999px;
+  background: #f2edf9;
+  color: #32165c;
+  font-size: 1.5rem;
+  z-index: 1;
+}
+.ba-form-v4939 {
+  display: grid;
+  gap: 12px;
+}
+.ba-form-v4939 label {
+  display: grid;
+  gap: 6px;
+  font-weight: 800;
+  color: #35204f;
+}
+.ba-form-v4939 input,
+.ba-form-v4939 textarea,
+.ba-form-v4939 select,
+.ba-chat-compose-v4939 input,
+.ba-row-v4939 select {
+  width: 100%;
+  border: 1px solid rgba(74, 42, 118, .18);
+  border-radius: 16px;
+  padding: 12px 13px;
+  font: inherit;
+  background: #fbf9ff;
+  color: #2b1648;
+}
+.ba-grid-v4939 {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+.ba-menu-v4939 {
+  display: grid;
+  gap: 10px;
+}
+.ba-menu-item-v4939 {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border-radius: 18px;
+  background: #f8f4ff;
+}
+.ba-menu-item-v4939 input {
+  width: 78px;
+  text-align: center;
+  background: #fff;
+}
+.ba-menu-item-v4939 small {
+  color: #6f5f87;
+}
+.ba-total-v4939 {
+  display: flex;
+  justify-content: space-between;
+  border-radius: 18px;
+  padding: 14px;
+  background: #24113e;
+  color: #fff;
+  font-size: 1.05rem;
+}
+.ba-success-v4939 {
+  text-align: center;
+  display: grid;
+  gap: 12px;
+  padding: 10px;
+}
+.ba-success-v4939 > span {
+  font-size: 3rem;
+}
+.ba-table-v4939 {
+  margin-top: 18px;
+  display: grid;
+  gap: 10px;
+}
+.ba-row-v4939 p {
+  color: #5d536d;
+}
+.ba-chat-log-v4939 {
+  display: grid;
+  gap: 10px;
+  max-height: 340px;
+  overflow: auto;
+  padding: 10px;
+  border-radius: 18px;
+  background: #f8f4ff;
+}
+.ba-chat-msg-v4939 {
+  width: fit-content;
+  max-width: 86%;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: #fff;
+  color: #2c174c;
+}
+.ba-chat-msg-v4939.customer {
+  justify-self: start;
+}
+.ba-chat-msg-v4939.business {
+  justify-self: end;
+  background: #5520ad;
+  color: #fff;
+}
+.ba-chat-msg-v4939 p {
+  margin: 5px 0;
+}
+.ba-chat-msg-v4939 small {
+  opacity: .75;
+}
+.ba-chat-compose-v4939 {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+.ba-chat-compose-v4939 input {
+  flex: 1;
+}
+@media (max-width: 640px) {
+  .ba-panel-v4939 { padding: 14px; border-radius: 22px; }
+  .ba-panel-head-v4939 { align-items: stretch; }
+  .ba-actions-v4939 .ba-btn-v4939,
+  .ba-panel-head-v4939 .ba-btn-v4939 { width: 100%; }
+  .ba-modal-v4939 { padding: 0; }
+  .ba-modal-card-v4939 { max-height: 92vh; border-radius: 28px 28px 0 0; }
+  .ba-quick-access-v4939 { right: 10px; bottom: 82px; }
+  .ba-quick-access-v4939 button { padding: 11px 13px; font-size: .88rem; }
+  .ba-chat-compose-v4939 { flex-direction: column; }
+}
+
+
+/* v4.9.39: se ocultan paneles piloto antiguos de Chat negocio para evitar confusión visual. */
+#businessPublicationsPublicPanelV49367,
+#businessPublicationsOwnerPanelV49367,
+#businessChatLeadsPanelV49366,
+#businessMessagingConfig,
+#businessMessagingClient,
+#businessMessagingPanel {
+  display: none !important;
+}
+.ba-subcopy-v4939 {
+  margin: 0 0 10px;
+  color: #6f5f87;
+  font-size: .92rem;
+}
