@@ -1,0 +1,20 @@
+CHECKLIST v4.9.43 — Publicar unificado real
+
+1. Abrir la app en incógnito con ?v=4943.
+2. Tocar el botón +.
+3. Confirmar que el título diga “Crear publicación”, no “Crear oportunidad”.
+4. Crear publicación básica tipo: “Necesito alguien que me traiga unos tacos para cenar”.
+5. Confirmar que WhatsApp sea opcional.
+6. Confirmar que aparezca la pregunta:
+   “¿Quieres configurar un asistente para esta publicación?”
+7. Elegir “No, solo publicar gratis” y publicar.
+8. Confirmar que no salga “No se pudo guardar” sin alternativa.
+9. Si Supabase falla, confirmar mensaje:
+   “Tu publicación se guardó como borrador local. Revisa conexión o vuelve a intentar sincronizar.”
+10. Entrar a Mis publicaciones y verificar panel “Publicaciones básicas y borradores locales”.
+11. Confirmar que cada publicación tenga botón “Configurar asistente”.
+12. Probar que una publicación sin membresía guarde asistente como borrador/vista previa.
+13. Probar que admin pueda publicar y activar asistente sin límite.
+14. Confirmar que ya no aparezcan acciones principales: “Chat negocio” o “Responder filtro”.
+15. Confirmar que Explorar siga mostrando publicaciones.
+16. Confirmar que subir foto sigue funcionando.

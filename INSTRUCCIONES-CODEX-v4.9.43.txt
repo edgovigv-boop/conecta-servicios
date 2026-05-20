@@ -1,0 +1,31 @@
+INSTRUCCIONES PARA CODEX — v4.9.43-publicar-unificado-real
+
+Aplicar esta corrección sobre el proyecto actual.
+
+Archivos a reemplazar en raíz:
+- app.js
+- styles.css
+- service-worker.js
+- manifest.json
+
+Aplicar además:
+- PATCH-INDEX-v4.9.43.txt sobre index.html
+
+Objetivo:
+El botón + y las plantillas deben usar definitivamente el nuevo flujo de publicación freemium:
+publicación básica gratis mensual + asistente configurable opcional.
+
+Puntos críticos:
+- No debe seguir apareciendo “Crear oportunidad” como título principal.
+- No debe depender de WhatsApp obligatorio.
+- No debe exigir membresía para la publicación básica mensual.
+- No debe mandar “No se pudo guardar” sin respaldo.
+- Si Supabase falla, guardar borrador local temporal.
+- El asistente avanzado queda como membresía o admin.
+- Admin libre e ilimitado.
+
+Versión/cache:
+4.9.43-publicar-unificado-real
+
+Commit sugerido:
+Migrar definitivamente Publicar al flujo freemium con asistente

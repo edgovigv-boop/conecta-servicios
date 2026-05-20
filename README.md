@@ -1,32 +1,50 @@
-# Conecta Servicios v4.9.42 — Publicación unificada freemium
+# Conecta Servicios — v4.9.43-publicar-unificado-real
 
-Esta versión migra el modelo anterior de publicar a un flujo único:
+## Objetivo
 
-- El botón `+ Publicar` crea una publicación básica gratis.
-- Las plantillas llevan al mismo flujo de publicación.
-- La publicación básica gratuita es mensual en modo piloto local.
-- El contacto/WhatsApp es opcional.
-- El Asistente de publicación queda como valor avanzado de membresía.
-- Admin puede publicar, activar y probar sin restricciones.
-- El asistente no debe aparecer flotando ni como sección global repetida.
+Migrar definitivamente el botón **+ Publicar** y las plantillas al nuevo flujo unificado:
 
-## Modelo comercial
+**Publicación básica gratis mensual + Asistente de publicación opcional.**
 
-Gratis:
-- 1 publicación básica mensual.
-- Título, descripción, categoría, municipio/zona, foto opcional y contacto básico opcional.
+Esta versión corrige el problema donde el botón + todavía abría el flujo anterior **“Crear oportunidad”**, no mostraba el asistente y podía fallar con el mensaje genérico “No se pudo guardar”.
 
-Membresía:
-- Más publicaciones.
-- Asistente por publicación.
-- Pedidos, citas, cotizaciones, mensajes filtrados, solicitudes de viaje/envío/ayuda y panel de atención.
+## Cambios principales
+
+- El botón + abre el flujo de **Crear publicación**.
+- WhatsApp queda como contacto opcional.
+- La publicación básica se permite gratis una vez al mes.
+- Se muestra la pregunta: **“¿Quieres configurar un asistente para esta publicación?”**
+- Opciones de asistente:
+  - No, solo publicar gratis
+  - Mensaje filtrado
+  - Pedido con menú
+  - Cita
+  - Cotización
+  - Solicitud de servicio
+  - Viaje compartido
+  - Envío o mensajería
+  - Ofrecer ayuda / responder necesidad
+- Usuario sin membresía puede guardar asistente como borrador/vista previa.
+- Usuario con membresía puede activar asistente.
+- Admin puede publicar y activar sin restricciones.
+- Si Supabase falla, se guarda borrador local temporal con mensaje claro.
+
+## Archivos incluidos
+
+- app.js
+- styles.css
+- service-worker.js
+- manifest.json
+- PATCH-INDEX-v4.9.43.txt
+- CHECKLIST-v4.9.43.txt
+- INSTRUCCIONES-CODEX-v4.9.43.txt
 
 ## SQL
 
-No requiere SQL nuevo para probar esta versión. El límite mensual se valida en localStorage en modo piloto.
+No requiere SQL nuevo para probar esta versión piloto.
 
-Para producción real multiusuario se recomienda persistir conteos mensuales y asistentes en Supabase.
+El guardado remoto sigue usando la tabla actual de publicaciones. El respaldo local usa localStorage cuando Supabase falla.
 
 ## Commit sugerido
 
-Migrar publicar a modelo freemium unificado v4.9.42
+Migrar definitivamente Publicar al flujo freemium con asistente

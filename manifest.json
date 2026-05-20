@@ -1,8 +1,8 @@
 {
   "name": "Conecta Servicios",
   "short_name": "Conecta",
-  "description": "Conecta Servicios v4.9.42 - Publicación unificada freemium: 1 publicación básica gratis mensual, WhatsApp opcional y asistente avanzado con membresía.",
-  "start_url": "/?source=pwa&v=4.9.42-publicacion-unificada-freemium",
+  "description": "Conecta Servicios v4.9.43 - Publicar unificado real: publicación básica gratis mensual, WhatsApp opcional y asistente configurable por publicación.",
+  "start_url": "/?source=pwa&v=4.9.43-publicar-unificado-real",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -15,5 +15,5 @@
     { "src": "assets/pwa-plus-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "assets/pwa-plus-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
-  "id": "/?v=4.9.42-publicacion-unificada-freemium"
+  "id": "/?v=4.9.43-publicar-unificado-real"
 }

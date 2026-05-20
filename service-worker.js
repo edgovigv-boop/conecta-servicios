@@ -1,12 +1,12 @@
-// Conecta Servicios v4.9.42 — Publicación unificada freemium
-const CACHE_NAME = "conecta-servicios-v4.9.42-publicacion-unificada-freemium";
+// Conecta Servicios v4.9.43 — Publicar unificado real
+const CACHE_NAME = "conecta-servicios-4.9.43-publicar-unificado-real";
 const ASSETS = [
   "/",
   "/index.html",
-  "/styles.css?v=4.9.42-publicacion-unificada-freemium",
-  "/app.js?v=4.9.42-publicacion-unificada-freemium",
-  "/manifest.json?v=4.9.42-publicacion-unificada-freemium",
-  "/service-worker.js?v=4.9.42-publicacion-unificada-freemium"
+  "/styles.css?v=4.9.43-publicar-unificado-real",
+  "/app.js?v=4.9.43-publicar-unificado-real",
+  "/manifest.json?v=4.9.43-publicar-unificado-real",
+  "/service-worker.js?v=4.9.43-publicar-unificado-real"
 ];
 self.addEventListener("install", event => {
   self.skipWaiting();

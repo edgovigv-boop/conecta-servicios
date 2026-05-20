@@ -1,0 +1,30 @@
+PATCH PARA index.html — v4.9.43-publicar-unificado-real
+
+Objetivo:
+Forzar que la app cargue la versión nueva y no siga usando caché/archivos anteriores.
+
+1) Reemplazar cualquier referencia anterior de styles.css por:
+
+<link rel="stylesheet" href="styles.css?v=4.9.43-publicar-unificado-real">
+
+2) Reemplazar cualquier referencia anterior de app.js por:
+
+<script src="app.js?v=4.9.43-publicar-unificado-real" defer></script>
+
+3) En el body, usar:
+
+<body data-version="4.9.43-publicar-unificado-real">
+
+4) Si existe title con versión anterior, usar:
+
+<title>Conecta Servicios v4.9.43</title>
+
+5) Verificar que NO queden referencias a:
+- 4.9.42-publicacion-unificada-freemium
+- 4.9.41-limpieza-navegacion-asistente
+- 4.9.40-publicar-con-asistente-integrado
+
+6) Después de subir a GitHub/Vercel, probar con:
+
+https://conecta-servicios.vercel.app/?v=4943
+
