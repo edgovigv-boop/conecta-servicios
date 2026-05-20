@@ -1,65 +1,32 @@
-# Conecta Servicios v4.9.40 — Publicar con Asistente integrado
+# Conecta Servicios v4.9.42 — Publicación unificada freemium
 
-## Objetivo
-Integrar el **Asistente de publicación** dentro del modelo principal de la app, sin botones flotantes, y establecer el modelo freemium:
+Esta versión migra el modelo anterior de publicar a un flujo único:
 
-- **Gratis:** publicación básica sencilla.
-- **Membresía:** Asistente avanzado para recibir pedidos, citas, cotizaciones, solicitudes o mensajes filtrados.
+- El botón `+ Publicar` crea una publicación básica gratis.
+- Las plantillas llevan al mismo flujo de publicación.
+- La publicación básica gratuita es mensual en modo piloto local.
+- El contacto/WhatsApp es opcional.
+- El Asistente de publicación queda como valor avanzado de membresía.
+- Admin puede publicar, activar y probar sin restricciones.
+- El asistente no debe aparecer flotando ni como sección global repetida.
 
-## Cambios principales
+## Modelo comercial
 
-1. **Publicación básica gratis**
-   - Título.
-   - Descripción.
-   - Categoría.
-   - Municipio / zona.
-   - Foto opcional.
-   - Contacto básico.
-   - Visibilidad normal.
+Gratis:
+- 1 publicación básica mensual.
+- Título, descripción, categoría, municipio/zona, foto opcional y contacto básico opcional.
 
-2. **Asistente avanzado con membresía**
-   - Pedido con menú.
-   - Cita.
-   - Contacto directo.
-   - Cotización.
-   - Solicitud de servicio.
-   - Viaje compartido.
-   - Envío o mensajería.
-   - Ofrecer ayuda / responder necesidad.
-
-3. **Integración en barra inferior**
-   - Se elimina el acceso flotante del asistente.
-   - El acceso anterior de asistente/orientación de la barra inferior se sustituye por **Asistente**.
-   - El botón abre el centro de solicitudes y asistentes de publicaciones.
-
-4. **Flujo de publicar**
-   - El botón `+` se mantiene.
-   - Ya no se bloquea la publicación básica por falta de membresía.
-   - En la pantalla final se muestra el mensaje freemium:
-
-   > Tu publicación básica es gratis. Activa la membresía para recibir pedidos, citas, cotizaciones o mensajes filtrados.
-
-5. **Admin libre**
-   - Admin puede publicar, activar asistentes, probar flujos y supervisar sin membresía.
+Membresía:
+- Más publicaciones.
+- Asistente por publicación.
+- Pedidos, citas, cotizaciones, mensajes filtrados, solicitudes de viaje/envío/ayuda y panel de atención.
 
 ## SQL
 
-No requiere SQL nuevo para probar en piloto.
+No requiere SQL nuevo para probar esta versión. El límite mensual se valida en localStorage en modo piloto.
 
-El archivo `supabase-publication-assistant.sql` queda como base opcional futura para producción real multiusuario.
-
-## Archivos modificados
-
-- `app.js`
-- `styles.css`
-- `service-worker.js`
-- `manifest.json`
-- `PATCH-INDEX-v4.9.40.txt`
-- `CHECKLIST-v4.9.40.txt`
-- `INSTRUCCIONES-CODEX-v4.9.40.txt`
+Para producción real multiusuario se recomienda persistir conteos mensuales y asistentes en Supabase.
 
 ## Commit sugerido
 
-```text
-Integrar modelo freemium y Asistente de publicación en barra inferior v4.9.40
-```
+Migrar publicar a modelo freemium unificado v4.9.42

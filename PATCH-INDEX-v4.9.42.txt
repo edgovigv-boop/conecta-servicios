@@ -1,0 +1,17 @@
+Aplicar en index.html para v4.9.42-publicacion-unificada-freemium:
+
+1) Reemplazar cualquier referencia anterior de styles.css por:
+<link rel="stylesheet" href="styles.css?v=4.9.42-publicacion-unificada-freemium">
+
+2) Reemplazar cualquier referencia anterior de app.js por:
+<script src="app.js?v=4.9.42-publicacion-unificada-freemium" defer></script>
+
+3) Reemplazar body data-version por:
+<body data-version="v4.9.42-publicacion-unificada-freemium">
+
+4) Confirmar que el formulario de publicación conserva:
+- input de foto o URL multimedia si ya existía.
+- contenedor #publicationMembershipGate.
+- input #pubPhone, pero no debe ser obligatorio a nivel HTML.
+
+5) No agregar un acceso global nuevo al asistente. El asistente vive dentro de Publicar y Mis publicaciones.

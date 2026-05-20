@@ -1,0 +1,24 @@
+Conecta Servicios v4.9.42-publicacion-unificada-freemium
+
+Objetivo:
+Migrar el modelo anterior de publicar al nuevo flujo unificado:
+- Publicación básica gratis mensual.
+- WhatsApp/contacto opcional.
+- Asistente de publicación avanzado como valor de membresía.
+- Admin libre e ilimitado.
+
+Archivos a reemplazar en raíz:
+- app.js
+- styles.css
+- service-worker.js
+- manifest.json
+
+Aplicar además:
+- PATCH-INDEX-v4.9.42.txt
+
+No desplegar automáticamente si estás trabajando en Codex. Entrega archivos y checklist.
+
+No requiere SQL nuevo para probar el piloto. El control mensual gratuito queda en localStorage para validación visual; para producción multiusuario debe persistirse después en Supabase.
+
+Commit sugerido:
+Migrar publicar a modelo freemium unificado v4.9.42

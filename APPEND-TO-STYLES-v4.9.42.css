@@ -1,0 +1,94 @@
+
+/* v4.9.42 — Publicación unificada freemium */
+.unified-publish-freemium-v4942 .publication-assistant-floating,
+.unified-publish-freemium-v4942 .business-assistant-floating,
+.unified-publish-freemium-v4942 .ba-quick-access-v4939,
+.unified-publish-freemium-v4942 .legacy-chat-hidden-v4942 {
+  display: none !important;
+}
+.unified-publish-gate-v4942 {
+  display: grid;
+  gap: 0.85rem;
+  border: 1px solid rgba(91,34,207,0.16);
+  border-radius: 22px;
+  padding: 1rem;
+  background: linear-gradient(180deg, #ffffff, #faf8ff);
+  box-shadow: 0 12px 34px rgba(31, 24, 68, 0.08);
+}
+.unified-publish-gate-v4942.is-blocked {
+  border-color: rgba(180, 83, 9, 0.32);
+  background: linear-gradient(180deg, #fffdf8, #fff7ed);
+}
+.unified-free-card-v4942,
+.unified-assistant-card-v4942 {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: start;
+  border-radius: 18px;
+  padding: 0.85rem;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+.unified-free-card-v4942 > span,
+.unified-assistant-card-v4942 > span {
+  width: 2.2rem;
+  height: 2.2rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(91,34,207,0.1);
+}
+.unified-free-card-v4942 strong,
+.unified-assistant-card-v4942 strong {
+  display: block;
+  color: #20123a;
+  margin-bottom: 0.25rem;
+}
+.unified-free-card-v4942 p,
+.unified-assistant-card-v4942 p {
+  margin: 0;
+  color: #4b5563;
+  line-height: 1.42;
+}
+.unified-free-card-v4942 small,
+.unified-assistant-card-v4942 small,
+.unified-gate-note-v4942 {
+  display: block;
+  color: #6b7280;
+  margin-top: 0.35rem;
+  line-height: 1.35;
+}
+.unified-gate-actions-v4942 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+.optional-chip-v4942 {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.25rem;
+  padding: 0.08rem 0.4rem;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.unified-template-cta-v4942 {
+  outline: 2px solid rgba(91,34,207,0.15);
+  outline-offset: 2px;
+}
+.unified-publication-note-v4942 {
+  margin-top: 0.6rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 12px;
+  background: rgba(91,34,207,0.08);
+  color: #4c1d95;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+body[data-publish-model-version="v4.9.42-publicacion-unificada-freemium"] #publicationMembershipGate .membership-gate-info,
+body[data-publish-model-version="v4.9.42-publicacion-unificada-freemium"] #publicationMembershipGate .membership-gate-actions {
+  display: none !important;
+}

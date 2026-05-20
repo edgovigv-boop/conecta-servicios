@@ -1,0 +1,27 @@
+PATCH index.html para v4.9.41-limpieza-navegacion-asistente
+
+1) Reemplazar CSS:
+<link rel="stylesheet" href="styles.css?v=4.9.41-limpieza-navegacion-asistente">
+
+2) Reemplazar JS:
+<script src="app.js?v=4.9.41-limpieza-navegacion-asistente" defer></script>
+
+3) Actualizar body:
+<body data-version="v4.9.41-limpieza-navegacion-asistente">
+
+4) Actualizar title si aplica:
+<title>Conecta Servicios v4.9.41</title>
+
+5) Validar navegación:
+- La barra inferior debe quedar: Inicio, Explorar, Publicar, Mis publicaciones, Embajadores.
+- El acceso inferior que antes decía Asistente debe decir Embajadores.
+- Embajadores debe abrir el landing/sección Embajadores Conecta.
+
+6) Validar Asistente de publicación:
+- No debe verse flotando.
+- No debe aparecer como sección global en Explorar.
+- No debe aparecer dentro de Perfil.
+- Debe estar disponible desde Publicar y desde Mis publicaciones por publicación.
+
+IMPORTANTE:
+Si index.html no se actualiza, el navegador o service worker puede cargar app.js/styles.css viejos aunque Vercel esté en Ready.

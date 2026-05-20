@@ -1,12 +1,12 @@
-// Conecta Servicios v4.9.40 — Service Worker Publicar con Asistente integrado
-const CACHE_NAME = "conecta-servicios-v4.9.40-publicar-con-asistente-integrado";
+// Conecta Servicios v4.9.42 — Publicación unificada freemium
+const CACHE_NAME = "conecta-servicios-v4.9.42-publicacion-unificada-freemium";
 const ASSETS = [
   "/",
   "/index.html",
-  "/styles.css?v=4.9.40-publicar-con-asistente-integrado",
-  "/app.js?v=4.9.40-publicar-con-asistente-integrado",
-  "/manifest.json?v=4.9.40-publicar-con-asistente-integrado",
-  "/service-worker.js?v=4.9.40-publicar-con-asistente-integrado"
+  "/styles.css?v=4.9.42-publicacion-unificada-freemium",
+  "/app.js?v=4.9.42-publicacion-unificada-freemium",
+  "/manifest.json?v=4.9.42-publicacion-unificada-freemium",
+  "/service-worker.js?v=4.9.42-publicacion-unificada-freemium"
 ];
 self.addEventListener("install", event => {
   self.skipWaiting();

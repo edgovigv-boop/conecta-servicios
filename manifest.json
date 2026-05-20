@@ -1,8 +1,8 @@
 {
   "name": "Conecta Servicios",
   "short_name": "Conecta",
-  "description": "Conecta Servicios v4.9.40 - Publicación básica gratis y Asistente de publicación integrado para pedidos, citas, cotizaciones, viajes, envíos, ayuda y mensajes internos.",
-  "start_url": "/?source=pwa&v=4.9.40-publicar-con-asistente-integrado",
+  "description": "Conecta Servicios v4.9.42 - Publicación unificada freemium: 1 publicación básica gratis mensual, WhatsApp opcional y asistente avanzado con membresía.",
+  "start_url": "/?source=pwa&v=4.9.42-publicacion-unificada-freemium",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -15,5 +15,5 @@
     { "src": "assets/pwa-plus-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "assets/pwa-plus-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
-  "id": "/?v=4.9.40-publicar-con-asistente-integrado"
+  "id": "/?v=4.9.42-publicacion-unificada-freemium"
 }

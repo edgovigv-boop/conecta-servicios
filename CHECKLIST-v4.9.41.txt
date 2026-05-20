@@ -1,0 +1,65 @@
+CHECKLIST v4.9.41 — Limpieza navegación Asistente
+
+1. Subir/reemplazar archivos en raíz:
+   - app.js
+   - styles.css
+   - service-worker.js
+   - manifest.json
+   - vercel.json si aplica
+
+2. Aplicar PATCH-INDEX-v4.9.41.txt en index.html.
+
+3. Abrir en incógnito:
+   https://conecta-servicios.vercel.app/?v=4941
+
+4. Validar barra inferior:
+   - Inicio
+   - Explorar
+   - Publicar
+   - Mis publicaciones
+   - Embajadores
+
+5. Validar que Embajadores abre el landing de Embajadores Conecta.
+
+6. Validar Explorar:
+   - Solo publicaciones.
+   - No aparece Asistente de publicación configurable.
+   - No aparecen tarjetas de configuración del asistente.
+
+7. Validar Perfil:
+   - No aparece Asistente de publicaciones.
+   - No aparece Asistente configurable.
+   - No aparece Chat configurable.
+   - No aparece Asistente avanzado.
+
+8. Validar barra flotante derecha:
+   - No aparece barra de iconos flotantes sin función.
+   - No aparece acceso flotante al asistente.
+
+9. Validar Publicar:
+   - Se mantiene botón +.
+   - Permite título, descripción, categoría, municipio/zona, foto opcional y contacto básico.
+   - Muestra publicación básica gratis.
+   - Permite configurar asistente como borrador/vista previa sin membresía.
+
+10. Validar Mis publicaciones:
+   - Aparece sección “Solicitudes recibidas por mis publicaciones”.
+   - Se puede abrir solicitudes.
+   - Se puede configurar asistente por publicación.
+
+11. Validar admin:
+   - Admin no queda bloqueado.
+   - Puede publicar, activar asistentes y probar solicitudes.
+
+12. Confirmar que no se rompió:
+   - Home
+   - Explorar
+   - Publicar
+   - Mis publicaciones
+   - Oficina
+   - Embajadores
+   - Admin
+   - Membresías
+   - Supabase Storage
+   - Subida de fotos
+   - /embajadores

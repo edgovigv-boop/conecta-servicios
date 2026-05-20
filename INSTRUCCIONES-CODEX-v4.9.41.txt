@@ -1,0 +1,22 @@
+Codex, aplicar corrección v4.9.41-limpieza-navegacion-asistente.
+
+Objetivo:
+Limpiar la navegación y reubicar correctamente el Asistente de publicación.
+
+Instrucciones:
+1. Reemplazar en raíz:
+   - app.js
+   - styles.css
+   - service-worker.js
+   - manifest.json
+2. Aplicar PATCH-INDEX-v4.9.41.txt en index.html.
+3. No desplegar automáticamente.
+4. No tocar la conexión actual de Supabase.
+5. No aplicar SQL nuevo.
+6. Confirmar que el Asistente no aparezca flotando, ni en Explorar, ni en Perfil.
+7. Confirmar que la barra inferior cambie Asistente por Embajadores.
+8. Confirmar que Publicar conserva publicación básica gratis con foto opcional.
+9. Confirmar que Mis publicaciones contiene solicitudes recibidas y configuración por publicación.
+10. Actualizar commit con:
+
+Limpiar navegación e integrar asistente solo dentro de publicaciones

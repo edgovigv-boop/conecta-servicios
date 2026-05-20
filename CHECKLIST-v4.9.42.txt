@@ -1,0 +1,16 @@
+CHECKLIST v4.9.42-publicacion-unificada-freemium
+
+1. Abrir la app en incógnito o con ?v=4942.
+2. Tocar el botón + Publicar.
+3. Confirmar que el flujo indique publicación básica gratis mensual.
+4. Confirmar que WhatsApp/contacto sea opcional.
+5. Subir o indicar una foto opcional y publicar.
+6. Confirmar que la primera publicación básica del mes se permite sin membresía.
+7. Intentar una segunda publicación básica sin membresía y confirmar que pide membresía.
+8. Confirmar que el asistente avanzado solo queda como vista previa/borrador sin membresía.
+9. Activar modo admin y confirmar que puede publicar y activar asistentes sin restricción.
+10. Probar una plantilla: debe entrar al mismo flujo de publicar, no al flujo viejo.
+11. Confirmar que Explorar solo muestra publicaciones.
+12. Confirmar que la barra inferior abre Embajadores donde corresponde.
+13. Confirmar que la subida de foto sigue funcionando con Supabase Storage.
+14. Confirmar que no aparecen botones antiguos de Chat negocio / Responder filtro.
