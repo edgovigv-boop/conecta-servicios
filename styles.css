@@ -94,10 +94,18 @@ img,video{max-width:100%;display:block}
 .post-media img[alt=""],.post-media img[src=""]{display:none}
 @media (max-width:420px){.choice-circles{gap:12px}.circle-choice{min-height:130px;padding:12px}.circle-choice span{font-size:2rem}}
 
-/* v5.0.4: media segura y formato DOLA */
+/* v5.0.5: media segura, formato DOLA y navegación atrás correcta */
 .post-media{min-height:168px}
 .post-media .media-fallback{display:none;height:100%}
 .placeholder-icon{font-size:2.35rem;line-height:1;margin-bottom:8px}
 .post-desc,.preview-card .post-desc,.modal p{white-space:pre-line;overflow-wrap:anywhere}
 .prompt-box{white-space:pre-line;overflow-wrap:anywhere}
 .post-media img[src=""],.post-media img:not([src]){display:none}
+
+/* v5.0.6 - PWA, notificaciones, módulos estrella y perfil */
+.install-mark{border:0;cursor:pointer;position:relative;font-size:0}
+.install-mark span{font-size:1.7rem;line-height:1;color:#fff;display:block;transform:translateY(-1px)}
+.install-mark:after{content:'instalar';position:absolute;left:50%;bottom:-14px;transform:translateX(-50%);font-size:.53rem;font-weight:800;color:var(--primary);background:#fff;border:1px solid var(--line);border-radius:999px;padding:1px 5px;box-shadow:0 4px 10px rgba(30,20,70,.08)}
+.notify-btn{position:relative}.notify-dot{position:absolute;right:-4px;top:-5px;min-width:18px;height:18px;border-radius:999px;background:#ef4444;color:#fff;font-size:.68rem;display:grid;place-items:center;font-weight:900;border:2px solid #fff}
+.module-actions{display:grid;gap:10px;margin-top:12px}
+.modal .list{max-height:48vh;overflow:auto}.modal .empty{padding:16px}

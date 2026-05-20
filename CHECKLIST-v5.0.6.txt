@@ -1,0 +1,25 @@
+CHECKLIST v5.0.6 - PWA, notificaciones, módulos estrella y perfil
+
+1. Abrir Inicio y tocar el círculo con + / logo para instalar app.
+2. Confirmar que muestra instalación PWA o instrucciones si el navegador no soporta beforeinstallprompt.
+3. Tocar Notificaciones y aceptar/activar modo piloto.
+4. Crear publicación y confirmar que aparece notificación interna.
+5. Entrar a Embajadores y probar Copiar enlace.
+6. Probar Crear mensaje para compartir.
+7. Registrar referido en modo piloto.
+8. Entrar a Agentes en crecimiento.
+9. Usar Crear publicación como agente.
+10. Usar DOLA desde Agentes.
+11. Entrar a Mandados verificados.
+12. Probar Solicitar mandado.
+13. Probar Postularme como agente verificado.
+14. Entrar a Aprendizaje y copiar prompt para DOLA.
+15. Entrar a Perfil.
+16. Instalar app desde Perfil.
+17. Activar notificaciones desde Perfil.
+18. Editar datos básicos.
+19. Cambiar preferencia DOLA/WhatsApp.
+20. Borrar datos locales con confirmación.
+21. Confirmar que el botón atrás sigue funcionando.
+22. Confirmar que no hay botones visibles sin acción.
+23. Confirmar que no se desplegó automáticamente desde este paquete.

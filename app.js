@@ -1,9 +1,9 @@
-/* Conecta Servicios v5.0.4 - Media sugerida y placeholder */
+/* Conecta Servicios v5.0.6 - PWA, notificaciones, módulos estrella y perfil */
 (() => {
   'use strict';
 
-  const VERSION = 'v5.0.4-media-sugerida-y-placeholder';
-  const CACHE_HINT = 'conecta-servicios-v5-0-4-media-sugerida-placeholder';
+  const VERSION = 'v5.0.6-pwa-notificaciones-modulos-perfil';
+  const CACHE_HINT = 'conecta-servicios-v5-0-6-pwa-notificaciones-modulos-perfil';
   const DOLA_EXTERNAL_URL = 'https://dola.com';
   const MEMBERSHIP_PRICE = 98;
   const FREE_DAYS = 30;
@@ -16,8 +16,14 @@
     membership: 'cs_v5_membership',
     admin: 'cs_v5_admin_active',
     profile: 'cs_v5_profile',
-    prefs: 'cs_v5_prefs'
+    prefs: 'cs_v5_prefs',
+    notifications: 'cs_v5_notifications',
+    referrals: 'cs_v5_referrals',
+    verifiedApplications: 'cs_v5_verified_applications',
+    learningPlans: 'cs_v5_learning_plans'
   };
+
+  let deferredInstallPrompt = null;
 
   const state = {
     route: '/',
@@ -28,7 +34,8 @@
     publishDraft: null,
     dolaPreview: null,
     dolaText: '',
-    modal: null
+    modal: null,
+    navigationStack: []
   };
 
   const starSections = [
@@ -86,6 +93,16 @@
   function normalizePhone(phone=''){ return String(phone).replace(/\D/g,''); }
   function getJSON(key, fallback){ try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } }
   function setJSON(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
+  function notificationState(){ return getJSON(KEYS.notifications, { enabled:false, items:[] }); }
+  function saveNotificationState(value){ setJSON(KEYS.notifications, value); }
+  function addNotification(title, message, type='info'){
+    const data = notificationState();
+    data.items = data.items || [];
+    data.items.unshift({ id: uid('note'), title, message, type, read:false, createdAt:new Date().toISOString() });
+    data.items = data.items.slice(0, 40);
+    saveNotificationState(data);
+  }
+  function unreadNotifications(){ return (notificationState().items || []).filter(n => !n.read).length; }
   function isAdmin(){ return localStorage.getItem(KEYS.admin) === 'true'; }
   function membership(){ return getJSON(KEYS.membership, { active:false, startedAt:null, expiresAt:null, ambassadorCode:'CON-LOCAL' }); }
   function isMember(){ const m = membership(); return !!m.active && (!m.expiresAt || new Date(m.expiresAt) >= new Date()); }
@@ -116,14 +133,100 @@
     const path = location.pathname.replace(/\/$/,'') || '/';
     return path;
   }
+  function currentSnapshot(){
+    return {
+      route: routeFromLocation(),
+      filter: state.filter,
+      publishMode: state.publishMode,
+      publishTemplateId: state.publishTemplate?.id || null,
+      dolaFlowActive: state.dolaFlowActive,
+      publishDraft: clonePlain(state.publishDraft),
+      dolaPreview: clonePlain(state.dolaPreview),
+      dolaText: state.dolaText || '',
+      pendingMedia: clonePlain(state.pendingMedia)
+    };
+  }
+
+  function clonePlain(value){
+    if (value == null) return value;
+    try { return JSON.parse(JSON.stringify(value)); } catch { return value; }
+  }
+
+  function snapshotKey(snap){
+    return JSON.stringify({
+      route: snap.route, filter: snap.filter, publishMode: snap.publishMode,
+      publishTemplateId: snap.publishTemplateId, dolaFlowActive: snap.dolaFlowActive,
+      hasPreview: !!snap.dolaPreview, hasDraft: !!snap.publishDraft, dolaText: !!snap.dolaText
+    });
+  }
+
+  function pushNavigationSnapshot(){
+    const snap = currentSnapshot();
+    const last = state.navigationStack[state.navigationStack.length - 1];
+    if (!last || snapshotKey(last) !== snapshotKey(snap)) state.navigationStack.push(snap);
+    if (state.navigationStack.length > 40) state.navigationStack.shift();
+  }
+
+  function pushInternalNavigationSnapshot(){
+    pushNavigationSnapshot();
+    // Permite que el botón atrás del navegador/celular intente recorrer pasos internos del flujo.
+    history.pushState({ internal:true }, '', location.pathname + location.search);
+  }
+
+  function restoreSnapshot(snap){
+    state.filter = snap.filter || 'Todas';
+    state.publishMode = snap.publishMode || 'dola';
+    state.publishTemplate = snap.publishTemplateId ? templates.find(t => t.id === snap.publishTemplateId) || null : null;
+    state.dolaFlowActive = !!snap.dolaFlowActive;
+    state.publishDraft = clonePlain(snap.publishDraft) || null;
+    state.dolaPreview = clonePlain(snap.dolaPreview) || null;
+    state.dolaText = snap.dolaText || '';
+    state.pendingMedia = clonePlain(snap.pendingMedia) || null;
+    if ((location.pathname.replace(/\/$/,'') || '/') !== snap.route) {
+      history.pushState({}, '', snap.route || '/');
+    }
+    render();
+  }
+
   function navigate(path, opts={}){
+    if (!opts.replace && !opts.resetStack) pushNavigationSnapshot();
+    if (opts.resetStack) state.navigationStack = [];
     if (opts.filter) state.filter = opts.filter;
+    if (opts.clearPublish) resetPublishState();
     history.pushState({}, '', path);
     render();
   }
-  window.addEventListener('popstate', render);
+
+  function goBack(){
+    const snap = state.navigationStack.pop();
+    if (snap) { restoreSnapshot(snap); return; }
+    if ((location.pathname.replace(/\/$/,'') || '/') !== '/') {
+      history.pushState({}, '', '/');
+      render();
+      return;
+    }
+    render();
+  }
+
+  window.addEventListener('popstate', () => {
+    if (state.navigationStack.length) {
+      const snap = state.navigationStack.pop();
+      if (snap) { restoreSnapshot(snap); return; }
+    }
+    render();
+  });
 
   function init(){
+    window.addEventListener('beforeinstallprompt', (event) => {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+      document.body.classList.add('can-install');
+    });
+    window.addEventListener('appinstalled', () => {
+      deferredInstallPrompt = null;
+      localStorage.setItem('cs_v5_installed', 'true');
+      addNotification('Conecta instalada', 'La app quedó lista para usarse desde tu pantalla de inicio.');
+    });
     document.addEventListener('click', onClick);
     document.addEventListener('input', onInput);
     document.addEventListener('change', onChange);
@@ -156,15 +259,15 @@
   function topbar(title='Conecta Servicios', subtitle='Red local para publicar y conectar', opts={}){
     return `<div class="topbar">
       <div class="brand">
-        <div class="logo-mark ${opts.small?'small':''}">CS</div>
+        <button class="logo-mark install-mark ${opts.small?'small':''}" data-action="install-app" title="Instalar app" aria-label="Instalar app"><span>+</span></button>
         <div><h1>${escapeHtml(title)}</h1><p>${escapeHtml(subtitle)}</p></div>
       </div>
-      <button class="icon-btn" data-action="notify" aria-label="Notificaciones">🔔</button>
+      <button class="icon-btn notify-btn" data-action="notify" aria-label="Notificaciones">🔔${unreadNotifications()?`<span class="notify-dot">${unreadNotifications()}</span>`:""}</button>
     </div>`;
   }
 
   function backbar(title, subtitle=''){
-    return `<div class="topbar"><button class="icon-btn" data-route="/" aria-label="Volver">←</button><div class="brand"><div><h1>${escapeHtml(title)}</h1>${subtitle?`<p>${escapeHtml(subtitle)}</p>`:''}</div></div><span></span></div>`;
+    return `<div class="topbar"><button class="icon-btn" data-action="go-back" aria-label="Volver">←</button><div class="brand"><div><h1>${escapeHtml(title)}</h1>${subtitle?`<p>${escapeHtml(subtitle)}</p>`:''}</div></div><span></span></div>`;
   }
 
   function starCarousel(){
@@ -440,7 +543,10 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
       <div class="list">
         <button class="list-item" data-action="activate-membership"><div class="left"><div class="list-icon">💳</div><div><b>Mi acceso / Membresía</b><p class="tiny muted">${isMember()?'Activa':'Gratis 1 publicación'}</p></div></div><span>›</span></button>
         <button class="list-item" data-route="/mis-publicaciones"><div class="left"><div class="list-icon">🗂️</div><div><b>Mis publicaciones</b><p class="tiny muted">Activas, vencidas y borradores</p></div></div><span>›</span></button>
-        <button class="list-item" data-action="edit-profile"><div class="left"><div class="list-icon">👤</div><div><b>Datos básicos</b><p class="tiny muted">Nombre, zona y preferencias</p></div></div><span>›</span></button>
+        <button class="list-item" data-action="install-app"><div class="left"><div class="list-icon">➕</div><div><b>Instalar app</b><p class="tiny muted">Agregar Conecta a tu pantalla de inicio</p></div></div><span>›</span></button>
+        <button class="list-item" data-action="notify"><div class="left"><div class="list-icon">🔔</div><div><b>Notificaciones</b><p class="tiny muted">${notificationState().enabled?'Activas':'Activar avisos internos'}</p></div></div><span>›</span></button>
+        <button class="list-item" data-action="edit-profile"><div class="left"><div class="list-icon">👤</div><div><b>Datos básicos</b><p class="tiny muted">Nombre, zona, teléfono y canal preferido</p></div></div><span>›</span></button>
+        <button class="list-item" data-action="preferences"><div class="left"><div class="list-icon">🎛️</div><div><b>Preferencias</b><p class="tiny muted">Canal preferido: ${(getJSON(KEYS.prefs,{preferredChannel:'dola'}).preferredChannel||'dola').toUpperCase()}</p></div></div><span>›</span></button>
         <button class="list-item" data-action="privacy"><div class="left"><div class="list-icon">🛡️</div><div><b>Ayuda y privacidad</b><p class="tiny muted">DOLA es externo; no compartas datos sensibles</p></div></div><span>›</span></button>
         <button class="list-item" data-route="/oficina"><div class="left"><div class="list-icon">⚙️</div><div><b>Oficina / Admin</b><p class="tiny muted">Acceso discreto de administración</p></div></div><span>›</span></button>
         <button class="list-item" data-action="clear-local"><div class="left"><div class="list-icon">🧹</div><div><b>Borrar datos locales</b><p class="tiny muted">Solo modo piloto</p></div></div><span>›</span></button>
@@ -459,7 +565,7 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
         ${infoItem('🔗','Comparte tu enlace','Copia tu enlace y compártelo con negocios o agentes.')}
         ${infoItem('📝','Registrar referido','Lleva control de a quién invitaste.')}
       </div>
-      <div class="card"><button class="btn primary full" data-action="copy-ambassador-link">Copiar enlace</button><button class="btn ghost full" style="margin-top:10px" data-route="/publicar">Ayudar a alguien a publicar</button></div>
+      <div class="card"><div class="button-row"><button class="btn primary" data-action="copy-ambassador-link">Copiar enlace</button><button class="btn green" data-action="share-ambassador-message">Crear mensaje</button></div><div class="button-row"><button class="btn ghost" data-action="register-referral">Registrar referido</button><button class="btn ghost" data-action="ambassador-guide">Guía rápida</button></div><button class="btn orange full" style="margin-top:10px" data-action="activate-membership">Activar membresía piloto</button></div>
     </main>`;
   }
 
@@ -473,7 +579,7 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
         ${infoItem('🤝','Apoyo local','Acompañamiento, trámites o ayuda por horas.')}
         ${infoItem('📈','Mejora tu perfil','Aprende cómo presentarte mejor para recibir solicitudes.')}
       </div>
-      <div class="card"><button class="btn primary full" data-route="/publicar">Crear publicación como agente</button></div>
+      <div class="card"><div class="button-row"><button class="btn primary" data-action="create-agent-post">Crear publicación como agente</button><button class="btn ghost" data-action="find-nearby-requests">Ver solicitudes cercanas</button></div><div class="button-row"><button class="btn green" data-action="agent-dola-prompt">Usar DOLA</button><button class="btn ghost" data-action="agent-growth-tips">Tips de crecimiento</button></div></div>
     </main>`;
   }
 
@@ -487,7 +593,7 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
         ${infoItem('🙋','Postularme como agente','Registra tu zona y disponibilidad para participar.')}
         ${infoItem('❓','Requisitos y preguntas','La revisión puede ser manual durante el piloto.')}
       </div>
-      <div class="card"><button class="btn primary full" data-route="/publicar">Solicitar mandado</button></div>
+      <div class="card"><div class="button-row"><button class="btn primary" data-action="request-verified-errand">Solicitar mandado</button><button class="btn green" data-action="apply-verified-agent">Postularme como agente</button></div><div class="button-row"><button class="btn ghost" data-action="verified-requirements">Ver requisitos</button><button class="btn ghost" data-action="verified-faq">Preguntas frecuentes</button></div></div>
     </main>`;
   }
 
@@ -501,7 +607,7 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
         ${infoItem('🤖','Cómo usar DOLA','DOLA ayuda a redactar y filtrar mejor tus contactos.')}
         ${infoItem('💬','Cómo atender mejor','Responde claro, confirma detalles y cuida la confianza.')}
       </div>
-      <div class="notice">Los recursos externos deben identificarse como externos y no como propiedad de Conecta.</div>
+      <div class="notice">Los recursos externos deben identificarse como externos y no como propiedad de Conecta.</div><div class="card"><div class="button-row"><button class="btn primary" data-action="learning-resources">Ver recursos</button><button class="btn green" data-action="learning-dola-plan">Plan con DOLA</button></div><button class="btn ghost full" data-action="copy-learning-prompt" style="margin-top:10px">Copiar prompt para DOLA</button></div>
     </main>`;
   }
 
@@ -641,7 +747,7 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
     const mode = e.target.closest('[data-publish-mode]');
     if (mode) { state.publishMode = mode.dataset.publishMode; state.dolaPreview = null; render(); return; }
     const tpl = e.target.closest('[data-template]');
-    if (tpl) { state.publishTemplate = templates.find(t=>t.id===tpl.dataset.template) || templates[0]; state.dolaPreview = null; state.dolaText = ''; state.publishDraft = null; state.dolaFlowActive = false; state.publishMode = 'dola'; render(); return; }
+    if (tpl) { pushInternalNavigationSnapshot(); state.publishTemplate = templates.find(t=>t.id===tpl.dataset.template) || templates[0]; state.dolaPreview = null; state.dolaText = ''; state.publishDraft = null; state.dolaFlowActive = false; state.publishMode = 'dola'; render(); return; }
     const channel = e.target.closest('[data-channel-choice]');
     if (channel) { selectChannel(channel.dataset.channelChoice); return; }
     const react = e.target.closest('[data-react-post]');
@@ -685,15 +791,15 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
     if (action === 'copy-dola-prompt') copyText(createDolaPrompt(tpl)).then(()=>toast('Prompt copiado. Ahora puedes abrir DOLA.'));
     if (action === 'copy-dola-raw') copyText(state.dolaPreview?.rawText || state.dolaText || '');
     if (action === 'open-dola') openExternal(DOLA_EXTERNAL_URL);
-    if (action === 'start-dola-template') { state.dolaFlowActive = true; state.dolaPreview = null; render(); }
-    if (action === 'start-manual-template' || action === 'manual-from-template') { const t = state.publishTemplate || templates[0]; state.publishMode='manual'; state.publishDraft={type:t.type, category:t.category, title:'', description:'', channel:'dola'}; render(); }
-    if (action === 'manual-empty') { resetPublishState({ keepMode:false }); state.publishMode='manual'; state.publishDraft={type:'Solicitante', category:'Solicitud local', title:'', description:'', channel:'dola'}; render(); }
-    if (action === 'reset-publish-flow' || action === 'choose-other-template') { resetPublishState(); render(); }
+    if (action === 'start-dola-template') { pushInternalNavigationSnapshot(); state.dolaFlowActive = true; state.dolaPreview = null; render(); }
+    if (action === 'start-manual-template' || action === 'manual-from-template') { pushInternalNavigationSnapshot(); const t = state.publishTemplate || templates[0]; state.publishMode='manual'; state.publishDraft={type:t.type, category:t.category, title:'', description:'', channel:'dola'}; render(); }
+    if (action === 'manual-empty') { pushInternalNavigationSnapshot(); resetPublishState({ keepMode:false }); state.publishMode='manual'; state.publishDraft={type:'Solicitante', category:'Solicitud local', title:'', description:'', channel:'dola'}; render(); }
+    if (action === 'reset-publish-flow' || action === 'choose-other-template') { pushInternalNavigationSnapshot(); resetPublishState(); render(); }
     if (action === 'use-dola-result' || action === 'preview-dola-result') useDolaResult();
     if (action === 'clear-dola-result') { state.dolaText=''; state.dolaPreview=null; render(); }
     if (action === 'publish-dola-preview') publishDolaPreview();
     if (action === 'edit-dola-preview') editDolaPreview();
-    if (action === 'back-to-dola') { state.dolaPreview=null; render(); }
+    if (action === 'back-to-dola') { pushInternalNavigationSnapshot(); state.dolaPreview=null; render(); }
     if (action === 'search') { const q = $('#searchInput')?.value.trim() || ''; const url = new URL(location.href); if (q) url.searchParams.set('q', q); else url.searchParams.delete('q'); history.replaceState({}, '', url.pathname + url.search); render(); }
     if (action === 'activate-membership') activateMembership();
     if (action === 'copy-ambassador-link') copyText(`${location.origin}/embajadores?ref=CON-LOCAL`);
@@ -702,7 +808,23 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
     if (action === 'clear-local') clearLocal();
     if (action === 'privacy') showPrivacy();
     if (action === 'edit-profile') editProfile();
-    if (action === 'notify') toast('Notificaciones en piloto.');
+    if (action === 'preferences') preferences();
+    if (action === 'install-app') installApp();
+    if (action === 'notify') notificationPanel();
+    if (action === 'share-ambassador-message') shareAmbassadorMessage();
+    if (action === 'register-referral') registerReferral();
+    if (action === 'ambassador-guide') alert('Guía rápida: 1) Invita a un negocio o agente. 2) Ayúdale a publicar. 3) Comparte el enlace de membresía. 4) Registra el referido en modo piloto.');
+    if (action === 'create-agent-post') createAgentPost();
+    if (action === 'find-nearby-requests') { state.filter='Solicitante'; navigate('/explorar'); }
+    if (action === 'agent-dola-prompt') agentDolaPrompt();
+    if (action === 'agent-growth-tips') alert('Tips: usa una foto clara, explica tu zona, horarios, costo aproximado y responde rápido. DOLA puede ayudarte a redactar tu presentación.');
+    if (action === 'request-verified-errand') requestVerifiedErrand();
+    if (action === 'apply-verified-agent') applyVerifiedAgent();
+    if (action === 'verified-requirements') alert('Requisitos piloto: nombre, zona, disponibilidad, contacto y revisión manual. No es certificación automática.');
+    if (action === 'verified-faq') alert('Preguntas frecuentes: la verificación puede requerir revisión manual; se recomienda evidencia del mandado y comunicación clara.');
+    if (action === 'learning-resources') alert('Recursos sugeridos: mejorar publicaciones, atención a clientes, ventas locales, seguridad digital y uso de DOLA. Los enlaces externos deben identificarse como externos.');
+    if (action === 'learning-dola-plan' || action === 'copy-learning-prompt') learningPrompt();
+    if (action === 'go-back') goBack();
   }
 
   function selectChannel(ch){
@@ -714,6 +836,7 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
   function useDolaResult(){
     const text = $('#dolaResult')?.value.trim();
     if (!text) { toast('Pega primero el resultado de DOLA.'); return; }
+    pushInternalNavigationSnapshot();
     state.dolaText = text;
     const parsed = parseDolaText(text);
     state.dolaPreview = parsed;
@@ -811,7 +934,7 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
       mediaData:'', mediaKind:'', mediaPath: suggestedMediaPath(draft), mediaLabel: draft.category || 'Publicación con DOLA', mediaType:'placeholder'
     };
     if (!post.description) return toast('La publicación necesita descripción.');
-    const posts = getPosts(); posts.unshift(post); savePosts(posts); resetPublishState(); toast('Publicación creada correctamente'); navigate('/mis-publicaciones');
+    const posts = getPosts(); posts.unshift(post); savePosts(posts); addPublishNotification(); resetPublishState(); toast('Publicación creada correctamente'); navigate('/mis-publicaciones', { resetStack:true });
   }
 
   function editDolaPreview(){
@@ -835,7 +958,7 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
       mediaData: state.pendingMedia?.data || '', mediaKind: state.pendingMedia?.kind || '', mediaPath: state.pendingMedia?.data ? '' : suggestedMediaPath({title:fd.get('title'), category:fd.get('category'), description:fd.get('description'), type:fd.get('type')}), mediaLabel:'Publicación local', mediaType:'placeholder'
     };
     if (!post.title || !post.description) { toast('Completa título y descripción.'); return; }
-    const posts = getPosts(); posts.unshift(post); savePosts(posts); resetPublishState(); toast('Publicación creada correctamente'); navigate('/mis-publicaciones');
+    const posts = getPosts(); posts.unshift(post); savePosts(posts); addPublishNotification(); resetPublishState(); toast('Publicación creada correctamente'); navigate('/mis-publicaciones', { resetStack:true });
   }
 
   function reactPost(id){ const posts = getPosts(); const p = posts.find(x=>x.id===id); if (p) { p.reactions=(p.reactions||0)+1; savePosts(posts); toast('Reacción agregada'); render(); } }
@@ -863,6 +986,14 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
     } else if (modal.type==='post') {
       const p = getPosts().find(x=>x.id===modal.postId);
       div.innerHTML = `<div class="modal"><h3>${escapeHtml(p?.title||'Publicación')}</h3><p class="muted">${escapeHtml(p?.zone||'')} · ${escapeHtml(p?.category||'')}</p><p>${escapeHtml(p?.description||'')}</p><div class="modal-actions"><button class="btn primary" data-message-post="${p?.id}">Mensaje</button><button class="btn ghost" data-modal-close>Cerrar</button></div></div>`;
+    } else if (modal.type==='install-help') {
+      div.innerHTML = `<div class="modal"><h3>Instalar Conecta Servicios</h3><p class="muted">Si tu navegador no muestra instalación automática, abre el menú del navegador y elige “Agregar a pantalla de inicio”.</p><div class="notice">En iPhone usa Compartir → Agregar a pantalla de inicio. En Android usa el menú ⋮ → Instalar app o Agregar a pantalla principal.</div><div class="modal-actions"><button class="btn primary" data-modal-close>Entendido</button></div></div>`;
+    } else if (modal.type==='notifications') {
+      const data = notificationState();
+      const items = (data.items||[]);
+      data.items = items.map(n=>({...n, read:true})); saveNotificationState(data);
+      div.innerHTML = `<div class="modal"><h3>Notificaciones</h3><p class="muted">Estado: ${data.enabled?'activas':'pendientes'} · modo piloto local.</p><div class="list">${items.length ? items.map(n=>`<div class="list-item"><div><b>${escapeHtml(n.title)}</b><p class="tiny muted">${escapeHtml(n.message)} · ${new Date(n.createdAt).toLocaleString('es-MX')}</p></div></div>`).join('') : '<div class="empty">Sin notificaciones.</div>'}</div><div class="modal-actions"><button class="btn ghost" data-modal-clear-notifications>Limpiar</button><button class="btn primary" data-modal-close>Cerrar</button></div></div>`;
+      div.querySelector('[data-modal-clear-notifications]')?.addEventListener('click',()=>{ saveNotificationState({enabled:data.enabled,items:[]}); closeModal(); toast('Notificaciones limpias'); render(); });
     }
     div.onclick=(e)=>{ if(e.target===div) closeModal(); };
     div.querySelectorAll('[data-modal-close]').forEach(b=>b.onclick=closeModal);
@@ -874,7 +1005,103 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
   function enableAdmin(){ const pin = prompt('Ingresa PIN admin'); if (pin === ADMIN_PIN) { localStorage.setItem(KEYS.admin,'true'); toast('Admin activo'); render(); } else if (pin) toast('PIN incorrecto'); }
   function clearLocal(){ if (!confirm('Esto borrará datos locales del piloto. ¿Continuar?')) return; Object.values(KEYS).forEach(k=>localStorage.removeItem(k)); toast('Datos locales borrados'); render(); }
   function showPrivacy(){ alert('DOLA es una herramienta externa. No compartas datos sensibles. Revisa el texto antes de pegarlo en Conecta. Conecta facilita publicaciones y contacto, no garantiza ventas ni resultados.'); }
-  function editProfile(){ const name = prompt('Nombre', getJSON(KEYS.profile,{name:'Usuario'}).name || 'Usuario'); if (!name) return; const profile = getJSON(KEYS.profile,{}); profile.name=name; setJSON(KEYS.profile,profile); toast('Perfil actualizado'); render(); }
+  function editProfile(){
+    const profile = getJSON(KEYS.profile,{name:'Usuario', zone:'', phone:''});
+    const name = prompt('Nombre', profile.name || 'Usuario'); if (!name) return;
+    const zone = (prompt('Municipio / zona', profile.zone || '') ?? profile.zone ?? '');
+    const phone = (prompt('Teléfono opcional', profile.phone || '') ?? profile.phone ?? '');
+    profile.name = name; profile.zone = zone; profile.phone = phone;
+    setJSON(KEYS.profile,profile); toast('Perfil actualizado'); render();
+  }
+
+  function preferences(){
+    const prefs = getJSON(KEYS.prefs,{preferredChannel:'dola'});
+    const current = (prefs.preferredChannel || 'dola').toLowerCase();
+    const next = confirm(`Canal actual: ${current.toUpperCase()}\n\nAceptar = DOLA recomendado\nCancelar = WhatsApp`) ? 'dola' : 'whatsapp';
+    prefs.preferredChannel = next; setJSON(KEYS.prefs,prefs); toast(`Preferencia guardada: ${next.toUpperCase()}`); render();
+  }
+
+  async function installApp(){
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      const choice = await deferredInstallPrompt.userChoice.catch(()=>null);
+      if (choice?.outcome === 'accepted') addNotification('App instalada', 'Conecta Servicios quedó instalada en tu dispositivo.');
+      deferredInstallPrompt = null;
+      toast('Instalación solicitada.');
+      return;
+    }
+    state.modal = { type:'install-help' }; renderModal(state.modal);
+  }
+
+  async function notificationPanel(){
+    const data = notificationState();
+    if (!data.enabled && 'Notification' in window && Notification.permission === 'default') {
+      const result = await Notification.requestPermission().catch(()=> 'denied');
+      data.enabled = result === 'granted';
+    } else if (!data.enabled) {
+      data.enabled = true;
+    }
+    if (!data.items?.length) {
+      data.items = [];
+      data.items.push({ id: uid('note'), title:'Bienvenido a notificaciones', message:'Aquí verás avisos de publicaciones, membresía y DOLA en modo piloto.', type:'info', read:false, createdAt:new Date().toISOString() });
+    }
+    saveNotificationState(data);
+    state.modal = { type:'notifications' }; renderModal(state.modal);
+  }
+
+  function registerReferral(){
+    const name = prompt('Nombre del referido o negocio'); if (!name) return;
+    const phone = prompt('WhatsApp o contacto opcional') || '';
+    const refs = getJSON(KEYS.referrals,[]);
+    refs.unshift({ id:uid('ref'), name, phone, status:'pendiente', createdAt:new Date().toISOString() });
+    setJSON(KEYS.referrals, refs); toast('Referido registrado en modo piloto');
+  }
+
+  function shareAmbassadorMessage(){
+    const text = `Hola, te invito a Conecta Servicios. Puedes publicar gratis por 30 días y activar membresía anual de $${MEMBERSHIP_PRICE} para publicar sin límites. Entra aquí: ${location.origin}/embajadores?ref=CON-LOCAL`;
+    copyText(text);
+  }
+
+  function createAgentPost(){
+    pushInternalNavigationSnapshot();
+    state.publishMode='manual';
+    state.publishTemplate = templates.find(t=>t.id==='ofrecerme-agente') || null;
+    state.publishDraft={type:'Agente', category:'Agentes en crecimiento', title:'', description:'', channel:'dola'};
+    navigate('/publicar');
+  }
+
+  function agentDolaPrompt(){
+    state.publishMode = 'dola';
+    state.publishTemplate = templates.find(t=>t.id==='ofrecerme-agente') || templates[0];
+    state.dolaFlowActive = true;
+    navigate('/publicar');
+  }
+
+  function requestVerifiedErrand(){
+    state.publishMode = 'manual';
+    state.publishTemplate = templates.find(t=>t.id==='busco-mensajero') || templates[0];
+    state.publishDraft={type:'Solicitante', category:'Mandados verificados', title:'', description:'', channel:'dola'};
+    navigate('/publicar');
+  }
+
+  function applyVerifiedAgent(){
+    const name = prompt('Nombre para postulación como agente verificado'); if (!name) return;
+    const zone = prompt('Zona donde puedes apoyar') || '';
+    const apps = getJSON(KEYS.verifiedApplications, []);
+    apps.unshift({ id:uid('ver'), name, zone, status:'pendiente de revisión manual', createdAt:new Date().toISOString() });
+    setJSON(KEYS.verifiedApplications, apps); toast('Postulación guardada en modo piloto');
+  }
+
+  function learningPrompt(){
+    const text = 'Vengo de Conecta Servicios. Ayúdame a crear un plan sencillo de aprendizaje para mejorar mis publicaciones, atender mejor a clientes y ofrecer mejores servicios como agente o negocio local. Hazme una pregunta a la vez y dame pasos prácticos.';
+    copyText(text).then(()=>toast('Prompt de aprendizaje copiado'));
+  }
+
+  function addPublishNotification(){
+    addNotification('Nueva publicación creada', 'Tu publicación ya aparece en Mis publicaciones, Inicio y Explorar en modo piloto.');
+    const active = freeActiveMine()[0];
+    if (active) addNotification('Publicación gratis activa', `Tu publicación gratis vence en ${daysLeft(active.expiresAt)} días.`);
+  }
 
   function getParam(name){ return new URL(location.href).searchParams.get(name); }
 

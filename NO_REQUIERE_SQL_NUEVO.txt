@@ -1,1 +1,2 @@
-No requiere SQL nuevo para esta corrección. Funciona en modo piloto con localStorage y banco manual de media en assets/dola-media/.
+No requiere SQL nuevo para esta corrección.
+La versión v5.0.6 funciona en modo piloto con localStorage, PWA básica y notificaciones internas/locales.

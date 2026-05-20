@@ -1,4 +1,4 @@
-Banco manual de imágenes sugeridas para Conecta Servicios v5.0.4.
+Banco manual de imágenes sugeridas para Conecta Servicios v5.0.5.
 
 Puedes reemplazar estos archivos por fotos, ilustraciones o videos propios, manteniendo los nombres esperados por la app:
 
