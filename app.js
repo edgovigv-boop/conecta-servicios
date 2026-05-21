@@ -1,9 +1,9 @@
-/* Conecta Servicios v5.1.0 - integración API DOLA segura */
+/* Conecta Servicios v5.1.1 - home galería y multimedia */
 (() => {
   'use strict';
 
-  const VERSION = 'v5.1.0-integracion-api-dola-segura';
-  const CACHE_HINT = 'conecta-servicios-v5-1-0-api-dola-segura';
+  const VERSION = 'v5.1.1-home-galeria-multimedia';
+  const CACHE_HINT = 'conecta-servicios-v5-1-1-home-galeria-multimedia';
   const DOLA_EXTERNAL_URL = 'https://dola.com';
   const CONNECTA_APP_URL = 'https://conecta-servicios.vercel.app/';
   const MEMBERSHIP_PRICE = 98;
@@ -41,6 +41,7 @@
     dolaApiError: '',
     dolaApiTask: null,
     modal: null,
+    pendingMediaItems: [],
     navigationStack: []
   };
 
@@ -84,6 +85,21 @@
       id:'seed-4', owner:'Consultoría piloto', mine:false, type:'Negocio', category:'Consultoría', title:'Consultoría tecnológica para empresas',
       description:'Asesoría en procesos digitales, sistemas y aplicaciones. Podemos iniciar con una llamada para revisar necesidades.',
       zone:'Atención regional', channel:'dola', whatsapp:'', createdAt: daysAgo(4), expiresAt: null, status:'activa', reactions:17, comments:2, shares:4, mediaLabel:'Negocio profesional', mediaType:'placeholder'
+    },
+    {
+      id:'seed-5', owner:'Panadería piloto', mine:false, type:'Negocio', category:'Comida / panadería', title:'Panadería con entregas por la mañana',
+      description:'Pan dulce, bolillo y paquetes para desayunos. Atiendo pedidos pequeños y encargos para oficinas o reuniones.',
+      zone:'Chapultepec centro', channel:'dola', whatsapp:'', createdAt: daysAgo(1), expiresAt: null, status:'activa', reactions:19, comments:4, shares:5, mediaLabel:'Publicación de comida', mediaType:'placeholder'
+    },
+    {
+      id:'seed-6', owner:'Agente piloto', mine:false, type:'Agente', category:'Apoyo por horas', title:'Apoyo con trámites y compras locales',
+      description:'Puedo acompañarte a realizar trámites, hacer compras o apoyar por horas en actividades sencillas.',
+      zone:'Toluca y alrededores', channel:'dola', whatsapp:'', createdAt: daysAgo(2), expiresAt: null, status:'activa', reactions:11, comments:2, shares:3, mediaLabel:'Agente local', mediaType:'placeholder'
+    },
+    {
+      id:'seed-7', owner:'Solicitante piloto', mine:false, type:'Solicitante', category:'Ayuda local', title:'Necesito apoyo para mover unas cajas',
+      description:'Busco a alguien disponible para ayudarme a mover cajas pequeñas por una hora. Pago a tratar según disponibilidad.',
+      zone:'Metepec', channel:'dola', whatsapp:'', createdAt: daysAgo(2), expiresAt: null, status:'activa', reactions:8, comments:1, shares:2, mediaLabel:'Solicitud local', mediaType:'placeholder'
     }
   ];
 
@@ -118,7 +134,21 @@
     if (!posts) { posts = seedPosts; setJSON(KEYS.posts, posts); }
     return posts;
   }
-  function savePosts(posts){ setJSON(KEYS.posts, posts); }
+  function savePosts(posts){
+    try {
+      setJSON(KEYS.posts, posts);
+    } catch (err) {
+      console.warn('No se pudo guardar multimedia completa en localStorage', err);
+      const safePosts = posts.map(post => ({
+        ...post,
+        mediaData: '',
+        mediaKind: '',
+        mediaItems: (post.mediaItems || []).map(item => ({ ...item, data:'', url:'', transient:true }))
+      }));
+      setJSON(KEYS.posts, safePosts);
+      toast('La publicación se guardó; para videos/fotos pesadas se requiere Storage en producción.');
+    }
+  }
   function myPosts(){ return getPosts().filter(p => p.mine); }
   function activePost(post){ return post.status !== 'borrador' && post.status !== 'eliminada' && (!post.expiresAt || new Date(post.expiresAt) >= new Date()); }
   function freeActiveMine(){ return myPosts().filter(p => p.freeTrial && activePost(p)); }
@@ -403,28 +433,41 @@
   }
 
   function pageHome(){
-    const posts = getPosts().filter(activePost).slice(0,6);
-    return `<main class="page">
-      ${topbar()}
-      <section class="hero">
-        <h2>Publica fácil. Encuentra cerca. Conecta mejor.</h2>
-        <p>Crea tu publicación con DOLA o manualmente. Usa un solo canal: DOLA o WhatsApp.</p>
-        <div class="hero-actions">
-          <button class="btn" data-route="/publicar">+ Publicar gratis</button>
-          <button class="btn ghost" data-route="/explorar">Explorar</button>
-        </div>
-      </section>
+    const negocios = bankPostsByType('Negocio');
+    const agentes = bankPostsByType('Agente');
+    const solicitantes = bankPostsByType('Solicitante');
+    return `<main class="page home-gallery-page">
+      ${topbar('Conecta Servicios','Publicaciones locales cerca de ti')}
       ${starCarousel()}
-      <section class="card compact">
-        <div class="stat-row">
-          <div class="stat"><b>30 días</b><span>1 publicación gratis</span></div>
-          <div class="stat"><b>$${MEMBERSHIP_PRICE}</b><span>membresía anual</span></div>
-          <div class="stat"><b>DOLA</b><span>apoyo externo</span></div>
+      <section class="gallery-hero">
+        <div>
+          <span class="tiny muted">Banco de publicaciones / ejemplos</span>
+          <h2>Elige una idea y publica algo parecido</h2>
         </div>
+        <button class="btn primary" data-route="/publicar">+ Publicar</button>
       </section>
-      <div class="section-title"><h2>Para ti</h2><button data-route="/explorar">Ver todo</button></div>
-      <div class="feed two">${posts.map(postCard).join('')}</div>
+      ${bankSection('🟢 Negocios','Tiendas, comercios, profesionales y servicios independientes.', negocios, 'Negocio')}
+      ${bankSection('🟡 Agentes','Personas que ofrecen ayuda, gestiones, trabajos, entregas o apoyo local.', agentes, 'Agente')}
+      ${bankSection('🔴 Solicitantes','Personas que necesitan algo, buscan servicio, ayuda o mandado.', solicitantes, 'Solicitante')}
     </main>`;
+  }
+
+  function bankPostsByType(type){
+    const seen = new Set();
+    const all = [...getPosts().filter(activePost), ...seedPosts].filter(p => p.type === type);
+    return all.filter(p => {
+      const key = `${p.type}-${p.title}-${p.zone}`.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).slice(0, 6);
+  }
+
+  function bankSection(title, subtitle, posts, filter){
+    return `<section class="bank-section">
+      <div class="section-title"><div><h2>${escapeHtml(title)}</h2><p class="tiny muted">${escapeHtml(subtitle)}</p></div><button data-route="/explorar" data-filter="${escapeHtml(filter)}">Ver más</button></div>
+      <div class="feed two">${posts.map(postCard).join('')}</div>
+    </section>`;
   }
 
   function pageExplore(){
@@ -656,7 +699,7 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
         ${publishLimitNotice()}
         ${reviewMsg}
         <article class="post-card preview-card">
-          <div class="post-media">${renderMedia({ ...draft, mediaPath: suggestedMediaPath(draft), mediaLabel: draft.category || 'Conecta Servicios', mediaType:'placeholder' })}</div>
+          <div class="post-media">${renderMedia(mediaPreviewSource(draft))}</div>
           <div class="post-body">
             <div class="post-meta"><span class="chip ${typeClass(draft.type)}">${escapeHtml(draft.type || 'Solicitante')}</span><span class="chip">${escapeHtml(draft.category || 'General')}</span><span class="chip">${channelLabel(draft.channel || 'dola')}</span></div>
             <h3 class="post-title">${escapeHtml(draft.title || 'Publicación creada con DOLA')}</h3>
@@ -665,6 +708,7 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
           </div>
         </article>
         ${questions.length ? `<div class="card compact"><b>Preguntas sugeridas de DOLA</b><ol class="question-list">${questions.map(q=>`<li>${escapeHtml(q)}</li>`).join('')}</ol></div>` : ''}
+        <div class="field"><label>Fotos o videos opcionales</label><input class="input" type="file" name="media" accept="image/*,video/*" multiple /><div class="tiny muted">Puedes subir hasta 10 archivos por publicación. Videos recomendados: 15 segundos a 10 minutos.</div><div class="media-preview media-preview-grid" id="mediaPreview">${renderMediaPreviewItems(state.pendingMediaItems || [])}</div></div>
         <div class="button-row sticky-actions"><button class="btn primary" data-action="publish-dola-preview">Publicar ahora</button><button class="btn ghost" data-action="edit-dola-preview">Editar</button><button class="btn" data-action="back-to-dola">Volver a DOLA</button></div>
       </div>
       <div class="card">
@@ -687,7 +731,7 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
           <div class="field"><label>Categoría</label><input class="input" name="category" value="${escapeHtml(draft.category||'')}" placeholder="Mandados, comida, negocio..." /></div>
           <div class="field"><label>Municipio / zona</label><input class="input" name="zone" value="${escapeHtml(draft.zone||'')}" placeholder="Chapultepec, Toluca..." /></div>
         </div>
-        <div class="field"><label>Foto o video opcional</label><input class="input" type="file" name="media" accept="image/*,video/mp4,video/webm" /><div class="media-preview" id="mediaPreview">Puedes subir una foto/video o dejarlo sin media.</div></div>
+        <div class="field"><label>Fotos o videos opcionales</label><input class="input" type="file" name="media" accept="image/*,video/*" multiple /><div class="tiny muted">Puedes subir hasta 10 archivos por publicación. Videos recomendados: 15 segundos a 10 minutos.</div><div class="media-preview media-preview-grid" id="mediaPreview">Puedes subir fotos/videos o dejar que Conecta sugiera una imagen.</div></div>
         <div class="field"><label>Canal de contacto</label><div class="toggle-row"><button type="button" class="option-card ${(draft.channel||'dola')==='dola'?'active':''}" data-channel-choice="dola"><h4>🤖 DOLA</h4><p>Recomendado. Ayuda a filtrar mejor.</p></button><button type="button" class="option-card ${draft.channel==='whatsapp'?'active':''}" data-channel-choice="whatsapp"><h4>🟢 WhatsApp</h4><p>Contacto directo y rápido.</p></button></div><input type="hidden" name="channel" value="${draft.channel||'dola'}" /></div>
         <div class="field whatsapp-field" style="display:${draft.channel==='whatsapp'?'grid':'none'}"><label>WhatsApp</label><input class="input" name="whatsapp" value="${escapeHtml(draft.whatsapp||'')}" placeholder="Ej. 5217220000000" /></div>
         <button class="btn primary full" type="submit">Publicar</button>
@@ -863,10 +907,13 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
 
   function renderMedia(p={}){
     const title = p.title || 'Publicación de Conecta Servicios';
+    const items = normalizeMediaItems(p);
+    if (items.length) return renderMediaGallery(items, title);
+
     const data = String(p.mediaData || '').trim();
     const kind = String(p.mediaKind || '').toLowerCase();
     if (data && isUsableMediaSource(data)) {
-      if (kind === 'video' || data.startsWith('data:video')) return `<video src="${escapeHtml(data)}" muted playsinline controls></video>`;
+      if (kind === 'video' || data.startsWith('data:video')) return `<video src="${escapeHtml(data)}" playsinline controls preload="metadata"></video>`;
       return `<img src="${escapeHtml(data)}" alt="${escapeHtml(title)}" loading="lazy" />`;
     }
 
@@ -875,12 +922,42 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
     if (path && isUsableMediaSource(path)) {
       const fallbackHidden = fallback.replace('post-placeholder', 'post-placeholder media-fallback');
       const fail = `this.style.display='none'; if(this.nextElementSibling){this.nextElementSibling.style.display='grid';}`;
-      if (/\.(mp4|webm)(\?.*)?$/i.test(path)) {
-        return `<video src="${escapeHtml(path)}" muted playsinline controls onerror="${fail}"></video>${fallbackHidden}`;
+      if (/\.(mp4|webm|mov)(\?.*)?$/i.test(path)) {
+        return `<video src="${escapeHtml(path)}" playsinline controls preload="metadata" onerror="${fail}"></video>${fallbackHidden}`;
       }
       return `<img src="${escapeHtml(path)}" alt="${escapeHtml(title)}" loading="lazy" onerror="${fail}" />${fallbackHidden}`;
     }
     return fallback;
+  }
+
+  function normalizeMediaItems(p={}){
+    const items = Array.isArray(p.mediaItems) ? p.mediaItems : [];
+    return items.filter(item => isUsableMediaSource(item?.data || item?.url || item?.path || ''));
+  }
+
+  function renderMediaGallery(items=[], title='Publicación'){
+    const first = items[0];
+    const src = first.data || first.url || first.path || '';
+    const kind = String(first.kind || first.type || '').toLowerCase();
+    const main = (kind === 'video' || String(src).startsWith('data:video') || /\.(mp4|webm|mov)(\?.*)?$/i.test(src))
+      ? `<video src="${escapeHtml(src)}" playsinline controls preload="metadata"></video>`
+      : `<img src="${escapeHtml(src)}" alt="${escapeHtml(title)}" loading="lazy" />`;
+    const badge = items.length > 1 ? `<span class="media-count">+${items.length - 1}</span>` : '';
+    const thumbs = items.length > 1 ? `<div class="media-thumbs">${items.slice(0,4).map(item => renderMediaThumb(item)).join('')}</div>` : '';
+    return `<div class="media-gallery">${main}${badge}${thumbs}</div>`;
+  }
+
+  function renderMediaThumb(item={}){
+    const src = item.data || item.url || item.path || '';
+    const kind = String(item.kind || item.type || '').toLowerCase();
+    if (kind === 'video' || String(src).startsWith('data:video') || /\.(mp4|webm|mov)(\?.*)?$/i.test(src)) return `<span class="media-thumb">▶</span>`;
+    return `<span class="media-thumb"><img src="${escapeHtml(src)}" alt="" loading="lazy" /></span>`;
+  }
+
+  function mediaPreviewSource(draft={}){
+    const items = state.pendingMediaItems || [];
+    if (items.length) return { ...draft, mediaItems: items, mediaLabel: draft.category || 'Conecta Servicios' };
+    return { ...draft, mediaPath: suggestedMediaPath(draft), mediaLabel: draft.category || 'Conecta Servicios', mediaType:'placeholder' };
   }
 
   function isUsableMediaSource(src=''){
@@ -984,13 +1061,71 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
   }
 
   function onChange(e){
-    if (e.target.name === 'media' && e.target.files?.[0]) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = () => { state.pendingMedia = { data: reader.result, kind: file.type.startsWith('video') ? 'video' : 'image' }; const prev = $('#mediaPreview'); if (prev) prev.innerHTML = state.pendingMedia.kind === 'video' ? `<video src="${reader.result}" controls muted playsinline></video>` : `<img src="${reader.result}" alt="Vista previa" />`; };
-      reader.readAsDataURL(file);
+    if (e.target.name === 'media' && e.target.files?.length) {
+      handleMediaFiles(e.target.files);
     }
     if (e.target.id === 'publishForm') e.preventDefault();
+  }
+
+  async function handleMediaFiles(fileList){
+    const files = Array.from(fileList || []).slice(0, 10);
+    if (!files.length) return;
+    const items = [];
+    for (const file of files) {
+      const kind = file.type.startsWith('video') ? 'video' : file.type.startsWith('image') ? 'image' : '';
+      if (!kind) continue;
+      if (kind === 'video') {
+        const duration = await getVideoDuration(file).catch(() => null);
+        if (duration && (duration < 15 || duration > 600)) {
+          toast(`Video omitido: ${file.name} debe durar entre 15 segundos y 10 minutos.`);
+          continue;
+        }
+      }
+      // En modo localStorage evitamos guardar archivos enormes para no bloquear el navegador.
+      // En producción, estos archivos deben subirse a Supabase Storage u otro storage y guardar la URL.
+      if (file.size > 8 * 1024 * 1024) {
+        const url = URL.createObjectURL(file);
+        items.push({ url, kind, name:file.name, transient:true });
+        toast('Archivo grande cargado para vista previa. Para persistir videos grandes se requiere Storage.');
+        continue;
+      }
+      const data = await readFileAsDataURL(file);
+      items.push({ data, kind, name:file.name });
+    }
+    state.pendingMediaItems = items;
+    state.pendingMedia = items[0] ? { data: items[0].data || items[0].url, kind: items[0].kind } : null;
+    const prev = $('#mediaPreview');
+    if (prev) prev.innerHTML = renderMediaPreviewItems(items);
+  }
+
+  function readFileAsDataURL(file){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function getVideoDuration(file){
+    return new Promise((resolve, reject) => {
+      const video = document.createElement('video');
+      const url = URL.createObjectURL(file);
+      video.preload = 'metadata';
+      video.onloadedmetadata = () => { const d = video.duration; URL.revokeObjectURL(url); resolve(d); };
+      video.onerror = () => { URL.revokeObjectURL(url); reject(new Error('No se pudo leer duración')); };
+      video.src = url;
+    });
+  }
+
+  function renderMediaPreviewItems(items=[]){
+    if (!items.length) return 'Puedes subir fotos/videos o dejar que Conecta sugiera una imagen.';
+    return items.map(item => {
+      const src = item.data || item.url || item.path || '';
+      return item.kind === 'video'
+        ? `<video src="${escapeHtml(src)}" controls playsinline preload="metadata"></video>`
+        : `<img src="${escapeHtml(src)}" alt="Vista previa" />`;
+    }).join('');
   }
 
   document.addEventListener('submit', (e)=>{
@@ -1137,8 +1272,17 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
     state.dolaText = '';
     state.publishDraft = null;
     state.pendingMedia = null;
+    state.pendingMediaItems = [];
     resetDolaApiState();
     if (!opts.keepMode) state.publishMode = 'dola';
+  }
+
+  function persistableMediaItems(items=[]){
+    // Los object URLs son solo de sesión; no se guardan para evitar publicaciones rotas tras recargar.
+    return items
+      .filter(item => item && !item.transient && (item.data || item.path))
+      .slice(0, 10)
+      .map(item => ({ data:item.data || '', path:item.path || '', kind:item.kind || 'image', name:item.name || '' }));
   }
 
   function publishDolaPreview(){
@@ -1152,7 +1296,7 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
       description: (draft.description || draft.rawText || '').trim(), zone: (draft.zone || '').trim() || 'Zona no especificada',
       channel: draft.channel || 'dola', whatsapp: normalizePhone(draft.whatsapp || ''), questions: draft.questions || [],
       createdAt: new Date().toISOString(), expiresAt: canPublishUnlimited() ? null : addDays(new Date(), FREE_DAYS), status:'activa', freeTrial: !canPublishUnlimited(), reactions:0, comments:0, shares:0,
-      mediaData:'', mediaKind:'', mediaPath: suggestedMediaPath(draft), mediaLabel: draft.category || 'Publicación con DOLA', mediaType:'placeholder'
+      mediaData:'', mediaKind:'', mediaItems: persistableMediaItems(state.pendingMediaItems || []), mediaPath: (state.pendingMediaItems||[]).length ? '' : suggestedMediaPath(draft), mediaLabel: draft.category || 'Publicación con DOLA', mediaType:'placeholder'
     };
     if (!post.description) return toast('La publicación necesita descripción.');
     const posts = getPosts(); posts.unshift(post); savePosts(posts); addPublishNotification(); resetPublishState(); toast('Publicación creada correctamente'); navigate('/mis-publicaciones', { resetStack:true });
@@ -1176,7 +1320,7 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
     const post = {
       id: uid('post'), owner:'Tú', mine:true, type: fd.get('type') || 'Solicitante', category: (fd.get('category') || '').trim() || 'General', title: (fd.get('title') || '').trim(), description: (fd.get('description') || '').trim(), zone: (fd.get('zone') || '').trim() || 'Zona no especificada', channel, whatsapp,
       createdAt: new Date().toISOString(), expiresAt: canPublishUnlimited() ? null : addDays(new Date(), FREE_DAYS), status:'activa', freeTrial: !canPublishUnlimited(), reactions:0, comments:0, shares:0,
-      mediaData: state.pendingMedia?.data || '', mediaKind: state.pendingMedia?.kind || '', mediaPath: state.pendingMedia?.data ? '' : suggestedMediaPath({title:fd.get('title'), category:fd.get('category'), description:fd.get('description'), type:fd.get('type')}), mediaLabel:'Publicación local', mediaType:'placeholder'
+      mediaData: '', mediaKind: '', mediaItems: persistableMediaItems(state.pendingMediaItems || []), mediaPath: (state.pendingMediaItems||[]).length ? '' : suggestedMediaPath({title:fd.get('title'), category:fd.get('category'), description:fd.get('description'), type:fd.get('type')}), mediaLabel:'Publicación local', mediaType:'placeholder'
     };
     if (!post.title || !post.description) { toast('Completa título y descripción.'); return; }
     const posts = getPosts(); posts.unshift(post); savePosts(posts); addPublishNotification(); resetPublishState(); toast('Publicación creada correctamente'); navigate('/mis-publicaciones', { resetStack:true });

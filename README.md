@@ -234,3 +234,47 @@ Cuando DOLA entregue documentación oficial, ajusta el payload dentro de `api/do
 ```text
 Preparar integración segura de API DOLA dentro de Conecta v5.1.0
 ```
+
+## v5.1.1 - Home galería y multimedia
+
+Versión: `v5.1.1-home-galeria-multimedia`
+
+### Cambios principales
+
+- El Home deja de iniciar con textos largos y ahora muestra primero el banco de publicaciones / ejemplos.
+- El banco se divide en tres categorías visuales:
+  - 🟢 Negocios
+  - 🟡 Agentes
+  - 🔴 Solicitantes
+- Cada sección usa tarjetas tipo red social para que el usuario entienda rápido qué puede publicar.
+- Se mantiene el carrusel superior de secciones principales.
+- Se agrega soporte para subir múltiples fotos o videos por publicación.
+- Límite recomendado en esta versión: hasta 10 archivos por publicación.
+- Los videos se validan con duración recomendada de 15 segundos a 10 minutos.
+- Las publicaciones reproducen videos dentro de la tarjeta con controles nativos.
+- La vista previa de DOLA y el formulario manual permiten adjuntar multimedia.
+- Si el archivo es pesado, se muestra en vista previa, pero para persistencia real de videos grandes se recomienda Supabase Storage u otro storage.
+
+### Nota técnica sobre multimedia
+
+En modo localStorage, fotos pequeñas pueden guardarse como base64. Los videos grandes no deben persistirse en localStorage porque pueden exceder el límite del navegador. Para producción real con muchos usuarios, usar Supabase Storage o storage compatible y guardar la URL pública en `mediaItems`.
+
+### Archivos modificados
+
+- `index.html`
+- `app.js`
+- `styles.css`
+- `manifest.json`
+- `service-worker.js`
+- `README.md`
+- `CHECKLIST-v5.1.1.txt`
+
+### SQL
+
+No requiere SQL nuevo para esta corrección de interfaz. Para multimedia real en producción, se recomienda conectar almacenamiento de archivos.
+
+### Commit sugerido
+
+```text
+Actualizar Home a banco de publicaciones y agregar multimedia v5.1.1
+```

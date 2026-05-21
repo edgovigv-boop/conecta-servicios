@@ -1,0 +1,18 @@
+CHECKLIST v5.1.1 - Home galería y multimedia
+
+1. Abrir Inicio y confirmar que ya no aparece texto largo como primera sección.
+2. Confirmar que el Home muestra primero Banco de publicaciones / ejemplos.
+3. Confirmar categorías visibles: Negocios, Agentes y Solicitantes.
+4. Confirmar que cada categoría muestra tarjetas tipo red social.
+5. Confirmar que el botón “Ver más” filtra correctamente en Explorar.
+6. Crear publicación manual con una foto.
+7. Crear publicación manual con varias fotos.
+8. Crear publicación manual con video de 15 segundos o más.
+9. Intentar subir video menor a 15 segundos y confirmar aviso.
+10. Intentar subir video mayor a 10 minutos y confirmar aviso.
+11. Confirmar que el video se reproduce dentro de la tarjeta con controles.
+12. Crear publicación con DOLA, llegar a vista previa y adjuntar foto/video.
+13. Publicar y confirmar que aparece en Inicio, Explorar y Mis publicaciones.
+14. Confirmar que publicación sin media sigue usando imagen sugerida o placeholder.
+15. Confirmar que DOLA, WhatsApp, PWA, notificaciones y navegación atrás siguen funcionando.
+16. Confirmar que no se desplegó automáticamente.
