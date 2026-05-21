@@ -2,18 +2,750 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conecta Servicios - v5.0.9</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Conecta Servicios v5.0.9 - Con DOLA AI Nativo</title>
+    <style>
+        /* ==========================================================================
+           ESTILOS PROFESIONALES E INTERFAZ INTEGRADA MÓVIL (9:16)
+           ========================================================================== */
+        :root {
+            --primary-blue: #0070f3;
+            --primary-dark: #111111;
+            --accent-green: #00a86b;
+            --bg-light: #f4f6f8;
+            --chat-bg: #ffffff;
+            --dola-bubble: #f0f2f5;
+            --user-bubble: #0070f3;
+            --border-color: #e1eefc;
+            --muted-gray: #666666;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #1a1a2e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--primary-dark);
+            overflow: hidden;
+        }
+
+        /* Contenedor del Teléfono Inteligente (Formato 9:16 Fijo) */
+        .smartphone-container {
+            width: 100%;
+            max-width: 412px;
+            height: 100vh;
+            max-height: 846px;
+            background: #ffffff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border-radius: 16px;
+        }
+
+        @media (max-width: 450px) {
+            .smartphone-container {
+                border-radius: 0;
+                max-height: 100vh;
+            }
+        }
+
+        /* Encabezado General */
+        .app-header {
+            background: var(--primary-blue);
+            color: #ffffff;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .app-header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .app-header .header-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Cuerpo de Contenido de Pantallas Dinámicas */
+        .screen-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            background: var(--bg-light);
+            padding-bottom: 70px; /* Espacio para el Bottom Nav */
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.25s ease-in-out forwards;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Navegación Inferior (Bottom Nav Tab Bar) */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: #ffffff;
+            border-top: 1px solid #eeeeee;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--muted-gray);
+            font-size: 11px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+            border: none;
+            background: none;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: var(--primary-blue);
+            font-weight: 600;
+        }
+
+        .nav-item .nav-icon {
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+
+        /* Componentes de Interfaz: Tarjetas, Botones y Formularios */
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary { background: var(--primary-blue); color: #ffffff; }
+        .btn-success { background: var(--accent-green); color: #ffffff; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary-blue); color: var(--primary-blue); }
+        .btn-ghost { background: #eef2f7; color: var(--primary-dark); }
+
+        .search-box {
+            background: #ffffff;
+            border: 1px solid #dddddd;
+            border-radius: 24px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .search-box input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        /* Carrusel y Filtros Municipales */
+        .quick-carousel {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+            scrollbar-width: none;
+        }
+        .quick-carousel::-webkit-scrollbar { display: none; }
+
+        .carousel-badge {
+            background: #ffffff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            border: 1px solid #eee;
+            cursor: pointer;
+        }
+        .carousel-badge.active {
+            background: var(--primary-blue);
+            color: #ffffff;
+            border-color: var(--primary-blue);
+        }
+
+        /* Chat UI Nativo DOLA AI */
+        .dola-chat-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 140px);
+            max-height: 710px;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+
+        .dola-chat-header {
+            background: #f0f7ff;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .dola-avatar {
+            width: 36px;
+            height: 36px;
+            background: var(--primary-blue);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .dola-status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+        }
+
+        .dola-chat-board {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #fafbfc;
+        }
+
+        .chat-bubble {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 13px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .chat-bubble.dola {
+            background: var(--dola-bubble);
+            color: var(--primary-dark);
+            align-self: flex-start;
+            border-top-left-radius: 4px;
+        }
+
+        .chat-bubble.user {
+            background: var(--user-bubble);
+            color: #ffffff;
+            align-self: flex-end;
+            border-top-right-radius: 4px;
+        }
+
+        .dola-input-area {
+            padding: 12px;
+            border-top: 1px solid #eeeeee;
+            background: #ffffff;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .dola-input-area input {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid #dddddd;
+            border-radius: 20px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .dola-input-area button {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        /* Publicaciones Estilo Directorio */
+        .post-item {
+            border-left: 4px solid var(--primary-blue);
+            padding-left: 12px;
+            margin-bottom: 12px;
+        }
+        .post-item.premium { border-left-color: gold; }
+
+        .tag-whatsapp {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #e6f7ed;
+            color: var(--accent-green);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+
+    </style>
 </head>
 <body>
-    <!-- Contenedor Base de la Aplicación Móvil (9:16) -->
-    <div id="app-container" class="mobile-viewport">
-        <!-- Las vistas se renderizan dinámicamente mediante app.js -->
-        <div id="dola-chat-container" class="dola-container"></div>
+
+    <div class="smartphone-container">
+        <!-- HEADER GLOBAL -->
+        <header class="app-header">
+            <div>
+                <h1 id="app-title">Conecta Servicios</h1>
+                <span style="font-size: 10px; opacity: 0.8;">Chapultepec & Región</span>
+            </div>
+            <span class="header-badge">v5.0.9 NATIVA</span>
+        </header>
+
+        <!-- CONTENIDO DINÁMICO DE PANTALLAS -->
+        <main class="screen-content" id="screen-main-content">
+
+            <!-- PANTALLA 1: EXPLORAR / INICIO -->
+            <section id="screen-explorar" class="screen active">
+                <div class="search-box">
+                    <span>🔍</span>
+                    <input type="text" id="search-input" placeholder="Buscar albañil, repartidor, contador...">
+                </div>
+
+                <div class="quick-carousel">
+                    <span class="carousel-badge active" onclick="filterZone('Todas')">📍 Todas</span>
+                    <span class="carousel-badge" onclick="filterZone('Chapultepec')">Chapultepec</span>
+                    <span class="carousel-badge" onclick="filterZone('San Mateo')">San Mateo</span>
+                    <span class="carousel-badge" onclick="filterZone('Toluca')">Toluca</span>
+                    <span class="carousel-badge" onclick="filterZone('Metepec')">Metepec</span>
+                </div>
+
+                <div class="section-title">📢 Servicios Disponibles en la Comunidad</div>
+                <div id="directory-list">
+                    <!-- Se inyecta dinámicamente -->
+                </div>
+            </section>
+
+            <!-- PANTALLA 2: ELEGIR MODO PUBLICACIÓN (DOLA O MANUAL) -->
+            <section id="screen-modo-publicar" class="screen">
+                <div class="card" style="text-align: center; padding: 24px 16px;">
+                    <div class="dola-avatar" style="margin: 0 auto 16px auto; width: 60px; height: 60px; font-size: 28px;">🤖</div>
+                    <h3 style="margin-bottom: 8px; font-size: 18px;">¿Cómo quieres crear tu publicación?</h3>
+                    <p style="font-size: 13px; color: var(--muted-gray); margin-bottom: 20px;">
+                        Optimiza tu alcance en Chapultepec usando Inteligencia Artificial o rellena el formulario tú mismo de forma clásica.
+                    </p>
+                    
+                    <button class="btn btn-primary" style="margin-bottom: 12px;" onclick="startDolaFlow()">
+                        ✨ Crear Conversando con DOLA AI
+                    </button>
+                    <button class="btn btn-ghost" onclick="changeScreen('screen-formulario-manual')">
+                        📝 Formulario Manual Clásico
+                    </button>
+                </div>
+            </section>
+
+            <!-- PANTALLA 3: INTERFAZ DE CONVERSACIÓN DE DOLA NATIVA -->
+            <section id="screen-chat-dola" class="screen">
+                <div class="dola-chat-wrapper">
+                    <div class="dola-chat-header">
+                        <div class="dola-avatar">D</div>
+                        <div>
+                            <h4 style="font-size: 13px; margin: 0;">Asistente Inteligente DOLA</h4>
+                            <span style="font-size: 11px; color: var(--accent-green);"><span class="dola-status-dot"></span>Nativo en la App</span>
+                        </div>
+                    </div>
+
+                    <div class="dola-chat-board" id="dola-board">
+                        <!-- Las burbujas se inyectan dinámicamente -->
+                    </div>
+
+                    <div class="dola-input-area">
+                        <input type="text" id="dola-input-msg" placeholder="Escribe tu respuesta o pide cambios aquí...">
+                        <button onclick="sendDolaMessage()">⚡</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PANTALLA 4: FORMULARIO MANUAL CLÁSICO -->
+            <section id="screen-formulario-manual" class="screen">
+                <div class="section-title">📝 Crear Publicación Manual</div>
+                <div class="card">
+                    <label style="font-size: 12px; font-weight:600; display:block; margin-bottom:6px;">Título del Servicio</label>
+                    <input type="text" id="manual-title" placeholder="Ej: Carpintero profesional" style="width:100%; padding:10px; margin-bottom:12px; border-radius:6px; border:1px solid #ccc;">
+
+                    <label style="font-size: 12px; font-weight:600; display:block; margin-bottom:6px;">Municipio / Zona</label>
+                    <select id="manual-zone" style="width:100%; padding:10px; margin-bottom:12px; border-radius:6px; border:1px solid #ccc;">
+                        <option value="Chapultepec">Chapultepec</option>
+                        <option value="San Mateo Atenco">San Mateo Atenco</option>
+                        <option value="Metepec">Metepec</option>
+                    </select>
+
+                    <label style="font-size: 12px; font-weight:600; display:block; margin-bottom:6px;">Descripción del Servicio</label>
+                    <textarea id="manual-desc" rows="4" placeholder="Detalla qué ofreces, tus horarios y tarifas..." style="width:100%; padding:10px; margin-bottom:16px; border-radius:6px; border:1px solid #ccc;"></textarea>
+
+                    <button class="btn btn-primary" onclick="saveManualPublish()">Ver Vista Previa</button>
+                </div>
+            </section>
+
+            <!-- PANTALLA 5: VISTA PREVIA Y VALIDACIÓN -->
+            <section id="screen-vista-previa" class="screen">
+                <div class="section-title">👁️ Vista Previa de tu Publicación</div>
+                <div class="card" style="border-top: 4px solid var(--primary-blue);">
+                    <h3 id="preview-title" style="font-size:16px; margin-bottom:6px;">Título del Servicio</h3>
+                    <span id="preview-zone" style="font-size:12px; color:var(--primary-blue); font-weight:600; display:block; margin-bottom:10px;">📍 Zona</span>
+                    <p id="preview-desc" style="font-size:13px; line-height:1.4; color:#333; margin-bottom:12px;">Descripción completa...</p>
+                    <div class="tag-whatsapp">💬 Contacto Principal: WhatsApp</div>
+                </div>
+                <button class="btn btn-success" onclick="publishFinal()">🚀 Confirmar y Publicar en el Directorio</button>
+                <button class="btn btn-ghost" style="margin-top:10px;" onclick="changeScreen('screen-modo-publicar')">🔄 Modificar</button>
+            </section>
+
+            <!-- PANTALLA 6: PANEL DE APRENDIZAJE -->
+            <section id="screen-aprendizaje" class="screen">
+                <div class="section-title">📚 Centro de Aprendizaje Comercial</div>
+                <div class="card">
+                    <h4>🚀 ¿Cómo vender más en Chapultepec?</h4>
+                    <p style="font-size:12px; color:var(--muted-gray); margin-top:4px; margin-bottom:10px;">Guía de auto-capacitación para emprendedores locales.</p>
+                    <ul style="font-size:13px; padding-left:16px; display:flex; flex-direction:column; gap:8px;">
+                        <li>Mantén tu perfil activo con fotos reales de tus trabajos.</li>
+                        <li>Responde siempre los mensajes de WhatsApp en menos de 15 minutos.</li>
+                        <li>Usa a DOLA para optimizar tus textos promocionales gratis.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- PANTALLA 7: PERFIL / MEMBRESÍAS ANUALES -->
+            <section id="screen-perfil" class="screen">
+                <div class="section-title">👤 Mi Perfil y Suscripción</div>
+                <div class="card" style="text-align:center;">
+                    <div style="width:64px; height:64px; background:#ddd; border-radius:50%; margin:0 auto 10px auto; display:flex; align-items:center; justify-content:center; font-size:24px;">💼</div>
+                    <h4>Prestador de Servicios Profesional</h4>
+                    <p style="font-size:12px; color:var(--muted-gray);">Chapultepec, Estado de México</p>
+                </div>
+                <div class="card" style="background: linear-gradient(135deg, #fff, #e6f2ff); border: 1px solid #b3d7ff;">
+                    <h4 style="color:var(--primary-blue);">⭐ Nivel Destacado Anual</h4>
+                    <p style="font-size:13px; margin: 6px 0 12px 0;">Suscripción premium por solo <strong>$98 MXN / Año</strong>. Aparece en los primeros resultados de búsqueda de la comunidad de forma prioritaria.</p>
+                    <button class="btn btn-primary" onclick="alert('Instrucciones enviadas: Realiza tu pago mediante OXXO o transferencia y envía el comprobante por WhatsApp al administrador.')">Activar Membresía Anual</button>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- COMPONENTE: BOTTOM NAVIGATION BAR -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" onclick="navTo('screen-explorar', this)">
+                <span class="nav-icon">🔍</span>
+                <span>Explorar</span>
+            </button>
+            <button class="nav-item" onclick="navTo('screen-modo-publicar', this)">
+                <span class="nav-icon">➕</span>
+                <span>Publicar</span>
+            </button>
+            <button class="nav-item" onclick="navTo('screen-aprendizaje', this)">
+                <span class="nav-icon">📚</span>
+                <span>Aprender</span>
+            </button>
+            <button class="nav-item" onclick="navTo('screen-perfil', this)">
+                <span class="nav-icon">👤</span>
+                <span>Perfil</span>
+            </button>
+        </nav>
     </div>
 
-    <!-- Script Principal con la Lógica de Negocio e Integración DOLA -->
-    <script src="app.js"></script>
+    <!-- ==========================================================================
+       LÓGICA DEL CORE DE LA APLICACIÓN INTEGRADA (SISTEMA DE ESTADOS Y APIS)
+       ========================================================================== */ -->
+    <script>
+        // Datos Iniciales Simulados de la Comunidad (Mock Data)
+        const initialServices = [
+            { id: 1, title: "Electricista Certificado e Industrial", zone: "Chapultepec", desc: "Instalaciones eléctricas residenciales y comerciales. Atención de emergencias 24/7 en el centro de Chapultepec.", premium: true },
+            { id: 2, title: "Servicio de Limpieza y Sanitización", zone: "Metepec", desc: "Limpieza profunda de oficinas y casas particulares. Personal de absoluta confianza.", premium: false },
+            { id: 3, title: "Plomero y Fontanero Express", zone: "San Mateo", desc: "Reparación de fugas de agua, gas, mantenimiento de cisternas y calentadores solares.", premium: true }
+        ];
+
+        let servicesDatabase = [...initialServices];
+        let currentActiveZone = "Todas";
+        let activePublicationDraft = { title: '', zone: 'Chapultepec', desc: '' };
+        let dolaCurrentStep = 0;
+
+        // Renderizar el Directorio Local
+        function renderDirectory() {
+            const listContainer = document.getElementById('directory-list');
+            listContainer.innerHTML = '';
+            
+            const searchWord = document.getElementById('search-input').value.toLowerCase();
+
+            const filtered = servicesDatabase.filter(item => {
+                const matchesZone = (currentActiveZone === "Todas" || item.zone.toLowerCase().includes(currentActiveZone.toLowerCase()));
+                const matchesSearch = item.title.toLowerCase().includes(searchWord) || item.desc.toLowerCase().includes(searchWord);
+                return matchesZone && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                listContainer.innerHTML = `<p style="font-size:13px; color:var(--muted-gray); text-align:center; padding:20px;">No se encontraron servicios en esta zona.</p>`;
+                return;
+            }
+
+            filtered.forEach(srv => {
+                const cardHtml = `
+                    <div class="card post-item ${srv.premium ? 'premium' : ''}">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <h4 style="font-size:14px; font-weight:700;">${srv.title}</h4>
+                            ${srv.premium ? '<span style="background:#fff3cd; color:#856404; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:bold;">⭐ DESTACADO</span>' : ''}
+                        </div>
+                        <span style="font-size:11px; color:var(--primary-blue); font-weight:600; display:block; margin:2px 0 8px 0;">📍 Zona: ${srv.zone}</span>
+                        <p style="font-size:12px; color:#444; line-height:1.4;">${srv.desc}</p>
+                        <div class="tag-whatsapp">💬 Enviar WhatsApp Directo</div>
+                    </div>
+                `;
+                listContainer.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+
+        // Sistema de Enrutamiento y Cambio de Pantallas
+        function changeScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const targetScreen = document.getElementById(screenId);
+            if (targetScreen) targetScreen.classList.add('active');
+        }
+
+        function navTo(screenId, element) {
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+            changeScreen(screenId);
+        }
+
+        function filterZone(zoneName) {
+            currentActiveZone = zoneName;
+            document.querySelectorAll('.carousel-badge').forEach(badge => {
+                if (badge.textContent.includes(zoneName)) badge.classList.add('active');
+                else badge.classList.remove('active');
+            });
+            renderDirectory();
+        }
+
+        // MOTOR CONVERSACIONAL DE DOLA AI NATIVO (API IN-APP)
+        const dolaQuestions = [
+            "¡Hola! Soy DOLA, tu asistente de Conecta Servicios. Vamos a redactar una publicación espectacular sin que tengas que salir de la aplicación. Para empezar, **¿cuál es el título del servicio o profesión que ofreces?**",
+            "Excelente. Ahora dime, **¿en qué municipio o zona del Estado de México te encuentras principalmente?** (Ej: Chapultepec, San Mateo Atenco, Metepec...)",
+            "Perfecto. Cuéntame los **detalles clave de tu servicio**: ¿Qué te hace único? ¿Manejas algún horario especial o tarifa base que quieras que destaquemos?"
+        ];
+
+        function startDolaFlow() {
+            changeScreen('screen-chat-dola');
+            dolaCurrentStep = 0;
+            const board = document.getElementById('dola-board');
+            board.innerHTML = '';
+            addDolaBubble(dolaQuestions[0]);
+        }
+
+        function addDolaBubble(text, showAction = false) {
+            const board = document.getElementById('dola-board');
+            let actionBtnHtml = '';
+            
+            if (showAction) {
+                actionBtnHtml = `
+                    <div style="margin-top:10px;">
+                        <button class="btn btn-success" style="padding:6px 12px; font-size:11px; width:auto; border-radius:12px;" onclick="approveDolaText()">✔ Usar esta publicación</button>
+                    </div>
+                `;
+            }
+
+            board.insertAdjacentHTML('beforeend', `
+                <div class="chat-bubble dola">
+                    <p>${text.replace(/\n/g, '<br>')}</p>
+                    ${actionBtnHtml}
+                </div>
+            `);
+            board.scrollTop = board.scrollHeight;
+        }
+
+        function addUserBubble(text) {
+            const board = document.getElementById('dola-board');
+            board.insertAdjacentHTML('beforeend', `
+                <div class="chat-bubble user">${text}</div>
+            `);
+            board.scrollTop = board.scrollHeight;
+        }
+
+        function sendDolaMessage() {
+            const input = document.getElementById('dola-input-msg');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            addUserBubble(msg);
+            input.value = '';
+
+            // Mostrar estado pensando simulado por API interna
+            board.insertAdjacentHTML('beforeend', `<div id="dola-loading-bubble" class="chat-bubble dola" style="color:#888; font-style:italic;">DOLA está escribiendo...</div>`);
+            board.scrollTop = board.scrollHeight;
+
+            setTimeout(() => {
+                const loader = document.getElementById('dola-loading-bubble');
+                if (loader) loader.remove();
+
+                // Guardar datos recolectados paso a paso
+                if (dolaCurrentStep === 0) {
+                    activePublicationDraft.title = msg;
+                    dolaCurrentStep = 1;
+                    addDolaBubble(dolaQuestions[1]);
+                } else if (dolaCurrentStep === 1) {
+                    activePublicationDraft.zone = msg;
+                    dolaCurrentStep = 2;
+                    addDolaBubble(dolaQuestions[2]);
+                } else if (dolaCurrentStep === 2) {
+                    activePublicationDraft.desc = msg;
+                    dolaCurrentStep = 3;
+                    
+                    // Procesamiento y optimización final de la API de DOLA
+                    const optimizacionFinal = `✨ *PUBLICACIÓN OPTIMIZADA POR DOLA AI* \n\n🛠️ **Servicio:** ${activePublicationDraft.title}\n📍 **Ubicación:** ${activePublicationDraft.zone}\n\n📝 **Descripción Comercial:** Ofrezco servicios profesionales de alta calidad. ${activePublicationDraft.desc}. Garantía de confianza, atención inmediata y presupuestos justos en la región. \n\n¡Haz clic abajo para contactarme de forma directa e inmediata por WhatsApp!`;
+                    activePublicationDraft.desc = optimizacionFinal;
+                    
+                    addDolaBubble("¡Listo! He procesado tus respuestas a través de mi API interna y optimicé el texto para generar la mayor cantidad de clientes en Chapultepec. Aquí tienes el resultado final en tiempo real. Si estás de acuerdo, presiona el botón:", true);
+                } else {
+                    // Refinamiento conversacional in-app en tiempo real (Ej: "Hazlo más corto")
+                    if (msg.toLowerCase().includes("corto") || msg.toLowerCase().includes("resumen")) {
+                        activePublicationDraft.desc = `⚡ *Servicio Express:* ${activePublicationDraft.title} en ${activePublicationDraft.zone}. Alta calidad garantizada. ¡Presiona WhatsApp para detalles!`;
+                    } else {
+                        activePublicationDraft.desc = `✨ *Versión Corregida:* ${activePublicationDraft.title} (Zona ${activePublicationDraft.zone}). ${msg}. Disponible para contratación inmediata.`;
+                    }
+                    addDolaBubble("He aplicado tus cambios al instante mediante la API. Revisa el nuevo texto:", true);
+                }
+            }, 1000);
+        }
+
+        function approveDolaText() {
+            document.getElementById('preview-title').textContent = activePublicationDraft.title;
+            document.getElementById('preview-zone').textContent = `📍 ${activePublicationDraft.zone}`;
+            document.getElementById('preview-desc').innerHTML = activePublicationDraft.desc.replace(/\n/g, '<br>');
+            changeScreen('screen-vista-previa');
+        }
+
+        // Guardar publicación manual clásica
+        function saveManualPublish() {
+            const title = document.getElementById('manual-title').value.trim();
+            const zone = document.getElementById('manual-zone').value;
+            const desc = document.getElementById('manual-desc').value.trim();
+
+            if (!title || !desc) {
+                alert("Por favor completa todos los campos del formulario.");
+                return;
+            }
+
+            activePublicationDraft = { title, zone, desc };
+            
+            document.getElementById('preview-title').textContent = title;
+            document.getElementById('preview-zone').textContent = `📍 ${zone}`;
+            document.getElementById('preview-desc').textContent = desc;
+            changeScreen('screen-vista-previa');
+        }
+
+        // Confirmación final e inserción en base de datos local
+        function publishFinal() {
+            const newService = {
+                id: servicesDatabase.length + 1,
+                title: activePublicationDraft.title,
+                zone: activePublicationDraft.zone,
+                desc: activePublicationDraft.desc,
+                premium: false
+            };
+
+            servicesDatabase.unshift(newService);
+            renderDirectory();
+            alert("¡Felicidades! Tu publicación ha sido dada de alta con éxito en el directorio local.");
+            changeScreen('screen-explorar');
+            
+            // Resetear tabs de navegación activa
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.nav-item')[0].classList.add('active');
+        }
+
+        // Inicialización al cargar la aplicación
+        document.getElementById('search-input').addEventListener('input', renderDirectory);
+        
+        // Ejecución Inicial
+        renderDirectory();
+    </script>
 </body>
 </html>
