@@ -1,0 +1,22 @@
+CHECKLIST v5.2.0 UX visual universal
+
+1. Home abre directo al banco visual de publicaciones.
+2. No hay textos largos de bienvenida.
+3. Se ven Negocios, Agentes y Solicitantes.
+4. Menú inferior tiene solo Inicio, Buscar, Crear y Perfil.
+5. Crear muestra plantillas visuales.
+6. Al elegir plantilla se ven dos círculos: DOLA y Manual.
+7. DOLA abre chat interno.
+8. Si no hay API configurada, muestra respaldo externo.
+9. Manual abre formulario simple.
+10. Se pueden subir hasta 10 fotos/videos.
+11. Los videos se reproducen en la publicación.
+12. Las publicaciones se ven en Inicio, Buscar y Perfil/Mis.
+13. Botón Mensaje abre DOLA o WhatsApp según canal.
+14. Perfil permite instalar, notificaciones, admin y datos básicos.
+15. Módulos estrella son visuales y accionables.
+16. Botón atrás no rompe el flujo.
+17. PWA conserva logo oficial.
+18. No se exponen llaves de DOLA en frontend.
+19. No requiere SQL nuevo.
+20. No se desplegó automáticamente.

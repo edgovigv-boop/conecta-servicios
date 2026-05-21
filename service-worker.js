@@ -1,54 +1,28 @@
-const CACHE_NAME = 'conecta-servicios-v5-1-1-home-galeria-multimedia';
-const CORE_ASSETS = [
+const CACHE_NAME = 'conecta-servicios-v5-2-0-ux-visual-universal';
+const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=5.1.1-home-galeria-multimedia',
-  '/app.js?v=5.1.1-home-galeria-multimedia',
-  '/manifest.json?v=5.1.1-home-galeria-multimedia',
-  '/assets/dola-media/comida-01.jpg',
-  '/assets/dola-media/mandados-01.jpg',
-  '/assets/dola-media/agente-01.jpg',
-  '/assets/dola-media/negocio-01.jpg',
-  '/assets/dola-media/embajadores-01.jpg',
-  '/assets/dola-media/aprendizaje-01.jpg',
-  '/assets/dola-media/mandados-verificados-01.jpg',
-  '/assets/dola-media/solicitante-01.jpg',
-  '/assets/icons/favicon.ico',
-  '/assets/icons/favicon-64.png',
-  '/assets/icons/favicon-32.png',
-  '/assets/icons/apple-touch-icon.png',
-  '/assets/icons/icon-512.png',
+  '/styles.css?v=5.2.0-ux-visual-universal',
+  '/app.js?v=5.2.0-ux-visual-universal',
+  '/manifest.json?v=5.2.0-ux-visual-universal',
   '/assets/icons/icon-192.png',
-  '/assets/icons/conecta-logo-mark.png',
+  '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'
 ];
-
-self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(CORE_ASSETS)).then(() => self.skipWaiting()));
+self.addEventListener('install', event => {
+  self.skipWaiting();
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS).catch(() => null)));
 });
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))).then(() => self.clients.claim())
-  );
+self.addEventListener('activate', event => {
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))));
+  self.clients.claim();
 });
-
-self.addEventListener('fetch', (event) => {
-  const request = event.request;
-  if (request.method !== 'GET') return;
-  const url = new URL(request.url);
-  if (url.origin !== location.origin) return;
-
-  if (request.mode === 'navigate') {
-    event.respondWith(fetch(request).catch(() => caches.match('/index.html')));
-    return;
-  }
-
-  event.respondWith(
-    caches.match(request).then((cached) => cached || fetch(request).then((response) => {
-      const copy = response.clone();
-      caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-      return response;
-    }).catch(() => cached))
-  );
+self.addEventListener('fetch', event => {
+  const req = event.request;
+  if (req.method !== 'GET' || new URL(req.url).pathname.startsWith('/api/')) return;
+  event.respondWith(caches.match(req).then(cached => cached || fetch(req).then(res => {
+    const copy = res.clone();
+    caches.open(CACHE_NAME).then(cache => cache.put(req, copy)).catch(() => null);
+    return res;
+  }).catch(() => caches.match('/index.html'))));
 });

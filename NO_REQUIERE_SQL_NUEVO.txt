@@ -1,4 +1,4 @@
-No requiere SQL nuevo para v5.1.0.
+Esta versión no requiere SQL nuevo para probarse.
 
-Esta versión prepara la integración segura de DOLA por API usando /api/dola y variables de entorno de Vercel.
-El almacenamiento de publicaciones, solicitudes y modo piloto sigue usando localStorage.
+Funciona con localStorage y mantiene api/dola.js preparado para variables de entorno en Vercel.
+Para producción real multiusuario y videos grandes se recomienda conectar Supabase y Supabase Storage.
