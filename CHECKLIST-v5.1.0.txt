@@ -1,0 +1,25 @@
+CHECKLIST v5.1.0 - Integración API DOLA segura
+
+1. Entrar a Publicar.
+2. Elegir una plantilla.
+3. Elegir DOLA.
+4. Ver tarjeta “DOLA dentro de Conecta”.
+5. Sin variables de entorno, tocar “Generar con DOLA”.
+6. Confirmar que aparece fallback: API de DOLA pendiente.
+7. Confirmar que sigue funcionando Copiar prompt / Abrir DOLA externo / Pegar resultado.
+8. Configurar DOLA_API_URL y DOLA_API_KEY en Vercel cuando existan credenciales.
+9. Confirmar que DOLA responde dentro de Conecta.
+10. Probar botón “Más corto”.
+11. Probar botón “Más formal”.
+12. Probar botón “Más sencillo”.
+13. Tocar “Usar en publicación”.
+14. Confirmar que se muestra vista previa.
+15. Publicar y revisar Inicio, Explorar y Mis publicaciones.
+16. Tocar Mensaje en una publicación con DOLA.
+17. Confirmar que intenta filtrar con DOLA dentro de Conecta o muestra fallback.
+18. Confirmar que WhatsApp sigue funcionando si la publicación eligió WhatsApp.
+19. Confirmar que la API key no aparece en app.js ni en el navegador.
+20. Confirmar que no se rompió navegación atrás, PWA, perfil ni módulos estrella.
+
+No requiere SQL nuevo.
+No desplegar automáticamente.

@@ -1,9 +1,9 @@
-/* Conecta Servicios v5.0.9 - prompts DOLA con contexto cerrado */
+/* Conecta Servicios v5.1.0 - integración API DOLA segura */
 (() => {
   'use strict';
 
-  const VERSION = 'v5.0.9-prompts-dola-contexto-cerrado';
-  const CACHE_HINT = 'conecta-servicios-v5-0-9-prompts-dola-contexto-cerrado';
+  const VERSION = 'v5.1.0-integracion-api-dola-segura';
+  const CACHE_HINT = 'conecta-servicios-v5-1-0-api-dola-segura';
   const DOLA_EXTERNAL_URL = 'https://dola.com';
   const CONNECTA_APP_URL = 'https://conecta-servicios.vercel.app/';
   const MEMBERSHIP_PRICE = 98;
@@ -35,6 +35,11 @@
     publishDraft: null,
     dolaPreview: null,
     dolaText: '',
+    dolaApiStatus: 'idle',
+    dolaApiMessages: [],
+    dolaApiResult: '',
+    dolaApiError: '',
+    dolaApiTask: null,
     modal: null,
     navigationStack: []
   };
@@ -130,6 +135,111 @@
   }
   function openExternal(url){ window.open(url, '_blank', 'noopener,noreferrer'); }
 
+
+  async function sendToDola(messages, context = {}){
+    const response = await fetch('/api/dola', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages, context })
+    });
+    let data = null;
+    try { data = await response.json(); } catch { data = null; }
+    if (!response.ok || !data?.ok) {
+      const error = data?.error || `HTTP_${response.status}`;
+      const message = data?.message || 'No se pudo conectar con DOLA.';
+      const err = new Error(message);
+      err.code = error;
+      err.payload = data;
+      throw err;
+    }
+    return data;
+  }
+
+  function resetDolaApiState(){
+    state.dolaApiStatus = 'idle';
+    state.dolaApiMessages = [];
+    state.dolaApiResult = '';
+    state.dolaApiError = '';
+    state.dolaApiTask = null;
+  }
+
+  function buildDolaMessages(prompt, userInstruction=''){
+    const messages = [{ role:'user', content: prompt }];
+    if (userInstruction) messages.push({ role:'user', content: userInstruction });
+    return messages;
+  }
+
+  async function callDolaForPublication(userInstruction=''){
+    const tpl = state.publishTemplate || templates[0];
+    const prompt = createDolaPrompt(tpl);
+    state.dolaApiStatus = 'loading';
+    state.dolaApiError = '';
+    state.dolaApiTask = 'publication';
+    render();
+    try {
+      const data = await sendToDola(buildDolaMessages(prompt, userInstruction), {
+        task:'create_publication',
+        version: VERSION,
+        template: tpl,
+        appUrl: CONNECTA_APP_URL
+      });
+      const answer = data.text || data.message || data.content || '';
+      state.dolaApiStatus = 'ready';
+      state.dolaApiResult = answer.trim();
+      state.dolaApiMessages = [
+        { role:'user', content: userInstruction || 'Crear publicación con la plantilla seleccionada.' },
+        { role:'assistant', content: state.dolaApiResult }
+      ];
+      state.dolaText = state.dolaApiResult;
+      toast('DOLA respondió dentro de Conecta.');
+    } catch (err) {
+      state.dolaApiStatus = err.code === 'DOLA_API_NOT_CONFIGURED' ? 'fallback' : 'error';
+      state.dolaApiError = err.message || 'No se pudo usar DOLA por API.';
+      toast(state.dolaApiStatus === 'fallback' ? 'API de DOLA pendiente. Usa modo externo.' : 'Error al conectar con DOLA.');
+    }
+    render();
+  }
+
+  async function adjustDolaPublication(instruction){
+    const tpl = state.publishTemplate || templates[0];
+    const base = state.dolaApiResult || state.dolaText || '';
+    const prompt = dolaBasePrompt({
+      section:'Ajustar publicación generada',
+      objective:'Ajustar una publicación ya redactada para Conecta Servicios sin salir del contexto de la app.',
+      extra:`PUBLICACIÓN ACTUAL:\n${base}\n\nINSTRUCCIÓN DEL USUARIO:\n${instruction}\n\nDevuelve únicamente la versión ajustada, lista para usar como publicación. No repitas el prompt ni la conversación.`
+    });
+    state.dolaApiStatus = 'loading';
+    state.dolaApiError = '';
+    render();
+    try {
+      const data = await sendToDola(buildDolaMessages(prompt), {
+        task:'adjust_publication',
+        version: VERSION,
+        template: tpl,
+        appUrl: CONNECTA_APP_URL
+      });
+      state.dolaApiStatus = 'ready';
+      state.dolaApiResult = (data.text || data.message || data.content || '').trim();
+      state.dolaText = state.dolaApiResult;
+      state.dolaApiMessages.push({ role:'user', content: instruction }, { role:'assistant', content: state.dolaApiResult });
+      toast('Ajuste aplicado con DOLA.');
+    } catch (err) {
+      state.dolaApiStatus = err.code === 'DOLA_API_NOT_CONFIGURED' ? 'fallback' : 'error';
+      state.dolaApiError = err.message || 'No se pudo ajustar con DOLA.';
+      toast(state.dolaApiStatus === 'fallback' ? 'API de DOLA pendiente. Usa modo externo.' : 'Error al ajustar con DOLA.');
+    }
+    render();
+  }
+
+  function useDolaApiResult(){
+    const text = (state.dolaApiResult || '').trim();
+    if (!text) return toast('Primero genera una respuesta con DOLA.');
+    state.dolaText = text;
+    state.dolaPreview = parseDolaText(text);
+    toast('Texto de DOLA listo para revisar.');
+    render();
+  }
+
   function routeFromLocation(){
     const path = location.pathname.replace(/\/$/,'') || '/';
     return path;
@@ -144,7 +254,12 @@
       publishDraft: clonePlain(state.publishDraft),
       dolaPreview: clonePlain(state.dolaPreview),
       dolaText: state.dolaText || '',
-      pendingMedia: clonePlain(state.pendingMedia)
+      pendingMedia: clonePlain(state.pendingMedia),
+      dolaApiStatus: state.dolaApiStatus,
+      dolaApiMessages: clonePlain(state.dolaApiMessages),
+      dolaApiResult: state.dolaApiResult || '',
+      dolaApiError: state.dolaApiError || '',
+      dolaApiTask: state.dolaApiTask || null
     };
   }
 
@@ -157,7 +272,7 @@
     return JSON.stringify({
       route: snap.route, filter: snap.filter, publishMode: snap.publishMode,
       publishTemplateId: snap.publishTemplateId, dolaFlowActive: snap.dolaFlowActive,
-      hasPreview: !!snap.dolaPreview, hasDraft: !!snap.publishDraft, dolaText: !!snap.dolaText
+      hasPreview: !!snap.dolaPreview, hasDraft: !!snap.publishDraft, dolaText: !!snap.dolaText, dolaApiResult: !!snap.dolaApiResult
     });
   }
 
@@ -183,6 +298,11 @@
     state.dolaPreview = clonePlain(snap.dolaPreview) || null;
     state.dolaText = snap.dolaText || '';
     state.pendingMedia = clonePlain(snap.pendingMedia) || null;
+    state.dolaApiStatus = snap.dolaApiStatus || 'idle';
+    state.dolaApiMessages = clonePlain(snap.dolaApiMessages) || [];
+    state.dolaApiResult = snap.dolaApiResult || '';
+    state.dolaApiError = snap.dolaApiError || '';
+    state.dolaApiTask = snap.dolaApiTask || null;
     if ((location.pathname.replace(/\/$/,'') || '/') !== snap.route) {
       history.pushState({}, '', snap.route || '/');
     }
@@ -362,8 +482,9 @@
         <div class="notice slim"><b>Antes de abrir DOLA:</b> inicia sesión o entra con tu cuenta para evitar límites de uso como invitado. El prompt ya incluye rol, objetivo, contexto y la regla de no salirse de Conecta Servicios.</div>
         <div class="button-row"><button class="btn ghost" data-action="reset-publish-flow">Cambiar plantilla</button><button class="btn" data-action="start-manual-template">Manual</button></div>
       </div>
+      ${dolaApiCard(tpl, prompt)}
       <div class="card">
-        <h3>1. Copia este prompt para DOLA</h3>
+        <h3>Modo alternativo: copia este prompt para DOLA</h3>
         <div class="copy-panel"><button class="copy-corner" data-action="copy-dola-prompt" aria-label="Copiar prompt">📋</button><div class="prompt-box tall" id="dolaPrompt">${escapeHtml(prompt)}</div></div>
         <div class="button-row"><button class="btn primary" data-action="copy-dola-prompt">Copiar prompt</button><button class="btn green" data-action="open-dola">Abrir DOLA</button></div>
       </div>
@@ -374,6 +495,37 @@
         <div class="button-row"><button class="btn primary" data-action="use-dola-result">Usar como descripción</button><button class="btn ghost" data-action="preview-dola-result">Ver vista previa</button><button class="btn" data-action="clear-dola-result">Limpiar</button></div>
       </div>
     </section>`;
+  }
+
+
+  function dolaApiCard(tpl, prompt){
+    const messages = state.dolaApiMessages || [];
+    const result = state.dolaApiResult || '';
+    const status = state.dolaApiStatus || 'idle';
+    const fallback = status === 'fallback';
+    const error = status === 'error';
+    return `<div class="card dola-api-card">
+      <div class="section-title compact-title"><h3>DOLA dentro de Conecta</h3><span class="chip">API segura</span></div>
+      <p class="muted tiny">Si las variables de entorno están configuradas, DOLA responde aquí mismo. Si faltan, se conserva el modo externo actual.</p>
+      ${status === 'loading' ? `<div class="notice slim">DOLA está procesando tu solicitud...</div>` : ''}
+      ${fallback ? `<div class="notice slim"><b>API pendiente:</b> ${escapeHtml(state.dolaApiError || 'La API de DOLA aún no está configurada.')} Puedes usar el modo externo.</div>` : ''}
+      ${error ? `<div class="danger"><b>Error:</b> ${escapeHtml(state.dolaApiError || 'No se pudo conectar con DOLA.')}</div>` : ''}
+      <div class="dola-chat-window">
+        ${messages.length ? messages.slice(-6).map(m => `<div class="chat-bubble ${m.role === 'assistant' ? 'assistant' : 'user'}">${escapeHtml(m.content)}</div>`).join('') : `<div class="chat-bubble assistant">Estoy listo para ayudarte a crear esta publicación dentro de Conecta Servicios.</div>`}
+        ${result && !messages.length ? `<div class="chat-bubble assistant">${escapeHtml(result)}</div>` : ''}
+      </div>
+      <div class="button-row">
+        <button class="btn primary" data-action="generate-dola-api" ${status === 'loading' ? 'disabled' : ''}>Generar con DOLA</button>
+        <button class="btn ghost" data-action="dola-adjust-short" ${!result || status === 'loading' ? 'disabled' : ''}>Más corto</button>
+        <button class="btn ghost" data-action="dola-adjust-formal" ${!result || status === 'loading' ? 'disabled' : ''}>Más formal</button>
+        <button class="btn ghost" data-action="dola-adjust-simple" ${!result || status === 'loading' ? 'disabled' : ''}>Más sencillo</button>
+      </div>
+      <div class="button-row">
+        <button class="btn green" data-action="use-dola-api-result" ${!result ? 'disabled' : ''}>Usar en publicación</button>
+        <button class="btn" data-action="create-service-bot" ${status === 'loading' ? 'disabled' : ''}>Bot Atención</button>
+        <button class="btn" data-action="create-contact-bot" ${status === 'loading' ? 'disabled' : ''}>Bot Contacto</button>
+      </div>
+    </div>`;
   }
 
   function templateDecisionPage(tpl){
@@ -850,6 +1002,13 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
     if (action === 'copy-dola-prompt') copyText(createDolaPrompt(tpl)).then(()=>toast('Prompt copiado. Ahora puedes abrir DOLA.'));
     if (action === 'copy-dola-raw') copyText(state.dolaPreview?.rawText || state.dolaText || '');
     if (action === 'open-dola') openExternal(DOLA_EXTERNAL_URL);
+    if (action === 'generate-dola-api') callDolaForPublication();
+    if (action === 'dola-adjust-short') adjustDolaPublication('Hazlo más corto, claro y directo.');
+    if (action === 'dola-adjust-formal') adjustDolaPublication('Hazlo más formal, profesional y confiable.');
+    if (action === 'dola-adjust-simple') adjustDolaPublication('Hazlo más sencillo, cercano y fácil de entender.');
+    if (action === 'create-service-bot') adjustDolaPublication('Además de la publicación, crea una propuesta breve de Bot de Atención a Clientes para filtrar pedidos, citas, cotizaciones o consultas relacionadas con esta publicación.');
+    if (action === 'create-contact-bot') adjustDolaPublication('Además de la publicación, crea una propuesta breve de Bot de Contacto para filtrar a las personas interesadas y ordenar la solicitud antes de contactar.');
+    if (action === 'use-dola-api-result') useDolaApiResult();
     if (action === 'start-dola-template') { pushInternalNavigationSnapshot(); state.dolaFlowActive = true; state.dolaPreview = null; render(); }
     if (action === 'start-manual-template' || action === 'manual-from-template') { pushInternalNavigationSnapshot(); const t = state.publishTemplate || templates[0]; state.publishMode='manual'; state.publishDraft={type:t.type, category:t.category, title:'', description:'', channel:'dola'}; render(); }
     if (action === 'manual-empty') { pushInternalNavigationSnapshot(); resetPublishState({ keepMode:false }); state.publishMode='manual'; state.publishDraft={type:'Solicitante', category:'Solicitud local', title:'', description:'', channel:'dola'}; render(); }
@@ -978,6 +1137,7 @@ Devuélveme solo ese texto final. Nada antes y nada después.`;
     state.dolaText = '';
     state.publishDraft = null;
     state.pendingMedia = null;
+    resetDolaApiState();
     if (!opts.keepMode) state.publishMode = 'dola';
   }
 
@@ -1060,7 +1220,18 @@ Cuando tengas todo, genera solo un mensaje final listo para copiar y enviar al a
     const div = document.createElement('div'); div.id='modal-root'; div.className='modal-backdrop';
     if (modal.type==='dola-contact') {
       const p = getPosts().find(x=>x.id===modal.postId);
-      div.innerHTML = `<div class="modal"><h3>Puente con DOLA</h3><p class="muted">DOLA es externo. Copia el prompt, abre DOLA y prepara tu solicitud.</p><div class="prompt-box">${escapeHtml(modal.prompt)}</div><div class="modal-actions"><button class="btn primary" data-modal-copy>Copiar prompt</button><button class="btn green" data-modal-open>DOLA</button><button class="btn ghost" data-modal-save>Guardar solicitud local</button><button class="btn" data-modal-close>Cerrar</button></div></div>`;
+      div.innerHTML = `<div class="modal"><h3>DOLA para contactar</h3><p class="muted">Si la API está configurada, DOLA filtra aquí mismo. Si no, usa el modo externo.</p><div class="prompt-box">${escapeHtml(modal.prompt)}</div><div id="modalDolaApiResult" class="dola-chat-window mini"><div class="chat-bubble assistant">Puedo ayudarte a ordenar la solicitud antes de contactar al anunciante.</div></div><div class="modal-actions"><button class="btn primary" data-modal-api>Usar DOLA aquí</button><button class="btn ghost" data-modal-copy>Copiar prompt</button><button class="btn green" data-modal-open>DOLA externo</button><button class="btn ghost" data-modal-save>Guardar solicitud local</button><button class="btn" data-modal-close>Cerrar</button></div></div>`;
+      div.querySelector('[data-modal-api]').onclick=async()=>{
+        const box = div.querySelector('#modalDolaApiResult');
+        box.innerHTML = '<div class="chat-bubble assistant">DOLA está preparando preguntas para filtrar tu solicitud...</div>';
+        try {
+          const data = await sendToDola(buildDolaMessages(modal.prompt), { task:'filter_contact_request', version: VERSION, postId: p?.id, appUrl: CONNECTA_APP_URL });
+          const text = escapeHtml((data.text || data.message || data.content || '').trim() || 'DOLA respondió sin contenido.');
+          box.innerHTML = `<div class="chat-bubble assistant">${text}</div>`;
+        } catch(err) {
+          box.innerHTML = `<div class="notice slim">${escapeHtml(err.code === 'DOLA_API_NOT_CONFIGURED' ? 'La API de DOLA aún no está configurada. Usa el modo externo por ahora.' : (err.message || 'No se pudo conectar con DOLA.'))}</div>`;
+        }
+      };
       div.querySelector('[data-modal-copy]').onclick=()=>copyText(modal.prompt);
       div.querySelector('[data-modal-open]').onclick=()=>openExternal(DOLA_EXTERNAL_URL);
       div.querySelector('[data-modal-save]').onclick=()=>{ const req=getJSON(KEYS.requests,[]); req.unshift({id:uid('req'),postId:p?.id,title:p?.title,summary:'Solicitud preparada con DOLA',status:'Nueva',createdAt:new Date().toISOString()}); setJSON(KEYS.requests,req); toast('Solicitud guardada localmente'); closeModal(); };

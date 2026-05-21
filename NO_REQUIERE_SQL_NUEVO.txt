@@ -1,4 +1,4 @@
-No requiere SQL nuevo para la corrección v5.0.9.
+No requiere SQL nuevo para v5.1.0.
 
-Los cambios se limitan a prompts generados para DOLA, textos de interfaz y versionado/cache.
-El modo piloto continúa funcionando con localStorage.
+Esta versión prepara la integración segura de DOLA por API usando /api/dola y variables de entorno de Vercel.
+El almacenamiento de publicaciones, solicitudes y modo piloto sigue usando localStorage.

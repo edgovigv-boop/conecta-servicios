@@ -144,3 +144,13 @@ img,video{max-width:100%;display:block}
   .official-brand h1{font-size:1rem}
   .official-brand p{font-size:.76rem}
 }
+
+/* v5.1.0 - DOLA dentro de Conecta por API segura */
+.dola-api-card{border-color:#d7c8ff;background:linear-gradient(135deg,#fff,#f8f4ff)}
+.compact-title{margin-top:0;margin-bottom:8px;align-items:center}
+.dola-chat-window{display:grid;gap:10px;background:#f7f4ff;border:1px solid #e2d9ff;border-radius:22px;padding:12px;min-height:110px;max-height:360px;overflow:auto;margin:10px 0}
+.dola-chat-window.mini{max-height:260px;min-height:88px;background:#fbfaff}
+.chat-bubble{max-width:88%;padding:11px 13px;border-radius:18px;white-space:pre-line;overflow-wrap:anywhere;line-height:1.42;font-size:.92rem;box-shadow:0 8px 18px rgba(20,10,60,.05)}
+.chat-bubble.assistant{justify-self:start;background:#fff;color:#312a48;border:1px solid var(--line);border-bottom-left-radius:6px}
+.chat-bubble.user{justify-self:end;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border-bottom-right-radius:6px}
+.dola-api-card .btn[disabled]{opacity:.5;pointer-events:none}

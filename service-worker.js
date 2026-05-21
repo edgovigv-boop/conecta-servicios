@@ -1,10 +1,10 @@
-const CACHE_NAME = 'conecta-servicios-v5-0-9-prompts-dola-contexto-cerrado';
+const CACHE_NAME = 'conecta-servicios-v5-1-0-api-dola-segura';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=5.0.9-prompts-dola-contexto-cerrado',
-  '/app.js?v=5.0.9-prompts-dola-contexto-cerrado',
-  '/manifest.json?v=5.0.9-prompts-dola-contexto-cerrado',
+  '/styles.css?v=5.1.0-integracion-api-dola-segura',
+  '/app.js?v=5.1.0-integracion-api-dola-segura',
+  '/manifest.json?v=5.1.0-integracion-api-dola-segura',
   '/assets/dola-media/comida-01.jpg',
   '/assets/dola-media/mandados-01.jpg',
   '/assets/dola-media/agente-01.jpg',

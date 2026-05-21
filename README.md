@@ -148,3 +148,89 @@ No requiere SQL nuevo para esta corrección.
 ```text
 Cerrar contexto de prompts DOLA para Conecta Servicios v5.0.9
 ```
+
+---
+
+## v5.1.0 - Integración segura de API DOLA dentro de Conecta
+
+Versión: `v5.1.0-integracion-api-dola-segura`
+
+Esta versión prepara a Conecta Servicios para que DOLA pueda funcionar dentro de la app por API, sin redirigir al usuario a Dola.com cuando existan credenciales oficiales.
+
+### Qué incluye
+
+- Nuevo backend seguro: `api/dola.js`.
+- El frontend llama a `/api/dola`, nunca directamente a la API externa.
+- La API key no se expone en `app.js`, `index.html` ni en el navegador.
+- Nueva tarjeta “DOLA dentro de Conecta” en el flujo de publicación.
+- Botones rápidos:
+  - Generar con DOLA
+  - Más corto
+  - Más formal
+  - Más sencillo
+  - Usar en publicación
+  - Bot Atención
+  - Bot Contacto
+- El botón “Mensaje” en publicaciones con DOLA puede intentar filtrar dentro de Conecta.
+- Si la API no está configurada, se mantiene el modo externo actual:
+  - Copiar prompt
+  - Abrir DOLA externo
+  - Pegar resultado
+
+### Variables de entorno en Vercel
+
+Configura estas variables en Vercel cuando tengas credenciales oficiales:
+
+```env
+DOLA_API_URL=https://endpoint-oficial-de-dola
+DOLA_API_KEY=tu_api_key_oficial
+DOLA_MODEL=modelo_si_aplica
+```
+
+### Cómo configurarlo en Vercel
+
+1. Entra al proyecto en Vercel.
+2. Abre **Settings**.
+3. Entra a **Environment Variables**.
+4. Agrega:
+   - `DOLA_API_URL`
+   - `DOLA_API_KEY`
+   - `DOLA_MODEL` si aplica.
+5. Guarda los cambios.
+6. Haz un nuevo deployment para que Vercel lea las variables.
+
+### Qué pasa si falta la API
+
+Si no existen `DOLA_API_URL` o `DOLA_API_KEY`, `/api/dola` responde:
+
+```json
+{
+  "ok": false,
+  "error": "DOLA_API_NOT_CONFIGURED",
+  "message": "La API de DOLA aún no está configurada."
+}
+```
+
+En ese caso, Conecta muestra el modo alternativo externo y la app sigue funcionando.
+
+### Nota técnica
+
+`api/dola.js` usa un payload genérico tipo chat:
+
+```json
+{
+  "model": "default",
+  "messages": [],
+  "context": {},
+  "temperature": 0.45,
+  "stream": false
+}
+```
+
+Cuando DOLA entregue documentación oficial, ajusta el payload dentro de `api/dola.js` sin tocar el frontend.
+
+### Commit sugerido
+
+```text
+Preparar integración segura de API DOLA dentro de Conecta v5.1.0
+```
