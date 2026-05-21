@@ -72,3 +72,16 @@ En modo local se guardan fotos/videos pequeños en `localStorage`. Para videos r
 ```text
 Rediseñar Conecta Servicios con UX visual universal v5.2.0
 ```
+
+
+## v5.2.1 - Formato DOLA, teclado estable y Admin
+
+Cambios principales:
+- Se respeta el formato de texto pegado desde DOLA usando saltos de línea y espacios visibles.
+- Se evita re-renderizar la pantalla en cada tecla para que el teclado móvil no se cierre al escribir.
+- Se recupera panel Admin con acceso a todas las publicaciones.
+- Admin puede editar cualquier publicación, ocultarla o reactivarla.
+- Las publicaciones ocultas no aparecen en el feed normal, pero sí en Admin.
+- Videos y multimedia se mantienen sin cambios funcionales.
+
+No requiere SQL nuevo para modo piloto.

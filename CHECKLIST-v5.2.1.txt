@@ -1,0 +1,12 @@
+Conecta Servicios v5.2.1 - checklist
+
+1. Pegar texto de DOLA con saltos de línea y confirmar que se conserva en vista previa/feed.
+2. Editar texto en celular y confirmar que el teclado no se cierra al escribir.
+3. Crear publicación manual y confirmar que no se pierde foco al escribir.
+4. Activar Admin desde Perfil > Oficina.
+5. Entrar al panel Admin y ver todas las publicaciones.
+6. Editar una publicación ajena o de ejemplo.
+7. Ocultar una publicación y confirmar que desaparece del feed normal.
+8. Activar una publicación oculta y confirmar que vuelve al feed.
+9. Confirmar que videos siguen reproduciéndose.
+10. Confirmar que no se rompió Inicio, Buscar, Crear ni Perfil.

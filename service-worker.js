@@ -1,4 +1,4 @@
-const CACHE_NAME = 'conecta-servicios-v5-2-0-ux-visual-universal';
+const CACHE_NAME = 'conecta-servicios-v5-2-1-admin-formato-teclado';
 const ASSETS = [
   '/',
   '/index.html',

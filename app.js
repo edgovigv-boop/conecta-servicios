@@ -1,7 +1,7 @@
-/* Conecta Servicios v5.2.0 - UX visual universal */
+/* Conecta Servicios v5.2.1 - formato DOLA, teclado estable y admin */
 (() => {
   'use strict';
-  const VERSION = 'v5.2.0-ux-visual-universal';
+  const VERSION = 'v5.2.1-admin-formato-teclado';
   const DOLA_EXTERNAL_URL = 'https://dola.com';
   const CONNECTA_APP_URL = 'https://conecta-servicios.vercel.app/';
   const FREE_DAYS = 30;
@@ -64,6 +64,7 @@
   function canUnlimited(){return isAdmin()||isMember();}
   function posts(){let p=get(K.posts,null); if(!p){p=seed;set(K.posts,p)} return p;}
   function savePosts(p){try{set(K.posts,p)}catch(e){toast('Video pesado: usa Storage en producción'); set(K.posts,p.map(x=>({...x,mediaItems:[],mediaData:''})));}}
+  function visiblePosts(){return posts().filter(p=>p.status!=='eliminada' && (isAdmin() || p.status!=='oculta'));}
   function myPosts(){return posts().filter(p=>p.mine);}
   function daysLeft(d){if(!d)return null; return Math.max(0,Math.ceil((new Date(d)-new Date())/86400000));}
   function toast(msg){toastEl.textContent=msg;toastEl.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>toastEl.classList.remove('show'),2400);}
@@ -98,7 +99,7 @@
   function modal(m){return `<div class="modal-bg" data-close-modal><div class="modal" onclick="event.stopPropagation()"><div class="title-row"><h3>${m.title}</h3><button class="icon-btn" data-close-modal>✕</button></div>${m.body}</div></div>`;}
 
   function render(){
-    const routes = {'/':home,'/explorar':explore,'/publicar':publish,'/mis':myPage,'/perfil':profile,'/embajadores':()=>modulePage('embajadores'),'/agentes':()=>modulePage('agentes'),'/mandados':()=>modulePage('mandados'),'/aprendizaje':()=>modulePage('aprendizaje'),'/comision':()=>modulePage('comision'),'/notificaciones':notifications};
+    const routes = {'/':home,'/explorar':explore,'/publicar':publish,'/mis':myPage,'/perfil':profile,'/embajadores':()=>modulePage('embajadores'),'/agentes':()=>modulePage('agentes'),'/mandados':()=>modulePage('mandados'),'/aprendizaje':()=>modulePage('aprendizaje'),'/comision':()=>modulePage('comision'),'/notificaciones':notifications,'/admin':adminPage};
     app.innerHTML = (routes[state.route]||home)(); bind();
   }
   function home(){
@@ -109,16 +110,16 @@
       ${categoryGallery('Negocio')}${categoryGallery('Agente')}${categoryGallery('Solicitante')}
     `,{back:false});
   }
-  function categoryGallery(type){ const filtered=posts().filter(p=>p.type===type).slice(0,3); const t=types.find(x=>x.id===type); return `<section><div class="section-head"><h2>${t.icon} ${type}s</h2><button data-route="/explorar" data-filter="${type}">Ver</button></div><div class="gallery">${filtered.map(postCard).join('')}</div></section>`; }
-  function explore(){ const all=posts().filter(p=>p.status!=='eliminada'); const filtered=state.filter==='Todos'?all:all.filter(p=>p.type===state.filter); return layout(`
+  function categoryGallery(type){ const filtered=visiblePosts().filter(p=>p.type===type).slice(0,3); const t=types.find(x=>x.id===type); return `<section><div class="section-head"><h2>${t.icon} ${type}s</h2><button data-route="/explorar" data-filter="${type}">Ver</button></div><div class="gallery">${filtered.map(postCard).join('')}</div></section>`; }
+  function explore(){ const all=visiblePosts(); const filtered=state.filter==='Todos'?all:all.filter(p=>p.type===state.filter); return layout(`
     <div class="visual-tabs">${['Todos','Negocio','Agente','Solicitante'].map(f=>`<button class="tab-pill ${state.filter===f?'active':''}" data-set-filter="${f}">${f==='Todos'?'✨':types.find(t=>t.id===f)?.icon} ${f}</button>`).join('')}</div>
     <input class="input" data-search placeholder="🔎 Buscar" aria-label="Buscar">
     <div class="gallery" id="feed">${filtered.map(postCard).join('') || '<div class="empty">Sin publicaciones</div>'}</div>
   `,{title:'Buscar'}); }
   function postCard(p){ const cls=p.type==='Agente'?'agente':p.type==='Negocio'?'negocio':'solicitante'; return `<article class="post-card">
     <div class="post-media">${renderMedia(p)}</div>
-    <div class="post-body"><div class="meta"><span class="chip ${cls}">${iconForType(p.type)} ${p.type}</span><span class="chip gray">📍 ${esc(p.zone||'Zona')}</span></div>
-      <h3 class="post-title">${esc(p.title)}</h3><p class="post-desc">${esc(p.description)}</p></div>
+    <div class="post-body"><div class="meta"><span class="chip ${cls}">${iconForType(p.type)} ${p.type}</span><span class="chip gray">📍 ${esc(p.zone||'Zona')}</span>${p.status==='oculta'?'<span class="chip gray">🙈 Oculta</span>':''}</div>
+      <h3 class="post-title">${esc(p.title)}</h3><div class="post-desc">${esc(p.description)}</div></div>
     <div class="post-actions"><button class="action" data-react="${p.id}">❤️ ${p.reactions||0}</button><button class="action" data-share="${p.id}">↗ Compartir</button><button class="action" data-similar="${p.id}">➕ Igual</button><button class="action primary ${p.channel==='whatsapp'?'whatsapp':''}" data-message="${p.id}">💬 Mensaje</button></div>
   </article>`; }
   function renderMedia(p){ const items=p.mediaItems||[]; const first=items[0]; if(first?.data||first?.url){ const src=first.data||first.url; return first.kind==='video'?`<video controls playsinline src="${src}"></video>`:`<img src="${src}" alt="${esc(p.title)}">`; } const key=p.mediaKey || (p.type==='Negocio'?'negocio':p.type==='Agente'?'agente':'solicitante'); return `<img src="${mediaPath(key)}" alt="${esc(p.title)}" onerror="this.outerHTML='<div class=&quot;placeholder&quot;><div><span class=&quot;emoji&quot;>${iconForType(p.type)}</span>${esc(p.type)}</div></div>'">`; }
@@ -147,8 +148,24 @@
   function extractZone(text){ const m=String(text).match(/(?:Zona|Ubicación|📍)\s*:?\s*([^\n]+)/i); return m?m[1].trim().slice(0,60):''; }
 
   function myPage(){ const list=myPosts().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); return layout(`<div class="section-head"><h2>Mis publicaciones</h2><button data-route="/publicar">Crear</button></div>${list.length?`<div class="gallery">${list.map(postCard).join('')}</div>`:'<div class="empty">Sin publicaciones</div>'}<div class="card"><b>💎 $${PRICE}</b><p class="sub">Publica sin límites.</p><button class="btn primary full" data-activate-member>Activar</button></div>`,{title:'Mis'}); }
-  function profile(){ const p=get(K.profile,{name:'',zone:'',phone:''}); const prefs=get(K.prefs,{channel:'dola'}); return layout(`<div class="big-options"><button class="big-option" data-route="/mis"><span class="ico">📌</span><div><b>Mis</b><small>Publicaciones</small></div></button><button class="big-option" data-install><span class="ico">➕</span><div><b>Instalar</b><small>PWA</small></div></button><button class="big-option" data-enable-notes><span class="ico">🔔</span><div><b>Avisos</b><small>Activar</small></div></button><button class="big-option" data-admin><span class="ico">🛠️</span><div><b>Oficina</b><small>Admin</small></div></button></div><div class="card"><label class="label">Nombre</label><input class="input" data-profile="name" value="${esc(p.name)}"><label class="label">Zona</label><input class="input" data-profile="zone" value="${esc(p.zone)}"><label class="label">Canal</label><select class="select" data-pref="channel"><option value="dola" ${prefs.channel==='dola'?'selected':''}>DOLA</option><option value="whatsapp" ${prefs.channel==='whatsapp'?'selected':''}>WhatsApp</option></select><div class="btn-row"><button class="btn green" data-save-profile>Guardar</button><button class="btn red" data-clear-local>Limpiar</button></div></div><div class="version">${VERSION}</div>`,{title:'Perfil'}); }
+  function profile(){ const p=get(K.profile,{name:'',zone:'',phone:''}); const prefs=get(K.prefs,{channel:'dola'}); return layout(`<div class="big-options"><button class="big-option" data-route="/mis"><span class="ico">📌</span><div><b>Mis</b><small>Publicaciones</small></div></button><button class="big-option" data-install><span class="ico">➕</span><div><b>Instalar</b><small>PWA</small></div></button><button class="big-option" data-enable-notes><span class="ico">🔔</span><div><b>Avisos</b><small>Activar</small></div></button><button class="big-option" ${isAdmin()?'data-route="/admin"':'data-admin'}><span class="ico">🛠️</span><div><b>Oficina</b><small>${isAdmin()?'Panel':'Admin'}</small></div></button></div><div class="card"><label class="label">Nombre</label><input class="input" data-profile="name" value="${esc(p.name)}"><label class="label">Zona</label><input class="input" data-profile="zone" value="${esc(p.zone)}"><label class="label">Canal</label><select class="select" data-pref="channel"><option value="dola" ${prefs.channel==='dola'?'selected':''}>DOLA</option><option value="whatsapp" ${prefs.channel==='whatsapp'?'selected':''}>WhatsApp</option></select><div class="btn-row"><button class="btn green" data-save-profile>Guardar</button><button class="btn red" data-clear-local>Limpiar</button></div></div><div class="version">${VERSION}</div>`,{title:'Perfil'}); }
   function notifications(){ const n=get(K.notes,[]); return layout(`<div class="card"><button class="btn primary full" data-enable-notes>Activar 🔔</button></div>${n.length?n.map(x=>`<div class="card"><b>${esc(x.title)}</b><p class="sub">${esc(x.msg)}</p></div>`).join(''):'<div class="empty">Sin avisos</div>'}`,{title:'Avisos'}); }
+
+  function adminPage(){
+    if(!isAdmin()) return layout(`<div class="card center"><div style="font-size:4rem">🛠️</div><h2>Admin</h2><p class="sub">Activa acceso.</p><button class="btn primary full" data-admin>Entrar</button></div>`,{title:'Admin'});
+    const all=posts().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+    const stats={total:all.length, activa:all.filter(p=>(p.status||'activa')==='activa').length, oculta:all.filter(p=>p.status==='oculta').length};
+    return layout(`<div class="card"><div class="title-row"><div><h2 class="page-title">🛠️ Admin</h2><p class="sub">Todas las publicaciones</p></div><span class="admin-badge">${stats.total}</span></div><div class="quick-grid"><div class="stat-mini">✅<b>${stats.activa}</b><small>Activas</small></div><div class="stat-mini">🙈<b>${stats.oculta}</b><small>Ocultas</small></div></div></div><div class="gallery">${all.map(adminCard).join('')||'<div class="empty">Sin publicaciones</div>'}</div><div class="card"><button class="btn red full" data-admin-exit>Salir de admin</button></div>`,{title:'Admin'});
+  }
+  function adminCard(p){
+    const visible=(p.status||'activa')==='activa';
+    return `<article class="post-card admin-post ${p.status==='oculta'?'is-hidden':''}">
+      <div class="post-body"><div class="meta"><span class="chip gray">${visible?'✅ Activa':'🙈 Oculta'}</span><span class="chip gray">${p.mine?'Mía':'Usuario'}</span><span class="chip gray">${esc(p.type||'Tipo')}</span></div>
+      <h3 class="post-title">${esc(p.title||'Sin título')}</h3><div class="post-desc compact">${esc(p.description||'')}</div></div>
+      <div class="post-actions admin-actions"><button class="action primary" data-admin-edit="${p.id}">✏️ Editar</button><button class="action ${visible?'red':'primary'}" data-admin-toggle="${p.id}">${visible?'🙈 Ocultar':'✅ Activar'}</button><button class="action" data-message="${p.id}">💬 Ver</button></div>
+    </article>`;
+  }
+
   function modulePage(id){ const data={embajadores:['🏆','Embajadores',['Copiar enlace','Mensaje','Referido','Membresía']],agentes:['🚀','Agentes',[ 'Publicar','Solicitudes','DOLA','Tips']],mandados:['🛡️','Mandados',[ 'Solicitar','Postularme','Requisitos','FAQ']],aprendizaje:['🎓','Aprende',[ 'Recursos','DOLA','Plan','Tips']],comision:['💼','Comisión',[ 'Campaña','DOLA','Compartir','Clientes']]}[id]||['✨','Módulo',['Crear','DOLA']]; return layout(`<div class="card center"><div style="font-size:4rem">${data[0]}</div><h2>${data[1]}</h2></div><div class="module-grid">${data[2].map((a,i)=>`<button class="module-card" data-module-action="${id}:${a}"><span>${['➕','✨','📋','↗'][i%4]}</span><b>${a}</b><small>Ir</small></button>`).join('')}</div>`,{title:data[1]}); }
 
   async function callDola(task,instruction=''){
@@ -179,7 +196,10 @@
     document.querySelectorAll('[data-adjust]').forEach(b=>b.onclick=()=>callDola('publication',b.dataset.adjust));
     document.querySelectorAll('[data-use-dola]').forEach(b=>b.onclick=()=>{const text=(document.querySelector('[data-dola-text]')?.value||state.chatResult).trim(); if(!text)return toast('Falta texto'); state.draft=buildDraftFromText(text); render();});
     document.querySelectorAll('[data-copy-final]').forEach(b=>b.onclick=()=>copy(document.querySelector('[data-dola-text]')?.value||''));
-    document.querySelectorAll('[data-field]').forEach(el=>el.oninput=e=>{ if(!state.draft)state.draft={type:state.selectedTemplate.type,category:state.selectedTemplate.cat,channel:'dola',mediaItems:[]}; state.draft[e.target.dataset.field]=e.target.value; renderDebounced(); });
+    document.querySelectorAll('[data-field]').forEach(el=>{
+      el.oninput=e=>{ if(!state.draft)state.draft={type:state.selectedTemplate.type,category:state.selectedTemplate.cat,channel:'dola',mediaItems:[]}; state.draft[e.target.dataset.field]=e.target.value; };
+      if(el.tagName==='SELECT') el.onchange=e=>{ if(!state.draft)state.draft={type:state.selectedTemplate.type,category:state.selectedTemplate.cat,channel:'dola',mediaItems:[]}; state.draft[e.target.dataset.field]=e.target.value; render(); };
+    });
     document.querySelectorAll('[data-preview-manual]').forEach(b=>b.onclick=()=>{collectManual(); render();});
     document.querySelectorAll('[data-save-manual],[data-publish-draft]').forEach(b=>b.onclick=publishDraft);
     document.querySelectorAll('[data-media]').forEach(i=>i.onchange=handleFiles);
@@ -190,7 +210,10 @@
     document.querySelectorAll('[data-similar]').forEach(b=>b.onclick=()=>{const p=posts().find(x=>x.id===b.dataset.similar); state.selectedTemplate=templates.find(t=>t.type===p.type)||templates[0]; state.createChoice='manual'; state.draft={...p,id:uid('p'),mine:true,title:`${p.title}`,createdAt:now(),mediaItems:[]}; nav('/publicar');});
     document.querySelectorAll('[data-activate-member]').forEach(b=>b.onclick=()=>{set(K.member,{active:true,startedAt:now(),expiresAt:now(365)});toast('Membresía activa');render();});
     document.querySelectorAll('[data-enable-notes]').forEach(b=>b.onclick=()=>{Notification?.requestPermission?.();addNote('Avisos','Activados');toast('Avisos activos');render();});
-    document.querySelectorAll('[data-admin]').forEach(b=>b.onclick=()=>{const pin=prompt('PIN'); if(pin===ADMIN_PIN){localStorage.setItem(K.admin,'true');toast('Admin activo');} else toast('PIN incorrecto'); render();});
+    document.querySelectorAll('[data-admin]').forEach(b=>b.onclick=()=>{const pin=prompt('PIN'); if(pin===ADMIN_PIN){localStorage.setItem(K.admin,'true');toast('Admin activo'); nav('/admin');} else toast('PIN incorrecto');});
+    document.querySelectorAll('[data-admin-exit]').forEach(b=>b.onclick=()=>{localStorage.removeItem(K.admin);toast('Admin cerrado');nav('/perfil',{replace:true});});
+    document.querySelectorAll('[data-admin-toggle]').forEach(b=>b.onclick=()=>{const ps=posts(); const p=ps.find(x=>x.id===b.dataset.adminToggle); if(p){p.status=(p.status==='oculta')?'activa':'oculta'; savePosts(ps); toast(p.status==='oculta'?'Publicación oculta':'Publicación activa'); render();}});
+    document.querySelectorAll('[data-admin-edit]').forEach(b=>b.onclick=()=>{const p=posts().find(x=>x.id===b.dataset.adminEdit); if(p){state.selectedTemplate=templates.find(t=>t.type===p.type)||templates[0]; state.createChoice='manual'; state.draft={...p}; state.media=[...(p.mediaItems||[])]; nav('/publicar');}});
     document.querySelectorAll('[data-save-profile]').forEach(b=>b.onclick=saveProfile);
     document.querySelectorAll('[data-clear-local]').forEach(b=>b.onclick=()=>{if(confirm('¿Borrar datos locales?')){Object.values(K).forEach(k=>localStorage.removeItem(k));toast('Listo');render();}});
     document.querySelectorAll('[data-close-modal]').forEach(b=>b.onclick=()=>{state.modal=null;render();});
@@ -199,8 +222,8 @@
     document.querySelectorAll('[data-copy-contact]').forEach(b=>{b.onclick=()=>{const p=posts().find(x=>x.id===b.dataset.copyContact);copy(contactPrompt(p));};});
   }
   let rd; function renderDebounced(){clearTimeout(rd); rd=setTimeout(render,450);} function resetTransient(){ if(state.route!=='/publicar'){state.selectedTemplate=null; state.createChoice=null;} }
-  function collectManual(){ const d=state.draft||{type:state.selectedTemplate.type,category:state.selectedTemplate.cat,channel:'dola'}; document.querySelectorAll('[data-field]').forEach(el=>d[el.dataset.field]=el.value); d.mediaKey=state.selectedTemplate.media; state.draft=d; }
-  function publishDraft(){ collectManual(); const d=state.draft; if(!d?.title && d?.description) d.title=d.description.split('\n').find(Boolean)?.slice(0,70)||'Publicación'; if(!d?.title)return toast('Falta título'); if(!canUnlimited() && myPosts().filter(p=>p.freeTrial && (!p.expiresAt || new Date(p.expiresAt)>new Date())).length>=1 && !d.id) return toast('Activa membresía'); const post={...d,id:d.id||uid('p'),mine:true,status:'activa',createdAt:now(),expiresAt:canUnlimited()?null:now(FREE_DAYS),freeTrial:!canUnlimited(),mediaItems:state.media,mediaKey:d.mediaKey||state.selectedTemplate?.media||'solicitante',reactions:0}; savePosts([post,...posts().filter(p=>p.id!==post.id)]); addNote('Publicada',post.title); resetCreate(); state.route='/mis'; state.stack=[]; toast('Publicación creada'); render(); }
+  function collectManual(){ const d=state.draft||{type:state.selectedTemplate?.type||'Solicitante',category:state.selectedTemplate?.cat||'General',channel:'dola'}; document.querySelectorAll('[data-field]').forEach(el=>d[el.dataset.field]=el.value); d.mediaKey=d.mediaKey||state.selectedTemplate?.media||'solicitante'; state.draft=d; }
+  function publishDraft(){ collectManual(); const d=state.draft; if(!d?.title && d?.description) d.title=d.description.split('\n').find(Boolean)?.slice(0,70)||'Publicación'; if(!d?.title)return toast('Falta título'); if(!canUnlimited() && myPosts().filter(p=>p.freeTrial && (!p.expiresAt || new Date(p.expiresAt)>new Date())).length>=1 && !d.id) return toast('Activa membresía'); const isExisting=!!d.id; const post={...d,id:d.id||uid('p'),mine:(d.mine!==undefined?d.mine:true),status:d.status||'activa',createdAt:d.createdAt||now(),expiresAt:(isExisting?d.expiresAt:(canUnlimited()?null:now(FREE_DAYS))),freeTrial:(isExisting?d.freeTrial:!canUnlimited()),mediaItems:state.media.length?state.media:(d.mediaItems||[]),mediaKey:d.mediaKey||state.selectedTemplate?.media||'solicitante',reactions:d.reactions||0}; savePosts([post,...posts().filter(p=>p.id!==post.id)]); addNote('Publicada',post.title); resetCreate(); state.route='/mis'; state.stack=[]; toast('Publicación creada'); render(); }
   function saveProfile(){ const p={}; document.querySelectorAll('[data-profile]').forEach(el=>p[el.dataset.profile]=el.value); const prefs=get(K.prefs,{}); document.querySelectorAll('[data-pref]').forEach(el=>prefs[el.dataset.pref]=el.value); set(K.profile,p); set(K.prefs,prefs); toast('Guardado'); }
   function handleFiles(e){ const files=[...e.target.files].slice(0,MAX_MEDIA-state.media.length); files.forEach(file=>{const kind=file.type.startsWith('video')?'video':'image'; if(file.size>MAX_LOCAL_MB*1024*1024){const url=URL.createObjectURL(file); state.media.push({kind,data:url,name:file.name,transient:true});toast('Archivo pesado: vista temporal');render();return;} const r=new FileReader(); r.onload=()=>{state.media.push({kind,data:r.result,name:file.name});render();}; r.readAsDataURL(file);}); e.target.value=''; }
   function moduleAction(raw){ const [mod,act]=raw.split(':'); if(['Publicar','Solicitar','Campaña'].includes(act)){ state.selectedTemplate=templates.find(t=>mod==='agentes'?t.id==='agente':mod==='mandados'?t.id==='mensajero':t.id==='negocio'); state.createChoice=null; nav('/publicar'); return; } if(act==='DOLA'||act==='Plan'||act==='Mensaje'){ state.selectedTemplate=templates.find(t=>t.id==='agente')||templates[0]; state.createChoice='dola'; nav('/publicar'); return; } if(act==='Copiar enlace'||act==='Compartir'){ copy(`${CONNECTA_APP_URL}?ref=embajador`); return;} if(act==='Referido'||act==='Postularme'){ const arr=get(mod==='mandados'?K.verified:K.referrals,[]); arr.unshift({id:uid('r'),createdAt:now(),mod}); set(mod==='mandados'?K.verified:K.referrals,arr); toast('Guardado'); return;} toast('Listo'); }
