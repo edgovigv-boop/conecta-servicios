@@ -1,4 +1,3 @@
-Esta versión no requiere SQL nuevo para probarse.
+Esta corrección no requiere SQL nuevo.
 
-Funciona con localStorage y mantiene api/dola.js preparado para variables de entorno en Vercel.
-Para producción real multiusuario y videos grandes se recomienda conectar Supabase y Supabase Storage.
+Los videos se guardan en modo piloto usando IndexedDB/localStorage del navegador. Para producción multiusuario real y videos persistentes entre dispositivos, usar Supabase Storage.

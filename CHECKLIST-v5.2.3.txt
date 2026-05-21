@@ -1,0 +1,21 @@
+CHECKLIST v5.2.3 - DOLA guía visual
+
+1. Entrar a Crear.
+2. Elegir plantilla.
+3. Elegir DOLA.
+4. Confirmar que no aparece texto técnico de API.
+5. Confirmar que aparece: PRÓXIMAMENTE: Copia el prompt y abre DOLA.
+6. Confirmar que el recuadro del prompt parpadea.
+7. Tocar/copiar prompt.
+8. Confirmar que el botón ABRIR DOLA empieza a parpadear.
+9. Confirmar que no aparecen botones Corto ni Formal.
+10. Abrir DOLA externo.
+11. Confirmar que el prompt incluye ayuda si el usuario responde: No sé / Ayúdame / No tengo idea.
+12. Pegar texto final de DOLA.
+13. Confirmar que solo aparece botón: EDITAR Y TERMINAR.
+14. Tocar EDITAR Y TERMINAR.
+15. Confirmar que lleva a la pantalla final y se posiciona en Fotos / videos.
+16. Subir video.
+17. Publicar.
+18. Confirmar que el video se conserva y reproduce en la publicación.
+19. Confirmar que DOLA, WhatsApp, borrar, compartir y admin siguen funcionando.

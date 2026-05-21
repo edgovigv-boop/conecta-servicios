@@ -1,10 +1,10 @@
-const CACHE_NAME = 'conecta-servicios-v5-2-1-admin-formato-teclado';
+const CACHE_NAME = 'conecta-servicios-v5-2-3-dola-guia-visual';
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=5.2.0-ux-visual-universal',
-  '/app.js?v=5.2.0-ux-visual-universal',
-  '/manifest.json?v=5.2.0-ux-visual-universal',
+  '/styles.css?v=5.2.3-dola-guia-visual-editar-final',
+  '/app.js?v=5.2.3-dola-guia-visual-editar-final',
+  '/manifest.json?v=5.2.3-dola-guia-visual-editar-final',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'

@@ -1,0 +1,20 @@
+Conecta Servicios v5.2.2 — Checklist
+
+1. Subir un video en publicación manual.
+2. Publicar y confirmar que el video aparece en Mis publicaciones.
+3. Confirmar que el video se reproduce dentro de la tarjeta.
+4. Subir un video desde flujo DOLA y publicar.
+5. Confirmar que el texto de DOLA conserva saltos de línea.
+6. Editar texto en celular y confirmar que el teclado no se cierra al escribir.
+7. Crear una publicación propia y borrarla con el botón Borrar.
+8. Confirmar que un usuario no puede borrar publicaciones ajenas.
+9. Entrar como Admin y borrar cualquier publicación.
+10. Entrar como Admin y ocultar/activar publicaciones.
+11. Tocar Compartir y confirmar que abre el panel nativo del celular.
+12. En navegador sin share nativo, confirmar que copia el texto/enlace.
+13. Tocar Crear igual y confirmar que la pantalla inicia arriba.
+14. Confirmar que ya no aparecen botones extra Vista/Publicar en medio del formulario.
+15. Confirmar que los videos que funcionaban siguen con controles.
+
+No requiere SQL nuevo.
+No desplegar automáticamente.

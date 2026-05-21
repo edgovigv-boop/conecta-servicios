@@ -1,14 +1,14 @@
-/* Conecta Servicios v5.2.1 - formato DOLA, teclado estable y admin */
+/* Conecta Servicios v5.2.3 - DOLA guía visual y edición final */
 (() => {
   'use strict';
-  const VERSION = 'v5.2.1-admin-formato-teclado';
+  const VERSION = 'v5.2.3-dola-guia-visual-editar-final';
   const DOLA_EXTERNAL_URL = 'https://dola.com';
   const CONNECTA_APP_URL = 'https://conecta-servicios.vercel.app/';
   const FREE_DAYS = 30;
   const PRICE = 98;
   const ADMIN_PIN = '3145';
   const MAX_MEDIA = 10;
-  const MAX_LOCAL_MB = 4;
+  const MAX_LOCAL_MB = 3; // fotos pequeñas pueden ir como dataURL; videos usan IndexedDB/preview para evitar pérdida
   const K = {
     posts:'cs_v52_posts', profile:'cs_v52_profile', prefs:'cs_v52_prefs', member:'cs_v52_member', admin:'cs_v52_admin',
     notes:'cs_v52_notes', requests:'cs_v52_requests', referrals:'cs_v52_referrals', verified:'cs_v52_verified'
@@ -16,7 +16,10 @@
   const app = document.getElementById('app');
   const toastEl = document.getElementById('toast');
   let deferredInstallPrompt = null;
-  const state = { route:'/', filter:'Todos', stack:[], modal:null, selectedTemplate:null, selectedType:null, createChoice:null, draft:null, media:[], chatTask:null, chatMessages:[], chatText:'', chatResult:'', apiStatus:'idle', apiError:'' };
+  const mediaObjectUrls = new Map();
+  const mediaLoading = new Set();
+  let mediaDbPromise = null;
+  const state = { route:'/', filter:'Todos', stack:[], modal:null, selectedTemplate:null, selectedType:null, createChoice:null, draft:null, media:[], chatTask:null, chatMessages:[], chatText:'', chatResult:'', apiStatus:'idle', apiError:'', dolaPromptCopied:false };
 
   const types = [
     {id:'Negocio', icon:'🏪', color:'negocio', bg:'negocio-bg', title:'Negocio', short:'Vendo'},
@@ -68,15 +71,63 @@
   function myPosts(){return posts().filter(p=>p.mine);}
   function daysLeft(d){if(!d)return null; return Math.max(0,Math.ceil((new Date(d)-new Date())/86400000));}
   function toast(msg){toastEl.textContent=msg;toastEl.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>toastEl.classList.remove('show'),2400);}
-  function nav(route, opts={}){ if(!opts.replace && state.route!==route) state.stack.push({route:state.route, filter:state.filter, template:state.selectedTemplate, choice:state.createChoice}); state.route=route; if(opts.filter)state.filter=opts.filter; render(); }
-  function back(){ const prev=state.stack.pop(); if(prev){state.route=prev.route; state.filter=prev.filter||'Todos'; state.selectedTemplate=prev.template||null; state.createChoice=prev.choice||null;} else {state.route='/';} render(); }
-  function resetCreate(){ state.selectedTemplate=null; state.selectedType=null; state.createChoice=null; state.draft=null; state.media=[]; state.chatTask=null; state.chatMessages=[]; state.chatText=''; state.chatResult=''; state.apiStatus='idle'; state.apiError=''; }
+  function nav(route, opts={}){ if(!opts.replace && state.route!==route) state.stack.push({route:state.route, filter:state.filter, template:state.selectedTemplate, choice:state.createChoice}); state.route=route; if(opts.filter)state.filter=opts.filter; render(); if(!opts.keepScroll) setTimeout(()=>window.scrollTo({top:0,behavior:'smooth'}),0); }
+  function back(){ const prev=state.stack.pop(); if(prev){state.route=prev.route; state.filter=prev.filter||'Todos'; state.selectedTemplate=prev.template||null; state.createChoice=prev.choice||null;} else {state.route='/';} render(); setTimeout(()=>window.scrollTo({top:0,behavior:'smooth'}),0); }
+  function resetCreate(){ state.selectedTemplate=null; state.selectedType=null; state.createChoice=null; state.draft=null; state.media=[]; state.chatTask=null; state.chatMessages=[]; state.chatText=''; state.chatResult=''; state.apiStatus='idle'; state.apiError=''; state.dolaPromptCopied=false; }
   function installApp(){ if(deferredInstallPrompt){deferredInstallPrompt.prompt(); deferredInstallPrompt.userChoice.finally(()=>deferredInstallPrompt=null); } else toast('Menú del navegador → Agregar a inicio'); }
   function addNote(title,msg){ const n=get(K.notes,[]); n.unshift({id:uid('n'),title,msg,createdAt:now()}); set(K.notes,n.slice(0,50)); }
   function unread(){ return get(K.notes,[]).length; }
   function copy(text){ return navigator.clipboard?.writeText(text).then(()=>toast('Copiado')).catch(()=>toast('No se pudo copiar')); }
   function officialLogo(){return 'assets/icons/conecta-logo-oficial.png';}
   function mediaPath(key){ const map={comida:'comida-01.jpg',mandados:'mandados-01.jpg',agente:'agente-01.jpg',negocio:'negocio-01.jpg',solicitante:'solicitante-01.jpg',embajadores:'embajadores-01.jpg',aprendizaje:'aprendizaje-01.jpg',verificados:'mandados-verificados-01.jpg',comision:'comision-01.jpg'}; return `assets/dola-media/${map[key]||'solicitante-01.jpg'}`; }
+  function openMediaDb(){
+    if(mediaDbPromise) return mediaDbPromise;
+    mediaDbPromise = new Promise((resolve,reject)=>{
+      if(!('indexedDB' in window)) return reject(new Error('indexedDB no disponible'));
+      const req = indexedDB.open('conecta_media_v1',1);
+      req.onupgradeneeded = () => req.result.createObjectStore('files');
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    return mediaDbPromise;
+  }
+  async function saveMediaBlob(id, file){
+    const db = await openMediaDb();
+    return new Promise((resolve,reject)=>{
+      const tx=db.transaction('files','readwrite');
+      tx.objectStore('files').put(file,id);
+      tx.oncomplete=resolve; tx.onerror=()=>reject(tx.error);
+    });
+  }
+  async function loadMediaBlob(id){
+    const db = await openMediaDb();
+    return new Promise((resolve,reject)=>{
+      const tx=db.transaction('files','readonly');
+      const req=tx.objectStore('files').get(id);
+      req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error);
+    });
+  }
+  function resolveMediaSrc(item){
+    if(!item) return '';
+    if(item.data && !item.ref) return item.data;
+    if(item.url) return item.url;
+    if(item.ref){
+      if(mediaObjectUrls.has(item.ref)) return mediaObjectUrls.get(item.ref);
+      if(item.preview && !item.persisted) return item.preview;
+      if(!mediaLoading.has(item.ref)){
+        mediaLoading.add(item.ref);
+        loadMediaBlob(item.ref).then(blob=>{
+          if(blob){
+            const old=mediaObjectUrls.get(item.ref);
+            if(old) URL.revokeObjectURL(old);
+            mediaObjectUrls.set(item.ref, URL.createObjectURL(blob));
+            render();
+          }
+        }).catch(()=>{}).finally(()=>mediaLoading.delete(item.ref));
+      }
+    }
+    return '';
+  }
 
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;});
   window.addEventListener('popstate',e=>{ if(state.stack.length) back(); });
@@ -120,9 +171,21 @@
     <div class="post-media">${renderMedia(p)}</div>
     <div class="post-body"><div class="meta"><span class="chip ${cls}">${iconForType(p.type)} ${p.type}</span><span class="chip gray">📍 ${esc(p.zone||'Zona')}</span>${p.status==='oculta'?'<span class="chip gray">🙈 Oculta</span>':''}</div>
       <h3 class="post-title">${esc(p.title)}</h3><div class="post-desc">${esc(p.description)}</div></div>
-    <div class="post-actions"><button class="action" data-react="${p.id}">❤️ ${p.reactions||0}</button><button class="action" data-share="${p.id}">↗ Compartir</button><button class="action" data-similar="${p.id}">➕ Igual</button><button class="action primary ${p.channel==='whatsapp'?'whatsapp':''}" data-message="${p.id}">💬 Mensaje</button></div>
+    <div class="post-actions ${p.mine||isAdmin()?'has-delete':''}"><button class="action" data-react="${p.id}">❤️ ${p.reactions||0}</button><button class="action" data-share="${p.id}">↗ Compartir</button><button class="action" data-similar="${p.id}">➕ Igual</button><button class="action primary ${p.channel==='whatsapp'?'whatsapp':''}" data-message="${p.id}">💬 Mensaje</button>${p.mine||isAdmin()?`<button class="action red" data-delete-post="${p.id}">🗑️ Borrar</button>`:''}</div>
   </article>`; }
-  function renderMedia(p){ const items=p.mediaItems||[]; const first=items[0]; if(first?.data||first?.url){ const src=first.data||first.url; return first.kind==='video'?`<video controls playsinline src="${src}"></video>`:`<img src="${src}" alt="${esc(p.title)}">`; } const key=p.mediaKey || (p.type==='Negocio'?'negocio':p.type==='Agente'?'agente':'solicitante'); return `<img src="${mediaPath(key)}" alt="${esc(p.title)}" onerror="this.outerHTML='<div class=&quot;placeholder&quot;><div><span class=&quot;emoji&quot;>${iconForType(p.type)}</span>${esc(p.type)}</div></div>'">`; }
+  function renderMedia(p){
+    const items=p.mediaItems||[];
+    const first=items[0];
+    const src=resolveMediaSrc(first);
+    if(src){
+      return first.kind==='video'
+        ? `<video controls playsinline preload="metadata" src="${src}"></video>`
+        : `<img src="${src}" alt="${esc(p.title)}">`;
+    }
+    if(first?.ref) return `<div class="placeholder"><div><span class="emoji">🎥</span>Video listo</div></div>`;
+    const key=p.mediaKey || (p.type==='Negocio'?'negocio':p.type==='Agente'?'agente':'solicitante');
+    return `<img src="${mediaPath(key)}" alt="${esc(p.title)}" onerror="this.outerHTML='<div class=&quot;placeholder&quot;><div><span class=&quot;emoji&quot;>${iconForType(p.type)}</span>${esc(p.type)}</div></div>'">`;
+  }
   function iconForType(type){ return type==='Negocio'?'🏪':type==='Agente'?'🛵':'🧡'; }
 
   function publish(){
@@ -130,20 +193,71 @@
     if(!state.createChoice) return layout(`<div class="card center"><div class="template-badge"><span style="font-size:3rem">${state.selectedTemplate.icon}</span><h2>${state.selectedTemplate.title}</h2></div><div class="circle-grid"><button class="circle dola" data-create-choice="dola"><div><div class="ico">✨</div><b>DOLA</b><br><small>Me ayuda</small></div></button><button class="circle manual" data-create-choice="manual"><div><div class="ico">✍️</div><b>Manual</b><br><small>Yo escribo</small></div></button></div></div>`,{title:'Crear'});
     return state.createChoice==='manual'?manualCreate():dolaCreate();
   }
-  function basePrompt(t){ return `ROL:\nEres DOLA, asistente especializado dentro de Conecta Servicios.\n\nCONTEXTO:\nVengo de Conecta Servicios: ${CONNECTA_APP_URL}\nElegí: ${t.title}\nTipo: ${t.type}\nCategoría: ${t.cat}\n\nOBJETIVO:\nAyúdame a crear una publicación clara, visual y lista para pegar en Conecta Servicios.\n\nREGLAS:\nHazme UNA sola pregunta a la vez.\nNo uses tablas. No uses JSON.\nNo repitas este prompt.\nNo incluyas toda la conversación.\nNo recomiendes herramientas externas.\nMantente en Conecta Servicios.\n\nSALIDA FINAL:\nEntrega SOLO la publicación final, con emojis moderados y formato limpio:\n\n[TÍTULO CORTO]\n\n📍 Zona:\n...\n\n📝 Descripción:\n...\n\n✅ Detalles:\n...\n\n💬 Contacto:\nResponder por Conecta Servicios.`; }
-  function dolaCreate(){ const t=state.selectedTemplate; return layout(`
-    <div class="card"><div class="title-row"><div><h2 class="page-title">✨ DOLA</h2><p class="sub">${t.title}</p></div><button class="icon-btn" data-copy-prompt="${t.id}">📋</button></div>
-      <div class="chat">${state.chatMessages.length?state.chatMessages.map(m=>`<div class="bubble ${m.role==='user'?'user':'assistant'}">${esc(m.content)}</div>`).join(''):`<div class="bubble assistant">Toca ✨ y creo tu texto.</div>`}</div>
-      <div class="quick-grid"><button class="btn primary" data-api-create>✨ Crear</button><button class="btn" data-open-external>↗ DOLA</button><button class="btn" data-adjust="Hazlo más corto">Corto</button><button class="btn" data-adjust="Hazlo más claro y formal">Formal</button></div>
-      ${state.apiError?`<div class="notice">${esc(state.apiError)}</div>`:''}
+  function basePrompt(t){ return `ROL:
+Eres DOLA, asistente amable, paciente y especializado dentro de Conecta Servicios.
+
+CONTEXTO:
+Vengo de Conecta Servicios: ${CONNECTA_APP_URL}
+Elegí: ${t.title}
+Tipo: ${t.type}
+Categoría: ${t.cat}
+Conecta Servicios ayuda a publicar necesidades, agentes y negocios locales.
+
+OBJETIVO:
+Ayúdame a crear una publicación clara, visual y lista para pegar en Conecta Servicios.
+
+REGLAS OBLIGATORIAS:
+Hazme UNA sola pregunta a la vez.
+Espera mi respuesta antes de continuar.
+No uses tablas. No uses JSON.
+No repitas este prompt.
+No incluyas toda la conversación.
+No recomiendes herramientas externas.
+Mantente en Conecta Servicios.
+
+AYUDA INTELIGENTE:
+Si te respondo con "No sé", "Ayúdame", "No tengo idea" o no sé qué escribir, NO me dejes solo. Dime: "Claro que sí, te ayudo con gusto 🤝". Luego dame ejemplos, opciones claras y sugerencias para que yo solo elija.
+
+SALIDA FINAL:
+Cuando generes el resultado final, entrégalo SIEMPRE dentro de un RECUADRO DE TEXTO y agrega debajo un BOTÓN que diga 📋 COPIAR, para que solo tenga que presionar un botón.
+Entrega SOLO la publicación final, con emojis moderados y formato limpio:
+
+[TÍTULO CORTO]
+
+📍 Zona:
+...
+
+📝 Descripción:
+...
+
+✅ Detalles:
+...
+
+💬 Contacto:
+Responder por Conecta Servicios.
+
+No agregues explicaciones fuera de la publicación final.`; }
+  function dolaCreate(){
+    const t=state.selectedTemplate;
+    const prompt=basePrompt(t);
+    const promptBlink=state.dolaPromptCopied?'':' blink-soft';
+    const openBlink=state.dolaPromptCopied?' blink-soft':'';
+    return layout(`
+    <div class="card"><div class="title-row"><div><h2 class="page-title">✨ DOLA</h2><p class="sub">${t.title}</p></div></div>
+      <div class="notice friendly">PRÓXIMAMENTE: Copia el prompt y abre DOLA</div>
+      <div class="prompt-card${promptBlink}" data-prompt-card><div class="copy-corner"><button class="icon-btn" data-copy-prompt="${t.id}">📋</button></div><pre>${esc(prompt)}</pre></div>
+      <button class="btn primary full${openBlink}" data-open-external>↗ ABRIR DOLA</button>
+      <p class="sub center">DOLA te hará una pregunta a la vez.</p>
+      <div class="chat">${state.chatMessages.length?state.chatMessages.map(m=>`<div class="bubble ${m.role==='user'?'user':'assistant'}">${esc(m.content)}</div>`).join(''):`<div class="bubble assistant">1️⃣ Copia el prompt.\n2️⃣ Abre DOLA.\n3️⃣ Pega aquí el resultado final.</div>`}</div>
+      ${state.apiError?`<div class="notice friendly">${esc(state.apiError)}</div>`:''}
     </div>
-    <div class="card"><label class="label">Texto final</label><textarea class="textarea" data-dola-text placeholder="Pega o revisa aquí">${esc(state.chatResult||'')}</textarea><div class="btn-row"><button class="btn green" data-use-dola>Usar</button><button class="btn" data-copy-final>Copiar</button></div></div>
+    <div class="card"><label class="label">Texto de DOLA</label><textarea class="textarea" data-dola-text placeholder="Pega aquí la publicación final de DOLA">${esc(state.chatResult||'')}</textarea><button class="btn green full edit-finish" data-edit-finish>✏️ EDITAR Y TERMINAR</button></div>
     ${state.draft?preview(state.draft):''}
   `,{title:'DOLA'}); }
-  function manualCreate(){ const d=state.draft||{type:state.selectedTemplate.type,category:state.selectedTemplate.cat,title:'',description:'',zone:'',channel:'dola',whatsapp:'',mediaItems:[]}; return layout(`<div class="card"><h2 class="page-title">✍️ Manual</h2>${formFields(d)}<div class="btn-row"><button class="btn green" data-preview-manual>Vista</button><button class="btn primary" data-save-manual>Publicar</button></div></div>${state.draft?preview(state.draft):''}`,{title:'Manual'}); }
+  function manualCreate(){ const d=state.draft||{type:state.selectedTemplate.type,category:state.selectedTemplate.cat,title:'',description:'',zone:'',channel:'dola',whatsapp:'',mediaItems:[]}; if(!state.draft) state.draft=d; return layout(`<div class="card"><h2 class="page-title">✍️ Manual</h2>${formFields(d)}</div>${preview(d)}`,{title:'Manual'}); }
   function formFields(d){return `<label class="label">Título</label><input class="input" data-field="title" value="${esc(d.title)}" placeholder="Título"><label class="label">Zona</label><input class="input" data-field="zone" value="${esc(d.zone)}" placeholder="Zona"><label class="label">Texto</label><textarea class="textarea" data-field="description" placeholder="Descripción">${esc(d.description)}</textarea><label class="label">Canal</label><select class="select" data-field="channel"><option value="dola" ${d.channel==='dola'?'selected':''}>DOLA</option><option value="whatsapp" ${d.channel==='whatsapp'?'selected':''}>WhatsApp</option></select>${d.channel==='whatsapp'?`<label class="label">WhatsApp</label><input class="input" data-field="whatsapp" value="${esc(d.whatsapp||'')}" placeholder="Número">`:''}${mediaUploader()}`;}
-  function mediaUploader(){ return `<label class="label">Fotos / videos</label><label class="file-btn">📷 Subir<input class="hidden" type="file" data-media multiple accept="image/*,video/*"></label><div class="media-grid">${state.media.map((m,i)=>`<div class="media-thumb">${m.kind==='video'?`<video src="${m.data}" controls></video>`:`<img src="${m.data}" alt="media">`}<button class="media-x" data-remove-media="${i}">×</button></div>`).join('')}</div><p class="sub">Hasta 10 archivos.</p>`; }
-  function preview(d){ return `<div class="card"><h2 class="page-title">Vista</h2>${postCard({...d,id:'preview',reactions:0,mediaItems:state.media,mine:true,createdAt:now(),mediaKey:state.selectedTemplate?.media})}<button class="btn primary full" data-publish-draft>Publicar</button></div>`; }
+  function mediaUploader(){ return `<div id="media-section" class="media-section"><label class="label">Fotos / videos</label><label class="file-btn">📷 Subir<input class="hidden" type="file" data-media multiple accept="image/*,video/*"></label><div class="media-grid">${state.media.map((m,i)=>{const src=resolveMediaSrc(m); return `<div class="media-thumb">${src?(m.kind==='video'?`<video src="${src}" controls playsinline preload="metadata"></video>`:`<img src="${src}" alt="media">`):`<div class="placeholder small">🎥 Video</div>`}<button class="media-x" data-remove-media="${i}">×</button></div>`}).join('')}</div><p class="sub">Hasta 10 archivos.</p></div>`; }
+  function preview(d){ return `<div class="card"><h2 class="page-title">Así se verá</h2>${postCard({...d,id:'preview',reactions:0,mediaItems:state.media,mine:true,createdAt:now(),mediaKey:state.selectedTemplate?.media})}<button class="btn primary full" data-publish-draft>Publicar</button></div>`; }
   function buildDraftFromText(text){ const first=(text||'').split('\n').find(x=>x.trim())||state.selectedTemplate.title; return {id:uid('p'), mine:true, type:state.selectedTemplate.type, category:state.selectedTemplate.cat, title:first.replace(/^[#*\s]+/,'').slice(0,80), description:text.trim(), zone:extractZone(text)||'', channel:'dola', whatsapp:'', status:'activa', freeTrial:!canUnlimited(), expiresAt:canUnlimited()?null:now(FREE_DAYS), createdAt:now(), mediaKey:state.selectedTemplate.media, mediaItems:state.media, reactions:0}; }
   function extractZone(text){ const m=String(text).match(/(?:Zona|Ubicación|📍)\s*:?\s*([^\n]+)/i); return m?m[1].trim().slice(0,60):''; }
 
@@ -162,7 +276,7 @@
     return `<article class="post-card admin-post ${p.status==='oculta'?'is-hidden':''}">
       <div class="post-body"><div class="meta"><span class="chip gray">${visible?'✅ Activa':'🙈 Oculta'}</span><span class="chip gray">${p.mine?'Mía':'Usuario'}</span><span class="chip gray">${esc(p.type||'Tipo')}</span></div>
       <h3 class="post-title">${esc(p.title||'Sin título')}</h3><div class="post-desc compact">${esc(p.description||'')}</div></div>
-      <div class="post-actions admin-actions"><button class="action primary" data-admin-edit="${p.id}">✏️ Editar</button><button class="action ${visible?'red':'primary'}" data-admin-toggle="${p.id}">${visible?'🙈 Ocultar':'✅ Activar'}</button><button class="action" data-message="${p.id}">💬 Ver</button></div>
+      <div class="post-actions admin-actions"><button class="action primary" data-admin-edit="${p.id}">✏️ Editar</button><button class="action ${visible?'red':'primary'}" data-admin-toggle="${p.id}">${visible?'🙈 Ocultar':'✅ Activar'}</button><button class="action red" data-delete-post="${p.id}">🗑️ Borrar</button><button class="action" data-message="${p.id}">💬 Ver</button></div>
     </article>`;
   }
 
@@ -174,9 +288,9 @@
     try{
       const res=await fetch('/api/dola',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:prompt},{role:'user',content:instruction}],context:{task,version:VERSION,app:CONNECTA_APP_URL}})});
       const data=await res.json();
-      if(!data.ok) throw Object.assign(new Error(data.message||'DOLA no configurado'),{code:data.error});
+      if(!data.ok) throw Object.assign(new Error(data.message||'PRÓXIMAMENTE'),{code:data.error});
       const text=(data.text||'').trim(); state.chatMessages.push({role:'assistant',content:text||'Listo.'}); state.chatResult=text; state.apiStatus='ready';
-    }catch(e){ state.apiStatus='fallback'; state.apiError='API no configurada. Usa DOLA externo.'; state.chatMessages.push({role:'assistant',content:'API no configurada. Puedes copiar el prompt y abrir DOLA externo.'}); }
+    }catch(e){ state.apiStatus='fallback'; state.apiError='PRÓXIMAMENTE: Copia el prompt y abre DOLA'; state.chatMessages.push({role:'assistant',content:'PRÓXIMAMENTE: Copia el prompt y abre DOLA'}); }
     render();
   }
   function contactPrompt(p){ return `ROL:\nEres DOLA, asistente de Conecta Servicios.\nCONTEXTO:\nQuiero contactar esta publicación: ${p?.title}. Zona: ${p?.zone}. Texto: ${p?.description}\nOBJETIVO:\nHaz una pregunta a la vez y genera mensaje final claro para el anunciante.`; }
@@ -188,26 +302,25 @@
     document.querySelectorAll('[data-filter-home]').forEach(b=>b.onclick=()=>nav('/explorar',{filter:b.dataset.filterHome}));
     document.querySelectorAll('[data-set-filter]').forEach(b=>b.onclick=()=>{state.filter=b.dataset.setFilter;render();});
     document.querySelectorAll('[data-template]').forEach(b=>b.onclick=()=>{state.selectedTemplate=templates.find(t=>t.id===b.dataset.template); state.createChoice=null; state.media=[]; state.draft=null; nav('/publicar');});
-    document.querySelectorAll('[data-create-choice]').forEach(b=>b.onclick=()=>{state.createChoice=b.dataset.createChoice; state.draft=null; state.chatMessages=[]; state.chatResult=''; render();});
-    document.querySelectorAll('[data-copy-prompt]').forEach(b=>b.onclick=()=>copy(basePrompt(state.selectedTemplate||templates[0])));
+    document.querySelectorAll('[data-create-choice]').forEach(b=>b.onclick=()=>{state.createChoice=b.dataset.createChoice; state.draft=null; state.chatMessages=[]; state.chatResult=''; state.dolaPromptCopied=false; render();});
+    document.querySelectorAll('[data-copy-prompt]').forEach(b=>b.onclick=()=>{state.dolaPromptCopied=true; copy(basePrompt(state.selectedTemplate||templates[0])).finally(()=>render());});
     document.querySelectorAll('[data-open-external]').forEach(b=>b.onclick=()=>window.open(DOLA_EXTERNAL_URL,'_blank','noopener'));
     const dt=document.querySelector('[data-dola-text]'); if(dt)dt.oninput=e=>state.chatResult=e.target.value;
     document.querySelectorAll('[data-api-create]').forEach(b=>b.onclick=()=>callDola('publication',''));
-    document.querySelectorAll('[data-adjust]').forEach(b=>b.onclick=()=>callDola('publication',b.dataset.adjust));
-    document.querySelectorAll('[data-use-dola]').forEach(b=>b.onclick=()=>{const text=(document.querySelector('[data-dola-text]')?.value||state.chatResult).trim(); if(!text)return toast('Falta texto'); state.draft=buildDraftFromText(text); render();});
-    document.querySelectorAll('[data-copy-final]').forEach(b=>b.onclick=()=>copy(document.querySelector('[data-dola-text]')?.value||''));
+    document.querySelectorAll('[data-edit-finish]').forEach(b=>b.onclick=()=>{const text=(document.querySelector('[data-dola-text]')?.value||state.chatResult).trim(); if(!text)return toast('Pega el texto de DOLA'); state.draft=buildDraftFromText(text); state.createChoice='manual'; render(); setTimeout(()=>document.getElementById('media-section')?.scrollIntoView({behavior:'smooth',block:'center'}),80);});
     document.querySelectorAll('[data-field]').forEach(el=>{
       el.oninput=e=>{ if(!state.draft)state.draft={type:state.selectedTemplate.type,category:state.selectedTemplate.cat,channel:'dola',mediaItems:[]}; state.draft[e.target.dataset.field]=e.target.value; };
       if(el.tagName==='SELECT') el.onchange=e=>{ if(!state.draft)state.draft={type:state.selectedTemplate.type,category:state.selectedTemplate.cat,channel:'dola',mediaItems:[]}; state.draft[e.target.dataset.field]=e.target.value; render(); };
     });
     document.querySelectorAll('[data-preview-manual]').forEach(b=>b.onclick=()=>{collectManual(); render();});
     document.querySelectorAll('[data-save-manual],[data-publish-draft]').forEach(b=>b.onclick=publishDraft);
+    document.querySelectorAll('[data-delete-post]').forEach(b=>b.onclick=()=>deletePost(b.dataset.deletePost));
     document.querySelectorAll('[data-media]').forEach(i=>i.onchange=handleFiles);
     document.querySelectorAll('[data-remove-media]').forEach(b=>b.onclick=()=>{state.media.splice(+b.dataset.removeMedia,1);render();});
     document.querySelectorAll('[data-message]').forEach(b=>b.onclick=()=>openContact(posts().find(p=>p.id===b.dataset.message)));
     document.querySelectorAll('[data-react]').forEach(b=>b.onclick=()=>{const ps=posts(); const p=ps.find(x=>x.id===b.dataset.react); if(p){p.reactions=(p.reactions||0)+1;savePosts(ps);render();}});
-    document.querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>copy(`${CONNECTA_APP_URL}#${b.dataset.share}`));
-    document.querySelectorAll('[data-similar]').forEach(b=>b.onclick=()=>{const p=posts().find(x=>x.id===b.dataset.similar); state.selectedTemplate=templates.find(t=>t.type===p.type)||templates[0]; state.createChoice='manual'; state.draft={...p,id:uid('p'),mine:true,title:`${p.title}`,createdAt:now(),mediaItems:[]}; nav('/publicar');});
+    document.querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>sharePost(b.dataset.share));
+    document.querySelectorAll('[data-similar]').forEach(b=>b.onclick=()=>{const p=posts().find(x=>x.id===b.dataset.similar); state.selectedTemplate=templates.find(t=>t.type===p.type)||templates[0]; state.createChoice='manual'; state.media=[]; state.draft={...p,id:uid('p'),mine:true,title:`${p.title}`,createdAt:now(),mediaItems:[],status:'activa'}; nav('/publicar'); setTimeout(()=>window.scrollTo({top:0,behavior:'smooth'}),50);});
     document.querySelectorAll('[data-activate-member]').forEach(b=>b.onclick=()=>{set(K.member,{active:true,startedAt:now(),expiresAt:now(365)});toast('Membresía activa');render();});
     document.querySelectorAll('[data-enable-notes]').forEach(b=>b.onclick=()=>{Notification?.requestPermission?.();addNote('Avisos','Activados');toast('Avisos activos');render();});
     document.querySelectorAll('[data-admin]').forEach(b=>b.onclick=()=>{const pin=prompt('PIN'); if(pin===ADMIN_PIN){localStorage.setItem(K.admin,'true');toast('Admin activo'); nav('/admin');} else toast('PIN incorrecto');});
@@ -224,8 +337,45 @@
   let rd; function renderDebounced(){clearTimeout(rd); rd=setTimeout(render,450);} function resetTransient(){ if(state.route!=='/publicar'){state.selectedTemplate=null; state.createChoice=null;} }
   function collectManual(){ const d=state.draft||{type:state.selectedTemplate?.type||'Solicitante',category:state.selectedTemplate?.cat||'General',channel:'dola'}; document.querySelectorAll('[data-field]').forEach(el=>d[el.dataset.field]=el.value); d.mediaKey=d.mediaKey||state.selectedTemplate?.media||'solicitante'; state.draft=d; }
   function publishDraft(){ collectManual(); const d=state.draft; if(!d?.title && d?.description) d.title=d.description.split('\n').find(Boolean)?.slice(0,70)||'Publicación'; if(!d?.title)return toast('Falta título'); if(!canUnlimited() && myPosts().filter(p=>p.freeTrial && (!p.expiresAt || new Date(p.expiresAt)>new Date())).length>=1 && !d.id) return toast('Activa membresía'); const isExisting=!!d.id; const post={...d,id:d.id||uid('p'),mine:(d.mine!==undefined?d.mine:true),status:d.status||'activa',createdAt:d.createdAt||now(),expiresAt:(isExisting?d.expiresAt:(canUnlimited()?null:now(FREE_DAYS))),freeTrial:(isExisting?d.freeTrial:!canUnlimited()),mediaItems:state.media.length?state.media:(d.mediaItems||[]),mediaKey:d.mediaKey||state.selectedTemplate?.media||'solicitante',reactions:d.reactions||0}; savePosts([post,...posts().filter(p=>p.id!==post.id)]); addNote('Publicada',post.title); resetCreate(); state.route='/mis'; state.stack=[]; toast('Publicación creada'); render(); }
+  function sharePost(id){
+    const p=posts().find(x=>x.id===id); if(!p) return;
+    const url=`${CONNECTA_APP_URL}#${encodeURIComponent(id)}`;
+    const text=`${p.title}
+
+${p.description||''}
+
+Ver en Conecta Servicios: ${url}`;
+    if(navigator.share){ navigator.share({title:p.title,text,url}).catch(()=>{}); }
+    else copy(text);
+  }
+  function deletePost(id){
+    const ps=posts(); const p=ps.find(x=>x.id===id); if(!p) return;
+    if(!isAdmin() && !p.mine){ toast('Solo puedes borrar tus publicaciones'); return; }
+    if(!confirm('¿Eliminar definitivamente esta publicación?')) return;
+    savePosts(ps.filter(x=>x.id!==id));
+    toast('Publicación eliminada');
+    render();
+  }
   function saveProfile(){ const p={}; document.querySelectorAll('[data-profile]').forEach(el=>p[el.dataset.profile]=el.value); const prefs=get(K.prefs,{}); document.querySelectorAll('[data-pref]').forEach(el=>prefs[el.dataset.pref]=el.value); set(K.profile,p); set(K.prefs,prefs); toast('Guardado'); }
-  function handleFiles(e){ const files=[...e.target.files].slice(0,MAX_MEDIA-state.media.length); files.forEach(file=>{const kind=file.type.startsWith('video')?'video':'image'; if(file.size>MAX_LOCAL_MB*1024*1024){const url=URL.createObjectURL(file); state.media.push({kind,data:url,name:file.name,transient:true});toast('Archivo pesado: vista temporal');render();return;} const r=new FileReader(); r.onload=()=>{state.media.push({kind,data:r.result,name:file.name});render();}; r.readAsDataURL(file);}); e.target.value=''; }
+  async function handleFiles(e){
+    const files=[...e.target.files].slice(0,MAX_MEDIA-state.media.length);
+    for(const file of files){
+      const kind=file.type.startsWith('video')?'video':'image';
+      const id=uid('media');
+      if(kind==='video' || file.size>MAX_LOCAL_MB*1024*1024){
+        const preview=URL.createObjectURL(file);
+        mediaObjectUrls.set(id, preview);
+        const item={kind,name:file.name,ref:id,persisted:false,size:file.size,type:file.type};
+        state.media.push(item); render();
+        try{ await saveMediaBlob(id,file); item.persisted=true; toast(kind==='video'?'Video guardado':'Archivo guardado'); }catch(err){ toast('Vista temporal: storage local no disponible'); }
+        render();
+      }else{
+        await new Promise(resolve=>{ const r=new FileReader(); r.onload=()=>{state.media.push({kind,data:r.result,name:file.name,size:file.size,type:file.type}); resolve();}; r.readAsDataURL(file); });
+        render();
+      }
+    }
+    e.target.value='';
+  }
   function moduleAction(raw){ const [mod,act]=raw.split(':'); if(['Publicar','Solicitar','Campaña'].includes(act)){ state.selectedTemplate=templates.find(t=>mod==='agentes'?t.id==='agente':mod==='mandados'?t.id==='mensajero':t.id==='negocio'); state.createChoice=null; nav('/publicar'); return; } if(act==='DOLA'||act==='Plan'||act==='Mensaje'){ state.selectedTemplate=templates.find(t=>t.id==='agente')||templates[0]; state.createChoice='dola'; nav('/publicar'); return; } if(act==='Copiar enlace'||act==='Compartir'){ copy(`${CONNECTA_APP_URL}?ref=embajador`); return;} if(act==='Referido'||act==='Postularme'){ const arr=get(mod==='mandados'?K.verified:K.referrals,[]); arr.unshift({id:uid('r'),createdAt:now(),mod}); set(mod==='mandados'?K.verified:K.referrals,arr); toast('Guardado'); return;} toast('Listo'); }
 
   render();
