@@ -1,11 +1,11 @@
-const CACHE_NAME = 'conecta-servicios-v5-2-15-meta-same-fix';
+const CACHE_NAME = 'conecta-servicios-v6-0-0-social-simple';
 
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=5.2.15-meta-same-fix',
-  '/app.js?v=5.2.15-meta-same-fix',
-  '/manifest.json?v=5.2.15-meta-same-fix',
+  '/styles.css?v=6.0.0-social-simple',
+  '/app.js?v=6.0.0-social-simple',
+  '/manifest.json?v=6.0.0-social-simple',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'
@@ -21,11 +21,7 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(
-        keys
-          .filter(k => k !== CACHE_NAME)
-          .map(k => caches.delete(k))
-      )
+      Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))
     )
   );
   self.clients.claim();
