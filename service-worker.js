@@ -1,11 +1,11 @@
-const CACHE_NAME = 'conecta-servicios-v6-0-0-social-simple';
+const CACHE_NAME = 'conecta-servicios-v6-1-0-tres-caminos';
 
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=6.0.0-social-simple',
-  '/app.js?v=6.0.0-social-simple',
-  '/manifest.json?v=6.0.0-social-simple',
+  '/styles.css?v=6.1.0-tres-caminos',
+  '/app.js?v=6.1.0-tres-caminos',
+  '/manifest.json?v=6.1.0-tres-caminos',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'

@@ -1,8 +1,8 @@
 {
   "name": "Conecta Servicios",
   "short_name": "Conecta",
-  "description": "Red social local simple para publicar necesidades, servicios, negocios, mandados, viajes y oportunidades.",
-  "start_url": "/?v=6.0.0-social-simple",
+  "description": "Conecta Servicios organizada solo por tres caminos: VENDO, OFREZCO y NECESITO.",
+  "start_url": "/?v=6.1.0-tres-caminos",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
