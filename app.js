@@ -1,7 +1,7 @@
-/* Conecta Servicios v5.2.13 - Publicación rápida Abuelita friendly */
+/* Conecta Servicios v5.2.15 - Crear una igual con Meta IA conectado */
 (() => {
   'use strict';
-  const VERSION = 'v5.2.14-dola-opcional-editor-rapido';
+  const VERSION = 'v5.2.15-meta-same-fix';
   const DOLA_EXTERNAL_URL = 'https://dola.com';
   const DOLA_ALLOWED_ORIGIN = 'https://dola.com';
   const DOLA_RETURN_CLIPBOARD_SCAN_MS = 900;
