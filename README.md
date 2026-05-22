@@ -1,3 +1,48 @@
+# Conecta Servicios v5.2.12
+
+## Cambios de esta versión
+
+- Corrige únicamente el regreso desde DOLA hacia Conecta Servicios.
+- Antes de abrir DOLA, guarda un contexto temporal de publicación:
+  - origen del flujo: `+`, `Crear Igual` u oportunidad;
+  - plantilla seleccionada;
+  - publicación original si aplica;
+  - prompt oculto;
+  - borrador temporal.
+- Al volver desde DOLA, Conecta restaura directamente el editor final de publicación.
+- Si hay texto generado por DOLA, se carga como borrador editable.
+- Se conservan las funciones normales del editor:
+  - editar texto;
+  - seleccionar zona/categoría;
+  - subir fotos/videos;
+  - usar Meta IA si aplica;
+  - publicar.
+- No requiere SQL nuevo.
+- No modifica Supabase, Storage, muro, Admin, videos ni otros módulos.
+
+## Variables de entorno
+
+Se conservan las mismas variables ya configuradas en Vercel:
+
+```text
+SUPABASE_URL
+SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY
+SUPABASE_STORAGE_BUCKET=publication-media
+```
+
+## Subida a GitHub
+
+Sube todo el contenido del paquete excepto archivos SQL si hubiera alguno.
+
+## Commit sugerido
+
+```text
+Corregir regreso de DOLA al editor de publicación v5.2.12
+```
+
+---
+
 # Conecta Servicios v5.2.8
 
 ## Cambios principales

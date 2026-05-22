@@ -1,0 +1,17 @@
+CHECKLIST v5.2.12 - DOLA regreso al editor
+
+1. Tocar +.
+2. Tocar DOLA.
+3. Confirmar que se guarda contexto de retorno.
+4. Abrir DOLA y usar el prompt.
+5. Regresar a Conecta.
+6. Confirmar que vuelve a /publicar.
+7. Confirmar que el editor final queda disponible.
+8. Confirmar que el texto de DOLA se carga como borrador editable.
+9. Confirmar que se puede editar descripción.
+10. Confirmar que se puede seleccionar zona/canal.
+11. Confirmar que se pueden subir fotos/videos.
+12. Confirmar que Meta IA sigue disponible.
+13. Confirmar que PUBLICAR funciona.
+14. Confirmar que Crear Igual conserva publicación original como inspiración.
+15. Confirmar que no se tocó Supabase, Storage, Admin ni muro.

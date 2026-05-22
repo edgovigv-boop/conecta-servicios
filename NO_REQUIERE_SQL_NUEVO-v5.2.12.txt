@@ -1,0 +1,1 @@
+No requiere SQL nuevo. Usa el SQL existente del muro público si ya fue aplicado.

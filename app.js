@@ -1,7 +1,7 @@
-/* Conecta Servicios v5.2.11 - DOLA portapapeles asistido */
+/* Conecta Servicios v5.2.12 - DOLA regreso al editor */
 (() => {
   'use strict';
-  const VERSION = 'v5.2.11-dola-portapapeles-asistido';
+  const VERSION = 'v5.2.12-dola-regreso-editor';
   const DOLA_EXTERNAL_URL = 'https://dola.com';
   const DOLA_ALLOWED_ORIGIN = 'https://dola.com';
   const DOLA_RETURN_CLIPBOARD_SCAN_MS = 900;
@@ -15,7 +15,7 @@
   const MAX_LOCAL_MB = 3; // fotos pequeñas pueden ir como dataURL; videos usan IndexedDB/preview para evitar pérdida
   const K = {
     posts:'cs_v52_posts', profile:'cs_v52_profile', prefs:'cs_v52_prefs', member:'cs_v52_member', admin:'cs_v52_admin',
-    notes:'cs_v52_notes', requests:'cs_v52_requests', referrals:'cs_v52_referrals', verified:'cs_v52_verified', user:'cs_v52_user', dolaSession:'cs_v5211_dola_session'
+    notes:'cs_v52_notes', requests:'cs_v52_requests', referrals:'cs_v52_referrals', verified:'cs_v52_verified', user:'cs_v52_user', dolaSession:'cs_v5211_dola_session', dolaReturnContext:'cs_v5212_dola_return_context'
   };
   const app = document.getElementById('app');
   const toastEl = document.getElementById('toast');
@@ -23,7 +23,7 @@
   const mediaObjectUrls = new Map();
   const mediaLoading = new Set();
   let mediaDbPromise = null;
-  const state = { route:'/', filter:'Todos', stack:[], modal:null, selectedTemplate:null, selectedType:null, createChoice:null, draft:null, media:[], chatTask:null, chatMessages:[], chatText:'', chatResult:'', apiStatus:'idle', apiError:'', dolaPromptCopied:false, cloudReady:false, cloudMessage:'', inspirationPostId:null, metaPrompt:'', metaCopied:false, dolaWindow:null, dolaReturnTimer:null, dolaSession:null, dolaFallback:null, generatedFallbackText:'' };
+  const state = { route:'/', filter:'Todos', stack:[], modal:null, selectedTemplate:null, selectedType:null, createChoice:null, draft:null, media:[], chatTask:null, chatMessages:[], chatText:'', chatResult:'', apiStatus:'idle', apiError:'', dolaPromptCopied:false, cloudReady:false, cloudMessage:'', inspirationPostId:null, metaPrompt:'', metaCopied:false, dolaWindow:null, dolaReturnTimer:null, dolaSession:null, dolaReturnContext:null, dolaFallback:null, generatedFallbackText:'' };
 
   const types = [
     {id:'Negocio', icon:'🏪', color:'negocio', bg:'negocio-bg', title:'Negocio', short:'Vendo'},
@@ -420,6 +420,90 @@ Entrega solamente el texto final de la publicación.`; }
     try{sessionStorage.setItem(K.dolaSession,JSON.stringify(session));}catch(e){}
     return session;
   }
+  function compactPublicationForDola(post){
+    if(!post) return null;
+    return {
+      id:post.id||'',
+      type:post.type||'',
+      category:post.category||'',
+      title:post.title||'',
+      zone:post.zone||'',
+      description:post.description||'',
+      mediaKey:post.mediaKey||''
+    };
+  }
+  function saveDolaReturnContext(hiddenPrompt, context={}){
+    const t=state.selectedTemplate||templates[0];
+    const original=context.publicationData||currentInspirationPost()||null;
+    const ctx={
+      source:context.flow|| (state.inspirationPostId?'crear_igual':'plus'),
+      returnTo:'publication_editor',
+      draftId:state.draft?.id||uid('draft'),
+      publicationId:context.publicationId||state.inspirationPostId||original?.id||'',
+      hiddenPrompt:hiddenPrompt||'',
+      originalPublicationData:compactPublicationForDola(original),
+      selectedTemplateId:t?.id||'',
+      templateType:t?.type||'Solicitante',
+      templateCategory:t?.cat||'General',
+      templateMedia:t?.media||'solicitante',
+      media:Array.isArray(state.media)?state.media:[],
+      draft:state.draft?{...state.draft}:null,
+      createdAt:Date.now()
+    };
+    state.dolaReturnContext=ctx;
+    try{sessionStorage.setItem(K.dolaReturnContext,JSON.stringify(ctx));}catch(e){}
+    try{localStorage.setItem(K.dolaReturnContext,JSON.stringify(ctx));}catch(e){}
+    return ctx;
+  }
+  function getDolaReturnContext(){
+    if(state.dolaReturnContext) return state.dolaReturnContext;
+    try{state.dolaReturnContext=JSON.parse(sessionStorage.getItem(K.dolaReturnContext)||localStorage.getItem(K.dolaReturnContext)||'null');}catch(e){state.dolaReturnContext=null;}
+    return state.dolaReturnContext;
+  }
+  function clearDolaReturnContext(){
+    state.dolaReturnContext=null;
+    try{sessionStorage.removeItem(K.dolaReturnContext);}catch(e){}
+    try{localStorage.removeItem(K.dolaReturnContext);}catch(e){}
+  }
+  function restoreDolaContextForEditor(generatedText='',opts={}){
+    const ctx=getDolaReturnContext();
+    if(!ctx && !generatedText) return false;
+    const t=templates.find(x=>x.id===ctx?.selectedTemplateId) || templates.find(x=>x.type===ctx?.templateType) || state.selectedTemplate || templates[0];
+    state.selectedTemplate=t;
+    state.inspirationPostId=ctx?.publicationId||state.inspirationPostId||null;
+    if(Array.isArray(ctx?.media) && !state.media.length) state.media=[...ctx.media];
+    state.route='/publicar';
+    state.stack=[];
+    const clean=String(generatedText||'').trim();
+    if(clean && !shouldRejectGeneratedText(clean)){
+      state.chatResult=clean;
+      state.createChoice='manual';
+      state.draft=buildDraftFromText(clean);
+      if(ctx?.draftId) state.draft.draftId=ctx.draftId;
+      if(ctx?.publicationId) state.draft.inspiredBy=ctx.publicationId;
+      state.draft.type=state.draft.type||ctx?.templateType||t.type;
+      state.draft.category=state.draft.category||ctx?.templateCategory||t.cat;
+      state.draft.mediaKey=state.draft.mediaKey||ctx?.templateMedia||t.media;
+      state.apiStatus='ready';
+      state.apiError='';
+      render();
+      setTimeout(()=>{
+        const editor=document.querySelector('[data-field="description"]');
+        if(editor){
+          bridgeLog('DOLA: editor Conecta listo');
+          injectTextIntoEditor(editor,clean,{focus:opts.focus!==false,preventScroll:true});
+          editor.scrollIntoView?.({behavior:'smooth',block:'center'});
+          bridgeLog('DOLA: generatedText inyectado OK');
+        }
+      },80);
+      clearDolaSession();
+      clearDolaReturnContext();
+      return true;
+    }
+    state.createChoice='dola';
+    render();
+    return true;
+  }
   function getDolaSession(){
     if(state.dolaSession) return state.dolaSession;
     try{state.dolaSession=JSON.parse(sessionStorage.getItem(K.dolaSession)||'null');}catch(e){state.dolaSession=null;}
@@ -625,22 +709,20 @@ Entrega solamente el texto final de la publicación.`; }
     const clean=String(text||'').trim();
     if(shouldRejectGeneratedText(clean)) return false;
     bridgeLog('DOLA: generatedText recibido');
+    // v5.2.12: al volver de DOLA, restaurar directamente el editor final de publicación.
+    const restored=restoreDolaContextForEditor(clean,opts);
+    if(restored){
+      toast('Texto listo para editar');
+      return true;
+    }
     state.chatResult=clean;
     state.dolaPromptCopied=true;
     state.apiStatus='ready';
     state.apiError='';
-    state.createChoice='dola';
+    state.createChoice='manual';
     if(!state.selectedTemplate) state.selectedTemplate=templates[0];
+    state.draft=buildDraftFromText(clean);
     render();
-    waitForEditor(document,['[data-dola-text]'],{attempts:6}).then(editor=>{
-      if(editor){
-        bridgeLog('DOLA: editor Conecta listo');
-        injectTextIntoEditor(editor,clean,{focus:opts.focus!==false,preventScroll:true});
-        bridgeLog('DOLA: generatedText inyectado OK');
-      }else{
-        bridgeLog('DOLA: generatedText fallback');
-      }
-    });
     toast('Texto recibido');
     return true;
   }
@@ -688,6 +770,11 @@ Entrega solamente el texto final de la publicación.`; }
     }
   }
   function armDolaReturnWatch(){
+    const ctx=getDolaReturnContext();
+    const session=getDolaSession();
+    if((ctx||session) && state.route!=='/publicar' && !state.chatResult){
+      restoreDolaContextForEditor('',{quiet:true});
+    }
     if(state.dolaReturnTimer) clearTimeout(state.dolaReturnTimer);
     state.dolaReturnTimer=setTimeout(showDolaReturnGuide,DOLA_RETURN_CLIPBOARD_SCAN_MS);
   }
@@ -697,7 +784,8 @@ Entrega solamente el texto final de la publicación.`; }
     state.apiStatus='fallback';
     render();
     const target=dolaUrlWithPrompt(prompt,session);
-    const context={flow:state.inspirationPostId?'create_same':'create',publicationId:state.inspirationPostId,templateId:state.selectedTemplate?.id,sessionId:session.id,targetUrl:target};
+    const context={flow:state.inspirationPostId?'create_same':'create',publicationId:state.inspirationPostId,templateId:state.selectedTemplate?.id,sessionId:session.id,targetUrl:target,publicationData:currentInspirationPost()};
+    saveDolaReturnContext(prompt,context);
     const iframe=document.querySelector('iframe[data-dola-frame], iframe[src*="dola"]');
     if(iframe?.contentWindow){
       await sendHiddenPromptToDola(prompt,context,iframe.contentWindow,{fallback:true});
@@ -717,6 +805,36 @@ Entrega solamente el texto final de la publicación.`; }
       </section>
       ${state.draft?preview(state.draft):''}
     `,{title:'DOLA'});
+  }
+
+  function manualCreate(){
+    if(!state.draft){
+      const t=state.selectedTemplate||templates[0];
+      state.draft={
+        id:uid('p'),
+        mine:true,
+        type:t.type,
+        category:t.cat,
+        title:'',
+        description:state.chatResult||'',
+        zone:'',
+        channel:'dola',
+        whatsapp:'',
+        status:'activa',
+        freeTrial:!canUnlimited(),
+        expiresAt:canUnlimited()?null:now(FREE_DAYS),
+        createdAt:now(),
+        mediaKey:t.media,
+        mediaItems:state.media,
+        reactions:0,
+        inspiredBy:state.inspirationPostId||null
+      };
+    }
+    return layout(`<section class="publication-editor" data-publication-editor>
+      <div class="section-head"><h2>Editar</h2></div>
+      <div class="card">${formFields(state.draft)}</div>
+      ${preview(state.draft)}
+    </section>`,{title:'Editar'});
   }
 
   function formFields(d){return `<label class="label">Título</label><input class="input" data-field="title" value="${esc(d.title)}" placeholder="Título"><label class="label">Zona</label><input class="input" data-field="zone" value="${esc(d.zone)}" placeholder="Zona"><label class="label">Texto</label><textarea class="textarea" data-field="description" placeholder="Descripción">${esc(d.description)}</textarea><label class="label">Canal</label><select class="select" data-field="channel"><option value="dola" ${d.channel==='dola'?'selected':''}>DOLA</option><option value="whatsapp" ${d.channel==='whatsapp'?'selected':''}>WhatsApp</option></select>${d.channel==='whatsapp'?`<label class="label">WhatsApp</label><input class="input" data-field="whatsapp" value="${esc(d.whatsapp||'')}" placeholder="Número">`:''}${metaVideoBox(d)}${mediaUploader()}`;}
@@ -994,10 +1112,7 @@ Ver en Conecta Servicios: ${url}`;
     const qs=new URLSearchParams(location.search);
     const returned=qs.get('dolaText')||qs.get('dola_result')||qs.get('result');
     if(returned){
-      resetCreate();
-      state.selectedTemplate=templates[0];
-      state.createChoice='dola';
-      state.route='/publicar';
+      restoreDolaContextForEditor('',{quiet:true});
       injectDolaTextIntoEditor(decodeURIComponent(returned),{focus:false});
       history.replaceState(null,'',location.pathname);
     }
