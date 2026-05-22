@@ -25,7 +25,7 @@
   const mediaObjectUrls = new Map();
   const mediaLoading = new Set();
   let mediaDbPromise = null;
-  const state = { route:'/', filter:'Todos', stack:[], modal:null, selectedTemplate:null, selectedType:null, createChoice:null, draft:null, media:[], chatTask:null, chatMessages:[], chatText:'', chatResult:'', apiStatus:'idle', apiError:'', dolaPromptCopied:false, cloudReady:false, cloudMessage:'', inspirationPostId:null, metaPrompt:'', metaCopied:false, rapidText:'', rapidIntent:'', voiceListening:false, dolaWindow:null, dolaReturnTimer:null, dolaSession:null, dolaReturnContext:null, dolaFallback:null, generatedFallbackText:'' };
+  const state = { route:'/', filter:'Todos', stack:[], modal:null, selectedTemplate:null, selectedType:null, createChoice:null, draft:null, media:[], chatTask:null, chatMessages:[], chatText:'', chatResult:'', apiStatus:'idle', apiError:'', dolaPromptCopied:false, cloudReady:false, cloudMessage:'', inspirationPostId:null, metaPrompt:'', metaCopied:false, rapidText:'', rapidIntent:'', voiceListening:false, dolaWindow:null, dolaReturnTimer:null, dolaSession:null, dolaReturnContext:null, dolaFallback:null, generatedFallbackText:'', metaSamePrompt:'', metaSameText:'' };
 
   const types = [
     {id:'Negocio', icon:'🏪', color:'negocio', bg:'negocio-bg', title:'Negocio', short:'Vendo'},
@@ -93,7 +93,7 @@
   function toast(msg){toastEl.textContent=msg;toastEl.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>toastEl.classList.remove('show'),2400);}
   function nav(route, opts={}){ if(!opts.replace && state.route!==route) state.stack.push({route:state.route, filter:state.filter, template:state.selectedTemplate, choice:state.createChoice}); state.route=route; if(opts.filter)state.filter=opts.filter; render(); if(!opts.keepScroll) setTimeout(()=>window.scrollTo({top:0,behavior:'smooth'}),0); }
   function back(){ const prev=state.stack.pop(); if(prev){state.route=prev.route; state.filter=prev.filter||'Todos'; state.selectedTemplate=prev.template||null; state.createChoice=prev.choice||null;} else {state.route='/';} render(); setTimeout(()=>window.scrollTo({top:0,behavior:'smooth'}),0); }
-  function resetCreate(){ state.selectedTemplate=null; state.selectedType=null; state.createChoice=null; state.draft=null; state.media=[]; state.chatTask=null; state.chatMessages=[]; state.chatText=''; state.chatResult=''; state.rapidText=''; state.rapidIntent=''; state.voiceListening=false; state.apiStatus='idle'; state.apiError=''; state.dolaPromptCopied=false; state.inspirationPostId=null; state.metaPrompt=''; state.metaCopied=false; }
+  function resetCreate(){ state.selectedTemplate=null; state.selectedType=null; state.createChoice=null; state.draft=null; state.media=[]; state.chatTask=null; state.chatMessages=[]; state.chatText=''; state.chatResult=''; state.rapidText=''; state.rapidIntent=''; state.voiceListening=false; state.apiStatus='idle'; state.apiError=''; state.dolaPromptCopied=false; state.inspirationPostId=null; state.metaPrompt=''; state.metaCopied=false; state.metaSamePrompt=''; state.metaSameText=''; }
   function installApp(){ if(deferredInstallPrompt){deferredInstallPrompt.prompt(); deferredInstallPrompt.userChoice.finally(()=>deferredInstallPrompt=null); } else toast('Menú del navegador → Agregar a inicio'); }
   function addNote(title,msg){ const n=get(K.notes,[]); n.unshift({id:uid('n'),title,msg,createdAt:now()}); set(K.notes,n.slice(0,50)); }
   function unread(){ return get(K.notes,[]).length; }
@@ -306,7 +306,7 @@ ${p.title || ''}
 ${p.description || ''}
 
 Zona: ${p.zone || ''}`.trim() : '';
-    state.createChoice='quick';
+    state.createChoice='meta_same';
     state.chatMessages=[];
     state.chatResult='';
     state.dolaPromptCopied=false;
@@ -366,6 +366,50 @@ Responder por Conecta Servicios.
 
 No agregues explicaciones fuera de la publicación final.`;
   }
+
+  function buildMetaSamePrompt(source){
+    const base=[source?.title, source?.description, source?.zone?`Zona: ${source.zone}`:'', source?.category?`Categoría: ${source.category}`:''].filter(Boolean).join('\n');
+    return `Hola Meta IA. Quiero crear una publicación similar a esta para Conecta Servicios.\n\nEsta es la publicación base:\n\n${base||'[SIN TEXTO BASE]'}\n\nAyúdame a crear una nueva versión para mí.\n\nIMPORTANTE:\nNo copies datos personales del anuncio original.\nNo copies teléfonos, nombres, direcciones ni contacto del anuncio original.\n\nQuiero que me entregues:\n\n1. Una idea para imagen o video vertical.\n2. Una descripción lista para publicar.\n3. La descripción debe traer espacios claros para personalizar mis propios datos.\n\nUsa este formato en la descripción:\n\n[TÍTULO O NOMBRE DE LA PUBLICACIÓN]\n[MI ZONA]\n[MI CATEGORÍA]\n[MI NOMBRE O NEGOCIO]\n[MI CONTACTO]\n[MIS PRECIOS, PRODUCTOS O CONDICIONES]\n[MIS HORARIOS, SI APLICA]\n\nDespués escribe una descripción clara, humana y atractiva para publicar.\n\nEl resultado debe ayudarme a regresar a Conecta Servicios, cambiar mis datos y publicar fácilmente.`;
+  }
+
+  function metaSameFlow(){
+    const source=currentInspirationPost();
+    const prompt=state.metaSamePrompt||buildMetaSamePrompt(source);
+    state.metaSamePrompt=prompt;
+    return layout(`<section class="meta-same-flow">
+      <div class="card">
+        <h2 class="page-title">Vamos a ayudarte a crear una versión similar con Meta IA.</h2>
+        <p class="sub">Meta IA puede ayudarte a crear un video o imagen y una descripción basada en esta publicación. Después regresas, cambias tus datos y publicas.</p>
+        <div class="btn-row">
+          <button class="btn primary" data-copy-meta-same>Copiar idea para Meta IA</button>
+          <button class="btn green" data-open-meta-same>Abrir Meta IA</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn" data-return-meta-same>Ya regresé de Meta IA</button>
+          <button class="btn red" data-cancel-meta-same>Cancelar</button>
+        </div>
+      </div>
+    </section>`,{title:'Crear una igual'});
+  }
+
+  function reviewAndPublishFromMeta(){
+    return layout(`<section class="publication-editor" data-publication-editor>
+      <div class="section-head"><h2>Revisa y publica</h2></div>
+      <div class="card">
+        ${mediaUploader()}
+        <label class="label">Descripción desde Meta IA</label>
+        <textarea class="textarea" data-meta-same-text placeholder="Pega aquí la descripción que te dio Meta IA">${esc(state.metaSameText||'')}</textarea>
+        <p class="sub"><b>Cambia tus datos antes de publicar.</b></p>
+        <p class="sub">Revisa tu nombre, zona, contacto y precios antes de publicar.</p>
+        <div class="btn-row">
+          <button class="btn primary" data-publish-meta-same>Publicar</button>
+          <button class="btn" data-save-meta-same>Guardar para después</button>
+          <button class="btn" data-edit-advanced>Editar más detalles</button>
+        </div>
+      </div>
+      ${preview(state.draft||buildDraftFromText(state.metaSameText||''))}
+    </section>`,{title:'Revisa y publica'});
+  }
   function buildMetaPrompt(d){
     const desc = (d?.description || d?.title || state.chatResult || 'publicación para Conecta Servicios').trim();
     return `Actúa como generador de videos visuales. Objetivo: Crear un video publicitario de formato 5:2 (o 9:16 vertical). Contexto: Basado en la descripción: ${desc}.
@@ -379,6 +423,8 @@ REGLAS OBLIGATORIAS:
   function iconForType(type){ return type==='Negocio'?'🏪':type==='Agente'?'🛵':'🧡'; }
 
   function publish(){
+    if(state.createChoice==='meta_same') return metaSameFlow();
+    if(state.createChoice==='meta_review') return reviewAndPublishFromMeta();
     if(state.createChoice==='manual') return manualCreate();
     // v5.2.14: DOLA ya no abre una pantalla intermedia obligatoria;
     // queda como ayuda opcional dentro del editor rápido.
@@ -1017,6 +1063,14 @@ Entrega solamente el texto final de la publicación.`; }
     document.querySelectorAll('[data-preview-manual]').forEach(b=>b.onclick=()=>{collectManual(); render();});
     document.querySelectorAll('[data-copy-meta]').forEach(b=>b.onclick=()=>{collectManual(); state.metaPrompt=buildMetaPrompt(state.draft); state.metaCopied=true; copy(state.metaPrompt).then(()=>{window.open(META_AI_URL,'_blank','noopener');}).finally(()=>render());});
     document.querySelectorAll('[data-open-meta]').forEach(b=>b.onclick=()=>window.open(META_AI_URL,'_blank','noopener'));
+    document.querySelectorAll('[data-copy-meta-same]').forEach(b=>b.onclick=()=>copy(state.metaSamePrompt||buildMetaSamePrompt(currentInspirationPost())).then(()=>toast('Idea copiada para Meta IA')));
+    document.querySelectorAll('[data-open-meta-same]').forEach(b=>b.onclick=()=>window.open(META_AI_URL,'_blank','noopener'));
+    const metaSameBox=document.querySelector('[data-meta-same-text]'); if(metaSameBox) metaSameBox.oninput=e=>state.metaSameText=e.target.value;
+    document.querySelectorAll('[data-return-meta-same]').forEach(b=>b.onclick=()=>{state.createChoice='meta_review'; state.metaSameText=state.metaSameText||''; state.draft=buildDraftFromText(state.metaSameText||''); render();});
+    document.querySelectorAll('[data-cancel-meta-same]').forEach(b=>b.onclick=()=>{resetCreate(); nav('/');});
+    document.querySelectorAll('[data-edit-advanced]').forEach(b=>b.onclick=()=>{state.draft=buildDraftFromText(state.metaSameText||''); state.createChoice='manual'; render();});
+    document.querySelectorAll('[data-publish-meta-same]').forEach(b=>b.onclick=()=>{const text=(state.metaSameText||'').trim(); if(!text) return toast('Pega la descripción de Meta IA'); state.draft=buildDraftFromText(text); publishDraft();});
+    document.querySelectorAll('[data-save-meta-same]').forEach(b=>b.onclick=()=>{const text=(state.metaSameText||'').trim(); if(!text) return toast('Pega la descripción para guardar'); state.draft=buildDraftFromText(text); saveMetaSameDraft();});
     document.querySelectorAll('[data-save-manual],[data-publish-draft]').forEach(b=>b.onclick=publishDraft);
     document.querySelectorAll('[data-delete-post]').forEach(b=>b.onclick=()=>deletePost(b.dataset.deletePost));
     document.querySelectorAll('[data-retry-cloud]').forEach(b=>b.onclick=()=>retryCloud(b.dataset.retryCloud));
@@ -1165,6 +1219,18 @@ Entrega solamente el texto final de la publicación.`; }
     toast('No se pudo subir al muro público. Se guardó como borrador local.');
     render();
     return {ok:false,post,error:cloud.error};
+  }
+
+  function saveMetaSameDraft(){
+    const d=state.draft;
+    if(!d) return toast('Sin contenido para guardar');
+    const post={...d,id:d.id||uid('p'),mine:true,ownerId:userId(),status:'borrador',createdAt:d.createdAt||now(),updatedAt:now(),mediaItems:state.media.length?state.media:(d.mediaItems||[]),cloudStatus:'local',cloudError:'Pendiente de publicar'};
+    savePosts([post,...posts().filter(p=>p.id!==post.id)]);
+    resetCreate();
+    state.route='/mis';
+    state.stack=[];
+    toast('Guardado para después');
+    render();
   }
   async function publishDraft(){
     return publishPost();
