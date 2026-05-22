@@ -1,8 +1,8 @@
 {
   "name": "Conecta Servicios",
   "short_name": "Conecta",
-  "description": "Red local visual para publicar, encontrar y contactar con DOLA o WhatsApp.",
-  "start_url": "/?v=5.2.14",
+  "description": "Red local para publicar necesidades, servicios, negocios, mandados, viajes y oportunidades con contacto directo o asistente de publicación.",
+  "start_url": "/?v=5.2.16-publicar-simple",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
