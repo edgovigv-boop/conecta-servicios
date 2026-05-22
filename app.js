@@ -1,7 +1,7 @@
-/* Conecta Servicios v5.2.5 - Crear igual con DOLA y Meta IA */
+/* Conecta Servicios v5.2.6 - Publicar visible inmediato */
 (() => {
   'use strict';
-  const VERSION = 'v5.2.5-crear-igual-dola-meta';
+  const VERSION = 'v5.2.6-publicar-visible-inmediato';
   const DOLA_EXTERNAL_URL = 'https://dola.com';
   const META_AI_URL = 'https://www.meta.ai/';
   const CONNECTA_APP_URL = 'https://conecta-servicios.vercel.app/';
@@ -176,10 +176,10 @@
     const cls=p.type==='Agente'?'agente':p.type==='Negocio'?'negocio':'solicitante';
     const canManage = context==='mine' && isMine(p);
     const actions = [`<button class="action" data-react="${p.id}">❤️ ${p.reactions||0}</button>`,`<button class="action" data-share="${p.id}">↗ Compartir</button>`,`<button class="action" data-similar="${p.id}">➕ Igual</button>`,`<button class="action primary ${p.channel==='whatsapp'?'whatsapp':''}" data-message="${p.id}">💬 Mensaje</button>`];
-    if(canManage){actions.unshift(`<button class="action primary" data-edit-own="${p.id}">✏️ Editar</button>`); actions.push(`<button class="action red" data-delete-post="${p.id}">🗑️ Borrar</button>`);}
+    if(canManage){actions.unshift(`<button class="action primary" data-edit-own="${p.id}">✏️ Editar</button>`); if(p.cloudStatus!=='publica') actions.push(`<button class="action primary" data-retry-cloud="${p.id}">🌐 Subir</button>`); actions.push(`<button class="action red" data-delete-post="${p.id}">🗑️ Borrar</button>`);}
     return `<article class="post-card snap-card ${context==='preview'?'preview-card':''}" data-post-id="${p.id}">
       <div class="post-media">${renderMedia(p)}</div>
-      <div class="post-overlay"><div class="meta"><span class="chip ${cls}">${iconForType(p.type)} ${p.type}</span><span class="chip glass">📍 ${esc(p.zone||'Zona')}</span>${p.status==='oculta'?'<span class="chip glass">🙈 Oculta</span>':''}</div>
+      <div class="post-overlay"><div class="meta"><span class="chip ${cls}">${iconForType(p.type)} ${p.type}</span><span class="chip glass">📍 ${esc(p.zone||'Zona')}</span>${p.status==='oculta'?'<span class="chip glass">🙈 Oculta</span>':''}${context==='mine'?`<span class="chip glass">${p.cloudStatus==='publica'?'🌐 Pública':'📱 Borrador'}</span>`:''}</div>
         <h3 class="post-title">${esc(p.title)}</h3><div class="post-desc">${esc(p.description)}</div></div>
       <div class="post-actions ${canManage?'manage-actions':''}">${actions.join('')}</div>
     </article>`;
@@ -200,25 +200,39 @@
   async function getPublicConfig(){
     try{ const res=await fetch('/api/public-config',{cache:'no-store'}); return await res.json(); }catch{return {ok:false};}
   }
-  async function syncFromCloud(){
+  async function syncFromCloud(opts={}){
     try{
       const res=await fetch('/api/publications',{cache:'no-store'});
       const data=await res.json();
-      if(!data.ok){state.cloudReady=false; state.cloudMessage=data.message||'Modo local'; return;}
+      if(!data.ok){state.cloudReady=false; state.cloudMessage=data.message||'Modo local'; return {ok:false,error:data.error||'SUPABASE_NOT_READY'};}
       state.cloudReady=true; state.cloudMessage='Muro público activo';
-      const remote=(data.posts||[]).map(normalizePost);
+      const remote=(data.posts||[]).map(p=>normalizePost({...p, cloudStatus:'publica'}));
       const local=posts();
       const merged=[...remote];
-      local.forEach(lp=>{ if(!merged.some(r=>r.id===lp.id)) merged.push(lp); });
+      local.forEach(lp=>{
+        const exists=merged.some(r=>r.id===lp.id);
+        if(!exists && lp.status!=='eliminada') merged.push(normalizePost({...lp, cloudStatus:lp.cloudStatus||'local'}));
+      });
+      merged.sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
       savePosts(merged);
-      render();
-    }catch(e){state.cloudReady=false; state.cloudMessage='Modo local';}
+      if(opts.render!==false) render();
+      return {ok:true,posts:merged};
+    }catch(e){state.cloudReady=false; state.cloudMessage='Modo local'; return {ok:false,error:e?.message||'SYNC_FAILED'};}
   }
   async function syncPostToCloud(post){
-    try{ await fetch('/api/publications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({post})}); }catch(e){}
+    try{
+      const res=await fetch('/api/publications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({post})});
+      const data=await res.json().catch(()=>({ok:false,error:'BAD_JSON'}));
+      if(!res.ok || !data.ok) return {ok:false,error:data.error||`HTTP_${res.status}`,detail:data.detail||data.message};
+      return {ok:true,post:data.post||post};
+    }catch(e){return {ok:false,error:e?.message||'NETWORK_ERROR'};}
   }
   async function deletePostFromCloud(id){
-    try{ await fetch('/api/publications',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,ownerId:userId(),admin:isAdmin()})}); }catch(e){}
+    try{
+      const res=await fetch('/api/publications',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,ownerId:userId(),admin:isAdmin()})});
+      const data=await res.json().catch(()=>({ok:false}));
+      return {ok:res.ok && data.ok, data};
+    }catch(e){return {ok:false,error:e?.message||'NETWORK_ERROR'};}
   }
   async function uploadMediaToCloud(post){
     const cfg=await getPublicConfig();
@@ -502,6 +516,7 @@ No agregues explicaciones fuera de la publicación final.`; }
     document.querySelectorAll('[data-open-meta]').forEach(b=>b.onclick=()=>window.open(META_AI_URL,'_blank','noopener'));
     document.querySelectorAll('[data-save-manual],[data-publish-draft]').forEach(b=>b.onclick=publishDraft);
     document.querySelectorAll('[data-delete-post]').forEach(b=>b.onclick=()=>deletePost(b.dataset.deletePost));
+    document.querySelectorAll('[data-retry-cloud]').forEach(b=>b.onclick=()=>retryCloud(b.dataset.retryCloud));
     document.querySelectorAll('[data-edit-own]').forEach(b=>b.onclick=()=>editOwnPost(b.dataset.editOwn));
     document.querySelectorAll('[data-media]').forEach(i=>i.onchange=handleFiles);
     document.querySelectorAll('[data-remove-media]').forEach(b=>b.onclick=()=>{state.media.splice(+b.dataset.removeMedia,1);render();});
@@ -525,27 +540,79 @@ No agregues explicaciones fuera de la publicación final.`; }
   }
   let rd; function renderDebounced(){clearTimeout(rd); rd=setTimeout(render,450);} function resetTransient(){ if(state.route!=='/publicar'){state.selectedTemplate=null; state.createChoice=null;} }
   function collectManual(){ const d=state.draft||{type:state.selectedTemplate?.type||'Solicitante',category:state.selectedTemplate?.cat||'General',channel:'dola'}; document.querySelectorAll('[data-field]').forEach(el=>d[el.dataset.field]=el.value); d.mediaKey=d.mediaKey||state.selectedTemplate?.media||'solicitante'; state.draft=d; }
-  async function publishDraft(){
-    collectManual();
-    const d=state.draft;
+  async function publishPost(draftOverride=null){
+    if(!draftOverride) collectManual();
+    const d=draftOverride || state.draft;
     if(!d?.title && d?.description) d.title=d.description.split('\n').find(Boolean)?.slice(0,70)||'Publicación';
     if(!d?.title)return toast('Falta título');
     if(!canUnlimited() && myPosts().filter(p=>p.freeTrial && (!p.expiresAt || new Date(p.expiresAt)>new Date())).length>=1 && !d.id) return toast('Activa membresía');
     const isExisting=!!d.id;
-    let post={...d,id:d.id||uid('p'),mine:(d.mine!==undefined?d.mine:true),ownerId:d.ownerId||userId(),status:d.status||'activa',createdAt:d.createdAt||now(),expiresAt:(isExisting?d.expiresAt:(canUnlimited()?null:now(FREE_DAYS))),freeTrial:(isExisting?d.freeTrial:!canUnlimited()),mediaItems:state.media.length?state.media:(d.mediaItems||[]),mediaKey:d.mediaKey||state.selectedTemplate?.media||'solicitante',reactions:d.reactions||0, inspiredBy:d.inspiredBy||state.inspirationPostId||null};
+    let post={...d,id:d.id||uid('p'),mine:(d.mine!==undefined?d.mine:true),ownerId:d.ownerId||userId(),status:d.status||'activa',createdAt:d.createdAt||now(),updatedAt:now(),expiresAt:(isExisting?d.expiresAt:(canUnlimited()?null:now(FREE_DAYS))),freeTrial:(isExisting?d.freeTrial:!canUnlimited()),mediaItems:state.media.length?state.media:(d.mediaItems||[]),mediaKey:d.mediaKey||state.selectedTemplate?.media||'solicitante',reactions:d.reactions||0, inspiredBy:d.inspiredBy||state.inspirationPostId||null, cloudStatus:'subiendo'};
+
+    // 1) Guardado local inmediato para que el usuario lo vea sin esperar red.
+    savePosts([post,...posts().filter(p=>p.id!==post.id)]);
+    state.route='/';
+    state.stack=[];
+    render();
     toast('Publicando...');
+
+    // 2) Subida de media y sincronización pública.
     try{
       const uploaded=await uploadMediaToCloud(post);
       if(uploaded && uploaded.length) post={...post,mediaItems:uploaded};
     }catch(e){ /* conserva multimedia local si Storage no responde */ }
+
+    const cloud=await syncPostToCloud(post);
+    if(cloud.ok){
+      post={...post,cloudStatus:'publica',updatedAt:now()};
+      savePosts([post,...posts().filter(p=>p.id!==post.id)]);
+      await syncFromCloud({render:false});
+      addNote('Publicada',post.title);
+      resetCreate();
+      state.route='/';
+      state.stack=[];
+      toast('Publicación visible en el muro');
+      render();
+      return {ok:true,post};
+    }
+
+    // 3) Si Supabase falla, no mentir: queda como borrador local con opción de reintentar.
+    post={...post,cloudStatus:'local',cloudError:cloud.error||'No sincronizada',updatedAt:now()};
     savePosts([post,...posts().filter(p=>p.id!==post.id)]);
-    await syncPostToCloud(post);
-    addNote('Publicada',post.title);
+    addNote('Borrador local',post.title);
     resetCreate();
     state.route='/mis';
     state.stack=[];
-    toast('Publicación creada');
+    toast('No se pudo subir al muro público. Se guardó como borrador local.');
     render();
+    return {ok:false,post,error:cloud.error};
+  }
+  async function publishDraft(){
+    return publishPost();
+  }
+  async function retryCloud(id){
+    const p=posts().find(x=>x.id===id);
+    if(!p) return toast('No encontrada');
+    if(!isMine(p) && !isAdmin()) return toast('Solo tus publicaciones');
+    toast('Subiendo al muro...');
+    let post={...p,status:p.status||'activa',ownerId:p.ownerId||userId(),cloudStatus:'subiendo',updatedAt:now()};
+    try{
+      const uploaded=await uploadMediaToCloud(post);
+      if(uploaded && uploaded.length) post={...post,mediaItems:uploaded};
+    }catch(e){}
+    const cloud=await syncPostToCloud(post);
+    if(cloud.ok){
+      post={...post,cloudStatus:'publica',cloudError:'',updatedAt:now()};
+      savePosts([post,...posts().filter(x=>x.id!==id)]);
+      await syncFromCloud({render:false});
+      toast('Ya está en el muro público');
+      render();
+    }else{
+      post={...post,cloudStatus:'local',cloudError:cloud.error||'No sincronizada'};
+      savePosts([post,...posts().filter(x=>x.id!==id)]);
+      toast('No se pudo subir al muro público. Se guardó como borrador local.');
+      render();
+    }
   }
   function sharePost(id){
     const p=posts().find(x=>x.id===id); if(!p) return;

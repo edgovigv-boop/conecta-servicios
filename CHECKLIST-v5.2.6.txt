@@ -1,0 +1,16 @@
+CHECKLIST v5.2.6 - Publicar visible inmediato
+
+1. Crear publicación manual.
+2. Confirmar que aparece inmediatamente en Inicio.
+3. Confirmar que aparece en Explorar.
+4. Confirmar que aparece en Perfil → Mis publicaciones.
+5. Confirmar que aparece en Supabase → Table Editor → connecta_publications.
+6. Abrir en otro celular y confirmar que aparece en Inicio/Explorar.
+7. Crear publicación desde Crear igual.
+8. Crear publicación con video.
+9. Confirmar que el video se conserva.
+10. Si falla Supabase, confirmar mensaje: “No se pudo subir al muro público. Se guardó como borrador local.”
+11. Confirmar que en Mis publicaciones aparece estado Pública o Borrador.
+12. Probar botón 🌐 Subir para reintentar un borrador local.
+13. Confirmar que los controles de borrar/editar siguen solo en Perfil/Mis publicaciones y Admin.
+14. Confirmar que compartir, DOLA, Meta IA y WhatsApp siguen funcionando.

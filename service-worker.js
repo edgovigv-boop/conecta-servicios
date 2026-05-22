@@ -1,4 +1,4 @@
-const CACHE_NAME = 'conecta-servicios-v5-2-5-crear-igual-dola-meta';
+const CACHE_NAME = 'conecta-servicios-v5-2-6-publicar-visible-inmediato';
 const ASSETS = [
   '/',
   '/index.html',

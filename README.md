@@ -1,4 +1,4 @@
-# Conecta Servicios v5.2.5
+# Conecta Servicios v5.2.6
 
 ## Cambios principales
 
@@ -53,6 +53,20 @@ Nota: para producción final se recomienda integrar Supabase Auth y reglas RLS p
 8. Subir video y confirmar reproducción.
 9. Confirmar estilo vertical 9:16 tipo TikTok.
 10. Deslizar y confirmar snap por publicación.
+
+
+## v5.2.6 - Publicar visible inmediato
+
+Corrección urgente del guardado de publicaciones. Ahora todos los flujos llaman a una función central `publishPost()` que:
+
+- guarda la publicación localmente para verla al instante;
+- sube multimedia a Supabase Storage cuando está disponible;
+- guarda la publicación pública mediante `/api/publications`;
+- refresca el muro;
+- muestra estado `Pública` o `Borrador local` en Mis publicaciones;
+- permite reintentar subir publicaciones locales al muro público.
+
+No requiere SQL nuevo. Usa el SQL de v5.2.4 ya aplicado.
 
 
 ## v5.2.5 - Crear igual con DOLA y Meta IA

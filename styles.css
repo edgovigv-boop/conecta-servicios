@@ -41,7 +41,7 @@ html{scroll-behavior:smooth;scroll-snap-type:y proximity}.app-shell{overflow:vis
 @media(max-width:390px){.post-card.snap-card .post-actions,.post-card.snap-card .post-actions.manage-actions{grid-template-columns:repeat(2,1fr)}.post-overlay{bottom:132px}.post-card.snap-card{min-height:calc(100vh - 96px)}}
 
 
-/* v5.2.5 - Crear igual con DOLA + Meta IA */
+/* v5.2.6 - Publicar visible inmediato */
 .meta-video-box{scroll-margin-top:96px;margin-top:14px;border:2px solid #bfdbfe;background:linear-gradient(135deg,#eff6ff,#ffffff);border-radius:26px;padding:14px;box-shadow:0 14px 32px rgba(37,99,235,.10)}
 .meta-video-box details{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:10px;color:var(--ink)}
 .meta-video-box summary{font-weight:950;color:var(--primary);cursor:pointer}

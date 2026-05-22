@@ -1,8 +1,8 @@
-Conecta Servicios v5.2.5
+Conecta Servicios v5.2.6
 
 No requiere SQL nuevo.
 
-Usa el mismo SQL de v5.2.4 para muro público compartido:
+Usa el SQL ya aplicado de v5.2.4 para el muro público:
 - supabase-v5.2.4-muro-publico.sql
 
-Si ya lo ejecutaste en Supabase, no lo repitas.
+Esta corrección solo centraliza el guardado en publishPost(), mejora confirmaciones, sincronización con Supabase y reintento de subida desde Mis publicaciones.
