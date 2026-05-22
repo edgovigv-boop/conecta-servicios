@@ -1,0 +1,1 @@
+La versión v5.2.10 no requiere SQL nuevo. Solo ajusta el puente DOLA de ida y vuelta con postMessage, inyección y fallback de portapapeles.

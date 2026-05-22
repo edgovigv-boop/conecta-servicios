@@ -112,7 +112,7 @@ Cambios acumulados sobre v5.2.7:
 Simplificar DOLA con círculo único y prompt Meta estricto v5.2.8
 ```
 
-## v5.2.9 - DOLA prompt oculto y retorno automático
+## v5.2.10 - DOLA prompt oculto y retorno automático
 
 Corrección enfocada únicamente en el flujo de DOLA:
 
@@ -130,3 +130,18 @@ Corrección enfocada únicamente en el flujo de DOLA:
 Nota técnica: por seguridad del navegador, una app no puede escribir directamente dentro de una página externa de otro dominio si esa página no acepta `postMessage`, parámetros URL o una integración oficial. Por eso se conserva fallback de portapapeles.
 
 No requiere SQL nuevo.
+
+
+## v5.2.10 - DOLA inyección ida y vuelta
+
+Corrección puntual del puente DOLA:
+
+- Envía `hiddenPrompt` por `postMessage` con origen validado.
+- Intenta inyectar el prompt si el editor es accesible.
+- Usa fallback con `navigator.clipboard.writeText`.
+- Al volver a Conecta, intenta recibir `generatedText` por `postMessage`, URL, storage o portapapeles.
+- Inyecta el texto en el editor de publicación disparando eventos `input` y `change`.
+- Agrega logs con prefijo `[DOLA_BRIDGE]`.
+- No requiere SQL nuevo.
+
+Limitación técnica: si DOLA externo no acepta `postMessage`, parámetros, iframe bridge o API oficial, el navegador no permite manipular su editor directamente por seguridad. En ese caso se conserva el fallback de portapapeles.

@@ -1,0 +1,13 @@
+Conecta Servicios v5.2.10 - Checklist DOLA inyección ida y vuelta
+
+1. Tocar botón +.
+2. Tocar círculo DOLA.
+3. Confirmar en consola: [DOLA_BRIDGE] postMessage enviado.
+4. Confirmar que si el editor es accesible aparece: [DOLA_BRIDGE] editor listo.
+5. Confirmar: [DOLA_BRIDGE] inyección OK.
+6. Si no se puede inyectar por seguridad del navegador, confirmar fallback clipboard.
+7. Regresar a Conecta.
+8. Confirmar que generatedText se inyecta en el editor.
+9. Confirmar que el texto queda editable.
+10. Confirmar que se disparan input y change.
+11. Confirmar que no se tocaron otros módulos.

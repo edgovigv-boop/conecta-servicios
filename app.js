@@ -1,10 +1,11 @@
-/* Conecta Servicios v5.2.9 - DOLA prompt oculto y retorno automático */
+/* Conecta Servicios v5.2.10 - DOLA inyección ida y vuelta */
 (() => {
   'use strict';
-  const VERSION = 'v5.2.9-dola-inyeccion-retorno';
+  const VERSION = 'v5.2.10-dola-inyeccion-ida-vuelta';
   const DOLA_EXTERNAL_URL = 'https://dola.com';
   const DOLA_ALLOWED_ORIGIN = 'https://dola.com';
   const DOLA_RETURN_CLIPBOARD_SCAN_MS = 900;
+  const DOLA_BRIDGE_PREFIX = '[DOLA_BRIDGE]';
   const META_AI_URL = 'https://www.meta.ai/';
   const CONNECTA_APP_URL = 'https://conecta-servicios.vercel.app/';
   const FREE_DAYS = 30;
@@ -14,7 +15,7 @@
   const MAX_LOCAL_MB = 3; // fotos pequeñas pueden ir como dataURL; videos usan IndexedDB/preview para evitar pérdida
   const K = {
     posts:'cs_v52_posts', profile:'cs_v52_profile', prefs:'cs_v52_prefs', member:'cs_v52_member', admin:'cs_v52_admin',
-    notes:'cs_v52_notes', requests:'cs_v52_requests', referrals:'cs_v52_referrals', verified:'cs_v52_verified', user:'cs_v52_user', dolaSession:'cs_v529_dola_session'
+    notes:'cs_v52_notes', requests:'cs_v52_requests', referrals:'cs_v52_referrals', verified:'cs_v52_verified', user:'cs_v52_user', dolaSession:'cs_v5210_dola_session'
   };
   const app = document.getElementById('app');
   const toastEl = document.getElementById('toast');
@@ -394,6 +395,25 @@ Entrega solamente el texto final de la publicación.`; }
     return source ? inspirationPrompt(source, t) : basePrompt(t);
   }
 
+  function bridgeLog(message, details){
+    try{
+      if(details!==undefined) console.info(`${DOLA_BRIDGE_PREFIX} ${message}`, details);
+      else console.info(`${DOLA_BRIDGE_PREFIX} ${message}`);
+    }catch(e){}
+  }
+  function safeOrigin(origin){
+    try{return new URL(origin).origin;}catch(e){return '';}
+  }
+  function isAllowedBridgeOrigin(origin){
+    const normalized=safeOrigin(origin);
+    if(!normalized) return false;
+    if(normalized===location.origin) return true;
+    try{
+      const allowed=new URL(DOLA_ALLOWED_ORIGIN);
+      const incoming=new URL(normalized);
+      return incoming.origin===allowed.origin || incoming.hostname===allowed.hostname || incoming.hostname.endsWith(`.${allowed.hostname}`);
+    }catch(e){return false;}
+  }
   function saveDolaSession(prompt){
     const session={id:uid('dola'),prompt,createdAt:Date.now(),templateId:state.selectedTemplate?.id||'',inspirationPostId:state.inspirationPostId||'',origin:location.href};
     state.dolaSession=session;
@@ -420,12 +440,135 @@ Entrega solamente el texto final de la publicación.`; }
       return url.toString();
     }catch(e){return DOLA_EXTERNAL_URL;}
   }
+  function editorSelectors(){
+    return [
+      '[data-dola-text]',
+      '[data-publication-editor]',
+      'textarea[name="prompt"]',
+      'textarea[name="message"]',
+      'textarea',
+      'input[type="text"]',
+      '[contenteditable="true"]',
+      '[role="textbox"]'
+    ];
+  }
+  function findEditor(root=document, selectorList=editorSelectors()){
+    for(const selector of selectorList){
+      try{
+        const el=root.querySelector?.(selector);
+        if(el) return el;
+      }catch(e){}
+    }
+    return null;
+  }
+  function injectTextIntoEditor(editor,text,opts={}){
+    if(!editor || typeof text!=='string') return false;
+    const value=text;
+    try{
+      if(editor.isContentEditable || editor.getAttribute?.('contenteditable')==='true' || editor.getAttribute?.('role')==='textbox'){
+        editor.focus?.({preventScroll:!!opts.preventScroll});
+        editor.textContent=value;
+      }else{
+        editor.focus?.({preventScroll:!!opts.preventScroll});
+        editor.value=value;
+      }
+      editor.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertText',data:value}));
+      editor.dispatchEvent(new Event('change',{bubbles:true}));
+      if(opts.focus===false) editor.blur?.();
+      bridgeLog('inyección OK');
+      return true;
+    }catch(e){
+      try{
+        if('value' in editor) editor.value=value;
+        else editor.textContent=value;
+        editor.dispatchEvent(new Event('input',{bubbles:true}));
+        editor.dispatchEvent(new Event('change',{bubbles:true}));
+        bridgeLog('inyección OK');
+        return true;
+      }catch(err){
+        bridgeLog('inyección fallback', err?.message||err);
+        return false;
+      }
+    }
+  }
+  function waitForEditor(root=document, selectorList=editorSelectors(), opts={}){
+    const delays=opts.delays||[300,600,1000,1500,2500,4000];
+    const attempts=opts.attempts||delays.length;
+    return new Promise(resolve=>{
+      let i=0;
+      const step=()=>{
+        const editor=findEditor(root,selectorList);
+        if(editor){ bridgeLog('editor listo'); resolve(editor); return; }
+        if(i>=attempts){ resolve(null); return; }
+        setTimeout(step,delays[Math.min(i,delays.length-1)]);
+        i++;
+      };
+      step();
+    });
+  }
+  async function tryInjectIntoAccessibleDolaWindow(win,hiddenPrompt){
+    if(!win) return false;
+    try{
+      const doc=win.document;
+      if(!doc) return false;
+      const editor=await waitForEditor(doc,editorSelectors(),{attempts:6});
+      if(editor) return injectTextIntoEditor(editor,hiddenPrompt,{focus:true,preventScroll:true});
+    }catch(e){
+      // Normal en dominios externos: el navegador bloquea acceso cross-origin.
+    }
+    return false;
+  }
+  async function copyHiddenPromptFallback(hiddenPrompt){
+    try{
+      await navigator.clipboard?.writeText(hiddenPrompt);
+      bridgeLog('fallback clipboard OK');
+      toast('Prompt listo. Pégalo en DOLA.');
+      return true;
+    }catch(e){
+      bridgeLog('fallback clipboard error',e?.message||e);
+      toast('Prompt listo. Copia manual si hace falta.');
+      return false;
+    }
+  }
+  async function sendHiddenPromptToDola(hiddenPrompt,context={},win=null){
+    const payload={
+      type:'CONNECTA_DOLA_PROMPT',
+      source:'conecta-servicios',
+      prompt:hiddenPrompt,
+      context:{
+        flow:context.flow||'create',
+        publicationId:context.publicationId||state.inspirationPostId||'',
+        templateId:context.templateId||state.selectedTemplate?.id||'',
+        sessionId:context.sessionId||getDolaSession()?.id||'',
+        returnUrl:location.origin+location.pathname
+      }
+    };
+    const targets=[];
+    if(win) targets.push(win);
+    const iframe=document.querySelector('iframe[data-dola-frame], iframe[src*="dola"]');
+    if(iframe?.contentWindow) targets.push(iframe.contentWindow);
+    targets.forEach(target=>{
+      [0,300,600,1000,1500,2500,4000].forEach(delay=>setTimeout(()=>{
+        try{
+          target.postMessage(payload,DOLA_ALLOWED_ORIGIN);
+          bridgeLog('postMessage enviado');
+        }catch(e){bridgeLog('inyección fallback',e?.message||e);}
+      },delay));
+    });
+    const injected=await tryInjectIntoAccessibleDolaWindow(win,hiddenPrompt);
+    if(injected) return 'injected';
+    await copyHiddenPromptFallback(hiddenPrompt);
+    return 'clipboard';
+  }
+  function shouldRejectGeneratedText(text){
+    const clean=String(text||'').trim();
+    const session=getDolaSession();
+    return !clean || clean.length<8 || (session && clean===session.prompt.trim()) || /^ROL:|^Actúa como|^Eres DOLA|DOLA_API_NOT_CONFIGURED/i.test(clean);
+  }
   function injectDolaTextIntoEditor(text,opts={}){
     const clean=String(text||'').trim();
-    if(!clean || clean.length<8) return false;
-    const session=getDolaSession();
-    if(session && clean===session.prompt.trim()) return false;
-    if(/^ROL:|^Actúa como|^Eres DOLA|DOLA_API_NOT_CONFIGURED/i.test(clean)) return false;
+    if(shouldRejectGeneratedText(clean)) return false;
+    bridgeLog('generatedText recibido');
     state.chatResult=clean;
     state.dolaPromptCopied=true;
     state.apiStatus='ready';
@@ -433,17 +576,22 @@ Entrega solamente el texto final de la publicación.`; }
     state.createChoice='dola';
     if(!state.selectedTemplate) state.selectedTemplate=templates[0];
     render();
-    setTimeout(()=>{
-      const el=document.querySelector('[data-dola-text]');
-      if(el){
-        el.value=clean;
-        el.dispatchEvent(new Event('input',{bubbles:true}));
-        el.dispatchEvent(new Event('change',{bubbles:true}));
-        if(opts.focus!==false) el.focus({preventScroll:true});
+    waitForEditor(document,['[data-dola-text]'],{attempts:6}).then(editor=>{
+      if(editor){
+        bridgeLog('editor Conecta listo');
+        injectTextIntoEditor(editor,clean,{focus:opts.focus!==false,preventScroll:true});
+        bridgeLog('generatedText inyectado OK');
+      }else{
+        bridgeLog('generatedText fallback');
       }
-    },60);
+    });
     toast('Texto recibido');
     return true;
+  }
+  function receiveGeneratedTextFromDola(event){
+    if(event && event.origin && !isAllowedBridgeOrigin(event.origin)) return false;
+    const data=event?.data ?? event;
+    return handleDolaMessage(data);
   }
   function handleDolaMessage(data){
     if(!data) return false;
@@ -452,8 +600,12 @@ Entrega solamente el texto final de la publicación.`; }
       try{payload=JSON.parse(payload);}catch(e){payload={text:data};}
     }
     const type=payload.type||payload.event||'';
-    const text=payload.text||payload.result||payload.content||payload.message||'';
-    if(text && (!type || /dola|conecta|result|response/i.test(type))) return injectDolaTextIntoEditor(text,{focus:true});
+    if(/CONNECTA_DOLA_ACK|DOLA_PROMPT_RECEIVED/i.test(type)){
+      bridgeLog('postMessage confirmado');
+      return true;
+    }
+    const text=payload.generatedText||payload.text||payload.result||payload.content||payload.message||'';
+    if(text && (!type || /dola|conecta|result|response|generated/i.test(type))) return injectDolaTextIntoEditor(text,{focus:true});
     return false;
   }
   async function tryReadDolaClipboard(){
@@ -469,20 +621,15 @@ Entrega solamente el texto final de la publicación.`; }
     if(state.dolaReturnTimer) clearTimeout(state.dolaReturnTimer);
     state.dolaReturnTimer=setTimeout(tryReadDolaClipboard,DOLA_RETURN_CLIPBOARD_SCAN_MS);
   }
-  function openDolaWithHiddenPrompt(prompt){
+  async function openDolaWithHiddenPrompt(prompt){
     const session=saveDolaSession(prompt);
     state.dolaPromptCopied=true;
     state.apiStatus='fallback';
     render();
-    // Intento 1: URL con prompt y return_url. Si DOLA lo soporta, no requiere pegar manualmente.
     const target=dolaUrlWithPrompt(prompt,session);
-    // Intento 2: postMessage al tab abierto. Si DOLA escucha mensajes, recibe el prompt automáticamente.
     let win=null;
     try{win=window.open(target,'_blank'); state.dolaWindow=win;}catch(e){win=null;}
-    const packet={type:'CONNECTA_DOLA_PROMPT',source:'conecta-servicios',sessionId:session.id,prompt,returnUrl:location.origin+location.pathname};
-    [350,900,1600,2600].forEach(ms=>setTimeout(()=>{try{win?.postMessage(packet,DOLA_ALLOWED_ORIGIN);}catch(e){}},ms));
-    // Fallback obligado: portapapeles. Si DOLA no acepta URL/postMessage, el prompt ya queda copiado.
-    copy(prompt);
+    await sendHiddenPromptToDola(prompt,{flow:state.inspirationPostId?'create_same':'create',publicationId:state.inspirationPostId,templateId:state.selectedTemplate?.id,sessionId:session.id},win);
     toast('DOLA listo');
   }
 
@@ -757,9 +904,8 @@ Ver en Conecta Servicios: ${url}`;
   function moduleAction(raw){ const [mod,act]=raw.split(':'); if(['Publicar','Solicitar','Campaña'].includes(act)){ state.selectedTemplate=templates.find(t=>mod==='agentes'?t.id==='agente':mod==='mandados'?t.id==='mensajero':t.id==='negocio'); state.createChoice=null; nav('/publicar'); return; } if(act==='DOLA'||act==='Plan'||act==='Mensaje'){ state.selectedTemplate=templates.find(t=>t.id==='agente')||templates[0]; state.createChoice='dola'; nav('/publicar'); return; } if(act==='Copiar enlace'||act==='Compartir'){ copy(`${CONNECTA_APP_URL}?ref=embajador`); return;} if(act==='Referido'||act==='Postularme'){ const arr=get(mod==='mandados'?K.verified:K.referrals,[]); arr.unshift({id:uid('r'),createdAt:now(),mod}); set(mod==='mandados'?K.verified:K.referrals,arr); toast('Guardado'); return;} toast('Listo'); }
 
   window.addEventListener('message',event=>{
-    // Si DOLA llega a devolver el resultado por postMessage, se inserta sin pasos extra.
-    if(event.origin && !/dola\.com$/.test(new URL(event.origin).hostname) && event.origin!==location.origin) return;
-    handleDolaMessage(event.data);
+    // Puente DOLA: validar origen y aceptar ACK o generatedText.
+    receiveGeneratedTextFromDola(event);
   });
   window.addEventListener('focus',armDolaReturnWatch);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible') armDolaReturnWatch();});
