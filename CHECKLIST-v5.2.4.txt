@@ -1,0 +1,13 @@
+CHECKLIST v5.2.4
+
+1. En Inicio/Explorar no aparece botón Borrar.
+2. En Perfil → Mis publicaciones sí aparecen Editar y Borrar.
+3. Un usuario solo puede borrar sus propias publicaciones.
+4. Admin puede editar, ocultar, activar y borrar cualquier publicación desde Admin.
+5. Publicar desde un dispositivo y ver en Inicio/Explorar.
+6. Con Supabase configurado, revisar otro celular y confirmar publicación pública.
+7. Subir video y confirmar que se reproduce.
+8. Ver tarjetas en formato vertical grande.
+9. Confirmar texto y botones encima del video/foto con transparencia.
+10. Confirmar scroll snap: cada publicación queda centrada.
+11. Confirmar que DOLA, WhatsApp y multimedia siguen funcionando.

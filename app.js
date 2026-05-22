@@ -1,7 +1,7 @@
-/* Conecta Servicios v5.2.3 - DOLA guía visual y edición final */
+/* Conecta Servicios v5.2.4 - Muro público, TikTok visual y controles en perfil */
 (() => {
   'use strict';
-  const VERSION = 'v5.2.3-dola-guia-visual-editar-final';
+  const VERSION = 'v5.2.4-muro-publico-tiktok-admin-perfil';
   const DOLA_EXTERNAL_URL = 'https://dola.com';
   const CONNECTA_APP_URL = 'https://conecta-servicios.vercel.app/';
   const FREE_DAYS = 30;
@@ -11,7 +11,7 @@
   const MAX_LOCAL_MB = 3; // fotos pequeñas pueden ir como dataURL; videos usan IndexedDB/preview para evitar pérdida
   const K = {
     posts:'cs_v52_posts', profile:'cs_v52_profile', prefs:'cs_v52_prefs', member:'cs_v52_member', admin:'cs_v52_admin',
-    notes:'cs_v52_notes', requests:'cs_v52_requests', referrals:'cs_v52_referrals', verified:'cs_v52_verified'
+    notes:'cs_v52_notes', requests:'cs_v52_requests', referrals:'cs_v52_referrals', verified:'cs_v52_verified', user:'cs_v52_user'
   };
   const app = document.getElementById('app');
   const toastEl = document.getElementById('toast');
@@ -19,7 +19,7 @@
   const mediaObjectUrls = new Map();
   const mediaLoading = new Set();
   let mediaDbPromise = null;
-  const state = { route:'/', filter:'Todos', stack:[], modal:null, selectedTemplate:null, selectedType:null, createChoice:null, draft:null, media:[], chatTask:null, chatMessages:[], chatText:'', chatResult:'', apiStatus:'idle', apiError:'', dolaPromptCopied:false };
+  const state = { route:'/', filter:'Todos', stack:[], modal:null, selectedTemplate:null, selectedType:null, createChoice:null, draft:null, media:[], chatTask:null, chatMessages:[], chatText:'', chatResult:'', apiStatus:'idle', apiError:'', dolaPromptCopied:false, cloudReady:false, cloudMessage:'' };
 
   const types = [
     {id:'Negocio', icon:'🏪', color:'negocio', bg:'negocio-bg', title:'Negocio', short:'Vendo'},
@@ -65,10 +65,13 @@
   function isMember(){const m=member();return !!m.active && (!m.expiresAt || new Date(m.expiresAt)>new Date());}
   function isAdmin(){return localStorage.getItem(K.admin)==='true';}
   function canUnlimited(){return isAdmin()||isMember();}
-  function posts(){let p=get(K.posts,null); if(!p){p=seed;set(K.posts,p)} return p;}
-  function savePosts(p){try{set(K.posts,p)}catch(e){toast('Video pesado: usa Storage en producción'); set(K.posts,p.map(x=>({...x,mediaItems:[],mediaData:''})));}}
+  function userId(){let id=localStorage.getItem(K.user); if(!id){id=uid('u');localStorage.setItem(K.user,id);} return id;}
+  function isMine(p){return !!p && (p.mine===true || p.ownerId===userId());}
+  function normalizePost(p){return {...p, ownerId:p.ownerId||(p.mine?userId():p.ownerId), mine:(p.ownerId? p.ownerId===userId(): !!p.mine)};}
+  function posts(){let p=get(K.posts,null); if(!p){p=seed;set(K.posts,p)} return p.map(normalizePost);}
+  function savePosts(p){const normalized=p.map(normalizePost); try{set(K.posts,normalized)}catch(e){toast('Video pesado: usa Storage en producción'); set(K.posts,normalized.map(x=>({...x,mediaItems:[],mediaData:''})));}}
   function visiblePosts(){return posts().filter(p=>p.status!=='eliminada' && (isAdmin() || p.status!=='oculta'));}
-  function myPosts(){return posts().filter(p=>p.mine);}
+  function myPosts(){return posts().filter(p=>isMine(p));}
   function daysLeft(d){if(!d)return null; return Math.max(0,Math.ceil((new Date(d)-new Date())/86400000));}
   function toast(msg){toastEl.textContent=msg;toastEl.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>toastEl.classList.remove('show'),2400);}
   function nav(route, opts={}){ if(!opts.replace && state.route!==route) state.stack.push({route:state.route, filter:state.filter, template:state.selectedTemplate, choice:state.createChoice}); state.route=route; if(opts.filter)state.filter=opts.filter; render(); if(!opts.keepScroll) setTimeout(()=>window.scrollTo({top:0,behavior:'smooth'}),0); }
@@ -156,23 +159,30 @@
   function home(){
     return layout(`
       <div class="quick-hero">${types.map(t=>`<button class="big-chip ${t.bg}" data-filter-home="${t.id}"><span>${t.icon}</span><small>${t.short}</small></button>`).join('')}</div>
+      <div class="cloud-badge ${state.cloudReady?'':'off'}">${state.cloudReady?'🌐 Público':'📱 Local'}</div>
       <div class="visual-tabs">${star.map(s=>`<button class="tab-pill" data-route="${s.route}" ${s.filter?`data-filter="${s.filter}"`:''}>${s.icon} ${s.label}</button>`).join('')}</div>
       <div class="section-head"><h2>Ejemplos</h2><button data-route="/publicar">Crear</button></div>
       ${categoryGallery('Negocio')}${categoryGallery('Agente')}${categoryGallery('Solicitante')}
     `,{back:false});
   }
-  function categoryGallery(type){ const filtered=visiblePosts().filter(p=>p.type===type).slice(0,3); const t=types.find(x=>x.id===type); return `<section><div class="section-head"><h2>${t.icon} ${type}s</h2><button data-route="/explorar" data-filter="${type}">Ver</button></div><div class="gallery">${filtered.map(postCard).join('')}</div></section>`; }
+  function categoryGallery(type){ const filtered=visiblePosts().filter(p=>p.type===type).slice(0,3); const t=types.find(x=>x.id===type); return `<section><div class="section-head"><h2>${t.icon} ${type}s</h2><button data-route="/explorar" data-filter="${type}">Ver</button></div><div class="gallery snap-feed">${filtered.map(p=>postCard(p,'feed')).join('')}</div></section>`; }
   function explore(){ const all=visiblePosts(); const filtered=state.filter==='Todos'?all:all.filter(p=>p.type===state.filter); return layout(`
     <div class="visual-tabs">${['Todos','Negocio','Agente','Solicitante'].map(f=>`<button class="tab-pill ${state.filter===f?'active':''}" data-set-filter="${f}">${f==='Todos'?'✨':types.find(t=>t.id===f)?.icon} ${f}</button>`).join('')}</div>
     <input class="input" data-search placeholder="🔎 Buscar" aria-label="Buscar">
-    <div class="gallery" id="feed">${filtered.map(postCard).join('') || '<div class="empty">Sin publicaciones</div>'}</div>
+    <div class="gallery snap-feed" id="feed">${filtered.map(p=>postCard(p,'feed')).join('') || '<div class="empty">Sin publicaciones</div>'}</div>
   `,{title:'Buscar'}); }
-  function postCard(p){ const cls=p.type==='Agente'?'agente':p.type==='Negocio'?'negocio':'solicitante'; return `<article class="post-card">
-    <div class="post-media">${renderMedia(p)}</div>
-    <div class="post-body"><div class="meta"><span class="chip ${cls}">${iconForType(p.type)} ${p.type}</span><span class="chip gray">📍 ${esc(p.zone||'Zona')}</span>${p.status==='oculta'?'<span class="chip gray">🙈 Oculta</span>':''}</div>
-      <h3 class="post-title">${esc(p.title)}</h3><div class="post-desc">${esc(p.description)}</div></div>
-    <div class="post-actions ${p.mine||isAdmin()?'has-delete':''}"><button class="action" data-react="${p.id}">❤️ ${p.reactions||0}</button><button class="action" data-share="${p.id}">↗ Compartir</button><button class="action" data-similar="${p.id}">➕ Igual</button><button class="action primary ${p.channel==='whatsapp'?'whatsapp':''}" data-message="${p.id}">💬 Mensaje</button>${p.mine||isAdmin()?`<button class="action red" data-delete-post="${p.id}">🗑️ Borrar</button>`:''}</div>
-  </article>`; }
+  function postCard(p, context='feed'){
+    const cls=p.type==='Agente'?'agente':p.type==='Negocio'?'negocio':'solicitante';
+    const canManage = context==='mine' && isMine(p);
+    const actions = [`<button class="action" data-react="${p.id}">❤️ ${p.reactions||0}</button>`,`<button class="action" data-share="${p.id}">↗ Compartir</button>`,`<button class="action" data-similar="${p.id}">➕ Igual</button>`,`<button class="action primary ${p.channel==='whatsapp'?'whatsapp':''}" data-message="${p.id}">💬 Mensaje</button>`];
+    if(canManage){actions.unshift(`<button class="action primary" data-edit-own="${p.id}">✏️ Editar</button>`); actions.push(`<button class="action red" data-delete-post="${p.id}">🗑️ Borrar</button>`);}
+    return `<article class="post-card snap-card ${context==='preview'?'preview-card':''}">
+      <div class="post-media">${renderMedia(p)}</div>
+      <div class="post-overlay"><div class="meta"><span class="chip ${cls}">${iconForType(p.type)} ${p.type}</span><span class="chip glass">📍 ${esc(p.zone||'Zona')}</span>${p.status==='oculta'?'<span class="chip glass">🙈 Oculta</span>':''}</div>
+        <h3 class="post-title">${esc(p.title)}</h3><div class="post-desc">${esc(p.description)}</div></div>
+      <div class="post-actions ${canManage?'manage-actions':''}">${actions.join('')}</div>
+    </article>`;
+  }
   function renderMedia(p){
     const items=p.mediaItems||[];
     const first=items[0];
@@ -186,6 +196,53 @@
     const key=p.mediaKey || (p.type==='Negocio'?'negocio':p.type==='Agente'?'agente':'solicitante');
     return `<img src="${mediaPath(key)}" alt="${esc(p.title)}" onerror="this.outerHTML='<div class=&quot;placeholder&quot;><div><span class=&quot;emoji&quot;>${iconForType(p.type)}</span>${esc(p.type)}</div></div>'">`;
   }
+  async function getPublicConfig(){
+    try{ const res=await fetch('/api/public-config',{cache:'no-store'}); return await res.json(); }catch{return {ok:false};}
+  }
+  async function syncFromCloud(){
+    try{
+      const res=await fetch('/api/publications',{cache:'no-store'});
+      const data=await res.json();
+      if(!data.ok){state.cloudReady=false; state.cloudMessage=data.message||'Modo local'; return;}
+      state.cloudReady=true; state.cloudMessage='Muro público activo';
+      const remote=(data.posts||[]).map(normalizePost);
+      const local=posts();
+      const merged=[...remote];
+      local.forEach(lp=>{ if(!merged.some(r=>r.id===lp.id)) merged.push(lp); });
+      savePosts(merged);
+      render();
+    }catch(e){state.cloudReady=false; state.cloudMessage='Modo local';}
+  }
+  async function syncPostToCloud(post){
+    try{ await fetch('/api/publications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({post})}); }catch(e){}
+  }
+  async function deletePostFromCloud(id){
+    try{ await fetch('/api/publications',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,ownerId:userId(),admin:isAdmin()})}); }catch(e){}
+  }
+  async function uploadMediaToCloud(post){
+    const cfg=await getPublicConfig();
+    if(!cfg.ok || !cfg.supabaseUrl || !cfg.supabaseAnonKey) return post.mediaItems||[];
+    const bucket=cfg.storageBucket||'publication-media';
+    const items=[];
+    for(const item of (post.mediaItems||[])){
+      if(item.url){items.push(item); continue;}
+      let blob=null;
+      try{
+        if(item.data) blob=await (await fetch(item.data)).blob();
+        else if(item.ref) blob=await loadMediaBlob(item.ref);
+      }catch(e){}
+      if(!blob){items.push(item); continue;}
+      const safe=(item.name||`${item.kind||'media'}.bin`).replace(/[^a-z0-9_.-]/gi,'-').toLowerCase();
+      const path=`${encodeURIComponent(userId())}/${encodeURIComponent(post.id)}/${Date.now()}-${safe}`;
+      try{
+        const up=await fetch(`${cfg.supabaseUrl}/storage/v1/object/${bucket}/${path}`,{method:'POST',headers:{'apikey':cfg.supabaseAnonKey,'Authorization':`Bearer ${cfg.supabaseAnonKey}`,'Content-Type':item.type||blob.type||'application/octet-stream','x-upsert':'true'},body:blob});
+        if(up.ok){items.push({...item,data:undefined,ref:undefined,preview:undefined,url:`${cfg.supabaseUrl}/storage/v1/object/public/${bucket}/${path}`});}
+        else items.push(item);
+      }catch(e){items.push(item);}
+    }
+    return items;
+  }
+
   function iconForType(type){ return type==='Negocio'?'🏪':type==='Agente'?'🛵':'🧡'; }
 
   function publish(){
@@ -257,11 +314,11 @@ No agregues explicaciones fuera de la publicación final.`; }
   function manualCreate(){ const d=state.draft||{type:state.selectedTemplate.type,category:state.selectedTemplate.cat,title:'',description:'',zone:'',channel:'dola',whatsapp:'',mediaItems:[]}; if(!state.draft) state.draft=d; return layout(`<div class="card"><h2 class="page-title">✍️ Manual</h2>${formFields(d)}</div>${preview(d)}`,{title:'Manual'}); }
   function formFields(d){return `<label class="label">Título</label><input class="input" data-field="title" value="${esc(d.title)}" placeholder="Título"><label class="label">Zona</label><input class="input" data-field="zone" value="${esc(d.zone)}" placeholder="Zona"><label class="label">Texto</label><textarea class="textarea" data-field="description" placeholder="Descripción">${esc(d.description)}</textarea><label class="label">Canal</label><select class="select" data-field="channel"><option value="dola" ${d.channel==='dola'?'selected':''}>DOLA</option><option value="whatsapp" ${d.channel==='whatsapp'?'selected':''}>WhatsApp</option></select>${d.channel==='whatsapp'?`<label class="label">WhatsApp</label><input class="input" data-field="whatsapp" value="${esc(d.whatsapp||'')}" placeholder="Número">`:''}${mediaUploader()}`;}
   function mediaUploader(){ return `<div id="media-section" class="media-section"><label class="label">Fotos / videos</label><label class="file-btn">📷 Subir<input class="hidden" type="file" data-media multiple accept="image/*,video/*"></label><div class="media-grid">${state.media.map((m,i)=>{const src=resolveMediaSrc(m); return `<div class="media-thumb">${src?(m.kind==='video'?`<video src="${src}" controls playsinline preload="metadata"></video>`:`<img src="${src}" alt="media">`):`<div class="placeholder small">🎥 Video</div>`}<button class="media-x" data-remove-media="${i}">×</button></div>`}).join('')}</div><p class="sub">Hasta 10 archivos.</p></div>`; }
-  function preview(d){ return `<div class="card"><h2 class="page-title">Así se verá</h2>${postCard({...d,id:'preview',reactions:0,mediaItems:state.media,mine:true,createdAt:now(),mediaKey:state.selectedTemplate?.media})}<button class="btn primary full" data-publish-draft>Publicar</button></div>`; }
+  function preview(d){ return `<div class="card"><h2 class="page-title">Así se verá</h2>${postCard({...d,id:'preview',reactions:0,mediaItems:state.media,mine:true,ownerId:userId(),createdAt:now(),mediaKey:state.selectedTemplate?.media},'preview')}<button class="btn primary full" data-publish-draft>Publicar</button></div>`; }
   function buildDraftFromText(text){ const first=(text||'').split('\n').find(x=>x.trim())||state.selectedTemplate.title; return {id:uid('p'), mine:true, type:state.selectedTemplate.type, category:state.selectedTemplate.cat, title:first.replace(/^[#*\s]+/,'').slice(0,80), description:text.trim(), zone:extractZone(text)||'', channel:'dola', whatsapp:'', status:'activa', freeTrial:!canUnlimited(), expiresAt:canUnlimited()?null:now(FREE_DAYS), createdAt:now(), mediaKey:state.selectedTemplate.media, mediaItems:state.media, reactions:0}; }
   function extractZone(text){ const m=String(text).match(/(?:Zona|Ubicación|📍)\s*:?\s*([^\n]+)/i); return m?m[1].trim().slice(0,60):''; }
 
-  function myPage(){ const list=myPosts().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); return layout(`<div class="section-head"><h2>Mis publicaciones</h2><button data-route="/publicar">Crear</button></div>${list.length?`<div class="gallery">${list.map(postCard).join('')}</div>`:'<div class="empty">Sin publicaciones</div>'}<div class="card"><b>💎 $${PRICE}</b><p class="sub">Publica sin límites.</p><button class="btn primary full" data-activate-member>Activar</button></div>`,{title:'Mis'}); }
+  function myPage(){ const list=myPosts().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); return layout(`<div class="section-head"><h2>Mis publicaciones</h2><button data-route="/publicar">Crear</button></div>${list.length?`<div class="gallery snap-feed">${list.map(p=>postCard(p,'mine')).join('')}</div>`:'<div class="empty">Sin publicaciones</div>'}<div class="card"><b>💎 $${PRICE}</b><p class="sub">Publica sin límites.</p><button class="btn primary full" data-activate-member>Activar</button></div>`,{title:'Mis'}); }
   function profile(){ const p=get(K.profile,{name:'',zone:'',phone:''}); const prefs=get(K.prefs,{channel:'dola'}); return layout(`<div class="big-options"><button class="big-option" data-route="/mis"><span class="ico">📌</span><div><b>Mis</b><small>Publicaciones</small></div></button><button class="big-option" data-install><span class="ico">➕</span><div><b>Instalar</b><small>PWA</small></div></button><button class="big-option" data-enable-notes><span class="ico">🔔</span><div><b>Avisos</b><small>Activar</small></div></button><button class="big-option" ${isAdmin()?'data-route="/admin"':'data-admin'}><span class="ico">🛠️</span><div><b>Oficina</b><small>${isAdmin()?'Panel':'Admin'}</small></div></button></div><div class="card"><label class="label">Nombre</label><input class="input" data-profile="name" value="${esc(p.name)}"><label class="label">Zona</label><input class="input" data-profile="zone" value="${esc(p.zone)}"><label class="label">Canal</label><select class="select" data-pref="channel"><option value="dola" ${prefs.channel==='dola'?'selected':''}>DOLA</option><option value="whatsapp" ${prefs.channel==='whatsapp'?'selected':''}>WhatsApp</option></select><div class="btn-row"><button class="btn green" data-save-profile>Guardar</button><button class="btn red" data-clear-local>Limpiar</button></div></div><div class="version">${VERSION}</div>`,{title:'Perfil'}); }
   function notifications(){ const n=get(K.notes,[]); return layout(`<div class="card"><button class="btn primary full" data-enable-notes>Activar 🔔</button></div>${n.length?n.map(x=>`<div class="card"><b>${esc(x.title)}</b><p class="sub">${esc(x.msg)}</p></div>`).join(''):'<div class="empty">Sin avisos</div>'}`,{title:'Avisos'}); }
 
@@ -315,17 +372,18 @@ No agregues explicaciones fuera de la publicación final.`; }
     document.querySelectorAll('[data-preview-manual]').forEach(b=>b.onclick=()=>{collectManual(); render();});
     document.querySelectorAll('[data-save-manual],[data-publish-draft]').forEach(b=>b.onclick=publishDraft);
     document.querySelectorAll('[data-delete-post]').forEach(b=>b.onclick=()=>deletePost(b.dataset.deletePost));
+    document.querySelectorAll('[data-edit-own]').forEach(b=>b.onclick=()=>editOwnPost(b.dataset.editOwn));
     document.querySelectorAll('[data-media]').forEach(i=>i.onchange=handleFiles);
     document.querySelectorAll('[data-remove-media]').forEach(b=>b.onclick=()=>{state.media.splice(+b.dataset.removeMedia,1);render();});
     document.querySelectorAll('[data-message]').forEach(b=>b.onclick=()=>openContact(posts().find(p=>p.id===b.dataset.message)));
     document.querySelectorAll('[data-react]').forEach(b=>b.onclick=()=>{const ps=posts(); const p=ps.find(x=>x.id===b.dataset.react); if(p){p.reactions=(p.reactions||0)+1;savePosts(ps);render();}});
     document.querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>sharePost(b.dataset.share));
-    document.querySelectorAll('[data-similar]').forEach(b=>b.onclick=()=>{const p=posts().find(x=>x.id===b.dataset.similar); state.selectedTemplate=templates.find(t=>t.type===p.type)||templates[0]; state.createChoice='manual'; state.media=[]; state.draft={...p,id:uid('p'),mine:true,title:`${p.title}`,createdAt:now(),mediaItems:[],status:'activa'}; nav('/publicar'); setTimeout(()=>window.scrollTo({top:0,behavior:'smooth'}),50);});
+    document.querySelectorAll('[data-similar]').forEach(b=>b.onclick=()=>{const p=posts().find(x=>x.id===b.dataset.similar); state.selectedTemplate=templates.find(t=>t.type===p.type)||templates[0]; state.createChoice='manual'; state.media=[]; state.draft={...p,id:uid('p'),mine:true,ownerId:userId(),title:`${p.title}`,createdAt:now(),mediaItems:[],status:'activa'}; nav('/publicar'); setTimeout(()=>window.scrollTo({top:0,behavior:'smooth'}),50);});
     document.querySelectorAll('[data-activate-member]').forEach(b=>b.onclick=()=>{set(K.member,{active:true,startedAt:now(),expiresAt:now(365)});toast('Membresía activa');render();});
     document.querySelectorAll('[data-enable-notes]').forEach(b=>b.onclick=()=>{Notification?.requestPermission?.();addNote('Avisos','Activados');toast('Avisos activos');render();});
     document.querySelectorAll('[data-admin]').forEach(b=>b.onclick=()=>{const pin=prompt('PIN'); if(pin===ADMIN_PIN){localStorage.setItem(K.admin,'true');toast('Admin activo'); nav('/admin');} else toast('PIN incorrecto');});
     document.querySelectorAll('[data-admin-exit]').forEach(b=>b.onclick=()=>{localStorage.removeItem(K.admin);toast('Admin cerrado');nav('/perfil',{replace:true});});
-    document.querySelectorAll('[data-admin-toggle]').forEach(b=>b.onclick=()=>{const ps=posts(); const p=ps.find(x=>x.id===b.dataset.adminToggle); if(p){p.status=(p.status==='oculta')?'activa':'oculta'; savePosts(ps); toast(p.status==='oculta'?'Publicación oculta':'Publicación activa'); render();}});
+    document.querySelectorAll('[data-admin-toggle]').forEach(b=>b.onclick=()=>{const ps=posts(); const p=ps.find(x=>x.id===b.dataset.adminToggle); if(p){p.status=(p.status==='oculta')?'activa':'oculta'; savePosts(ps); syncPostToCloud(p); toast(p.status==='oculta'?'Publicación oculta':'Publicación activa'); render();}});
     document.querySelectorAll('[data-admin-edit]').forEach(b=>b.onclick=()=>{const p=posts().find(x=>x.id===b.dataset.adminEdit); if(p){state.selectedTemplate=templates.find(t=>t.type===p.type)||templates[0]; state.createChoice='manual'; state.draft={...p}; state.media=[...(p.mediaItems||[])]; nav('/publicar');}});
     document.querySelectorAll('[data-save-profile]').forEach(b=>b.onclick=saveProfile);
     document.querySelectorAll('[data-clear-local]').forEach(b=>b.onclick=()=>{if(confirm('¿Borrar datos locales?')){Object.values(K).forEach(k=>localStorage.removeItem(k));toast('Listo');render();}});
@@ -350,11 +408,22 @@ Ver en Conecta Servicios: ${url}`;
   }
   function deletePost(id){
     const ps=posts(); const p=ps.find(x=>x.id===id); if(!p) return;
-    if(!isAdmin() && !p.mine){ toast('Solo puedes borrar tus publicaciones'); return; }
+    if(!isAdmin() && !isMine(p)){ toast('Solo puedes borrar tus publicaciones'); return; }
     if(!confirm('¿Eliminar definitivamente esta publicación?')) return;
     savePosts(ps.filter(x=>x.id!==id));
+    deletePostFromCloud(id);
     toast('Publicación eliminada');
     render();
+  }
+  function editOwnPost(id){
+    const p=posts().find(x=>x.id===id);
+    if(!p || !isMine(p)){toast('Solo puedes editar tus publicaciones'); return;}
+    state.selectedTemplate=templates.find(t=>t.type===p.type)||templates[0];
+    state.createChoice='manual';
+    state.draft={...p};
+    state.media=[...(p.mediaItems||[])];
+    nav('/publicar');
+    setTimeout(()=>window.scrollTo({top:0,behavior:'smooth'}),50);
   }
   function saveProfile(){ const p={}; document.querySelectorAll('[data-profile]').forEach(el=>p[el.dataset.profile]=el.value); const prefs=get(K.prefs,{}); document.querySelectorAll('[data-pref]').forEach(el=>prefs[el.dataset.pref]=el.value); set(K.profile,p); set(K.prefs,prefs); toast('Guardado'); }
   async function handleFiles(e){
@@ -379,4 +448,5 @@ Ver en Conecta Servicios: ${url}`;
   function moduleAction(raw){ const [mod,act]=raw.split(':'); if(['Publicar','Solicitar','Campaña'].includes(act)){ state.selectedTemplate=templates.find(t=>mod==='agentes'?t.id==='agente':mod==='mandados'?t.id==='mensajero':t.id==='negocio'); state.createChoice=null; nav('/publicar'); return; } if(act==='DOLA'||act==='Plan'||act==='Mensaje'){ state.selectedTemplate=templates.find(t=>t.id==='agente')||templates[0]; state.createChoice='dola'; nav('/publicar'); return; } if(act==='Copiar enlace'||act==='Compartir'){ copy(`${CONNECTA_APP_URL}?ref=embajador`); return;} if(act==='Referido'||act==='Postularme'){ const arr=get(mod==='mandados'?K.verified:K.referrals,[]); arr.unshift({id:uid('r'),createdAt:now(),mod}); set(mod==='mandados'?K.verified:K.referrals,arr); toast('Guardado'); return;} toast('Listo'); }
 
   render();
+  syncFromCloud();
 })();

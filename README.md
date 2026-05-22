@@ -1,102 +1,55 @@
-# Conecta Servicios v5.2.3.0 — UX visual universal
+# Conecta Servicios v5.2.4
 
-Rediseño visual de Conecta Servicios con la regla: **si hay que leer demasiado, está mal diseñado**.
+## Cambios principales
 
-## Qué cambia
+- Controles de usuario **solo en Perfil → Mis publicaciones**.
+- En el muro general / explorador ya no aparece botón de borrar.
+- Admin mantiene panel completo para editar, ocultar, activar y borrar.
+- Muro con estilo visual tipo TikTok: multimedia vertical 9:16, texto y acciones encima con transparencia.
+- Scroll con snap: cada publicación se centra al deslizar.
+- Preparación para muro público multi-dispositivo con Supabase vía `/api/publications`.
+- Fotos/videos se mantienen como antes en modo local; si configuras Supabase Storage, se intentan subir a `publication-media`.
 
-- Home inicia con banco visual de publicaciones, sin textos largos.
-- Categorías claras: 🟢 Negocios, 🟡 Agentes, 🔴 Solicitantes.
-- Menú inferior reducido: Inicio, Buscar, Crear, Perfil.
-- Flujo Crear con botones grandes e iconos.
-- DOLA y Manual siguen disponibles.
-- DOLA se muestra como chat interno si la API está configurada.
-- Si la API no está configurada, sigue funcionando el respaldo externo.
-- Fotos y videos hasta 10 archivos por publicación.
-- Videos se reproducen dentro de la tarjeta.
-- WhatsApp sigue funcionando como canal opcional.
-- Módulos: Embajadores, Agentes en crecimiento, Mandados verificados, Aprendizaje.
-- PWA lista para Vercel.
+## Modo local
 
-## Estructura
+La app funciona sin SQL ni credenciales, pero las publicaciones quedan en el dispositivo.
 
-```text
-index.html
-styles.css
-app.js
-manifest.json
-service-worker.js
-vercel.json
-api/dola.js
-assets/icons/
-assets/dola-media/
-```
+## Para que las publicaciones se vean en otros celulares
 
-## Probar localmente
-
-```bash
-cd conecta-servicios-v5.2.0-ux-visual-universal
-python -m http.server 8080
-```
-
-Abrir:
+Configura en Vercel estas variables de entorno:
 
 ```text
-http://localhost:8080
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_ANON_KEY=
+SUPABASE_STORAGE_BUCKET=publication-media
 ```
 
-## DOLA API
-
-El archivo `api/dola.js` ya está preparado. En Vercel configura:
+Luego ejecuta el archivo:
 
 ```text
-DOLA_API_URL=
-DOLA_API_KEY=
-DOLA_MODEL=
+supabase-v5.2.4-muro-publico.sql
 ```
 
-Mientras no existan estas variables, la app mantiene el modo alternativo externo.
+La `SERVICE_ROLE_KEY` solo se usa en backend serverless y no se expone al navegador.
 
-## Multimedia
-
-En modo local se guardan fotos/videos pequeños en `localStorage`. Para videos reales de hasta 10 minutos en producción, se recomienda conectar Supabase Storage o un storage equivalente.
-
-## Subir a Vercel
-
-1. Reemplaza los archivos del proyecto por esta carpeta.
-2. Haz un solo commit.
-3. Configura variables de entorno si ya tienes API de DOLA.
-4. Deja que Vercel despliegue una sola vez.
-
-## Commit sugerido
+Para videos/fotos públicas, usa el bucket de Supabase Storage:
 
 ```text
-Rediseñar Conecta Servicios con UX visual universal v5.2.0
+publication-media
 ```
 
+Nota: para producción final se recomienda integrar Supabase Auth y reglas RLS por usuario. En esta versión se usa un identificador local por dispositivo para distinguir publicaciones propias.
 
-## v5.2.2 - Formato DOLA, teclado estable y Admin
+## Pruebas recomendadas
 
-Cambios principales:
-- Se respeta el formato de texto pegado desde DOLA usando saltos de línea y espacios visibles.
-- Se evita re-renderizar la pantalla en cada tecla para que el teclado móvil no se cierre al escribir.
-- Se recupera panel Admin con acceso a todas las publicaciones.
-- Admin puede editar cualquier publicación, ocultarla o reactivarla.
-- Las publicaciones ocultas no aparecen en el feed normal, pero sí en Admin.
-- Videos y multimedia se mantienen sin cambios funcionales.
-
-No requiere SQL nuevo para modo piloto.
-
-
-## v5.2.3 - DOLA guía visual y editar/terminar
-
-Cambios principales:
-- Se reemplazaron mensajes técnicos de API por: PRÓXIMAMENTE: Copia el prompt y abre DOLA.
-- El recuadro del prompt parpadea suavemente para guiar al usuario.
-- Después de copiar el prompt, parpadea el botón Abrir DOLA.
-- El prompt enviado a DOLA incluye ayuda paciente: si el usuario no sabe qué responder, DOLA debe dar opciones y ejemplos.
-- Se quitaron botones Corto/Formal del flujo visual.
-- En el regreso de DOLA solo queda el botón grande: Editar y terminar.
-- Editar y terminar lleva a la pantalla final, directo al área de fotos/videos.
-- Se mantiene la lógica de videos de la versión anterior.
-
-No requiere SQL nuevo.
+1. Crear publicación en un celular.
+2. Confirmar que aparece en Mis publicaciones.
+3. Confirmar que aparece en Inicio y Explorar.
+4. Con Supabase configurado, abrir otro celular y confirmar que aparece.
+5. Confirmar que en el muro no aparece Borrar.
+6. Entrar a Perfil → Mis publicaciones y confirmar Editar / Borrar.
+7. Entrar a Admin y confirmar editar / ocultar / activar / borrar.
+8. Subir video y confirmar reproducción.
+9. Confirmar estilo vertical 9:16 tipo TikTok.
+10. Deslizar y confirmar snap por publicación.

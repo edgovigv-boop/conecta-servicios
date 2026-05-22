@@ -1,10 +1,10 @@
-const CACHE_NAME = 'conecta-servicios-v5-2-3-dola-guia-visual';
+const CACHE_NAME = 'conecta-servicios-v5-2-4-muro-publico-tiktok-admin-perfil';
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=5.2.3-dola-guia-visual-editar-final',
-  '/app.js?v=5.2.3-dola-guia-visual-editar-final',
-  '/manifest.json?v=5.2.3-dola-guia-visual-editar-final',
+  '/styles.css?v=5.2.4-muro-publico-tiktok-admin-perfil',
+  '/app.js?v=5.2.4-muro-publico-tiktok-admin-perfil',
+  '/manifest.json?v=5.2.4-muro-publico-tiktok-admin-perfil',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'
