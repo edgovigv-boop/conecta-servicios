@@ -111,3 +111,22 @@ Cambios acumulados sobre v5.2.7:
 ```text
 Simplificar DOLA con círculo único y prompt Meta estricto v5.2.8
 ```
+
+## v5.2.9 - DOLA prompt oculto y retorno automático
+
+Corrección enfocada únicamente en el flujo de DOLA:
+
+- Al abrir DOLA desde `+ Crear`, `Crear Igual` o una oportunidad, la app prepara el `hiddenPrompt` sin mostrarlo al usuario.
+- La app intenta enviar ese prompt automáticamente mediante:
+  1. URL con parámetros `prompt`, `source`, `session` y `return_url`.
+  2. `postMessage` al tab abierto de DOLA, si DOLA lo soporta.
+  3. Fallback obligatorio al portapapeles.
+- Al volver a Conecta, la app intenta recuperar automáticamente el resultado desde:
+  1. `postMessage`, si DOLA envía el resultado.
+  2. Parámetros de URL como `dolaText`, `dola_result` o `result`.
+  3. Lectura del portapapeles al recuperar foco, si el navegador lo permite.
+- El texto generado se inserta en el editor de DOLA/Conecta mediante asignación de valor y eventos `input` y `change`, para que quede editable.
+
+Nota técnica: por seguridad del navegador, una app no puede escribir directamente dentro de una página externa de otro dominio si esa página no acepta `postMessage`, parámetros URL o una integración oficial. Por eso se conserva fallback de portapapeles.
+
+No requiere SQL nuevo.

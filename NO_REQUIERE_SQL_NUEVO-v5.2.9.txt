@@ -1,0 +1,2 @@
+La versión v5.2.9 no requiere SQL nuevo.
+Usa la misma estructura de Supabase ya aplicada en v5.2.4 para muro público.

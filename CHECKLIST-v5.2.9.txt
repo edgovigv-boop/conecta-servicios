@@ -1,0 +1,17 @@
+Conecta Servicios v5.2.9 - Checklist
+
+1. Tocar + Crear.
+2. Confirmar que aparece solo el círculo de DOLA.
+3. Tocar el círculo de DOLA.
+4. Confirmar que se abre DOLA.
+5. Confirmar que el hiddenPrompt se intenta enviar por URL/postMessage.
+6. Confirmar que, si DOLA no soporta inyección, el prompt queda copiado al portapapeles.
+7. Generar texto en DOLA y copiarlo.
+8. Regresar a Conecta.
+9. Confirmar que el editor se prellena automáticamente cuando el navegador permite leer portapapeles.
+10. Confirmar que el texto queda editable.
+11. Probar Crear Igual desde una publicación.
+12. Confirmar que el prompt oculto toma contexto de la publicación original.
+13. Confirmar que no se rompió publicar, multimedia, Supabase, scroll tipo TikTok, perfil ni admin.
+
+No requiere SQL nuevo.

@@ -1,8 +1,10 @@
-/* Conecta Servicios v5.2.8 - DOLA limpio y Meta IA estricta */
+/* Conecta Servicios v5.2.9 - DOLA prompt oculto y retorno automático */
 (() => {
   'use strict';
-  const VERSION = 'v5.2.8-dola-circulo-meta-estricto';
+  const VERSION = 'v5.2.9-dola-inyeccion-retorno';
   const DOLA_EXTERNAL_URL = 'https://dola.com';
+  const DOLA_ALLOWED_ORIGIN = 'https://dola.com';
+  const DOLA_RETURN_CLIPBOARD_SCAN_MS = 900;
   const META_AI_URL = 'https://www.meta.ai/';
   const CONNECTA_APP_URL = 'https://conecta-servicios.vercel.app/';
   const FREE_DAYS = 30;
@@ -12,7 +14,7 @@
   const MAX_LOCAL_MB = 3; // fotos pequeñas pueden ir como dataURL; videos usan IndexedDB/preview para evitar pérdida
   const K = {
     posts:'cs_v52_posts', profile:'cs_v52_profile', prefs:'cs_v52_prefs', member:'cs_v52_member', admin:'cs_v52_admin',
-    notes:'cs_v52_notes', requests:'cs_v52_requests', referrals:'cs_v52_referrals', verified:'cs_v52_verified', user:'cs_v52_user'
+    notes:'cs_v52_notes', requests:'cs_v52_requests', referrals:'cs_v52_referrals', verified:'cs_v52_verified', user:'cs_v52_user', dolaSession:'cs_v529_dola_session'
   };
   const app = document.getElementById('app');
   const toastEl = document.getElementById('toast');
@@ -20,7 +22,7 @@
   const mediaObjectUrls = new Map();
   const mediaLoading = new Set();
   let mediaDbPromise = null;
-  const state = { route:'/', filter:'Todos', stack:[], modal:null, selectedTemplate:null, selectedType:null, createChoice:null, draft:null, media:[], chatTask:null, chatMessages:[], chatText:'', chatResult:'', apiStatus:'idle', apiError:'', dolaPromptCopied:false, cloudReady:false, cloudMessage:'', inspirationPostId:null, metaPrompt:'', metaCopied:false };
+  const state = { route:'/', filter:'Todos', stack:[], modal:null, selectedTemplate:null, selectedType:null, createChoice:null, draft:null, media:[], chatTask:null, chatMessages:[], chatText:'', chatResult:'', apiStatus:'idle', apiError:'', dolaPromptCopied:false, cloudReady:false, cloudMessage:'', inspirationPostId:null, metaPrompt:'', metaCopied:false, dolaWindow:null, dolaReturnTimer:null, dolaSession:null };
 
   const types = [
     {id:'Negocio', icon:'🏪', color:'negocio', bg:'negocio-bg', title:'Negocio', short:'Vendo'},
@@ -392,6 +394,98 @@ Entrega solamente el texto final de la publicación.`; }
     return source ? inspirationPrompt(source, t) : basePrompt(t);
   }
 
+  function saveDolaSession(prompt){
+    const session={id:uid('dola'),prompt,createdAt:Date.now(),templateId:state.selectedTemplate?.id||'',inspirationPostId:state.inspirationPostId||'',origin:location.href};
+    state.dolaSession=session;
+    try{sessionStorage.setItem(K.dolaSession,JSON.stringify(session));}catch(e){}
+    return session;
+  }
+  function getDolaSession(){
+    if(state.dolaSession) return state.dolaSession;
+    try{state.dolaSession=JSON.parse(sessionStorage.getItem(K.dolaSession)||'null');}catch(e){state.dolaSession=null;}
+    return state.dolaSession;
+  }
+  function clearDolaSession(){
+    state.dolaSession=null;
+    try{sessionStorage.removeItem(K.dolaSession);}catch(e){}
+    if(state.dolaReturnTimer){clearTimeout(state.dolaReturnTimer);state.dolaReturnTimer=null;}
+  }
+  function dolaUrlWithPrompt(prompt,session){
+    try{
+      const url=new URL(DOLA_EXTERNAL_URL);
+      url.searchParams.set('source','conecta-servicios');
+      url.searchParams.set('session',session?.id||'');
+      url.searchParams.set('prompt',prompt);
+      url.searchParams.set('return_url',location.origin+location.pathname);
+      return url.toString();
+    }catch(e){return DOLA_EXTERNAL_URL;}
+  }
+  function injectDolaTextIntoEditor(text,opts={}){
+    const clean=String(text||'').trim();
+    if(!clean || clean.length<8) return false;
+    const session=getDolaSession();
+    if(session && clean===session.prompt.trim()) return false;
+    if(/^ROL:|^Actúa como|^Eres DOLA|DOLA_API_NOT_CONFIGURED/i.test(clean)) return false;
+    state.chatResult=clean;
+    state.dolaPromptCopied=true;
+    state.apiStatus='ready';
+    state.apiError='';
+    state.createChoice='dola';
+    if(!state.selectedTemplate) state.selectedTemplate=templates[0];
+    render();
+    setTimeout(()=>{
+      const el=document.querySelector('[data-dola-text]');
+      if(el){
+        el.value=clean;
+        el.dispatchEvent(new Event('input',{bubbles:true}));
+        el.dispatchEvent(new Event('change',{bubbles:true}));
+        if(opts.focus!==false) el.focus({preventScroll:true});
+      }
+    },60);
+    toast('Texto recibido');
+    return true;
+  }
+  function handleDolaMessage(data){
+    if(!data) return false;
+    let payload=data;
+    if(typeof payload==='string'){
+      try{payload=JSON.parse(payload);}catch(e){payload={text:data};}
+    }
+    const type=payload.type||payload.event||'';
+    const text=payload.text||payload.result||payload.content||payload.message||'';
+    if(text && (!type || /dola|conecta|result|response/i.test(type))) return injectDolaTextIntoEditor(text,{focus:true});
+    return false;
+  }
+  async function tryReadDolaClipboard(){
+    const session=getDolaSession();
+    if(!session || state.route!=='/publicar') return;
+    if(!navigator.clipboard?.readText) return;
+    try{
+      const text=await navigator.clipboard.readText();
+      if(injectDolaTextIntoEditor(text,{focus:false})) clearDolaSession();
+    }catch(e){}
+  }
+  function armDolaReturnWatch(){
+    if(state.dolaReturnTimer) clearTimeout(state.dolaReturnTimer);
+    state.dolaReturnTimer=setTimeout(tryReadDolaClipboard,DOLA_RETURN_CLIPBOARD_SCAN_MS);
+  }
+  function openDolaWithHiddenPrompt(prompt){
+    const session=saveDolaSession(prompt);
+    state.dolaPromptCopied=true;
+    state.apiStatus='fallback';
+    render();
+    // Intento 1: URL con prompt y return_url. Si DOLA lo soporta, no requiere pegar manualmente.
+    const target=dolaUrlWithPrompt(prompt,session);
+    // Intento 2: postMessage al tab abierto. Si DOLA escucha mensajes, recibe el prompt automáticamente.
+    let win=null;
+    try{win=window.open(target,'_blank'); state.dolaWindow=win;}catch(e){win=null;}
+    const packet={type:'CONNECTA_DOLA_PROMPT',source:'conecta-servicios',sessionId:session.id,prompt,returnUrl:location.origin+location.pathname};
+    [350,900,1600,2600].forEach(ms=>setTimeout(()=>{try{win?.postMessage(packet,DOLA_ALLOWED_ORIGIN);}catch(e){}},ms));
+    // Fallback obligado: portapapeles. Si DOLA no acepta URL/postMessage, el prompt ya queda copiado.
+    copy(prompt);
+    toast('DOLA listo');
+  }
+
   function dolaCreate(){
     const showText = state.dolaPromptCopied || state.chatResult;
     return layout(`
@@ -456,6 +550,7 @@ Entrega solamente el texto final de la publicación.`; }
     state.dolaPromptCopied = true;
     state.apiStatus = 'loading';
     render();
+    // Primero intenta la API interna. Si no está lista, abre DOLA externo con prompt oculto.
     try{
       const res = await fetch('/api/dola',{
         method:'POST',
@@ -464,17 +559,12 @@ Entrega solamente el texto final de la publicación.`; }
       });
       const data = await res.json().catch(()=>({ok:false}));
       if(res.ok && data.ok && data.text){
-        state.chatResult = String(data.text).trim();
-        state.apiStatus = 'ready';
-        render();
+        injectDolaTextIntoEditor(String(data.text).trim(),{focus:true});
+        clearDolaSession();
         return;
       }
-    }catch(e){/* Si no hay API lista, usamos DOLA externo con prompt oculto. */}
-    state.apiStatus = 'fallback';
-    copy(prompt).finally(()=>{
-      window.open(DOLA_EXTERNAL_URL,'_blank','noopener');
-      render();
-    });
+    }catch(e){}
+    openDolaWithHiddenPrompt(prompt);
   }
 
   function contactPrompt(p){ return `ROL:\nEres DOLA, asistente de Conecta Servicios.\nCONTEXTO:\nQuiero contactar esta publicación: ${p?.title}. Zona: ${p?.zone}. Texto: ${p?.description}\nOBJETIVO:\nHaz una pregunta a la vez y genera mensaje final claro para el anunciante.`; }
@@ -665,6 +755,29 @@ Ver en Conecta Servicios: ${url}`;
     e.target.value='';
   }
   function moduleAction(raw){ const [mod,act]=raw.split(':'); if(['Publicar','Solicitar','Campaña'].includes(act)){ state.selectedTemplate=templates.find(t=>mod==='agentes'?t.id==='agente':mod==='mandados'?t.id==='mensajero':t.id==='negocio'); state.createChoice=null; nav('/publicar'); return; } if(act==='DOLA'||act==='Plan'||act==='Mensaje'){ state.selectedTemplate=templates.find(t=>t.id==='agente')||templates[0]; state.createChoice='dola'; nav('/publicar'); return; } if(act==='Copiar enlace'||act==='Compartir'){ copy(`${CONNECTA_APP_URL}?ref=embajador`); return;} if(act==='Referido'||act==='Postularme'){ const arr=get(mod==='mandados'?K.verified:K.referrals,[]); arr.unshift({id:uid('r'),createdAt:now(),mod}); set(mod==='mandados'?K.verified:K.referrals,arr); toast('Guardado'); return;} toast('Listo'); }
+
+  window.addEventListener('message',event=>{
+    // Si DOLA llega a devolver el resultado por postMessage, se inserta sin pasos extra.
+    if(event.origin && !/dola\.com$/.test(new URL(event.origin).hostname) && event.origin!==location.origin) return;
+    handleDolaMessage(event.data);
+  });
+  window.addEventListener('focus',armDolaReturnWatch);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible') armDolaReturnWatch();});
+  window.addEventListener('pageshow',armDolaReturnWatch);
+
+  // Soporte de retorno por URL: /?dolaText=... o /?dola_result=...
+  try{
+    const qs=new URLSearchParams(location.search);
+    const returned=qs.get('dolaText')||qs.get('dola_result')||qs.get('result');
+    if(returned){
+      resetCreate();
+      state.selectedTemplate=templates[0];
+      state.createChoice='dola';
+      state.route='/publicar';
+      injectDolaTextIntoEditor(decodeURIComponent(returned),{focus:false});
+      history.replaceState(null,'',location.pathname);
+    }
+  }catch(e){}
 
   render();
   syncFromCloud();
