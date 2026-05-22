@@ -1,0 +1,17 @@
+CHECKLIST v5.2.8 - DOLA limpio y Meta IA estricta
+
+1. Presionar + Crear desde el muro.
+2. Confirmar que aparece solo el círculo central de DOLA.
+3. Confirmar que no aparece "Próximamente".
+4. Confirmar que no aparece el prompt visible.
+5. Confirmar que no aparecen instrucciones largas ni botones sobrantes.
+6. Tocar el círculo DOLA.
+7. Confirmar que si no hay API activa copia el prompt oculto y abre DOLA externo.
+8. Confirmar que al volver aparece un solo cuadro para pegar el texto de DOLA.
+9. Confirmar que "✏️ EDITAR Y TERMINAR" lleva a la edición final.
+10. Confirmar que Meta IA copia un prompt estricto sin texto dentro del video.
+11. Confirmar que el botón Crear Igual usa como inspiración la publicación elegida.
+12. Confirmar que publicar sigue llamando al guardado visible inmediato v5.2.6/v5.2.7.
+13. Confirmar que el botón PUBLICAR sigue visible sobre la barra inferior.
+14. Confirmar que videos/fotos siguen funcionando.
+15. Confirmar que no requiere SQL nuevo.

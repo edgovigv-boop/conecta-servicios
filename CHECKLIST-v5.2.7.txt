@@ -1,0 +1,12 @@
+CHECKLIST v5.2.7 - Publicar botón visible y menú seguro
+
+1. Entrar a Crear/Publicar.
+2. Crear publicación con DOLA o Manual.
+3. Subir un video.
+4. Bajar hasta el final del formulario.
+5. Confirmar que el botón PUBLICAR queda arriba de la barra inferior.
+6. Confirmar que se puede tocar el botón PUBLICAR.
+7. Confirmar que la pantalla no rebota hacia arriba al intentar ver el botón.
+8. Confirmar que Inicio/Buscar conservan scroll tipo TikTok.
+9. Confirmar que videos siguen visibles y reproducibles.
+10. Confirmar que no requiere SQL nuevo.

@@ -1,4 +1,4 @@
-# Conecta Servicios v5.2.6
+# Conecta Servicios v5.2.8
 
 ## Cambios principales
 
@@ -82,3 +82,32 @@ Cambios principales:
 - Se mantiene el respaldo actual: DOLA externo, multimedia, Supabase, muro público, controles solo en Perfil/Admin.
 
 Nota: Meta IA no se integra por API en esta versión. Se usa como puente seguro: copiar prompt + abrir Meta IA.
+
+
+## v5.2.7 - Botón PUBLICAR visible y scroll seguro
+
+- Corrige el caso donde el botón final PUBLICAR quedaba detrás de la barra inferior.
+- Desactiva el scroll tipo TikTok dentro del flujo Publicar para evitar rebote del formulario.
+- Mantiene el snap tipo TikTok en Inicio, Buscar y Mis publicaciones.
+- Agrega zona segura inferior para subir fotos/videos y publicar sin que el menú tape el botón.
+- No requiere SQL nuevo.
+
+
+## v5.2.8 - DOLA limpio y Meta IA estricta
+
+Cambios acumulados sobre v5.2.7:
+
+- El botón `+ Crear` y el botón `Igual` abren una pantalla limpia con un solo círculo central de DOLA.
+- Se eliminan del flujo visual los mensajes de Próximamente, recuadros de prompt, instrucciones largas y botones sobrantes.
+- El prompt queda oculto y se prepara automáticamente según la publicación visible, plantilla o publicación usada como inspiración.
+- Al tocar el círculo, la app intenta usar DOLA dentro de Conecta si la API está disponible. Si no está disponible, copia el prompt oculto y abre DOLA externo sin mostrar el prompt al usuario.
+- Al volver, aparece un único cuadro para pegar o recibir el texto limpio de DOLA.
+- El botón `✏️ EDITAR Y TERMINAR` lleva a la edición final con Meta IA y multimedia.
+- El prompt para Meta IA queda estricto: video 5:2 o 9:16, sin texto/letras/palabras dentro del video, solo imágenes, movimiento, música y transiciones.
+- No requiere SQL nuevo. Usa el SQL del muro público v5.2.4 si ya fue aplicado.
+
+### Commit sugerido
+
+```text
+Simplificar DOLA con círculo único y prompt Meta estricto v5.2.8
+```

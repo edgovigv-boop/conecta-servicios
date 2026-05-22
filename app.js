@@ -1,7 +1,7 @@
-/* Conecta Servicios v5.2.6 - Publicar visible inmediato */
+/* Conecta Servicios v5.2.8 - DOLA limpio y Meta IA estricta */
 (() => {
   'use strict';
-  const VERSION = 'v5.2.6-publicar-visible-inmediato';
+  const VERSION = 'v5.2.8-dola-circulo-meta-estricto';
   const DOLA_EXTERNAL_URL = 'https://dola.com';
   const META_AI_URL = 'https://www.meta.ai/';
   const CONNECTA_APP_URL = 'https://conecta-servicios.vercel.app/';
@@ -155,6 +155,13 @@
 
   function render(){
     const routes = {'/':home,'/explorar':explore,'/publicar':publish,'/mis':myPage,'/perfil':profile,'/embajadores':()=>modulePage('embajadores'),'/agentes':()=>modulePage('agentes'),'/mandados':()=>modulePage('mandados'),'/aprendizaje':()=>modulePage('aprendizaje'),'/comision':()=>modulePage('comision'),'/notificaciones':notifications,'/admin':adminPage};
+    // v5.2.7: el snap tipo TikTok solo aplica en muro/buscar/mis.
+    // En Publicar se desactiva para que el formulario no rebote y el botón PUBLICAR no quede detrás del menú inferior.
+    const feedRoutes = ['/', '/explorar', '/mis'];
+    document.documentElement.classList.toggle('feed-snap', feedRoutes.includes(state.route));
+    document.documentElement.classList.toggle('no-snap', state.route === '/publicar');
+    document.body.className = (document.body.className || '').replace(/\broute-[^\s]+/g, '').trim();
+    document.body.classList.add('route-' + (state.route === '/' ? 'home' : state.route.replace(/^\//,'').replace(/[^a-z0-9_-]/gi,'-')));
     app.innerHTML = (routes[state.route]||home)(); bind();
   }
   function home(){
@@ -277,7 +284,9 @@
     state.inspirationPostId=p?.id||null;
     state.selectedTemplate=templateFromPost(p);
     state.createChoice='dola';
-    state.chatMessages=[{role:'assistant',content:'¿Te gustó esta publicación? ¡Qué buena elección! ✨\nCopia el prompt, abre DOLA y te ayudará a crear una parecida.'}];
+    state.chatMessages=[];
+    state.chatResult='';
+    state.dolaPromptCopied=false;
     nav('/publicar',{keepScroll:false});
   }
   function inspirationPrompt(source,t){
@@ -335,26 +344,13 @@ Responder por Conecta Servicios.
 No agregues explicaciones fuera de la publicación final.`;
   }
   function buildMetaPrompt(d){
-    const title=d?.title||'Publicación para Conecta Servicios';
-    const desc=d?.description||'';
-    const type=d?.type||state.selectedTemplate?.type||'Publicación';
-    return `Crea un video vertical 9:16, estilo TikTok/Reels, para una publicación de Conecta Servicios.
-
-Tema: ${title}
-Tipo: ${type}
-Zona: ${d?.zone||'local'}
-
-Texto base:
-${desc}
-
-Indicaciones:
-- Duración sugerida: 15 a 30 segundos.
-- Estilo moderno, claro, familiar y confiable.
-- Texto grande y legible.
-- Música alegre y limpia.
-- Mostrar sensación de comunidad local.
-- Cerrar con la idea: "Conecta Servicios".
-- No uses marcas ajenas ni promesas exageradas.`;
+    const desc = (d?.description || d?.title || state.chatResult || 'publicación para Conecta Servicios').trim();
+    return `Actúa como generador de videos visuales. Objetivo: Crear un video publicitario de formato 5:2 (o 9:16 vertical). Contexto: Basado en la descripción: ${desc}.
+REGLAS OBLIGATORIAS:
+1. El video NO DEBE TENER NINGÚN TEXTO, LETRAS NI PALABRAS dentro de las imágenes. Solo imágenes, movimiento, música y transiciones.
+2. Que se entienda solo con lo que se ve, sin necesidad de leer nada.
+3. Entrega ÚNICAMENTE EL VIDEO, nada de explicaciones, nada de campañas, nada de opciones extra. Solo genera el video y permítelo descargar directo al celular.
+4. Calidad visual alta, ágil y llamativo.`;
   }
 
   function iconForType(type){ return type==='Negocio'?'🏪':type==='Agente'?'🛵':'🧡'; }
@@ -364,85 +360,62 @@ Indicaciones:
     if(!state.createChoice) return layout(`<div class="card center"><div class="template-badge"><span style="font-size:3rem">${state.selectedTemplate.icon}</span><h2>${state.selectedTemplate.title}</h2></div><div class="circle-grid"><button class="circle dola" data-create-choice="dola"><div><div class="ico">✨</div><b>DOLA</b><br><small>Me ayuda</small></div></button><button class="circle manual" data-create-choice="manual"><div><div class="ico">✍️</div><b>Manual</b><br><small>Yo escribo</small></div></button></div></div>`,{title:'Crear'});
     return state.createChoice==='manual'?manualCreate():dolaCreate();
   }
-  function basePrompt(t){ return `ROL:
-Eres DOLA, asistente amable, paciente y especializado dentro de Conecta Servicios.
+  function basePrompt(t){ return `Actúa como asistente de publicación para Conecta Servicios.
 
-CONTEXTO:
-Vengo de Conecta Servicios: ${CONNECTA_APP_URL}
-Elegí: ${t.title}
+Ayuda al usuario a crear una publicación clara, humana y confiable para una app local donde las personas pueden ofrecer servicios, pedir ayuda, publicar negocios, mandados, envíos, viajes compartidos, productos, oportunidades o necesidades.
+
+Plantilla elegida: ${t.title}
 Tipo: ${t.type}
 Categoría: ${t.cat}
-Conecta Servicios ayuda a publicar necesidades, agentes y negocios locales.
+App de referencia: ${CONNECTA_APP_URL}
 
-OBJETIVO:
-Ayúdame a crear una publicación clara, visual y lista para pegar en Conecta Servicios.
+Eres un asistente amable y paciente. Si el usuario te responde con "No sé", "Ayúdame", "No tengo idea" o no sabe qué escribir, NO lo dejes solo. Dile: "Claro que sí, te ayudo con gusto 🤝". Luego dale EJEMPLOS, OPCIONES claras y sugerencias para que él solo elija. Cuando generes el resultado final, SIEMPRE entrégalo dentro de un RECUADRO DE TEXTO y agrega debajo un BOTÓN que diga 📋 COPIAR, para que él solo tenga que presionar un botón y ya, sin seleccionar ni nada.
 
-REGLAS OBLIGATORIAS:
-Hazme UNA sola pregunta a la vez.
-Espera mi respuesta antes de continuar.
-No uses tablas. No uses JSON.
-No repitas este prompt.
-No incluyas toda la conversación.
-No recomiendes herramientas externas.
-Mantente en Conecta Servicios.
+Genera únicamente el texto final de la publicación, limpio y listo para usarse.
 
-AYUDA INTELIGENTE:
-Si te respondo con "No sé", "Ayúdame", "No tengo idea" o no sé qué escribir, NO me dejes solo. Dime: "Claro que sí, te ayudo con gusto 🤝". Luego dame ejemplos, opciones claras y sugerencias para que yo solo elija.
+La publicación debe tener:
+- Un título breve.
+- Una descripción clara.
+- Lenguaje local, sencillo y confiable.
+- Tono humano, útil y directo.
+- Sin exagerar.
+- Sin prometer cosas falsas.
+- Sin mencionar inteligencia artificial.
+- Sin explicar el proceso.
+- Sin notas técnicas.
 
-SALIDA FINAL:
-Cuando generes el resultado final, entrégalo SIEMPRE dentro de un RECUADRO DE TEXTO y agrega debajo un BOTÓN que diga 📋 COPIAR, para que solo tenga que presionar un botón.
-Entrega SOLO la publicación final, con emojis moderados y formato limpio:
+Entrega solamente el texto final de la publicación.`; }
 
-[TÍTULO CORTO]
+  function hiddenDolaPrompt(){
+    const t = state.selectedTemplate || templates[0];
+    const source = state.inspirationPostId ? currentInspirationPost() : null;
+    return source ? inspirationPrompt(source, t) : basePrompt(t);
+  }
 
-📍 Zona:
-...
-
-📝 Descripción:
-...
-
-✅ Detalles:
-...
-
-💬 Contacto:
-Responder por Conecta Servicios.
-
-No agregues explicaciones fuera de la publicación final.`; }
   function dolaCreate(){
-    const t=state.selectedTemplate;
-    const source=currentInspirationPost();
-    const prompt=state.inspirationPostId?inspirationPrompt(source,t):basePrompt(t);
-    const promptBlink=state.dolaPromptCopied?'':' blink-soft';
-    const openBlink=state.dolaPromptCopied?' blink-soft':'';
+    const showText = state.dolaPromptCopied || state.chatResult;
     return layout(`
-    <div class="card"><div class="title-row"><div><h2 class="page-title">✨ Crear con DOLA</h2><p class="sub">${state.inspirationPostId?'Inspirado en el muro':t.title}</p></div></div>
-      <div class="notice friendly">PRÓXIMAMENTE: Copia el prompt y abre DOLA</div>
-      <div class="prompt-card${promptBlink}" data-prompt-card><div class="copy-corner"><button class="icon-btn" data-copy-prompt="${t.id}">📋</button></div><pre>${esc(prompt)}</pre></div>
-      <button class="btn primary full${openBlink}" data-open-external>↗ ABRIR DOLA</button><button class="btn full" data-create-choice="manual">✍️ Manual</button>
-      <p class="sub center">Primero DOLA te da el texto. Después Meta IA puede ayudarte con el video.</p>
-      <div class="chat">${state.chatMessages.length?state.chatMessages.map(m=>`<div class="bubble ${m.role==='user'?'user':'assistant'}">${esc(m.content)}</div>`).join(''):`<div class="bubble assistant">1️⃣ Copia el prompt.\n2️⃣ Abre DOLA.\n3️⃣ Copia el recuadro final.\n4️⃣ Pégalo aquí.\n5️⃣ Genera video con Meta IA si quieres.</div>`}</div>
-      ${state.apiError?`<div class="notice friendly">${esc(state.apiError)}</div>`:''}
-    </div>
-    <div class="card"><label class="label">Texto de DOLA</label><textarea class="textarea" data-dola-text placeholder="Pega aquí la publicación final de DOLA">${esc(state.chatResult||'')}</textarea><button class="btn green full edit-finish" data-edit-finish>✏️ EDITAR Y TERMINAR</button></div>
-    ${state.draft?preview(state.draft):''}
-  `,{title:'DOLA'}); }
-  function manualCreate(){ const d=state.draft||{type:state.selectedTemplate.type,category:state.selectedTemplate.cat,title:'',description:'',zone:'',channel:'dola',whatsapp:'',mediaItems:[]}; if(!state.draft) state.draft=d; return layout(`<div class="card"><h2 class="page-title">✍️ Manual</h2>${formFields(d)}</div>${preview(d)}`,{title:'Manual'}); }
+      <section class="dola-clean-stage">
+        <button class="dola-main-circle blink-soft" data-dola-circle aria-label="Abrir DOLA">
+          <span class="dola-logo-mark">DOLA</span>
+        </button>
+        ${showText ? `<div class="dola-result-box"><textarea class="textarea dola-result-text" data-dola-text placeholder="Pega aquí el texto limpio de DOLA">${esc(state.chatResult||'')}</textarea><button class="btn green full edit-finish" data-edit-finish>✏️ EDITAR Y TERMINAR</button></div>` : ''}
+      </section>
+      ${state.draft?preview(state.draft):''}
+    `,{title:'DOLA'});
+  }
+
   function formFields(d){return `<label class="label">Título</label><input class="input" data-field="title" value="${esc(d.title)}" placeholder="Título"><label class="label">Zona</label><input class="input" data-field="zone" value="${esc(d.zone)}" placeholder="Zona"><label class="label">Texto</label><textarea class="textarea" data-field="description" placeholder="Descripción">${esc(d.description)}</textarea><label class="label">Canal</label><select class="select" data-field="channel"><option value="dola" ${d.channel==='dola'?'selected':''}>DOLA</option><option value="whatsapp" ${d.channel==='whatsapp'?'selected':''}>WhatsApp</option></select>${d.channel==='whatsapp'?`<label class="label">WhatsApp</label><input class="input" data-field="whatsapp" value="${esc(d.whatsapp||'')}" placeholder="Número">`:''}${metaVideoBox(d)}${mediaUploader()}`;}
 
   function metaVideoBox(d){
     const prompt=state.metaPrompt || buildMetaPrompt(d);
-    const blink=state.metaCopied?'':' blink-soft';
-    return `<div id="meta-video-section" class="meta-video-box ${blink}">
-      <div class="title-row"><div><b>🎥 Meta IA</b><p class="sub">Video listo para crear</p></div></div>
-      <button class="btn primary full" data-copy-meta>🎬 GENERAR VIDEO CON META IA</button>
-      <button class="btn full" data-open-meta>↗ Abrir Meta IA</button>
-      <p class="sub center">Se copia el prompt. Cuando Meta descargue el video, súbelo abajo.</p>
-      <details><summary>Ver prompt</summary><pre>${esc(prompt)}</pre></details>
+    return `<div id="meta-video-section" class="meta-video-box">
+      <button class="btn primary full" data-copy-meta data-meta-prompt="${esc(prompt)}">🎥 GENERAR VIDEO CON META IA</button>
     </div>`;
   }
 
   function mediaUploader(){ return `<div id="media-section" class="media-section"><label class="label">Fotos / videos</label><label class="file-btn">📷 Subir<input class="hidden" type="file" data-media multiple accept="image/*,video/*"></label><div class="media-grid">${state.media.map((m,i)=>{const src=resolveMediaSrc(m); return `<div class="media-thumb">${src?(m.kind==='video'?`<video src="${src}" controls playsinline preload="metadata"></video>`:`<img src="${src}" alt="media">`):`<div class="placeholder small">🎥 Video</div>`}<button class="media-x" data-remove-media="${i}">×</button></div>`}).join('')}</div><p class="sub">Hasta 10 archivos.</p></div>`; }
-  function preview(d){ return `<div class="card"><h2 class="page-title">Así se verá</h2>${postCard({...d,id:'preview',reactions:0,mediaItems:state.media,mine:true,ownerId:userId(),createdAt:now(),mediaKey:state.selectedTemplate?.media},'preview')}<button class="btn primary full" data-publish-draft>Publicar</button></div>`; }
+  function preview(d){ return `<div class="card preview-editor"><h2 class="page-title">Así se verá</h2>${postCard({...d,id:'preview',reactions:0,mediaItems:state.media,mine:true,ownerId:userId(),createdAt:now(),mediaKey:state.selectedTemplate?.media},'preview')}<button class="btn primary full final-publish-btn" data-publish-draft>PUBLICAR</button><div class="publish-safe-space" aria-hidden="true"></div></div>`; }
   function buildDraftFromText(text){ const first=(text||'').split('\n').find(x=>x.trim())||state.selectedTemplate.title; const draft={id:uid('p'), mine:true, type:state.selectedTemplate.type, category:state.selectedTemplate.cat, title:first.replace(/^[#*\s]+/,'').slice(0,80), description:text.trim(), zone:extractZone(text)||'', channel:'dola', whatsapp:'', status:'activa', freeTrial:!canUnlimited(), expiresAt:canUnlimited()?null:now(FREE_DAYS), createdAt:now(), mediaKey:state.selectedTemplate.media, mediaItems:state.media, reactions:0, inspiredBy:state.inspirationPostId||null}; state.metaPrompt=buildMetaPrompt(draft); state.metaCopied=false; return draft; }
   function extractZone(text){ const m=String(text).match(/(?:Zona|Ubicación|📍)\s*:?\s*([^\n]+)/i); return m?m[1].trim().slice(0,60):''; }
 
@@ -473,11 +446,37 @@ No agregues explicaciones fuera de la publicación final.`; }
     try{
       const res=await fetch('/api/dola',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:prompt},{role:'user',content:instruction}],context:{task,version:VERSION,app:CONNECTA_APP_URL}})});
       const data=await res.json();
-      if(!data.ok) throw Object.assign(new Error(data.message||'PRÓXIMAMENTE'),{code:data.error});
+      if(!data.ok) throw Object.assign(new Error(data.message||'DOLA'),{code:data.error});
       const text=(data.text||'').trim(); state.chatMessages.push({role:'assistant',content:text||'Listo.'}); state.chatResult=text; state.apiStatus='ready';
-    }catch(e){ state.apiStatus='fallback'; state.apiError='PRÓXIMAMENTE: Copia el prompt y abre DOLA'; state.chatMessages.push({role:'assistant',content:'PRÓXIMAMENTE: Copia el prompt y abre DOLA'}); }
+    }catch(e){ state.apiStatus='fallback'; state.apiError=''; state.chatMessages.push({role:'assistant',content:'DOLA está listo para abrirse.'}); }
     render();
   }
+  async function runDolaCircle(){
+    const prompt = hiddenDolaPrompt();
+    state.dolaPromptCopied = true;
+    state.apiStatus = 'loading';
+    render();
+    try{
+      const res = await fetch('/api/dola',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({messages:[{role:'user',content:prompt}],context:{task:'publication',version:VERSION,app:CONNECTA_APP_URL}})
+      });
+      const data = await res.json().catch(()=>({ok:false}));
+      if(res.ok && data.ok && data.text){
+        state.chatResult = String(data.text).trim();
+        state.apiStatus = 'ready';
+        render();
+        return;
+      }
+    }catch(e){/* Si no hay API lista, usamos DOLA externo con prompt oculto. */}
+    state.apiStatus = 'fallback';
+    copy(prompt).finally(()=>{
+      window.open(DOLA_EXTERNAL_URL,'_blank','noopener');
+      render();
+    });
+  }
+
   function contactPrompt(p){ return `ROL:\nEres DOLA, asistente de Conecta Servicios.\nCONTEXTO:\nQuiero contactar esta publicación: ${p?.title}. Zona: ${p?.zone}. Texto: ${p?.description}\nOBJETIVO:\nHaz una pregunta a la vez y genera mensaje final claro para el anunciante.`; }
   function openContact(p){ if(p.channel==='whatsapp' && p.whatsapp){ const msg=encodeURIComponent(`Hola, vi tu publicación en Conecta Servicios: ${p.title}`); location.href=`https://wa.me/${cleanPhone(p.whatsapp)}?text=${msg}`; return; } state.modal={title:'💬 DOLA',body:`<p class="sub">Ordena tu mensaje.</p><div class="btn-row"><button class="btn primary" data-contact-dola="${p.id}">DOLA</button><button class="btn" data-copy-contact="${p.id}">Copiar prompt</button></div>`}; render(); }
 
@@ -502,17 +501,18 @@ No agregues explicaciones fuera de la publicación final.`; }
     document.querySelectorAll('[data-set-filter]').forEach(b=>b.onclick=()=>{state.filter=b.dataset.setFilter;render();});
     document.querySelectorAll('[data-template]').forEach(b=>b.onclick=()=>{state.selectedTemplate=templates.find(t=>t.id===b.dataset.template); state.createChoice=null; state.media=[]; state.draft=null; nav('/publicar');});
     document.querySelectorAll('[data-create-choice]').forEach(b=>b.onclick=()=>{state.createChoice=b.dataset.createChoice; state.draft=null; state.chatMessages=[]; state.chatResult=''; state.dolaPromptCopied=false; render();});
-    document.querySelectorAll('[data-copy-prompt]').forEach(b=>b.onclick=()=>{state.dolaPromptCopied=true; const prompt=state.inspirationPostId?inspirationPrompt(currentInspirationPost(), state.selectedTemplate||templates[0]):basePrompt(state.selectedTemplate||templates[0]); copy(prompt).finally(()=>render());});
+    document.querySelectorAll('[data-dola-circle]').forEach(b=>b.onclick=runDolaCircle);
+    document.querySelectorAll('[data-copy-prompt]').forEach(b=>b.onclick=()=>{state.dolaPromptCopied=true; copy(hiddenDolaPrompt()).finally(()=>render());});
     document.querySelectorAll('[data-open-external]').forEach(b=>b.onclick=()=>window.open(DOLA_EXTERNAL_URL,'_blank','noopener'));
     const dt=document.querySelector('[data-dola-text]'); if(dt)dt.oninput=e=>state.chatResult=e.target.value;
     document.querySelectorAll('[data-api-create]').forEach(b=>b.onclick=()=>callDola('publication',''));
-    document.querySelectorAll('[data-edit-finish]').forEach(b=>b.onclick=()=>{const text=(document.querySelector('[data-dola-text]')?.value||state.chatResult).trim(); if(!text)return toast('Pega el texto de DOLA'); state.draft=buildDraftFromText(text); state.createChoice='manual'; render(); setTimeout(()=>document.getElementById('meta-video-section')?.scrollIntoView({behavior:'smooth',block:'center'}),80);});
+    document.querySelectorAll('[data-edit-finish]').forEach(b=>b.onclick=()=>{const text=(document.querySelector('[data-dola-text]')?.value||state.chatResult).trim(); if(!text)return toast('Pega el texto de DOLA'); state.draft=buildDraftFromText(text); state.createChoice='manual'; render(); setTimeout(()=>document.getElementById('meta-video-section')?.scrollIntoView({behavior:'smooth',block:'start'}),80);});
     document.querySelectorAll('[data-field]').forEach(el=>{
       el.oninput=e=>{ if(!state.draft)state.draft={type:state.selectedTemplate.type,category:state.selectedTemplate.cat,channel:'dola',mediaItems:[]}; state.draft[e.target.dataset.field]=e.target.value; };
       if(el.tagName==='SELECT') el.onchange=e=>{ if(!state.draft)state.draft={type:state.selectedTemplate.type,category:state.selectedTemplate.cat,channel:'dola',mediaItems:[]}; state.draft[e.target.dataset.field]=e.target.value; render(); };
     });
     document.querySelectorAll('[data-preview-manual]').forEach(b=>b.onclick=()=>{collectManual(); render();});
-    document.querySelectorAll('[data-copy-meta]').forEach(b=>b.onclick=()=>{collectManual(); state.metaPrompt=buildMetaPrompt(state.draft); state.metaCopied=true; copy(state.metaPrompt).then(()=>{toast('Prompt copiado para Meta IA'); window.open(META_AI_URL,'_blank','noopener');}).finally(()=>render());});
+    document.querySelectorAll('[data-copy-meta]').forEach(b=>b.onclick=()=>{collectManual(); state.metaPrompt=buildMetaPrompt(state.draft); state.metaCopied=true; copy(state.metaPrompt).then(()=>{window.open(META_AI_URL,'_blank','noopener');}).finally(()=>render());});
     document.querySelectorAll('[data-open-meta]').forEach(b=>b.onclick=()=>window.open(META_AI_URL,'_blank','noopener'));
     document.querySelectorAll('[data-save-manual],[data-publish-draft]').forEach(b=>b.onclick=publishDraft);
     document.querySelectorAll('[data-delete-post]').forEach(b=>b.onclick=()=>deletePost(b.dataset.deletePost));

@@ -1,0 +1,4 @@
+Esta corrección no requiere SQL nuevo.
+
+Solo cambia CSS/JS para zona segura del botón PUBLICAR y manejo de scroll.
+No repetir el SQL de v5.2.4.

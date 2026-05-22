@@ -1,10 +1,10 @@
-const CACHE_NAME = 'conecta-servicios-v5-2-6-publicar-visible-inmediato';
+const CACHE_NAME = 'conecta-servicios-v5-2-8-dola-circulo-meta-estricto';
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=5.2.5-crear-igual-dola-meta',
-  '/app.js?v=5.2.5-crear-igual-dola-meta',
-  '/manifest.json?v=5.2.5-crear-igual-dola-meta',
+  '/styles.css?v=5.2.8-dola-circulo-meta',
+  '/app.js?v=5.2.8-dola-circulo-meta',
+  '/manifest.json?v=5.2.8-dola-circulo-meta',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'

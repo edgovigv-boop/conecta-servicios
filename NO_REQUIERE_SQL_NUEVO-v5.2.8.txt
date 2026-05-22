@@ -1,0 +1,4 @@
+No requiere SQL nuevo para v5.2.8.
+
+Esta versión usa el mismo esquema de muro público de v5.2.4.
+No volver a ejecutar el SQL si ya fue aplicado en Supabase.
