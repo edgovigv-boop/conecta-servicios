@@ -1,7 +1,7 @@
 /* Conecta Servicios v5.2.13 - Publicación rápida Abuelita friendly */
 (() => {
   'use strict';
-  const VERSION = 'v5.2.13-publicacion-rapida-abuelita';
+  const VERSION = 'v5.2.14-dola-opcional-editor-rapido';
   const DOLA_EXTERNAL_URL = 'https://dola.com';
   const DOLA_ALLOWED_ORIGIN = 'https://dola.com';
   const DOLA_RETURN_CLIPBOARD_SCAN_MS = 900;
@@ -380,7 +380,9 @@ REGLAS OBLIGATORIAS:
 
   function publish(){
     if(state.createChoice==='manual') return manualCreate();
-    if(state.createChoice==='dola') return dolaCreate();
+    // v5.2.14: DOLA ya no abre una pantalla intermedia obligatoria;
+    // queda como ayuda opcional dentro del editor rápido.
+    if(state.createChoice==='dola') return quickPublish();
     return quickPublish();
   }
 
@@ -409,7 +411,7 @@ REGLAS OBLIGATORIAS:
         <textarea class="quick-main-text" data-rapid-text placeholder="Ejemplo:\nVendo pollos rostizados los fines de semana en Tejupilco. Cuestan $235 con ensalada, salsa y tortillas. Atiendo pedidos por WhatsApp.">${esc(state.rapidText||'')}</textarea>
         <div class="quick-actions-line">
           <button class="btn voice-btn" data-voice-input>${state.voiceListening?'🎙️ Escuchando':'🎙️ Dictar'}</button>
-          <button class="btn" data-dola-from-quick>✨ DOLA</button>
+          <button class="dola-mini-circle" data-dola-from-quick aria-label="Ayuda con DOLA"><span>✨</span><small>DOLA</small></button>
         </div>
         <div class="quick-chip-grid">
           ${quickIntents.map(q=>`<button class="quick-intent ${state.rapidIntent===q.id?'active':''}" data-quick-intent="${q.id}"><span>${q.icon}</span><small>${q.label}</small></button>`).join('')}
@@ -858,16 +860,8 @@ Entrega solamente el texto final de la publicación.`; }
   }
 
   function dolaCreate(){
-    const showText = state.dolaPromptCopied || state.chatResult;
-    return layout(`
-      <section class="dola-clean-stage">
-        <button class="dola-main-circle blink-soft" data-dola-circle aria-label="Abrir DOLA">
-          <span class="dola-logo-mark">DOLA</span>
-        </button>
-        ${showText ? `<div class="dola-result-box"><textarea class="textarea dola-result-text" data-dola-text placeholder="Pega aquí el texto limpio de DOLA">${esc(state.chatResult||'')}</textarea><button class="btn green full edit-finish" data-edit-finish>✏️ EDITAR Y TERMINAR</button></div>` : ''}
-      </section>
-      ${state.draft?preview(state.draft):''}
-    `,{title:'DOLA'});
+    // Pantalla antigua del círculo grande: queda deshabilitada para no detener al usuario.
+    return quickPublish();
   }
 
   function manualCreate(){
@@ -996,12 +990,20 @@ Entrega solamente el texto final de la publicación.`; }
     document.querySelectorAll('[data-quick-intent]').forEach(b=>b.onclick=()=>{ const box=document.querySelector('[data-rapid-text]'); if(box) state.rapidText=box.value; state.rapidIntent=b.dataset.quickIntent; const q=selectedQuickIntent(); state.selectedTemplate=templates.find(t=>t.id===q?.template)||state.selectedTemplate; render();});
     document.querySelectorAll('[data-prepare-quick]').forEach(b=>b.onclick=prepareQuickPublication);
     document.querySelectorAll('[data-dola-from-quick]').forEach(b=>b.onclick=startDolaFromQuick);
+    document.querySelectorAll('[data-copy-quick-dola]').forEach(b=>b.onclick=()=>{
+      const prompt=state.dolaFallback?.prompt||dolaPromptForQuickHelp();
+      copy(prompt).then(()=>toast('Texto preparado copiado'));
+    });
+    document.querySelectorAll('[data-open-quick-dola]').forEach(b=>b.onclick=()=>{
+      const prompt=state.dolaFallback?.prompt||dolaPromptForQuickHelp();
+      copy(prompt).finally(()=>{ window.open(DOLA_EXTERNAL_URL,'_blank','noopener'); state.modal=null; render(); });
+    });
     document.querySelectorAll('[data-voice-input]').forEach(b=>b.onclick=startVoiceInput);
     document.querySelectorAll('[data-back]').forEach(b=>b.onclick=back); document.querySelectorAll('[data-install]').forEach(b=>b.onclick=installApp);
     document.querySelectorAll('[data-filter-home]').forEach(b=>b.onclick=()=>nav('/explorar',{filter:b.dataset.filterHome}));
     document.querySelectorAll('[data-set-filter]').forEach(b=>b.onclick=()=>{state.filter=b.dataset.setFilter;render();});
     document.querySelectorAll('[data-template]').forEach(b=>b.onclick=()=>{state.selectedTemplate=templates.find(t=>t.id===b.dataset.template); state.createChoice=null; state.media=[]; state.draft=null; nav('/publicar');});
-    document.querySelectorAll('[data-create-choice]').forEach(b=>b.onclick=()=>{state.createChoice=b.dataset.createChoice; state.draft=null; state.chatMessages=[]; state.chatResult=''; state.dolaPromptCopied=false; render();});
+    document.querySelectorAll('[data-create-choice]').forEach(b=>b.onclick=()=>{ if(b.dataset.createChoice==='dola'){ showDolaQuickHelp(); return; } state.createChoice=b.dataset.createChoice; state.draft=null; state.chatMessages=[]; state.chatResult=''; state.dolaPromptCopied=false; render();});
     document.querySelectorAll('[data-dola-circle]').forEach(b=>b.onclick=runDolaCircle);
     document.querySelectorAll('[data-copy-prompt]').forEach(b=>b.onclick=()=>{state.dolaPromptCopied=true; copy(hiddenDolaPrompt()).finally(()=>render());});
     document.querySelectorAll('[data-open-external]').forEach(b=>b.onclick=()=>window.open(DOLA_EXTERNAL_URL,'_blank','noopener'));
@@ -1063,16 +1065,38 @@ Entrega solamente el texto final de la publicación.`; }
     render();
     setTimeout(()=>document.querySelector('[data-publication-editor]')?.scrollIntoView({behavior:'smooth',block:'start'}),60);
   }
-  function startDolaFromQuick(){
+  function dolaPromptForQuickHelp(){
     const el=document.querySelector('[data-rapid-text]');
     state.rapidText=(el?.value||state.rapidText||'').trim();
     const t=templateFromQuick();
     state.selectedTemplate=t;
-    state.createChoice='dola';
-    state.draft=null;
-    state.chatResult='';
-    state.dolaPromptCopied=false;
+    return basePrompt(t);
+  }
+  function showDolaQuickHelp(){
+    const prompt=dolaPromptForQuickHelp();
+    state.modal={title:'✨ DOLA',body:`
+      <div class="dola-simple-help">
+        <ol class="dola-steps">
+          <li><b>1.</b> Copia el texto preparado.</li>
+          <li><b>2.</b> Abre DOLA.</li>
+          <li><b>3.</b> Pega el texto en DOLA.</li>
+          <li><b>4.</b> Pídele que mejore tu publicación.</li>
+          <li><b>5.</b> Copia la respuesta.</li>
+          <li><b>6.</b> Regresa y pégala aquí.</li>
+        </ol>
+        <div class="btn-row">
+          <button class="btn primary" data-copy-quick-dola>📋 Copiar</button>
+          <button class="btn green" data-open-quick-dola>↗ DOLA</button>
+        </div>
+        <button class="btn full" data-close-modal>Volver</button>
+      </div>`};
+    state.dolaFallback={prompt,targetUrl:DOLA_EXTERNAL_URL,context:{flow:'quick_help',templateId:state.selectedTemplate?.id||''}};
     render();
+  }
+  function startDolaFromQuick(){
+    // v5.2.14: DOLA es una ayuda opcional dentro del editor rápido.
+    // No cambia de pantalla ni reemplaza el editor rápido.
+    showDolaQuickHelp();
   }
   function startVoiceInput(){
     const target=document.querySelector('[data-rapid-text]');
@@ -1219,7 +1243,7 @@ Ver en Conecta Servicios: ${url}`;
     }
     e.target.value='';
   }
-  function moduleAction(raw){ const [mod,act]=raw.split(':'); if(['Publicar','Solicitar','Campaña'].includes(act)){ state.selectedTemplate=templates.find(t=>mod==='agentes'?t.id==='agente':mod==='mandados'?t.id==='mensajero':t.id==='negocio'); state.createChoice=null; nav('/publicar'); return; } if(act==='DOLA'||act==='Plan'||act==='Mensaje'){ state.selectedTemplate=templates.find(t=>t.id==='agente')||templates[0]; state.createChoice='dola'; nav('/publicar'); return; } if(act==='Copiar enlace'||act==='Compartir'){ copy(`${CONNECTA_APP_URL}?ref=embajador`); return;} if(act==='Referido'||act==='Postularme'){ const arr=get(mod==='mandados'?K.verified:K.referrals,[]); arr.unshift({id:uid('r'),createdAt:now(),mod}); set(mod==='mandados'?K.verified:K.referrals,arr); toast('Guardado'); return;} toast('Listo'); }
+  function moduleAction(raw){ const [mod,act]=raw.split(':'); if(['Publicar','Solicitar','Campaña'].includes(act)){ state.selectedTemplate=templates.find(t=>mod==='agentes'?t.id==='agente':mod==='mandados'?t.id==='mensajero':t.id==='negocio'); state.createChoice=null; nav('/publicar'); return; } if(act==='DOLA'||act==='Plan'||act==='Mensaje'){ state.selectedTemplate=templates.find(t=>t.id==='agente')||templates[0]; state.createChoice=null; nav('/publicar'); setTimeout(showDolaQuickHelp,80); return; } if(act==='Copiar enlace'||act==='Compartir'){ copy(`${CONNECTA_APP_URL}?ref=embajador`); return;} if(act==='Referido'||act==='Postularme'){ const arr=get(mod==='mandados'?K.verified:K.referrals,[]); arr.unshift({id:uid('r'),createdAt:now(),mod}); set(mod==='mandados'?K.verified:K.referrals,arr); toast('Guardado'); return;} toast('Listo'); }
 
   window.addEventListener('message',event=>{
     // Puente DOLA: validar origen y aceptar ACK o generatedText.

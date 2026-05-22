@@ -1,0 +1,14 @@
+CHECKLIST v5.2.14 - DOLA opcional en editor rápido
+
+1. Tocar + Crear.
+2. Confirmar que aparece el editor rápido “¿Qué quieres publicar?”.
+3. Confirmar que NO aparece la pantalla grande con círculo central de DOLA.
+4. Confirmar que DOLA aparece solo como botón circular pequeño/mediano dentro del editor.
+5. Tocar DOLA y confirmar que abre modal sencillo de instrucciones.
+6. Copiar texto preparado.
+7. Abrir DOLA desde el modal.
+8. Regresar a Conecta y confirmar que sigue en el editor rápido.
+9. Pegar respuesta de DOLA en el campo principal.
+10. Preparar publicación, subir foto/video y publicar.
+11. Tocar Crear Igual y confirmar que abre editor rápido con texto base, no pantalla DOLA.
+12. Confirmar que Supabase, videos, muro y Admin no se modificaron.

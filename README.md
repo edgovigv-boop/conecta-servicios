@@ -207,7 +207,7 @@ Cambios:
 No requiere SQL nuevo.
 
 
-## v5.2.13-publicacion-rapida-abuelita
+## v5.2.14-dola-opcional-editor-rapido
 
 Flujo agregado: **Publicación rápida / Abuelita friendly**.
 
@@ -219,3 +219,12 @@ Flujo agregado: **Publicación rápida / Abuelita friendly**.
 - No requiere SQL nuevo.
 
 Commit sugerido: `Agregar publicación rápida abuelita friendly v5.2.13`
+
+
+## v5.2.14 - DOLA opcional dentro del editor rápido
+
+- La pantalla intermedia con círculo grande de DOLA ya no se usa como paso obligatorio.
+- DOLA queda como ayuda opcional dentro del editor rápido mediante un botón circular pequeño/mediano.
+- Al tocar DOLA se abre un modal sencillo con pasos cortos: copiar, abrir DOLA, pegar, mejorar, copiar respuesta y regresar.
+- El usuario permanece en el editor rápido: pega la respuesta final en el mismo campo “¿Qué quieres publicar?” y continúa con “PREPARAR MI PUBLICACIÓN”.
+- No requiere SQL nuevo.

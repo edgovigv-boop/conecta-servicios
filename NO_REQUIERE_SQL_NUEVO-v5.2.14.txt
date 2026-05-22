@@ -1,0 +1,1 @@
+No requiere SQL nuevo. Esta corrección solo cambia el flujo visual de DOLA dentro del editor rápido.
