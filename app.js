@@ -1,7 +1,7 @@
-/* Conecta Servicios v5.2.10 - DOLA inyección ida y vuelta */
+/* Conecta Servicios v5.2.11 - DOLA portapapeles asistido */
 (() => {
   'use strict';
-  const VERSION = 'v5.2.10-dola-inyeccion-ida-vuelta';
+  const VERSION = 'v5.2.11-dola-portapapeles-asistido';
   const DOLA_EXTERNAL_URL = 'https://dola.com';
   const DOLA_ALLOWED_ORIGIN = 'https://dola.com';
   const DOLA_RETURN_CLIPBOARD_SCAN_MS = 900;
@@ -15,7 +15,7 @@
   const MAX_LOCAL_MB = 3; // fotos pequeñas pueden ir como dataURL; videos usan IndexedDB/preview para evitar pérdida
   const K = {
     posts:'cs_v52_posts', profile:'cs_v52_profile', prefs:'cs_v52_prefs', member:'cs_v52_member', admin:'cs_v52_admin',
-    notes:'cs_v52_notes', requests:'cs_v52_requests', referrals:'cs_v52_referrals', verified:'cs_v52_verified', user:'cs_v52_user', dolaSession:'cs_v5210_dola_session'
+    notes:'cs_v52_notes', requests:'cs_v52_requests', referrals:'cs_v52_referrals', verified:'cs_v52_verified', user:'cs_v52_user', dolaSession:'cs_v5211_dola_session'
   };
   const app = document.getElementById('app');
   const toastEl = document.getElementById('toast');
@@ -23,7 +23,7 @@
   const mediaObjectUrls = new Map();
   const mediaLoading = new Set();
   let mediaDbPromise = null;
-  const state = { route:'/', filter:'Todos', stack:[], modal:null, selectedTemplate:null, selectedType:null, createChoice:null, draft:null, media:[], chatTask:null, chatMessages:[], chatText:'', chatResult:'', apiStatus:'idle', apiError:'', dolaPromptCopied:false, cloudReady:false, cloudMessage:'', inspirationPostId:null, metaPrompt:'', metaCopied:false, dolaWindow:null, dolaReturnTimer:null, dolaSession:null };
+  const state = { route:'/', filter:'Todos', stack:[], modal:null, selectedTemplate:null, selectedType:null, createChoice:null, draft:null, media:[], chatTask:null, chatMessages:[], chatText:'', chatResult:'', apiStatus:'idle', apiError:'', dolaPromptCopied:false, cloudReady:false, cloudMessage:'', inspirationPostId:null, metaPrompt:'', metaCopied:false, dolaWindow:null, dolaReturnTimer:null, dolaSession:null, dolaFallback:null, generatedFallbackText:'' };
 
   const types = [
     {id:'Negocio', icon:'🏪', color:'negocio', bg:'negocio-bg', title:'Negocio', short:'Vendo'},
@@ -475,7 +475,7 @@ Entrega solamente el texto final de la publicación.`; }
       editor.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertText',data:value}));
       editor.dispatchEvent(new Event('change',{bubbles:true}));
       if(opts.focus===false) editor.blur?.();
-      bridgeLog('inyección OK');
+      bridgeLog('DOLA: inyección OK');
       return true;
     }catch(e){
       try{
@@ -483,10 +483,10 @@ Entrega solamente el texto final de la publicación.`; }
         else editor.textContent=value;
         editor.dispatchEvent(new Event('input',{bubbles:true}));
         editor.dispatchEvent(new Event('change',{bubbles:true}));
-        bridgeLog('inyección OK');
+        bridgeLog('DOLA: inyección OK');
         return true;
       }catch(err){
-        bridgeLog('inyección fallback', err?.message||err);
+        bridgeLog('DOLA: inyección fallback', err?.message||err);
         return false;
       }
     }
@@ -498,7 +498,7 @@ Entrega solamente el texto final de la publicación.`; }
       let i=0;
       const step=()=>{
         const editor=findEditor(root,selectorList);
-        if(editor){ bridgeLog('editor listo'); resolve(editor); return; }
+        if(editor){ bridgeLog('DOLA: editor listo'); resolve(editor); return; }
         if(i>=attempts){ resolve(null); return; }
         setTimeout(step,delays[Math.min(i,delays.length-1)]);
         i++;
@@ -518,19 +518,74 @@ Entrega solamente el texto final de la publicación.`; }
     }
     return false;
   }
+  async function writeTextToClipboard(text){
+    if(!navigator.clipboard?.writeText) throw new Error('clipboard_write_not_supported');
+    await navigator.clipboard.writeText(text);
+    return true;
+  }
   async function copyHiddenPromptFallback(hiddenPrompt){
     try{
-      await navigator.clipboard?.writeText(hiddenPrompt);
-      bridgeLog('fallback clipboard OK');
-      toast('Prompt listo. Pégalo en DOLA.');
+      await writeTextToClipboard(hiddenPrompt);
+      bridgeLog('DOLA: fallback clipboard OK');
       return true;
     }catch(e){
-      bridgeLog('fallback clipboard error',e?.message||e);
-      toast('Prompt listo. Copia manual si hace falta.');
+      bridgeLog('DOLA: fallback clipboard error',e?.message||e);
       return false;
     }
   }
-  async function sendHiddenPromptToDola(hiddenPrompt,context={},win=null){
+  function showDolaPasteGuide(hiddenPrompt,targetUrl,context={}){
+    state.dolaFallback={prompt:hiddenPrompt,targetUrl,context};
+    state.modal={title:'✨ DOLA',body:`
+      <div class="clipboard-guide">
+        <div class="guide-icon">🤝</div>
+        <p><b>DOLA necesita pegar la información de tu publicación.</b></p>
+        <p>Si tu teléfono pide permiso, toca <b>Permitir</b>.</p>
+        <p>Después DOLA usará ese texto para ayudarte a crear la publicación.</p>
+        <div class="btn-row">
+          <button class="btn primary full" data-dola-continue-fallback>Entendido, pegar en DOLA</button>
+          <button class="btn full" data-dola-copy-again>Copiar de nuevo</button>
+        </div>
+      </div>`};
+    render();
+  }
+  async function continueDolaFallback(){
+    const pending=state.dolaFallback;
+    if(!pending?.prompt) return;
+    const copied=await copyHiddenPromptFallback(pending.prompt);
+    let win=null;
+    try{win=window.open(pending.targetUrl||DOLA_EXTERNAL_URL,'_blank'); state.dolaWindow=win;}catch(e){win=null;}
+    if(win) sendHiddenPromptToDola(pending.prompt,pending.context||{},win,{fallback:false});
+    state.modal=null;
+    render();
+    toast(copied?'Listo. Si hace falta, mantén presionado y toca Pegar.':'Abre DOLA y pega la información.');
+  }
+  function showDolaReturnGuide(){
+    const session=getDolaSession();
+    if(!session || state.route!=='/publicar' || state.chatResult) return;
+    state.modal={title:'📝 Texto de DOLA',body:`
+      <div class="clipboard-guide">
+        <div class="guide-icon">📋</div>
+        <p><b>Vamos a colocar en tu publicación el texto que DOLA preparó.</b></p>
+        <p>Si tu teléfono pide permiso, toca <b>Permitir</b>.</p>
+        <div class="btn-row">
+          <button class="btn primary full" data-dola-read-return>Entendido, colocar texto</button>
+          <button class="btn full" data-close-modal>Ahora no</button>
+        </div>
+      </div>`};
+    render();
+  }
+  function showGeneratedTextFallback(text){
+    state.generatedFallbackText=String(text||'').trim();
+    state.modal={title:'📝 Texto listo',body:`
+      <div class="clipboard-guide">
+        <p><b>Revisa el texto de DOLA.</b></p>
+        <textarea class="textarea" data-generated-fallback>${esc(state.generatedFallbackText)}</textarea>
+        <button class="btn primary full" data-use-generated-fallback>Usar este texto en mi publicación</button>
+        <p class="sub">Si no entra solo, mantén presionado en la descripción y toca Pegar.</p>
+      </div>`};
+    render();
+  }
+  async function sendHiddenPromptToDola(hiddenPrompt,context={},win=null,opts={}){
     const payload={
       type:'CONNECTA_DOLA_PROMPT',
       source:'conecta-servicios',
@@ -551,12 +606,13 @@ Entrega solamente el texto final de la publicación.`; }
       [0,300,600,1000,1500,2500,4000].forEach(delay=>setTimeout(()=>{
         try{
           target.postMessage(payload,DOLA_ALLOWED_ORIGIN);
-          bridgeLog('postMessage enviado');
-        }catch(e){bridgeLog('inyección fallback',e?.message||e);}
+          bridgeLog('DOLA: postMessage enviado');
+        }catch(e){bridgeLog('DOLA: inyección fallback',e?.message||e);}
       },delay));
     });
     const injected=await tryInjectIntoAccessibleDolaWindow(win,hiddenPrompt);
     if(injected) return 'injected';
+    if(opts.fallback===false) return 'pending';
     await copyHiddenPromptFallback(hiddenPrompt);
     return 'clipboard';
   }
@@ -568,7 +624,7 @@ Entrega solamente el texto final de la publicación.`; }
   function injectDolaTextIntoEditor(text,opts={}){
     const clean=String(text||'').trim();
     if(shouldRejectGeneratedText(clean)) return false;
-    bridgeLog('generatedText recibido');
+    bridgeLog('DOLA: generatedText recibido');
     state.chatResult=clean;
     state.dolaPromptCopied=true;
     state.apiStatus='ready';
@@ -578,11 +634,11 @@ Entrega solamente el texto final de la publicación.`; }
     render();
     waitForEditor(document,['[data-dola-text]'],{attempts:6}).then(editor=>{
       if(editor){
-        bridgeLog('editor Conecta listo');
+        bridgeLog('DOLA: editor Conecta listo');
         injectTextIntoEditor(editor,clean,{focus:opts.focus!==false,preventScroll:true});
-        bridgeLog('generatedText inyectado OK');
+        bridgeLog('DOLA: generatedText inyectado OK');
       }else{
-        bridgeLog('generatedText fallback');
+        bridgeLog('DOLA: generatedText fallback');
       }
     });
     toast('Texto recibido');
@@ -601,7 +657,7 @@ Entrega solamente el texto final de la publicación.`; }
     }
     const type=payload.type||payload.event||'';
     if(/CONNECTA_DOLA_ACK|DOLA_PROMPT_RECEIVED/i.test(type)){
-      bridgeLog('postMessage confirmado');
+      bridgeLog('DOLA: postMessage confirmado');
       return true;
     }
     const text=payload.generatedText||payload.text||payload.result||payload.content||payload.message||'';
@@ -611,15 +667,29 @@ Entrega solamente el texto final de la publicación.`; }
   async function tryReadDolaClipboard(){
     const session=getDolaSession();
     if(!session || state.route!=='/publicar') return;
-    if(!navigator.clipboard?.readText) return;
+    if(!navigator.clipboard?.readText){
+      showGeneratedTextFallback('');
+      return;
+    }
     try{
       const text=await navigator.clipboard.readText();
-      if(injectDolaTextIntoEditor(text,{focus:false})) clearDolaSession();
-    }catch(e){}
+      if(injectDolaTextIntoEditor(text,{focus:false})){
+        clearDolaSession();
+        state.modal=null;
+        render();
+      }else if(String(text||'').trim()){
+        showGeneratedTextFallback(text);
+      }else{
+        toast('Copia el texto de DOLA y vuelve a intentar.');
+      }
+    }catch(e){
+      bridgeLog('DOLA: generatedText fallback',e?.message||e);
+      toast('Mantén presionado en el campo de descripción y toca Pegar.');
+    }
   }
   function armDolaReturnWatch(){
     if(state.dolaReturnTimer) clearTimeout(state.dolaReturnTimer);
-    state.dolaReturnTimer=setTimeout(tryReadDolaClipboard,DOLA_RETURN_CLIPBOARD_SCAN_MS);
+    state.dolaReturnTimer=setTimeout(showDolaReturnGuide,DOLA_RETURN_CLIPBOARD_SCAN_MS);
   }
   async function openDolaWithHiddenPrompt(prompt){
     const session=saveDolaSession(prompt);
@@ -627,10 +697,13 @@ Entrega solamente el texto final de la publicación.`; }
     state.apiStatus='fallback';
     render();
     const target=dolaUrlWithPrompt(prompt,session);
-    let win=null;
-    try{win=window.open(target,'_blank'); state.dolaWindow=win;}catch(e){win=null;}
-    await sendHiddenPromptToDola(prompt,{flow:state.inspirationPostId?'create_same':'create',publicationId:state.inspirationPostId,templateId:state.selectedTemplate?.id,sessionId:session.id},win);
-    toast('DOLA listo');
+    const context={flow:state.inspirationPostId?'create_same':'create',publicationId:state.inspirationPostId,templateId:state.selectedTemplate?.id,sessionId:session.id,targetUrl:target};
+    const iframe=document.querySelector('iframe[data-dola-frame], iframe[src*="dola"]');
+    if(iframe?.contentWindow){
+      await sendHiddenPromptToDola(prompt,context,iframe.contentWindow,{fallback:true});
+      return;
+    }
+    showDolaPasteGuide(prompt,target,context);
   }
 
   function dolaCreate(){
@@ -732,6 +805,11 @@ Entrega solamente el texto final de la publicación.`; }
   }
 
   function bind(){
+    document.querySelectorAll('[data-close-modal]').forEach(b=>b.onclick=()=>{state.modal=null;render();});
+    document.querySelectorAll('[data-dola-continue-fallback]').forEach(b=>b.onclick=continueDolaFallback);
+    document.querySelectorAll('[data-dola-copy-again]').forEach(b=>b.onclick=()=>{const p=state.dolaFallback?.prompt||getDolaSession()?.prompt||hiddenDolaPrompt(); copyHiddenPromptFallback(p).then(()=>toast('Listo. Ahora abre DOLA.'));});
+    document.querySelectorAll('[data-dola-read-return]').forEach(b=>b.onclick=tryReadDolaClipboard);
+    document.querySelectorAll('[data-use-generated-fallback]').forEach(b=>b.onclick=()=>{const text=document.querySelector('[data-generated-fallback]')?.value||state.generatedFallbackText||''; if(injectDolaTextIntoEditor(text,{focus:true})){state.modal=null; clearDolaSession(); render();}else{toast('Mantén presionado en la descripción y toca Pegar.');}});
     document.querySelectorAll('[data-route]').forEach(b=>b.onclick=()=>{ if(b.dataset.route==='/publicar'){ startInspiredCreation(currentInspirationPost()); return; } else resetTransient(); if(b.dataset.filter)state.filter=b.dataset.filter; nav(b.dataset.route,{filter:b.dataset.filter});});
     document.querySelectorAll('[data-back]').forEach(b=>b.onclick=back); document.querySelectorAll('[data-install]').forEach(b=>b.onclick=installApp);
     document.querySelectorAll('[data-filter-home]').forEach(b=>b.onclick=()=>nav('/explorar',{filter:b.dataset.filterHome}));

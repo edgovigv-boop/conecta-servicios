@@ -1,0 +1,16 @@
+Conecta Servicios v5.2.11 - Checklist DOLA portapapeles asistido
+
+1. Probar desde + Crear.
+2. Probar desde Crear Igual.
+3. Confirmar log: DOLA: postMessage enviado.
+4. Confirmar log: DOLA: editor listo si existe editor accesible.
+5. Confirmar log: DOLA: inyección OK si el editor acepta inyección.
+6. Si falla la inyección, confirmar que aparece el aviso propio antes del permiso.
+7. En Android/Chrome, tocar Permitir cuando el navegador lo solicite.
+8. Confirmar que el hiddenPrompt no se pierde.
+9. Confirmar botón Copiar de nuevo.
+10. Al volver de DOLA, confirmar aviso propio antes de leer el texto.
+11. Confirmar que el generatedText se inyecta en el editor de Conecta.
+12. Confirmar que el texto queda editable y respeta saltos de línea.
+13. Confirmar fallback con cuadro editable y botón Usar este texto en mi publicación.
+14. Confirmar que no se tocaron Supabase, Storage, videos, Admin, Meta IA ni muro.

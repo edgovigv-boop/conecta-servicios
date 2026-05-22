@@ -1,0 +1,1 @@
+La versión v5.2.11 no requiere SQL nuevo. Solo ajusta el flujo DOLA de ida y vuelta con avisos claros para portapapeles, postMessage, inyección y fallback.

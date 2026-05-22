@@ -1,10 +1,10 @@
-const CACHE_NAME = 'conecta-servicios-v5-2-10-dola-inyeccion-ida-vuelta';
+const CACHE_NAME = 'conecta-servicios-v5-2-11-dola-portapapeles-asistido';
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=5.2.10-dola-inyeccion-ida-vuelta',
-  '/app.js?v=5.2.10-dola-inyeccion-ida-vuelta',
-  '/manifest.json?v=5.2.10-dola-inyeccion-ida-vuelta',
+  '/styles.css?v=5.2.11-dola-portapapeles-asistido',
+  '/app.js?v=5.2.11-dola-portapapeles-asistido',
+  '/manifest.json?v=5.2.11-dola-portapapeles-asistido',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'

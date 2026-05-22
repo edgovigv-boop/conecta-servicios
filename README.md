@@ -145,3 +145,18 @@ Corrección puntual del puente DOLA:
 - No requiere SQL nuevo.
 
 Limitación técnica: si DOLA externo no acepta `postMessage`, parámetros, iframe bridge o API oficial, el navegador no permite manipular su editor directamente por seguridad. En ese caso se conserva el fallback de portapapeles.
+
+
+## v5.2.11 - DOLA portapapeles asistido
+
+Corrección puntual del puente DOLA para que el usuario no se pierda cuando Android/Chrome pide permiso para pegar o leer información.
+
+Cambios:
+- Se mantiene postMessage con origen validado.
+- Se conserva la inyección en editores accesibles con eventos input y change.
+- Si se usa portapapeles, Conecta muestra primero un aviso humano antes del permiso del navegador.
+- Al volver desde DOLA, Conecta pide permiso de forma guiada y coloca el texto generado en el editor.
+- Si falla la inyección, muestra un cuadro editable y el botón “Usar este texto en mi publicación”.
+- No toca Supabase, Storage, videos, Admin, Meta IA, muro ni diseño general.
+
+No requiere SQL nuevo.
