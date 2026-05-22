@@ -1,5 +1,5 @@
 // api/publications.js
-// Conecta Servicios v5.2.4
+// Conecta Servicios v5.2.5
 // Adaptador seguro para publicar y leer el muro general desde Supabase.
 // Requiere variables de entorno en Vercel:
 // SUPABASE_URL

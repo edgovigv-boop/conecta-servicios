@@ -1,4 +1,4 @@
-# Conecta Servicios v5.2.4
+# Conecta Servicios v5.2.5
 
 ## Cambios principales
 
@@ -53,3 +53,18 @@ Nota: para producción final se recomienda integrar Supabase Auth y reglas RLS p
 8. Subir video y confirmar reproducción.
 9. Confirmar estilo vertical 9:16 tipo TikTok.
 10. Deslizar y confirmar snap por publicación.
+
+
+## v5.2.5 - Crear igual con DOLA y Meta IA
+
+Cambios principales:
+
+- El botón **+ Crear** inicia el flujo con DOLA tomando como inspiración la publicación visible del muro.
+- El botón **Igual** abre DOLA con un prompt adaptado a la publicación elegida.
+- DOLA recibe contexto de la publicación original y debe guiar al usuario paso a paso, sin copiar literal.
+- Después de pegar el texto de DOLA, aparece el bloque **Generar video con Meta IA**.
+- El botón de Meta IA copia un prompt de video vertical 9:16 y abre Meta IA.
+- El usuario descarga el video desde Meta IA y lo sube en **Fotos / videos**.
+- Se mantiene el respaldo actual: DOLA externo, multimedia, Supabase, muro público, controles solo en Perfil/Admin.
+
+Nota: Meta IA no se integra por API en esta versión. Se usa como puente seguro: copiar prompt + abrir Meta IA.

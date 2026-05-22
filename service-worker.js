@@ -1,10 +1,10 @@
-const CACHE_NAME = 'conecta-servicios-v5-2-4-muro-publico-tiktok-admin-perfil';
+const CACHE_NAME = 'conecta-servicios-v5-2-5-crear-igual-dola-meta';
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=5.2.4-muro-publico-tiktok-admin-perfil',
-  '/app.js?v=5.2.4-muro-publico-tiktok-admin-perfil',
-  '/manifest.json?v=5.2.4-muro-publico-tiktok-admin-perfil',
+  '/styles.css?v=5.2.5-crear-igual-dola-meta',
+  '/app.js?v=5.2.5-crear-igual-dola-meta',
+  '/manifest.json?v=5.2.5-crear-igual-dola-meta',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'

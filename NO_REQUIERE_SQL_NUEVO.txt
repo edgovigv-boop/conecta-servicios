@@ -1,3 +1,8 @@
-Esta corrección no requiere SQL nuevo.
+Conecta Servicios v5.2.5
 
-Los videos se guardan en modo piloto usando IndexedDB/localStorage del navegador. Para producción multiusuario real y videos persistentes entre dispositivos, usar Supabase Storage.
+No requiere SQL nuevo.
+
+Usa el mismo SQL de v5.2.4 para muro público compartido:
+- supabase-v5.2.4-muro-publico.sql
+
+Si ya lo ejecutaste en Supabase, no lo repitas.

@@ -1,0 +1,19 @@
+CHECKLIST v5.2.5 - Crear igual con DOLA y Meta IA
+
+1. Abrir Inicio o Explorar.
+2. Detenerse en una publicación del muro.
+3. Tocar + Crear.
+4. Confirmar que abre Crear con DOLA inspirado en esa publicación.
+5. Tocar Igual en una publicación.
+6. Confirmar que abre Crear con DOLA con contexto de esa publicación.
+7. Copiar prompt y abrir DOLA.
+8. Confirmar que el prompt pide saludo contextual y ayuda paso a paso.
+9. Pegar texto final de DOLA.
+10. Tocar Editar y terminar.
+11. Confirmar que aparece Generar video con Meta IA.
+12. Tocar Generar video con Meta IA y confirmar que copia el prompt y abre Meta IA.
+13. Descargar video desde Meta IA y subirlo en Fotos / videos.
+14. Publicar y confirmar que se guarda.
+15. Confirmar que sigue apareciendo en otro celular si Supabase está configurado.
+16. Confirmar que botones de editar/borrar siguen solo en Mis publicaciones/Admin.
+17. Confirmar que compartir, mensajes y videos siguen funcionando.
