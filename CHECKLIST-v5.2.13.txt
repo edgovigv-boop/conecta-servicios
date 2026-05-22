@@ -1,0 +1,13 @@
+Checklist v5.2.13 - Publicación rápida / Abuelita friendly
+
+1. Entrar a Crear / +.
+2. Confirmar que aparece un solo campo grande: ¿Qué quieres publicar?
+3. Escribir texto libre y tocar PREPARAR MI PUBLICACIÓN.
+4. Confirmar que se abre el editor final con título/descripción prellenados.
+5. Seleccionar chip Vendo algo y confirmar tipo Negocio.
+6. Seleccionar chip Ofrezco un servicio y confirmar tipo Agente.
+7. Seleccionar chip Necesito ayuda y confirmar tipo Solicitante.
+8. Probar Dictar si el navegador lo soporta.
+9. Tocar DOLA desde el flujo rápido y confirmar que conserva el texto libre en el prompt.
+10. Subir foto/video y publicar.
+11. Confirmar que no se rompe Supabase, Storage, videos, Admin ni muro TikTok.

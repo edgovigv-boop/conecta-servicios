@@ -1,10 +1,10 @@
-const CACHE_NAME = 'conecta-servicios-v5-2-12-dola-regreso-editor';
+const CACHE_NAME = 'conecta-servicios-v5-2-13-publicacion-rapida-abuelita';
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=5.2.12-dola-regreso-editor',
-  '/app.js?v=5.2.12-dola-regreso-editor',
-  '/manifest.json?v=5.2.12-dola-regreso-editor',
+  '/styles.css?v=5.2.13-publicacion-rapida-abuelita',
+  '/app.js?v=5.2.13-publicacion-rapida-abuelita',
+  '/manifest.json?v=5.2.13-publicacion-rapida-abuelita',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'

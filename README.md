@@ -205,3 +205,17 @@ Cambios:
 - No toca Supabase, Storage, videos, Admin, Meta IA, muro ni diseño general.
 
 No requiere SQL nuevo.
+
+
+## v5.2.13-publicacion-rapida-abuelita
+
+Flujo agregado: **Publicación rápida / Abuelita friendly**.
+
+- Al tocar **Crear / +**, la primera pantalla muestra un solo campo grande: **¿Qué quieres publicar?**
+- Se agregan chips visuales: Vendo algo, Ofrezco servicio, Necesito ayuda, Busco trabajo, Ofrezco viaje, Busco viaje, Envío o mandado, Negocio local y Otro.
+- El botón **PREPARAR MI PUBLICACIÓN** convierte el texto libre en un borrador editable con tipo/categoría sugeridos.
+- Se mantiene la opción **DOLA** para mejorar o generar la publicación desde el texto libre.
+- Se agregó soporte inicial de dictado por voz si el navegador lo permite.
+- No requiere SQL nuevo.
+
+Commit sugerido: `Agregar publicación rápida abuelita friendly v5.2.13`

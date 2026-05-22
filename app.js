@@ -1,7 +1,7 @@
-/* Conecta Servicios v5.2.12 - DOLA regreso al editor */
+/* Conecta Servicios v5.2.13 - Publicación rápida Abuelita friendly */
 (() => {
   'use strict';
-  const VERSION = 'v5.2.12-dola-regreso-editor';
+  const VERSION = 'v5.2.13-publicacion-rapida-abuelita';
   const DOLA_EXTERNAL_URL = 'https://dola.com';
   const DOLA_ALLOWED_ORIGIN = 'https://dola.com';
   const DOLA_RETURN_CLIPBOARD_SCAN_MS = 900;
@@ -20,10 +20,12 @@
   const app = document.getElementById('app');
   const toastEl = document.getElementById('toast');
   let deferredInstallPrompt = null;
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  let activeRecognition = null;
   const mediaObjectUrls = new Map();
   const mediaLoading = new Set();
   let mediaDbPromise = null;
-  const state = { route:'/', filter:'Todos', stack:[], modal:null, selectedTemplate:null, selectedType:null, createChoice:null, draft:null, media:[], chatTask:null, chatMessages:[], chatText:'', chatResult:'', apiStatus:'idle', apiError:'', dolaPromptCopied:false, cloudReady:false, cloudMessage:'', inspirationPostId:null, metaPrompt:'', metaCopied:false, dolaWindow:null, dolaReturnTimer:null, dolaSession:null, dolaReturnContext:null, dolaFallback:null, generatedFallbackText:'' };
+  const state = { route:'/', filter:'Todos', stack:[], modal:null, selectedTemplate:null, selectedType:null, createChoice:null, draft:null, media:[], chatTask:null, chatMessages:[], chatText:'', chatResult:'', apiStatus:'idle', apiError:'', dolaPromptCopied:false, cloudReady:false, cloudMessage:'', inspirationPostId:null, metaPrompt:'', metaCopied:false, rapidText:'', rapidIntent:'', voiceListening:false, dolaWindow:null, dolaReturnTimer:null, dolaSession:null, dolaReturnContext:null, dolaFallback:null, generatedFallbackText:'' };
 
   const types = [
     {id:'Negocio', icon:'🏪', color:'negocio', bg:'negocio-bg', title:'Negocio', short:'Vendo'},
@@ -37,6 +39,17 @@
     {id:'negocio', type:'Negocio', icon:'🏪', title:'Mi negocio', cat:'Negocio local', media:'negocio'},
     {id:'agente', type:'Agente', icon:'🛵', title:'Soy agente', cat:'Agente local', media:'agente'},
     {id:'clientes', type:'Negocio', icon:'💼', title:'Clientes', cat:'Comisión', media:'comision'}
+  ];
+  const quickIntents = [
+    {id:'vendo', icon:'🛍️', label:'Vendo algo', template:'negocio'},
+    {id:'servicio', icon:'🛠️', label:'Ofrezco servicio', template:'agente'},
+    {id:'ayuda', icon:'🧡', label:'Necesito ayuda', template:'necesito'},
+    {id:'trabajo', icon:'💼', label:'Busco trabajo', template:'agente'},
+    {id:'ofrezco_viaje', icon:'🚗', label:'Ofrezco viaje', template:'agente'},
+    {id:'busco_viaje', icon:'🚌', label:'Busco viaje', template:'necesito'},
+    {id:'mandado', icon:'📦', label:'Envío o mandado', template:'mensajero'},
+    {id:'negocio', icon:'🏪', label:'Negocio local', template:'negocio'},
+    {id:'otro', icon:'✨', label:'Otro', template:'necesito'}
   ];
   const modules = [
     {id:'embajadores', icon:'🏆', title:'Embajadores', short:'Invita', route:'/embajadores'},
@@ -80,7 +93,7 @@
   function toast(msg){toastEl.textContent=msg;toastEl.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>toastEl.classList.remove('show'),2400);}
   function nav(route, opts={}){ if(!opts.replace && state.route!==route) state.stack.push({route:state.route, filter:state.filter, template:state.selectedTemplate, choice:state.createChoice}); state.route=route; if(opts.filter)state.filter=opts.filter; render(); if(!opts.keepScroll) setTimeout(()=>window.scrollTo({top:0,behavior:'smooth'}),0); }
   function back(){ const prev=state.stack.pop(); if(prev){state.route=prev.route; state.filter=prev.filter||'Todos'; state.selectedTemplate=prev.template||null; state.createChoice=prev.choice||null;} else {state.route='/';} render(); setTimeout(()=>window.scrollTo({top:0,behavior:'smooth'}),0); }
-  function resetCreate(){ state.selectedTemplate=null; state.selectedType=null; state.createChoice=null; state.draft=null; state.media=[]; state.chatTask=null; state.chatMessages=[]; state.chatText=''; state.chatResult=''; state.apiStatus='idle'; state.apiError=''; state.dolaPromptCopied=false; state.inspirationPostId=null; state.metaPrompt=''; state.metaCopied=false; }
+  function resetCreate(){ state.selectedTemplate=null; state.selectedType=null; state.createChoice=null; state.draft=null; state.media=[]; state.chatTask=null; state.chatMessages=[]; state.chatText=''; state.chatResult=''; state.rapidText=''; state.rapidIntent=''; state.voiceListening=false; state.apiStatus='idle'; state.apiError=''; state.dolaPromptCopied=false; state.inspirationPostId=null; state.metaPrompt=''; state.metaCopied=false; }
   function installApp(){ if(deferredInstallPrompt){deferredInstallPrompt.prompt(); deferredInstallPrompt.userChoice.finally(()=>deferredInstallPrompt=null); } else toast('Menú del navegador → Agregar a inicio'); }
   function addNote(title,msg){ const n=get(K.notes,[]); n.unshift({id:uid('n'),title,msg,createdAt:now()}); set(K.notes,n.slice(0,50)); }
   function unread(){ return get(K.notes,[]).length; }
@@ -286,7 +299,14 @@
     resetCreate();
     state.inspirationPostId=p?.id||null;
     state.selectedTemplate=templateFromPost(p);
-    state.createChoice='dola';
+    state.rapidIntent=quickIntents.find(q=>q.template===state.selectedTemplate?.id)?.id || '';
+    state.rapidText=p ? `Quiero crear una publicación parecida a:
+${p.title || ''}
+
+${p.description || ''}
+
+Zona: ${p.zone || ''}`.trim() : '';
+    state.createChoice='quick';
     state.chatMessages=[];
     state.chatResult='';
     state.dolaPromptCopied=false;
@@ -359,10 +379,51 @@ REGLAS OBLIGATORIAS:
   function iconForType(type){ return type==='Negocio'?'🏪':type==='Agente'?'🛵':'🧡'; }
 
   function publish(){
-    if(!state.selectedTemplate) return layout(`<div class="section-head"><h2>¿Qué quieres?</h2></div><div class="big-options">${templates.map(t=>`<button class="big-option" data-template="${t.id}"><span class="ico">${t.icon}</span><div><b>${t.title}</b><small>${t.type}</small></div></button>`).join('')}</div>`,{title:'Crear'});
-    if(!state.createChoice) return layout(`<div class="card center"><div class="template-badge"><span style="font-size:3rem">${state.selectedTemplate.icon}</span><h2>${state.selectedTemplate.title}</h2></div><div class="circle-grid"><button class="circle dola" data-create-choice="dola"><div><div class="ico">✨</div><b>DOLA</b><br><small>Me ayuda</small></div></button><button class="circle manual" data-create-choice="manual"><div><div class="ico">✍️</div><b>Manual</b><br><small>Yo escribo</small></div></button></div></div>`,{title:'Crear'});
-    return state.createChoice==='manual'?manualCreate():dolaCreate();
+    if(state.createChoice==='manual') return manualCreate();
+    if(state.createChoice==='dola') return dolaCreate();
+    return quickPublish();
   }
+
+  function selectedQuickIntent(){ return quickIntents.find(q=>q.id===state.rapidIntent) || null; }
+  function templateFromQuick(){
+    const intent=selectedQuickIntent();
+    const t=intent ? templates.find(x=>x.id===intent.template) : null;
+    return state.selectedTemplate || t || inferTemplateFromText(state.rapidText) || templates[0];
+  }
+  function inferTemplateFromText(text=''){
+    const v=String(text).toLowerCase();
+    if(/vendo|venta|negocio|tienda|producto|pollo|taco|comida|precio|cuesta|servicio profesional|consult/.test(v)) return templates.find(t=>t.id==='negocio');
+    if(/hago|ofrezco|trabajo|mandado|entrega|viaje|apoyo|servicio/.test(v)) return templates.find(t=>t.id==='agente');
+    if(/necesito|busco|quiero|ayuda|me urge|solicito/.test(v)) return templates.find(t=>t.id==='necesito');
+    return templates[0];
+  }
+  function quickPublish(){
+    const t=templateFromQuick();
+    const intent=selectedQuickIntent();
+    return layout(`
+      <section class="quick-publish">
+        <div class="quick-title-card">
+          <div class="quick-icon">➕</div>
+          <h1>¿Qué quieres publicar?</h1>
+        </div>
+        <textarea class="quick-main-text" data-rapid-text placeholder="Ejemplo:\nVendo pollos rostizados los fines de semana en Tejupilco. Cuestan $235 con ensalada, salsa y tortillas. Atiendo pedidos por WhatsApp.">${esc(state.rapidText||'')}</textarea>
+        <div class="quick-actions-line">
+          <button class="btn voice-btn" data-voice-input>${state.voiceListening?'🎙️ Escuchando':'🎙️ Dictar'}</button>
+          <button class="btn" data-dola-from-quick>✨ DOLA</button>
+        </div>
+        <div class="quick-chip-grid">
+          ${quickIntents.map(q=>`<button class="quick-intent ${state.rapidIntent===q.id?'active':''}" data-quick-intent="${q.id}"><span>${q.icon}</span><small>${q.label}</small></button>`).join('')}
+        </div>
+        <button class="btn primary full prepare-btn" data-prepare-quick>PREPARAR MI PUBLICACIÓN</button>
+        <div class="quick-mini-preview">
+          <span>${iconForType(t.type)}</span>
+          <b>${intent?.label || t.title}</b>
+          <small>${t.type} · ${t.cat}</small>
+        </div>
+      </section>
+    `,{title:'Crear'});
+  }
+
   function basePrompt(t){ return `Actúa como asistente de publicación para Conecta Servicios.
 
 Ayuda al usuario a crear una publicación clara, humana y confiable para una app local donde las personas pueden ofrecer servicios, pedir ayuda, publicar negocios, mandados, envíos, viajes compartidos, productos, oportunidades o necesidades.
@@ -370,6 +431,8 @@ Ayuda al usuario a crear una publicación clara, humana y confiable para una app
 Plantilla elegida: ${t.title}
 Tipo: ${t.type}
 Categoría: ${t.cat}
+Texto libre del usuario, si ya lo escribió:
+${state.rapidText || 'El usuario todavía no escribió texto. Ayúdale con una sola pregunta inicial.'}
 App de referencia: ${CONNECTA_APP_URL}
 
 Eres un asistente amable y paciente. Si el usuario te responde con "No sé", "Ayúdame", "No tengo idea" o no sabe qué escribir, NO lo dejes solo. Dile: "Claro que sí, te ayudo con gusto 🤝". Luego dale EJEMPLOS, OPCIONES claras y sugerencias para que él solo elija. Cuando generes el resultado final, SIEMPRE entrégalo dentro de un RECUADRO DE TEXTO y agrega debajo un BOTÓN que diga 📋 COPIAR, para que él solo tenga que presionar un botón y ya, sin seleccionar ni nada.
@@ -928,7 +991,12 @@ Entrega solamente el texto final de la publicación.`; }
     document.querySelectorAll('[data-dola-copy-again]').forEach(b=>b.onclick=()=>{const p=state.dolaFallback?.prompt||getDolaSession()?.prompt||hiddenDolaPrompt(); copyHiddenPromptFallback(p).then(()=>toast('Listo. Ahora abre DOLA.'));});
     document.querySelectorAll('[data-dola-read-return]').forEach(b=>b.onclick=tryReadDolaClipboard);
     document.querySelectorAll('[data-use-generated-fallback]').forEach(b=>b.onclick=()=>{const text=document.querySelector('[data-generated-fallback]')?.value||state.generatedFallbackText||''; if(injectDolaTextIntoEditor(text,{focus:true})){state.modal=null; clearDolaSession(); render();}else{toast('Mantén presionado en la descripción y toca Pegar.');}});
-    document.querySelectorAll('[data-route]').forEach(b=>b.onclick=()=>{ if(b.dataset.route==='/publicar'){ startInspiredCreation(currentInspirationPost()); return; } else resetTransient(); if(b.dataset.filter)state.filter=b.dataset.filter; nav(b.dataset.route,{filter:b.dataset.filter});});
+    document.querySelectorAll('[data-route]').forEach(b=>b.onclick=()=>{ if(b.dataset.route==='/publicar'){ resetCreate(); nav('/publicar'); return; } else resetTransient(); if(b.dataset.filter)state.filter=b.dataset.filter; nav(b.dataset.route,{filter:b.dataset.filter});});
+    const rapidBox=document.querySelector('[data-rapid-text]'); if(rapidBox) rapidBox.oninput=e=>state.rapidText=e.target.value;
+    document.querySelectorAll('[data-quick-intent]').forEach(b=>b.onclick=()=>{ const box=document.querySelector('[data-rapid-text]'); if(box) state.rapidText=box.value; state.rapidIntent=b.dataset.quickIntent; const q=selectedQuickIntent(); state.selectedTemplate=templates.find(t=>t.id===q?.template)||state.selectedTemplate; render();});
+    document.querySelectorAll('[data-prepare-quick]').forEach(b=>b.onclick=prepareQuickPublication);
+    document.querySelectorAll('[data-dola-from-quick]').forEach(b=>b.onclick=startDolaFromQuick);
+    document.querySelectorAll('[data-voice-input]').forEach(b=>b.onclick=startVoiceInput);
     document.querySelectorAll('[data-back]').forEach(b=>b.onclick=back); document.querySelectorAll('[data-install]').forEach(b=>b.onclick=installApp);
     document.querySelectorAll('[data-filter-home]').forEach(b=>b.onclick=()=>nav('/explorar',{filter:b.dataset.filterHome}));
     document.querySelectorAll('[data-set-filter]').forEach(b=>b.onclick=()=>{state.filter=b.dataset.setFilter;render();});
@@ -972,6 +1040,60 @@ Entrega solamente el texto final de la publicación.`; }
     watchVisiblePosts();
   }
   let rd; function renderDebounced(){clearTimeout(rd); rd=setTimeout(render,450);} function resetTransient(){ if(state.route!=='/publicar'){state.selectedTemplate=null; state.createChoice=null;} }
+  function deriveTitleFromText(text=''){
+    const clean=String(text||'').trim();
+    const first=clean.split('\n').map(x=>x.trim()).find(Boolean)||'Publicación';
+    return first.replace(/^[#*\s]+/,'').replace(/[\.。]+$/,'').slice(0,82);
+  }
+  function prepareQuickPublication(){
+    const el=document.querySelector('[data-rapid-text]');
+    const text=(el?.value||state.rapidText||'').trim();
+    state.rapidText=text;
+    if(!text) return toast('Escribe o dicta algo');
+    const t=templateFromQuick();
+    state.selectedTemplate=t;
+    state.createChoice='manual';
+    state.draft={
+      id:uid('p'), mine:true, ownerId:userId(), type:t.type, category:t.cat,
+      title:deriveTitleFromText(text), description:text, zone:extractZone(text)||'', channel:/whatsapp/i.test(text)?'whatsapp':'dola', whatsapp:'',
+      status:'activa', freeTrial:!canUnlimited(), expiresAt:canUnlimited()?null:now(FREE_DAYS), createdAt:now(), mediaKey:t.media, mediaItems:state.media, reactions:0,
+      inspiredBy:state.inspirationPostId||null
+    };
+    state.metaPrompt=buildMetaPrompt(state.draft);
+    render();
+    setTimeout(()=>document.querySelector('[data-publication-editor]')?.scrollIntoView({behavior:'smooth',block:'start'}),60);
+  }
+  function startDolaFromQuick(){
+    const el=document.querySelector('[data-rapid-text]');
+    state.rapidText=(el?.value||state.rapidText||'').trim();
+    const t=templateFromQuick();
+    state.selectedTemplate=t;
+    state.createChoice='dola';
+    state.draft=null;
+    state.chatResult='';
+    state.dolaPromptCopied=false;
+    render();
+  }
+  function startVoiceInput(){
+    const target=document.querySelector('[data-rapid-text]');
+    if(!SpeechRecognition || !target){ toast('Dictado no disponible'); return; }
+    try{
+      if(activeRecognition){ activeRecognition.stop(); activeRecognition=null; state.voiceListening=false; render(); return; }
+      const rec=new SpeechRecognition();
+      activeRecognition=rec;
+      rec.lang='es-MX'; rec.interimResults=false; rec.maxAlternatives=1;
+      state.voiceListening=true; render();
+      rec.onresult=e=>{
+        const text=[...e.results].map(r=>r[0]?.transcript||'').join(' ').trim();
+        state.rapidText=((state.rapidText||'')+' '+text).trim();
+        const box=document.querySelector('[data-rapid-text]'); if(box){box.value=state.rapidText; box.dispatchEvent(new Event('input',{bubbles:true}));}
+      };
+      rec.onerror=()=>toast('No se pudo dictar');
+      rec.onend=()=>{activeRecognition=null; state.voiceListening=false; render();};
+      rec.start();
+    }catch(e){ activeRecognition=null; state.voiceListening=false; toast('Dictado no disponible'); render(); }
+  }
+
   function collectManual(){ const d=state.draft||{type:state.selectedTemplate?.type||'Solicitante',category:state.selectedTemplate?.cat||'General',channel:'dola'}; document.querySelectorAll('[data-field]').forEach(el=>d[el.dataset.field]=el.value); d.mediaKey=d.mediaKey||state.selectedTemplate?.media||'solicitante'; state.draft=d; }
   async function publishPost(draftOverride=null){
     if(!draftOverride) collectManual();
