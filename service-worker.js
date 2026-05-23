@@ -1,11 +1,11 @@
-const CACHE_NAME = 'conecta-servicios-v6-3-35-home-estetico-acciones-sonido';
+const CACHE_NAME = 'conecta-servicios-v6-3-36-home-base-menu-transparente';
 
 const ASSETS = [
   '/',
   '/index.html',
   '/styles.css?v=6.3.12-publicaciones-video-sync',
-  '/app.js?v=6.3.35-video-tus-resumable',
-  '/manifest.json?v=6.3.35-video-tus-resumable',
+  '/app.js?v=6.3.36-video-tus-resumable',
+  '/manifest.json?v=6.3.36-video-tus-resumable',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'
@@ -36,8 +36,8 @@ self.addEventListener('fetch', event => {
     url.pathname.endsWith('/index.html') ||
     url.pathname.endsWith('/app.js') ||
     url.pathname.endsWith('/service-worker.js') ||
-    url.search.includes('v=6335') ||
-    url.search.includes('v=6.3.35');
+    url.search.includes('v=6336') ||
+    url.search.includes('v=6.3.36');
 
   if (networkFirst) {
     event.respondWith(

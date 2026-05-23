@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.35-home-estetico-acciones-sonido
+/* Conecta Servicios v6.3.36-home-base-menu-transparente
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.35-home-estetico-acciones-sonido';
+  const VERSION = 'v6.3.36-home-base-menu-transparente';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -1704,6 +1704,142 @@
       .post-meta{
         margin-top:6px !important;
       }
+
+      /* v6.3.36: mover información a la base, dots arriba de info y menú inferior más discreto */
+      .visual-tabs{
+        gap:18px !important;
+      }
+      .visual-tab{
+        font-size:16px !important;
+      }
+      .visual-tab.active{
+        font-size:19px !important;
+      }
+      .post-body{
+        left:10px !important;
+        right:10px !important;
+        bottom:calc(env(safe-area-inset-bottom) + 76px) !important;
+        padding:14px 14px 12px 14px !important;
+        border-radius:22px !important;
+        background:linear-gradient(180deg,rgba(0,0,0,.10),rgba(0,0,0,.56) 30%,rgba(0,0,0,.78)) !important;
+        backdrop-filter:blur(2px);
+        box-shadow:0 14px 34px rgba(0,0,0,.18) !important;
+      }
+      .post-body .owner-row{
+        font-size:13px !important;
+        margin-bottom:4px !important;
+      }
+      .post-body h2{
+        font-size:18px !important;
+        line-height:1.08 !important;
+        margin-bottom:4px !important;
+      }
+      .post-body p{
+        font-size:13px !important;
+        line-height:1.2 !important;
+        max-height:2.4em !important;
+      }
+      .post-meta{
+        margin-top:4px !important;
+        font-size:11px !important;
+      }
+      .post-action-row{
+        margin-top:8px !important;
+        gap:7px !important;
+      }
+      .post-action-row button{
+        min-height:36px !important;
+        padding:7px 8px !important;
+        font-size:12px !important;
+        background:rgba(255,255,255,.20) !important;
+      }
+      .manage-row{
+        margin-top:8px !important;
+      }
+      .manage-row button{
+        padding:8px 12px !important;
+        font-size:13px !important;
+      }
+      .gallery-dots{
+        bottom:calc(env(safe-area-inset-bottom) + 260px) !important;
+        background:rgba(0,0,0,.36) !important;
+        border:1px solid rgba(255,255,255,.22);
+        box-shadow:0 10px 30px rgba(0,0,0,.18);
+      }
+      .gallery-dot{
+        width:7px !important;
+        height:7px !important;
+        background:rgba(255,255,255,.58) !important;
+      }
+      .gallery-dot.active{
+        width:24px !important;
+        background:#fff !important;
+      }
+      .sound-toggle{
+        bottom:calc(env(safe-area-inset-bottom) + 258px) !important;
+        width:46px !important;
+        height:46px !important;
+        right:14px !important;
+      }
+      .bottom-nav{
+        left:26px !important;
+        right:26px !important;
+        bottom:calc(env(safe-area-inset-bottom) + 8px) !important;
+        height:68px !important;
+        min-height:68px !important;
+        padding:5px 8px !important;
+        border-radius:28px !important;
+        background:rgba(255,255,255,.62) !important;
+        border:1px solid rgba(255,255,255,.45) !important;
+        backdrop-filter:blur(18px) saturate(1.1) !important;
+        box-shadow:0 10px 32px rgba(0,0,0,.16) !important;
+      }
+      .nav-item{
+        min-width:0 !important;
+        padding:4px 6px !important;
+      }
+      .nav-icon{
+        font-size:23px !important;
+        line-height:1 !important;
+      }
+      .nav-item small{
+        font-size:10px !important;
+        margin-top:2px !important;
+      }
+      .nav-plus{
+        width:58px !important;
+        height:58px !important;
+        min-width:58px !important;
+        margin-top:-24px !important;
+        font-size:30px !important;
+        background:rgba(255,255,255,.86) !important;
+        box-shadow:0 10px 30px rgba(0,0,0,.18) !important;
+      }
+      .post-card .media-area,
+      .post-card .media-area img,
+      .post-card .media-area .no-media,
+      .video-inline-wrap,
+      .video-inline-wrap video,
+      .media-area video.feed-video-player,
+      .media-carousel,
+      .media-carousel img{
+        height:calc(100vh - 72px) !important;
+        min-height:calc(100vh - 72px) !important;
+      }
+      .post-card{
+        min-height:calc(100vh - 72px) !important;
+      }
+      @media (max-width:380px){
+        .post-action-row button{
+          font-size:11px !important;
+          padding-left:5px !important;
+          padding-right:5px !important;
+        }
+        .bottom-nav{
+          left:16px !important;
+          right:16px !important;
+        }
+      }
       .media-bottom{
         display:flex !important;
         opacity:1 !important;
@@ -1989,7 +2125,6 @@
       <div class="tiktok-topbar visual-topbar">
         <div class="visual-tabs">
           <button class="visual-tab municipio-tab ${state.topTab === 'municipio' ? 'active' : ''}" data-top-tab="municipio">${esc(municipio)}</button>
-          <button class="visual-tab" data-nav="/siguiendo">Siguiendo</button>
           <button class="visual-tab ${state.route === '/tienda' ? 'active' : ''}" data-open-store="${esc(userId())}">Tienda</button>
           <button class="visual-tab ${state.topTab === 'para-ti' ? 'active' : ''}" data-top-tab="para-ti">Para ti</button>
         </div>

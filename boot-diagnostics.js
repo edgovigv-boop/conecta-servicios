@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.35-home-estetico-acciones-sonido';
+  const VERSION = 'v6.3.36-home-base-menu-transparente';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 
