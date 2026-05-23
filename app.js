@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.24-video-interno-directo
+/* Conecta Servicios v6.3.25-video-sin-rerender
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.24-video-interno-directo';
+  const VERSION = 'v6.3.25-video-sin-rerender';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -72,6 +72,8 @@
     knownMessageIds: new Set(),
     readMessageIds: new Set(),
     videoViewer: null,
+    videoPlayingId: '',
+    videoIsPlaying: false,
     lastUploadDiagnostic: null,
     runtimeDiagnostic: null,
     audioCtx: null
@@ -121,6 +123,26 @@
     const e = diag.extra ? JSON.stringify(diag.extra).slice(0, 500) : '';
     return `${diag.kind || 'diagnóstico'} · ${diag.at || ''}\n${d}${e ? '\n' + e : ''}`;
   }
+
+  function isAnyVideoPlaying(){
+    if(state.videoIsPlaying) return true;
+    try{
+      return [...document.querySelectorAll('video.feed-video-player, .video-viewer video')]
+        .some(v => !v.paused && !v.ended && v.readyState > 1);
+    }catch{
+      return false;
+    }
+  }
+
+  function safeRender(reason=''){
+    if(isAnyVideoPlaying()){
+      console.info('[Conecta] Render omitido durante reproducción de video', reason);
+      return false;
+    }
+    render();
+    return true;
+  }
+
 
   async function resetTechnicalApp(){
     if(!confirm('Esto limpiará caché, service worker y publicaciones locales de este dispositivo. Las publicaciones públicas seguirán en Supabase. ¿Continuar?')) return;
@@ -645,12 +667,12 @@
       state.cloudReady = true;
       saveLocalPosts(mergeLocalAndRemote(localPosts(), remote));
 
-      if(options.render !== false && state.route !== '/publicar') render();
+      if(options.render !== false && state.route !== '/publicar' && !isAnyVideoPlaying()) render();
       return true;
     }catch{
       state.cloudReady = false;
       state.posts = localPosts().filter(p => !isDeleted(p));
-      if(options.render !== false && state.route !== '/publicar') render();
+      if(options.render !== false && state.route !== '/publicar' && !isAnyVideoPlaying()) render();
       return false;
     }finally{
       state.syncing = false;
@@ -727,6 +749,7 @@
       .video-inline-actions{position:absolute;left:14px;right:14px;bottom:84px;z-index:5;display:flex;gap:10px;justify-content:center;pointer-events:auto;}
       .video-inline-actions button{border:0;border-radius:999px;padding:10px 14px;font-weight:900;background:rgba(255,255,255,.94);color:#111827;box-shadow:0 8px 22px rgba(0,0,0,.22);}
       .video-load-error{position:absolute;left:18px;right:18px;top:45%;z-index:6;background:rgba(17,24,39,.9);color:#fff;border-radius:18px;padding:14px;text-align:center;font-weight:800;}
+      body.video-playing .sync-pill{opacity:.45;}
       .version-pill{display:inline-block;margin-top:3px;padding:3px 7px;border-radius:999px;background:rgba(91,46,234,.12);color:#5b2eea;font-size:10px;font-weight:900;}
       .diag-panel{margin:16px 0 0;padding:14px;border-radius:22px;background:#111827;color:#fff;box-shadow:0 16px 44px rgba(17,24,39,.20);}
       .diag-panel h2{margin:0 0 8px;font-size:18px;}
@@ -749,7 +772,7 @@
         <span></span>
       </div>
       <div class="video-viewer-body">
-        <video src="${esc(state.videoViewer.url)}" controls playsinline webkit-playsinline preload="metadata"></video>
+        <video src="${esc(state.videoViewer.url)}" controls playsinline webkit-playsinline preload="auto"></video>
       </div>
       <div class="video-viewer-note">Si el navegador no inicia solo, toca ▶ dentro del reproductor.</div>
     </div>`;
@@ -774,7 +797,7 @@
     return `<section class="glass-top">
       <div class="brand-row">
         <img src="assets/icons/conecta-logo-oficial.png" alt="Conecta" class="brand-logo" onerror="this.style.display='none'">
-        <div class="brand-title"><strong>Conecta</strong><span>Servicios</span><small class="version-pill">v6.3.24</small></div>
+        <div class="brand-title"><strong>Conecta</strong><span>Servicios</span><small class="version-pill">v6.3.25</small></div>
         <div style="display:flex;gap:10px;align-items:center"><div class="ghost-top"></div><button class="bell-btn" data-nav="/mensajes" title="Avisos">🔔</button></div>
       </div>
       <div class="path-row">
@@ -812,7 +835,7 @@
     if(isVideoPost(post)){
       if(post.mediaUrl){
         return `<div class="video-inline-wrap" data-video-wrap="${esc(post.id)}">
-          <video class="feed-video-player" src="${esc(post.mediaUrl)}" controls playsinline webkit-playsinline preload="metadata" data-video-id="${esc(post.id)}"></video>
+          <video class="feed-video-player" src="${esc(post.mediaUrl)}" controls playsinline webkit-playsinline preload="auto" data-video-id="${esc(post.id)}"></video>
           <div class="video-inline-actions">
             <button type="button" data-reload-video="${esc(post.id)}">Recargar video</button>
             <button type="button" data-open-video="${esc(post.id)}">Ver grande</button>
@@ -1197,15 +1220,16 @@ ${esc(shortDiagnosticText(diag))}</code>
       if(video.dataset.csBound === '1') return;
       video.dataset.csBound = '1';
 
+      const postId = video.dataset.videoId || '';
+
       video.addEventListener('error', () => {
-        const postId = video.dataset.videoId || '';
         const wrap = video.closest('.video-inline-wrap');
         if(!wrap || wrap.querySelector('.video-load-error')) return;
         const box = document.createElement('div');
         box.className = 'video-load-error';
         box.innerHTML = 'No se pudo cargar el video dentro de la app.<br><button type="button" data-reload-video="' + postId + '">Reintentar</button>';
         wrap.appendChild(box);
-        saveUploadDiagnostic('video-playback-error', 'El video existe pero el reproductor interno no pudo cargarlo.', {postId, src: video.currentSrc || video.src});
+        saveUploadDiagnostic('video-playback-error', 'El video existe pero el reproductor interno no pudo cargarlo.', {postId, src: video.currentSrc || video.src, readyState: video.readyState, networkState: video.networkState});
       });
 
       video.addEventListener('loadedmetadata', () => {
@@ -1214,11 +1238,38 @@ ${esc(shortDiagnosticText(diag))}</code>
       });
 
       video.addEventListener('play', () => {
+        state.videoPlayingId = postId;
+        state.videoIsPlaying = true;
+        document.body.classList.add('video-playing');
         document.querySelectorAll('video.feed-video-player').forEach(other => {
           if(other !== video) {
             try { other.pause(); } catch {}
           }
         });
+      });
+
+      video.addEventListener('pause', () => {
+        if(state.videoPlayingId === postId){
+          state.videoIsPlaying = false;
+          state.videoPlayingId = '';
+          document.body.classList.remove('video-playing');
+        }
+      });
+
+      video.addEventListener('ended', () => {
+        if(state.videoPlayingId === postId){
+          state.videoIsPlaying = false;
+          state.videoPlayingId = '';
+          document.body.classList.remove('video-playing');
+        }
+      });
+
+      video.addEventListener('waiting', () => {
+        console.info('[Conecta] Video esperando buffer', {postId, currentTime: video.currentTime, readyState: video.readyState, networkState: video.networkState});
+      });
+
+      video.addEventListener('stalled', () => {
+        saveUploadDiagnostic('video-stalled', 'El reproductor se quedó esperando datos. Se mantiene el video sin re-render.', {postId, currentTime: video.currentTime, readyState: video.readyState, networkState: video.networkState});
       });
     });
   }
@@ -1226,11 +1277,14 @@ ${esc(shortDiagnosticText(diag))}</code>
   function reloadVideo(postId){
     const post = state.posts.find(p => p.id === postId);
     if(!post?.mediaUrl) return toast('El video todavía no tiene URL.');
-    const video = document.querySelector(`video.feed-video-player[data-video-id="${CSS.escape(postId)}"]`);
-    const wrap = document.querySelector(`[data-video-wrap="${CSS.escape(postId)}"]`);
+    const safeId = (window.CSS && CSS.escape) ? CSS.escape(postId) : postId.replace(/["\\]/g, '\\$&');
+    const video = document.querySelector(`video.feed-video-player[data-video-id="${safeId}"]`);
+    const wrap = document.querySelector(`[data-video-wrap="${safeId}"]`);
     wrap?.querySelectorAll('.video-load-error').forEach(el => el.remove());
     if(video){
       try { video.pause(); } catch {}
+      state.videoIsPlaying = false;
+      state.videoPlayingId = '';
       video.src = post.mediaUrl + (post.mediaUrl.includes('?') ? '&' : '?') + 'reload=' + Date.now();
       video.load();
       toast('Recargando video dentro de la app...');
@@ -1249,6 +1303,9 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function closeVideo(){
+    state.videoIsPlaying = false;
+    state.videoPlayingId = '';
+    document.body.classList.remove('video-playing');
     state.videoViewer = null;
     render();
   }
@@ -1370,7 +1427,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       state.publicMessages = list;
       state.messagesLoaded = true;
       if(state.route === '/chat') markActiveChatRead();
-      if(options.silent && state.route !== '/publicar' && (JSON.stringify(list)!==previous || unreadCount()!==previousUnread)) render();
+      if(options.silent && state.route !== '/publicar' && !isAnyVideoPlaying() && (JSON.stringify(list)!==previous || unreadCount()!==previousUnread)) render();
     }catch{
       if(!options.silent) state.messagesError = 'Todavía no se pudieron cargar los mensajes públicos.';
     }finally{
@@ -1392,7 +1449,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       state.chatMessages = list;
       state.chatLoaded = true;
       markMessagesRead(list);
-      if(options.silent && state.route === '/chat' && JSON.stringify(list)!==previous) render();
+      if(options.silent && state.route === '/chat' && !isAnyVideoPlaying() && JSON.stringify(list)!==previous) render();
       if(state.route === '/chat') scrollChatToBottom(options.silent ? 'smooth' : 'auto');
     }catch{ if(!options.silent) toast('No se pudieron cargar los mensajes.'); }
     finally{
@@ -1551,13 +1608,13 @@ ${esc(shortDiagnosticText(diag))}</code>
     if(document.visibilityState !== 'visible' || state.publishing) return;
     if(state.route === '/mensajes') loadMessagesForInbox({silent:true});
     else if(state.route === '/chat'){ loadChatMessages({silent:true}); loadMessagesForInbox({silent:true}); }
-    else { loadMessagesForInbox({silent:true}); if(!state.syncing && state.route !== '/publicar') syncFromCloud({render:true}); }
+    else { loadMessagesForInbox({silent:true}); if(!state.syncing && state.route !== '/publicar') syncFromCloud({render:!isAnyVideoPlaying()}); }
   }
 
   function startPolling(){
     if(state.syncTimer) clearInterval(state.syncTimer);
     if(state.messageTimer) clearInterval(state.messageTimer);
-    state.syncTimer = setInterval(()=>{ if(document.visibilityState==='visible' && !state.syncing && !state.publishing && !['/publicar','/mensajes','/chat'].includes(state.route)) syncFromCloud({render:true}); }, POLL_MS);
+    state.syncTimer = setInterval(()=>{ if(document.visibilityState==='visible' && !state.syncing && !state.publishing && !['/publicar','/mensajes','/chat'].includes(state.route)) syncFromCloud({render:!isAnyVideoPlaying()}); }, POLL_MS);
     state.messageTimer = setInterval(runVisibleRefresh, MESSAGE_POLL_MS);
     window.addEventListener('focus', runVisibleRefresh);
     document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') runVisibleRefresh(); });
