@@ -1,8 +1,8 @@
-/* Conecta Servicios v6.3.10 - Chat con badge, autoscroll, sonido y vibración larga */
+/* Conecta Servicios v6.3.12 - Publicaciones sincronizadas y video más estable */
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.10-chat-badge-scroll-alertas';
+  const VERSION = 'v6.3.12-publicaciones-video-sync';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const MAX_FILE_MB = 40;
   const IMAGE_MAX_SIDE = 1280;
@@ -18,7 +18,8 @@
     profile: 'cs_v634_profile',
     composer: 'cs_v634_composer',
     seenMessages: 'cs_v639_seen_messages',
-    readMessages: 'cs_v6310_read_messages'
+    readMessages: 'cs_v6310_read_messages',
+    deletedPosts: 'cs_v6312_deleted_posts'
   };
 
   const CATEGORIES = ['VENDO', 'OFREZCO', 'NECESITO'];
@@ -80,6 +81,65 @@
   function toast(msg){ toastEl.textContent=msg; toastEl.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.classList.remove('show'),2800); }
   function normalizeCategory(v){ const x=String(v||'').toUpperCase().trim(); return CATEGORIES.includes(x)?x:'VENDO'; }
   function titleFrom(text){ return (String(text||'').split('\n').map(x=>x.trim()).find(Boolean)||'Publicación').slice(0,72); }
+
+
+  function isSeedPost(post){
+    return String(post?.id || '').startsWith('seed-');
+  }
+
+  function postStatus(post){
+    return String(post?.status || post?.data?.status || '').trim().toLowerCase();
+  }
+
+  function loadDeletedPostIds(){
+    return new Set(get(K.deletedPosts, []));
+  }
+
+  function persistDeletedPostIds(ids){
+    try { set(K.deletedPosts, [...ids].slice(-1200)); } catch {}
+  }
+
+  function isFreshOwnLocalPost(post){
+    if(!post || post.ownerId !== userId()) return false;
+    const updated = new Date(post.updatedAt || post.createdAt || 0).getTime();
+    const isFresh = Number.isFinite(updated) && (Date.now() - updated) < 5 * 60 * 1000;
+    const cloudStatus = String(post.cloudStatus || '').toLowerCase();
+    const mediaStatus = String(post.mediaStatus || '').toLowerCase();
+    return isFresh && (cloudStatus === 'local' || cloudStatus === 'subiendo' || mediaStatus === 'pendiente');
+  }
+
+  function reconcileLocalPostsWithRemote(remotePosts = []){
+    const remoteIdSet = new Set();
+    const deletedIdSet = loadDeletedPostIds();
+
+    (remotePosts || []).forEach(post => {
+      if(!post || !post.id) return;
+      const id = String(post.id);
+      remoteIdSet.add(id);
+      if(postStatus(post) === 'eliminada') deletedIdSet.add(id);
+    });
+
+    const local = localPosts();
+    const cleaned = local.filter(post => {
+      if(!post || !post.id) return false;
+      const id = String(post.id);
+      if(isSeedPost(post)) return true;
+      if(deletedIdSet.has(id) || postStatus(post) === 'eliminada') return false;
+      if(remoteIdSet.has(id)) return true;
+
+      // Si es mía y está subiendo o pendiente, no la borres antes de que Supabase responda.
+      if(isFreshOwnLocalPost(post)) return true;
+
+      // Si venía de otro celular o ya era pública, pero el muro público ya no la trae, se elimina localmente.
+      const cloudStatus = String(post.cloudStatus || '').toLowerCase();
+      if(cloudStatus === 'publica' || post.mediaUrl) return false;
+
+      return post.ownerId === userId();
+    });
+
+    persistDeletedPostIds(deletedIdSet);
+    return cleaned;
+  }
 
 
   function shortTime(value){
@@ -378,18 +438,22 @@
     if(!blob&&post.mediaData) blob=dataUrlToBlob(post.mediaData);
     if(!blob) return {post,ok:false};
 
+    const supabaseBase = String(cfg.supabaseUrl || '').trim().replace(/\/rest\/v1\/?$/i, '').replace(/\/+$/g, '');
     const bucket=cfg.storageBucket||STORAGE_BUCKET;
     const safeName=(post.mediaName||`${post.mediaType||'media'}.bin`).replace(/[^a-z0-9_.-]/gi,'-').toLowerCase();
     const path=`${encodeURIComponent(post.ownerId||userId())}/${encodeURIComponent(post.id)}/${Date.now()}-${safeName}`;
-    const url=`${cfg.supabaseUrl}/storage/v1/object/${bucket}/${path}`;
+    const url=`${supabaseBase}/storage/v1/object/${bucket}/${path}`;
 
     const res=await fetch(url,{
       method:'POST',
       headers:{apikey:cfg.supabaseAnonKey,Authorization:`Bearer ${cfg.supabaseAnonKey}`,'Content-Type':post.mediaMime||blob.type||'application/octet-stream','x-upsert':'true'},
       body:blob
     });
-    if(!res.ok) return {post,ok:false};
-    return {post:{...post,mediaUrl:`${cfg.supabaseUrl}/storage/v1/object/public/${bucket}/${path}`,mediaData:'',mediaPreviewUrl:'',mediaStatus:'',mediaUploadedAt:new Date().toISOString()},ok:true};
+    if(!res.ok){
+      const detail = await res.text().catch(() => '');
+      return {post,ok:false,detail};
+    }
+    return {post:{...post,mediaUrl:`${supabaseBase}/storage/v1/object/public/${bucket}/${path}`,mediaData:'',mediaPreviewUrl:'',mediaStatus:'',mediaUploadedAt:new Date().toISOString()},ok:true};
   }
 
   async function syncFromCloud(options={}){
@@ -401,12 +465,13 @@
       if(!res.ok||!data.ok) throw new Error('offline');
       state.cloudReady=true;
       const remote=(data.posts||[]).map(p=>({...p,category:normalizeCategory(p.category),cloudStatus:'publica'}));
-      saveLocalPosts(mergePosts(localPosts(),remote));
+      const localClean = reconcileLocalPostsWithRemote(remote);
+      saveLocalPosts(mergePosts(localClean,remote));
       if(options.render!==false && state.route !== '/publicar') render();
       return true;
     }catch{
       state.cloudReady=false;
-      state.posts=localPosts();
+      state.posts=localPosts().filter(p => p && p.status !== 'eliminada');
       if(options.render!==false && state.route !== '/publicar') render();
       return false;
     }finally{ state.syncing=false; }
@@ -662,13 +727,13 @@
           post={...post,cloudStatus:'publica',mediaStatus:'pendiente',updatedAt:new Date().toISOString()};
           await syncPost(post);
           saveLocalPosts([post,...state.posts.filter(x=>x.id!==id)]);
-          toast('Publicación visible. El video quedó pendiente.');
+          toast(post.mediaType==='video' ? 'Publicación visible. El video no subió; toca Reintentar.' : 'Publicación visible. La imagen quedó pendiente.');
         }
       }catch{
         post={...post,cloudStatus:'publica',mediaStatus:'pendiente',updatedAt:new Date().toISOString()};
         await syncPost(post);
         saveLocalPosts([post,...state.posts.filter(x=>x.id!==id)]);
-        toast('Publicación visible. El video quedó pendiente.');
+        toast(post.mediaType==='video' ? 'Publicación visible. El video no subió; toca Reintentar.' : 'Publicación visible. La imagen quedó pendiente.');
       }
     }
 

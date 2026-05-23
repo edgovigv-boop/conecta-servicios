@@ -1,11 +1,11 @@
-const CACHE_NAME = 'conecta-servicios-v6-3-10-chat-badge-scroll-alertas';
+const CACHE_NAME = 'conecta-servicios-v6-3-12-publicaciones-video-sync';
 
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=6.3.10-chat-badge-scroll-alertas',
-  '/app.js?v=6.3.10-chat-badge-scroll-alertas',
-  '/manifest.json?v=6.3.10-chat-badge-scroll-alertas',
+  '/styles.css?v=6.3.12-publicaciones-video-sync',
+  '/app.js?v=6.3.12-publicaciones-video-sync',
+  '/manifest.json?v=6.3.12-publicaciones-video-sync',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'
