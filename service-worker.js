@@ -1,4 +1,4 @@
-const CACHE_NAME = 'conecta-servicios-v6-4-2-descripcion-visible-owner-sql';
+const CACHE_NAME = 'conecta-servicios-v6-4-3-confianza-publica';
 
 const ASSETS = [
   '/',
@@ -36,7 +36,7 @@ self.addEventListener('fetch', event => {
     url.pathname.endsWith('/index.html') ||
     url.pathname.endsWith('/app.js') ||
     url.pathname.endsWith('/service-worker.js') ||
-    url.search.includes('v=642') ||
+    url.search.includes('v=643') ||
     url.search.includes('v=6.3.41');
 
   if (networkFirst) {

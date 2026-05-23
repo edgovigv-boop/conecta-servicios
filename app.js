@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.2-descripcion-visible-owner-sql
+/* Conecta Servicios v6.4.3-confianza-publica
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.2-descripcion-visible-owner-sql';
+  const VERSION = 'v6.4.3-confianza-publica';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2144,7 +2144,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.2: acciones icon-only y perfil simple */
+      /* v6.4.3: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2176,7 +2176,7 @@
         display:none !important;
       }
 
-      /* v6.4.2-descripcion-visible-owner-sql: bloque consolidado de Home/postCard.
+      /* v6.4.3-confianza-publica: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2355,7 +2355,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.2: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.3: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2374,7 +2374,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.2: descripción visible, ...leer separado del texto */
+      /* v6.4.3: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2508,6 +2508,166 @@
         user-select:text !important;
         min-height:48px;
       }
+
+      /* v6.4.3-confianza-publica */
+      .trust-entry-card{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        margin-top:16px;
+        padding:14px;
+        border-radius:22px;
+        background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(59,130,246,.12));
+        border:1px solid rgba(16,185,129,.18);
+      }
+      .trust-entry-card strong{
+        display:block;
+        color:#111827;
+        font-size:15px;
+      }
+      .trust-entry-card span{
+        display:block;
+        color:#6b7280;
+        font-size:12px;
+        margin-top:3px;
+        line-height:1.25;
+      }
+      .trust-entry-card button{
+        border:0;
+        border-radius:999px;
+        padding:10px 14px;
+        background:#0f766e;
+        color:#fff;
+        font-weight:900;
+      }
+      .trust-page{
+        margin:calc(env(safe-area-inset-top) + 92px) 12px 12px !important;
+      }
+      .trust-page + .trust-page{
+        margin-top:12px !important;
+      }
+      .trust-hero{
+        display:flex;
+        gap:14px;
+        align-items:center;
+      }
+      .trust-badge{
+        width:62px;
+        height:62px;
+        border-radius:22px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:32px;
+        background:linear-gradient(135deg,#0f766e,#2563eb);
+        color:#fff;
+        box-shadow:0 14px 34px rgba(15,118,110,.22);
+        flex:0 0 auto;
+      }
+      .trust-kicker{
+        margin:0 0 3px !important;
+        font-size:12px !important;
+        color:#0f766e !important;
+        text-transform:uppercase;
+        letter-spacing:.06em;
+        font-weight:900;
+      }
+      .trust-summary{
+        margin-top:16px;
+        padding:14px;
+        border-radius:20px;
+        background:#ecfdf5;
+        border:1px solid #bbf7d0;
+      }
+      .trust-summary strong{
+        color:#065f46;
+      }
+      .trust-summary p{
+        margin:5px 0 0 !important;
+        color:#065f46 !important;
+      }
+      .trust-grid{
+        display:grid;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:10px;
+      }
+      .trust-card{
+        padding:14px;
+        border-radius:20px;
+        background:#fff;
+        border:1px solid #eef2f7;
+        box-shadow:0 10px 26px rgba(17,24,39,.06);
+      }
+      .trust-card span{
+        font-size:26px;
+        display:block;
+        margin-bottom:8px;
+      }
+      .trust-card strong{
+        display:block;
+        color:#111827;
+        font-size:14px;
+      }
+      .trust-card p{
+        margin:6px 0 0 !important;
+        font-size:12px !important;
+        line-height:1.35 !important;
+        color:#4b5563 !important;
+      }
+      .trust-steps{
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+      }
+      .trust-steps div{
+        display:grid;
+        grid-template-columns:36px 1fr;
+        gap:10px;
+        align-items:start;
+        padding:12px;
+        border-radius:18px;
+        background:#f8fafc;
+      }
+      .trust-steps strong{
+        width:36px;
+        height:36px;
+        border-radius:999px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:#111827;
+        color:#fff;
+      }
+      .trust-steps p{
+        margin:0 !important;
+        color:#374151 !important;
+        line-height:1.35 !important;
+      }
+      .trust-note{
+        margin-top:12px;
+      }
+      .trust-list{
+        margin:0;
+        padding-left:18px;
+        color:#374151;
+      }
+      .trust-list li{
+        margin:8px 0;
+        line-height:1.35;
+      }
+      .trust-footer{
+        margin:16px 0 0 !important;
+        color:#6b7280 !important;
+        font-size:12px !important;
+        text-align:center;
+      }
+      @media (max-width:420px){
+        .trust-grid{
+          grid-template-columns:1fr;
+        }
+      }
+
       @media (max-width:380px){
         .post-action-row button{
           font-size:11px !important;
@@ -3084,7 +3244,79 @@ ${esc(shortDiagnosticText(diag))}</code>
       <input id="profileName" type="text" inputmode="text" autocomplete="off" autocapitalize="words" value="${esc(prof.name||'Usuario local')}" placeholder="Tu nombre o negocio">
       <button class="big-button" data-save-profile>Guardar perfil</button>
       <div class="profile-grid"><div class="stat"><strong>${mine.length}</strong><span>Publicaciones</span></div><div class="stat"><strong>${follows().length}</strong><span>Siguiendo</span></div><div class="stat"><strong>${unreadCount()}</strong><span>Sin leer</span></div></div>
+      <div class="trust-entry-card">
+        <div>
+          <strong>Privacidad y seguridad</strong>
+          <span>Conoce qué permisos usa Conecta Servicios y cómo instalarla con confianza.</span>
+        </div>
+        <button type="button" data-nav="/confianza">Ver</button>
+      </div>
     </section>${diagnosticsPanel()}<section class="feed">${mine.map(postCard).join('')||emptyState('No has publicado','Toca + para crear tu primera publicación.')}</section>`);
+  }
+
+  function confidencePage(){
+    return shell(`<section class="panel trust-page">
+      <button class="small-link" data-nav="/">← Volver al Home</button>
+      <div class="trust-hero">
+        <div class="trust-badge">🛡️</div>
+        <div>
+          <p class="trust-kicker">Conecta Servicios</p>
+          <h1>Privacidad y seguridad</h1>
+          <p>Esta app está pensada para publicar necesidades, servicios y productos locales sin pedir permisos innecesarios.</p>
+        </div>
+      </div>
+      <div class="trust-summary">
+        <strong>Mensaje importante</strong>
+        <p>Conecta Servicios no accede a tus archivos personales. Solo usas cámara, galería o ubicación cuando tú decides publicar o buscar mejor en tu zona.</p>
+      </div>
+    </section>
+
+    <section class="panel trust-page trust-grid-panel">
+      <h2>Permisos de la app</h2>
+      <div class="trust-grid">
+        <article class="trust-card">
+          <span>📍</span>
+          <strong>Ubicación aproximada</strong>
+          <p>Sirve para mostrar publicaciones cercanas por municipio o zona. No debe usarse para rastrear a una persona en tiempo real.</p>
+        </article>
+        <article class="trust-card">
+          <span>📷</span>
+          <strong>Cámara y galería</strong>
+          <p>Solo se usan cuando eliges subir foto o video a una publicación. La app no revisa tus archivos sin que tú los selecciones.</p>
+        </article>
+        <article class="trust-card">
+          <span>✉️</span>
+          <strong>Mensajes internos</strong>
+          <p>Los mensajes se usan para contactar al anunciante dentro de la app. Evitan exponer WhatsApp como dato obligatorio.</p>
+        </article>
+        <article class="trust-card">
+          <span>🔔</span>
+          <strong>Notificaciones futuras</strong>
+          <p>Cuando se activen, se pedirán con permiso claro y servirán para avisar de mensajes o novedades.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel trust-page">
+      <h2>Instalación segura</h2>
+      <div class="trust-steps">
+        <div><strong>1</strong><p>Abre siempre la app desde el enlace oficial de Conecta Servicios.</p></div>
+        <div><strong>2</strong><p>En Android puedes usar el menú del navegador y elegir “Agregar a pantalla principal”.</p></div>
+        <div><strong>3</strong><p>Para personas que prefieren app instalada, se preparará una versión Android revisable antes de distribuirse.</p></div>
+      </div>
+      <div class="local-note trust-note">Para mayor confianza, evita instalar APKs recibidos por mensajes si no vienen de un canal verificado del proyecto.</div>
+    </section>
+
+    <section class="panel trust-page">
+      <h2>Transparencia del MVP</h2>
+      <ul class="trust-list">
+        <li>La app está en etapa piloto y se está probando con publicaciones reales controladas.</li>
+        <li>WhatsApp es opcional; el objetivo es que la comunicación interna funcione dentro de Conecta Servicios.</li>
+        <li>Si algo no carga bien, puede deberse a caché del navegador durante pruebas. Abrir con la última liga de versión ayuda a validar.</li>
+        <li>Soporte: desde Perfil puedes copiar el diagnóstico técnico para reportar problemas al equipo de Conecta Servicios.</li>
+      </ul>
+      <p class="trust-footer">© 2026 Conecta Servicios. Todos los derechos reservados.</p>
+    </section>`);
   }
 
   function ensureComposerId(){
@@ -3148,7 +3380,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
   function render(){
     injectRootStyles();
-    const routes = {'/':homePage, '/tienda':storePage, '/siguiendo':followingPage, '/mensajes':messagesPage, '/perfil':profilePage, '/publicar':composerPage, '/chat':chatPage};
+    const routes = {'/':homePage, '/tienda':storePage, '/siguiendo':followingPage, '/mensajes':messagesPage, '/perfil':profilePage, '/confianza':confidencePage, '/publicar':composerPage, '/chat':chatPage};
     app.innerHTML = (routes[state.route] || homePage)();
     bind();
     if(state.route === '/chat') scrollChatToBottom('auto');
@@ -3176,7 +3408,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     const initialHash = location.hash.replace('#','');
     if(initialHash){
       const route = '/' + initialHash.replace(/^\//,'');
-      if(['/tienda','/siguiendo','/mensajes','/perfil','/publicar','/chat'].includes(route)) state.route = route;
+      if(['/tienda','/siguiendo','/mensajes','/perfil','/confianza','/publicar','/chat'].includes(route)) state.route = route;
     }
     history.replaceState?.({route:state.route || '/'}, '', routeUrl(state.route || '/'));
     window.addEventListener('popstate', e => {
@@ -3656,7 +3888,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.2: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.3: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
