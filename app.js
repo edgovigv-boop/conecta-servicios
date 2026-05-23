@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.3-confianza-publica
+/* Conecta Servicios v6.4.4-mensajes-inbox-refresh
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.3-confianza-publica';
+  const VERSION = 'v6.4.4-mensajes-inbox-refresh';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -70,6 +70,9 @@
     messagesLoaded: false,
     messagesLoading: false,
     messagesError: '',
+    messagesUserId: '',
+    messagesLastFetchedAt: 0,
+    messagesLastCount: 0,
     chat: null,
     chatMessages: [],
     chatLoading: false,
@@ -360,6 +363,7 @@
       profileName: profile().name || '',
       url: location.href,
       serviceWorkerControlled: !!navigator.serviceWorker?.controller,
+      messages: {userId: state.messagesUserId || '', loaded: !!state.messagesLoaded, count: state.messagesLastCount || 0, lastFetchedAt: state.messagesLastFetchedAt || 0, error: state.messagesError || ''},
       localPosts: localPosts().map(p => ({id:p.id, ownerId:p.ownerId, title:p.title, category:p.category, descriptionLength:String(p.description||'').length, captionLength:postCaptionText(p).length, mediaType:p.mediaType, mediaStatus:p.mediaStatus, cloudStatus:p.cloudStatus, hasMediaUrl:!!p.mediaUrl, mediaError:p.mediaError || ''})).slice(0, 30),
       lastUploadDiagnostic: state.lastUploadDiagnostic || get('cs_v6323_last_upload_diagnostic', null)
     };
@@ -2144,7 +2148,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.3: acciones icon-only y perfil simple */
+      /* v6.4.4: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2176,7 +2180,7 @@
         display:none !important;
       }
 
-      /* v6.4.3-confianza-publica: bloque consolidado de Home/postCard.
+      /* v6.4.4-mensajes-inbox-refresh: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2355,7 +2359,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.3: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.4: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2374,7 +2378,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.3: descripción visible, ...leer separado del texto */
+      /* v6.4.4: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2509,7 +2513,7 @@
         min-height:48px;
       }
 
-      /* v6.4.3-confianza-publica */
+      /* v6.4.4-mensajes-inbox-refresh */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2662,6 +2666,32 @@
         font-size:12px !important;
         text-align:center;
       }
+
+      .message-toolbar{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+        margin:12px 0 14px;
+        padding:10px 12px;
+        border-radius:18px;
+        background:rgba(91,46,234,.07);
+        border:1px solid rgba(91,46,234,.12);
+      }
+      .message-toolbar small{
+        color:#6b7280;
+        font-weight:800;
+        white-space:nowrap;
+      }
+      .refresh-messages-btn{
+        font-size:14px;
+        font-weight:900;
+        border-radius:999px;
+        background:#fff;
+        border:1px solid rgba(91,46,234,.16);
+        padding:9px 12px;
+      }
+
       @media (max-width:420px){
         .trust-grid{
           grid-template-columns:1fr;
@@ -2909,6 +2939,32 @@
         color:#fff !important;
         border:1px solid rgba(255,255,255,.18) !important;
       }
+
+      .message-toolbar{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+        margin:12px 0 14px;
+        padding:10px 12px;
+        border-radius:18px;
+        background:rgba(91,46,234,.07);
+        border:1px solid rgba(91,46,234,.12);
+      }
+      .message-toolbar small{
+        color:#6b7280;
+        font-weight:800;
+        white-space:nowrap;
+      }
+      .refresh-messages-btn{
+        font-size:14px;
+        font-weight:900;
+        border-radius:999px;
+        background:#fff;
+        border:1px solid rgba(91,46,234,.16);
+        padding:9px 12px;
+      }
+
       @media (max-width:420px){
         .tiktok-tab{font-size:15px;}
         .tiktok-tabs{gap:13px;}
@@ -3402,6 +3458,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       history.replaceState({route}, '', routeUrl(route));
     }
     render();
+    if(route === '/mensajes') setTimeout(()=>loadMessagesForInbox({silent:false}), 0);
     setTimeout(()=>scrollTo({top:0,behavior:'smooth'}),0);
   }
   function setupNavigationHistory(){
@@ -3415,6 +3472,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       state.route = e.state?.route || '/';
       if(state.route !== '/publicar' && !state.publishing) state.editing = null;
       render();
+      if(state.route === '/mensajes') setTimeout(()=>loadMessagesForInbox({silent:false}), 0);
       setTimeout(()=>scrollTo({top:0,behavior:'smooth'}),0);
     });
   }
@@ -3888,7 +3946,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.3: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.4: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -4040,19 +4098,30 @@ ${esc(shortDiagnosticText(diag))}</code>
 
   async function loadMessagesForInbox(options={}){
     if(state.messagesLoading) return;
+    const activeUserId = userId();
     state.messagesLoading = !options.silent;
     state.messagesError = '';
     try{
-      const list = await fetchPublicMessages({userId:userId()});
+      const list = await fetchPublicMessages({userId:activeUserId, t:Date.now()});
       const previous = JSON.stringify(state.publicMessages || []);
       const previousUnread = unreadCount();
-      trackMessages(list, {initial:!state.messagesLoaded});
+      trackMessages(list, {initial:!state.messagesLoaded || state.messagesUserId !== activeUserId});
       state.publicMessages = list;
       state.messagesLoaded = true;
+      state.messagesUserId = activeUserId;
+      state.messagesLastFetchedAt = Date.now();
+      state.messagesLastCount = list.length;
       if(state.route === '/chat') markActiveChatRead();
-      if(options.silent && state.route !== '/publicar' && !shouldAvoidRender() && (JSON.stringify(list)!==previous || unreadCount()!==previousUnread)) render();
-    }catch{
-      if(!options.silent) state.messagesError = 'Todavía no se pudieron cargar los mensajes públicos.';
+
+      const changed = JSON.stringify(list)!==previous || unreadCount()!==previousUnread;
+      const shouldRenderInbox = state.route === '/mensajes';
+      if(options.silent && state.route !== '/publicar' && !shouldAvoidRender() && (changed || shouldRenderInbox)) render();
+    }catch(error){
+      state.messagesError = 'Todavía no se pudieron cargar los mensajes públicos.';
+      state.messagesLoaded = false;
+      state.messagesLastCount = 0;
+      if(!options.silent) toast('No se pudieron cargar los mensajes.');
+      console.warn('[Conecta mensajes]', error);
     }finally{
       state.messagesLoading = false;
       if(state.route === '/mensajes' && !options.silent) render();
@@ -4115,13 +4184,22 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function messagesPage(){
-    if(!state.messagesLoaded && !state.messagesLoading) loadMessagesForInbox();
+    const activeUserId = userId();
+    const stale = Date.now() - (state.messagesLastFetchedAt || 0) > 2500;
+    if(!state.messagesLoading && (!state.messagesLoaded || state.messagesUserId !== activeUserId || stale)){
+      loadMessagesForInbox({silent:state.messagesLoaded && state.messagesUserId === activeUserId});
+    }
     const groups = conversationGroups(state.publicMessages || []);
+    const lastFetch = state.messagesLastFetchedAt ? shortTime(state.messagesLastFetchedAt) : 'sin cargar';
     return shell(`<section class="panel messages-panel">
       <h1>Mensajes</h1>
-      ${state.messagesLoading ? '<div class="empty compact-empty"><strong>Cargando...</strong></div>' : ''}
+      <p>Aquí aparecen los mensajes recibidos desde tus publicaciones.</p>
+      <div class="message-toolbar">
+        <button type="button" class="small-link refresh-messages-btn" data-refresh-messages>Actualizar mensajes</button>
+        <small>${state.messagesLoading ? 'Cargando...' : `${state.messagesLastCount || 0} mensajes · ${esc(lastFetch)}`}</small>
+      </div>
       ${state.messagesError ? `<div class="local-note">${esc(state.messagesError)}</div>` : ''}
-      <div class="list conversation-list">${groups.map(conversationCard).join('') || (!state.messagesLoading ? emptyState('Sin conversaciones','Cuando alguien te escriba, aparecerá aquí.') : '')}</div>
+      <div class="list conversation-list">${groups.map(conversationCard).join('') || (!state.messagesLoading ? emptyState('Sin conversaciones','Cuando alguien te escriba, aparecerá aquí.') : '<div class="empty compact-empty"><strong>Cargando...</strong></div>')}</div>
     </section>`);
   }
 
@@ -4205,6 +4283,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     setupGalleries();
     document.querySelectorAll('[data-open-chat]').forEach(b=>b.onclick=()=>openChatFromConversation(b));
     document.querySelectorAll('[data-send-chat]').forEach(b=>b.onclick=sendChatMessage);
+    document.querySelectorAll('[data-refresh-messages]').forEach(b=>b.onclick=()=>loadMessagesForInbox({silent:false}));
     document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editPost(b.dataset.edit));
     document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deletePost(b.dataset.delete));
     document.querySelectorAll('[data-close-video]').forEach(b=>b.onclick=closeVideo);
