@@ -1,5 +1,5 @@
 // api/publications.js
-// Conecta Servicios v6.3.20 - Muro público con normalización de video.
+// Conecta Servicios v6.3.21 - Muro público con normalización de video.
 // Mantiene service role solo en backend.
 
 function send(res, status, payload) {

@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.20-video-root-fix
+/* Conecta Servicios v6.3.21-video-10min-1gb
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,11 +8,11 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.20-video-root-fix';
+  const VERSION = 'v6.3.21-video-10min-1gb';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
-  const MAX_VIDEO_MB = 300;
+  const MAX_VIDEO_MB = 1024;
   const MAX_VIDEO_SECONDS = 10 * 60;
   const POLL_MS = 7000;
   const MESSAGE_POLL_MS = 3500;
@@ -738,7 +738,7 @@
 
     const isVideo = file.type.startsWith('video/');
     const maxMb = isVideo ? MAX_VIDEO_MB : MAX_IMAGE_MB;
-    if(file.size > maxMb * 1024 * 1024) return toast(`El archivo pesa demasiado. Máximo: ${maxMb} MB.`);
+    if(file.size > maxMb * 1024 * 1024) return toast(isVideo ? `El video pesa más de ${maxMb} MB. Intenta grabarlo en calidad media o comprimirlo.` : `La imagen pesa demasiado. Máximo: ${maxMb} MB.`);
 
     if(isVideo){
       toast('Revisando duración del video...');
