@@ -1,11 +1,11 @@
-const CACHE_NAME = 'conecta-servicios-v6-3-4-formulario-estable';
+const CACHE_NAME = 'conecta-servicios-v6-3-7-chat-publico-basico';
 
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=6.3.4-formulario-estable',
-  '/app.js?v=6.3.4-formulario-estable',
-  '/manifest.json?v=6.3.4-formulario-estable',
+  '/styles.css?v=6.3.7-chat-publico-basico',
+  '/app.js?v=6.3.7-chat-publico-basico',
+  '/manifest.json?v=6.3.7-chat-publico-basico',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'

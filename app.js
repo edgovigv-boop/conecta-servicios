@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.6-borrado-publico';
+  const VERSION = 'v6.3.7-chat-publico-basico';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const MAX_FILE_MB = 40;
   const IMAGE_MAX_SIDE = 1280;
@@ -48,7 +48,15 @@
     cloudReady:false,
     publishing:false,
     syncing:false,
-    syncTimer:null
+    syncTimer:null,
+    publicMessages: [],
+    messagesLoaded: false,
+    messagesLoading: false,
+    messagesError: '',
+    chat: null,
+    chatMessages: [],
+    chatLoading: false,
+    chatLoaded: false
   };
 
   const esc = (v='') => String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -321,8 +329,85 @@
   }
   function emptyState(t,x){ return `<div class="empty"><strong>${esc(t)}</strong>${esc(x)}</div>`; }
   function followingPage(){ const posts=followedPosts(); return shell(`<section class="panel"><h1>Siguiendo</h1><p>Aquí aparecen proveedores, clientes o mensajeros que decidiste seguir.</p></section><section class="feed">${posts.map(postCard).join('')||emptyState('Todavía no sigues a nadie','Toca Seguir en una publicación para verla aquí.')}</section>`); }
-  function messagesPage(){ const list=messages().sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)); return shell(`<section class="panel"><h1>Mensajes</h1><p>Aquí se guardan los mensajes que escribes desde las publicaciones.</p><div class="list">${list.map(messageCard).join('')||emptyState('Sin mensajes todavía','Toca el sobre en una publicación para escribir uno.')}</div></section>`); }
-  function messageCard(item){ return `<div class="list-item"><strong>${esc(item.postTitle||'Publicación')}</strong><small>${esc(item.postCategory||'')} · ${esc(item.postZone||'')}</small><p style="margin:10px 0 0;white-space:pre-wrap">${esc(item.text||'')}</p></div>`; }
+  function messagesPage(){
+    if(!state.messagesLoaded && !state.messagesLoading) loadMessagesForInbox();
+    const groups = conversationGroups(state.publicMessages || []);
+    return shell(`<section class="panel">
+      <h1>Conversaciones</h1>
+      <p>Aquí ves mensajes enviados y recibidos desde tus publicaciones.</p>
+      ${state.messagesLoading ? '<div class="empty"><strong>Cargando mensajes...</strong>Espera un momento.</div>' : ''}
+      ${state.messagesError ? `<div class="local-note">${esc(state.messagesError)}</div>` : ''}
+      <div class="list">
+        ${groups.map(conversationCard).join('') || (!state.messagesLoading ? emptyState('Sin conversaciones todavía','Toca el sobre en una publicación para escribir.') : '')}
+      </div>
+    </section>`);
+  }
+
+  function conversationGroups(list){
+    const me = userId();
+    const map = new Map();
+    (list || []).forEach(m => {
+      const peerId = m.senderId === me ? m.receiverId : m.senderId;
+      const peerName = m.senderId === me ? (m.receiverName || 'Usuario local') : (m.senderName || 'Usuario local');
+      const key = `${m.postId || ''}::${peerId || ''}`;
+      const prev = map.get(key);
+      const current = {
+        postId: m.postId || '',
+        postTitle: m.postTitle || 'Publicación',
+        peerId,
+        peerName,
+        lastText: m.text || '',
+        lastAt: m.createdAt || '',
+        count: (prev?.count || 0) + 1
+      };
+      if(!prev || new Date(current.lastAt || 0) >= new Date(prev.lastAt || 0)) map.set(key, current);
+      else map.set(key, {...prev, count: current.count});
+    });
+    return [...map.values()].sort((a,b)=>new Date(b.lastAt||0)-new Date(a.lastAt||0));
+  }
+
+  function conversationCard(item){
+    return `<button class="conversation-card" data-open-chat="1" data-post="${esc(item.postId)}" data-peer="${esc(item.peerId)}" data-title="${esc(item.postTitle)}" data-name="${esc(item.peerName)}">
+      <div class="conversation-avatar">💬</div>
+      <div class="conversation-main">
+        <strong>${esc(item.peerName || 'Usuario local')}</strong>
+        <small>${esc(item.postTitle || 'Publicación')}</small>
+        <p>${esc(item.lastText || '')}</p>
+      </div>
+      <span class="conversation-count">${item.count || 1}</span>
+    </button>`;
+  }
+
+  function chatPage(){
+    const chat = state.chat;
+    if(!chat){
+      return shell(`<section class="panel"><button class="back-btn" data-nav="/mensajes">← Volver</button><h1>Conversación</h1><p>Abre una conversación desde Mensajes o desde el sobre de una publicación.</p></section>`);
+    }
+    if(!state.chatLoaded && !state.chatLoading) loadChatMessages();
+    return shell(`<section class="panel chat-panel">
+      <button class="back-btn" data-nav="/mensajes">← Conversaciones</button>
+      <h1>${esc(chat.peerName || 'Usuario local')}</h1>
+      <p>${esc(chat.postTitle || 'Publicación')}</p>
+      <div class="chat-feed" id="chatFeed">
+        ${state.chatLoading ? '<div class="empty"><strong>Cargando conversación...</strong></div>' : ''}
+        ${state.chatMessages.map(chatBubble).join('') || (!state.chatLoading ? '<div class="empty"><strong>Sin mensajes todavía</strong>Escribe el primer mensaje.</div>' : '')}
+      </div>
+      <div class="chat-box">
+        <textarea id="chatText" placeholder="Escribe un mensaje claro y amable"></textarea>
+        <button class="big-button" data-send-chat>Enviar</button>
+      </div>
+    </section>`);
+  }
+
+  function chatBubble(m){
+    const mine = m.senderId === userId();
+    return `<div class="bubble-row ${mine ? 'mine' : 'theirs'}">
+      <div class="bubble">
+        <p>${esc(m.text || '')}</p>
+        <small>${esc(m.senderName || 'Usuario local')} · ${new Date(m.createdAt || Date.now()).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})}</small>
+      </div>
+    </div>`;
+  }
   function profilePage(){ const prof=profile(); const mine=myPosts(); return shell(`<section class="panel"><h1>Perfil</h1><p>Guarda tu nombre visible y revisa tu actividad.</p><label>Nombre visible</label><input id="profileName" value="${esc(prof.name||'Usuario local')}" placeholder="Tu nombre o negocio"><button class="big-button" data-save-profile>Guardar nombre</button><div class="profile-grid"><div class="stat"><strong>${mine.length}</strong><span>Publicaciones</span></div><div class="stat"><strong>${follows().length}</strong><span>Siguiendo</span></div><div class="stat"><strong>${messages().length}</strong><span>Mensajes</span></div></div></section><section class="feed">${mine.map(postCard).join('')||emptyState('No has publicado','Toca + para crear tu primera publicación.')}</section>`); }
 
   function ensureComposerId(){ if(!state.composerId){ state.composerId=uid('post'); state.composerDraft.category = state.filter==='ALL'?'VENDO':normalizeCategory(state.filter); saveComposerDraft(); } return state.composerId; }
@@ -348,7 +433,7 @@
     </section>`);
   }
 
-  function render(){ const routes={'/':homePage,'/siguiendo':followingPage,'/mensajes':messagesPage,'/perfil':profilePage,'/publicar':composerPage}; app.innerHTML=(routes[state.route]||homePage)(); bind(); }
+  function render(){ const routes={'/':homePage,'/siguiendo':followingPage,'/mensajes':messagesPage,'/perfil':profilePage,'/publicar':composerPage,'/chat':chatPage}; app.innerHTML=(routes[state.route]||homePage)(); bind(); }
   function nav(route){ state.route=route; if(route!=='/publicar'&&!state.publishing) state.editing=null; render(); setTimeout(()=>scrollTo({top:0,behavior:'smooth'}),0); }
   function openPicker(){ if(state.publishing) return toast('Estamos terminando de publicar. Espera un momento.'); ensureComposerId(); document.getElementById('mediaPicker')?.click(); }
   function resizeImage(file,maxSide=IMAGE_MAX_SIDE,quality=.82){
@@ -483,10 +568,130 @@
   function likePost(id){ saveLocalPosts(state.posts.map(p=>p.id===id?{...p,reactions:(p.reactions||0)+1}:p)); render(); }
   function sharePost(id){ const p=state.posts.find(x=>x.id===id); if(!p) return; const text=`${p.title}\n\n${p.description}\n\n${p.category} · ${p.zone}\n\n${APP_URL}`; if(navigator.share) navigator.share({title:p.title,text,url:APP_URL}).catch(()=>{}); else navigator.clipboard?.writeText(text).then(()=>toast('Copiado para compartir.')); }
   function toggleFollow(ownerId){ if(ownerId===userId()) return toast('Esta publicación es tuya.'); const cur=follows(); const next=cur.includes(ownerId)?cur.filter(id=>id!==ownerId):[...cur,ownerId]; set(K.follows,next); toast(cur.includes(ownerId)?'Dejaste de seguir.':'Ahora lo sigues.'); render(); }
-  function sendMessage(postId){ const p=state.posts.find(x=>x.id===postId); if(!p) return; const text=prompt(`Mensaje para "${p.title}"`); if(!text) return; const list=messages(); list.unshift({id:uid('m'),postId,postTitle:p.title,postCategory:p.category,postZone:p.zone,ownerId:p.ownerId,text,createdAt:new Date().toISOString()}); saveMessages(list); toast('Mensaje guardado.'); }
+  async function fetchPublicMessages(params = {}){
+    const qs = new URLSearchParams(params);
+    const res = await fetch(`/api/messages?${qs.toString()}`, {cache:'no-store'});
+    const data = await res.json().catch(()=>({ok:false}));
+    if(!res.ok || !data.ok) throw new Error(data.message || data.error || 'No se pudieron cargar mensajes.');
+    return data.messages || [];
+  }
+
+  async function savePublicMessage(message){
+    const res = await fetch('/api/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({message})
+    });
+    const data = await res.json().catch(()=>({ok:false}));
+    if(!res.ok || !data.ok) throw new Error(data.message || data.error || 'No se pudo enviar.');
+    return data.message || message;
+  }
+
+  async function loadMessagesForInbox(){
+    state.messagesLoading = true;
+    state.messagesError = '';
+    try{
+      state.publicMessages = await fetchPublicMessages({userId:userId()});
+      state.messagesLoaded = true;
+    }catch(e){
+      state.messagesError = 'Todavía no se pudieron cargar los mensajes públicos. Revisa conexión o la tabla de mensajes.';
+    }finally{
+      state.messagesLoading = false;
+      if(state.route === '/mensajes') render();
+    }
+  }
+
+  async function loadChatMessages(){
+    if(!state.chat) return;
+    state.chatLoading = true;
+    try{
+      const list = await fetchPublicMessages({userId:userId(), postId:state.chat.postId, peerId:state.chat.peerId});
+      state.chatMessages = list;
+      state.chatLoaded = true;
+    }catch(e){
+      toast('No se pudieron cargar los mensajes.');
+    }finally{
+      state.chatLoading = false;
+      if(state.route === '/chat') render();
+    }
+  }
+
+  function openChat(postId){
+    const p = state.posts.find(x=>x.id===postId);
+    if(!p) return;
+    if(p.ownerId === userId()){
+      toast('Esta publicación es tuya. Revisa Mensajes para responder.');
+      nav('/mensajes');
+      return;
+    }
+    state.chat = {postId:p.id, postTitle:p.title || 'Publicación', peerId:p.ownerId, peerName:p.ownerName || 'Usuario local'};
+    state.chatMessages = [];
+    state.chatLoaded = false;
+    nav('/chat');
+  }
+
+  function openChatFromConversation(button){
+    state.chat = {
+      postId: button.dataset.post || '',
+      postTitle: button.dataset.title || 'Publicación',
+      peerId: button.dataset.peer || '',
+      peerName: button.dataset.name || 'Usuario local'
+    };
+    state.chatMessages = [];
+    state.chatLoaded = false;
+    nav('/chat');
+  }
+
+  async function sendChatMessage(){
+    if(!state.chat) return;
+    const input = document.getElementById('chatText');
+    const text = (input?.value || '').trim();
+    if(!text) return toast('Escribe un mensaje.');
+    if(!state.chat.peerId) return toast('No se encontró destinatario.');
+
+    const prof = profile();
+    const msg = {
+      id: uid('msg'),
+      postId: state.chat.postId,
+      postTitle: state.chat.postTitle,
+      senderId: userId(),
+      senderName: prof.name || 'Usuario local',
+      receiverId: state.chat.peerId,
+      receiverName: state.chat.peerName || 'Usuario local',
+      text,
+      status: 'sent',
+      createdAt: new Date().toISOString()
+    };
+
+    if(input) input.value = '';
+    state.chatMessages = [...state.chatMessages, msg];
+    render();
+
+    try{
+      await savePublicMessage(msg);
+      state.messagesLoaded = false;
+      await loadChatMessages();
+      toast('Mensaje enviado.');
+    }catch(e){
+      toast('No se pudo enviar. Revisa conexión e intenta de nuevo.');
+    }
+  }
+
+  function sendMessage(postId){ openChat(postId); }
   function saveProfile(){ const name=document.getElementById('profileName')?.value.trim()||'Usuario local'; set(K.profile,{name}); toast('Nombre guardado.'); render(); }
   function clearFilters(){ state.filter='ALL'; state.query=''; render(); }
-  function bindDynamicFeedControls(){ document.querySelectorAll('[data-clear]').forEach(b=>b.onclick=clearFilters); document.querySelectorAll('[data-retry]').forEach(b=>b.onclick=()=>retryPost(b.dataset.retry)); document.querySelectorAll('[data-like]').forEach(b=>b.onclick=()=>likePost(b.dataset.like)); document.querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>sharePost(b.dataset.share)); document.querySelectorAll('[data-follow]').forEach(b=>b.onclick=()=>toggleFollow(b.dataset.follow)); document.querySelectorAll('[data-message]').forEach(b=>b.onclick=()=>sendMessage(b.dataset.message)); document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editPost(b.dataset.edit)); document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deletePost(b.dataset.delete)); }
+  function bindDynamicFeedControls(){
+    document.querySelectorAll('[data-clear]').forEach(b=>b.onclick=clearFilters);
+    document.querySelectorAll('[data-retry]').forEach(b=>b.onclick=()=>retryPost(b.dataset.retry));
+    document.querySelectorAll('[data-like]').forEach(b=>b.onclick=()=>likePost(b.dataset.like));
+    document.querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>sharePost(b.dataset.share));
+    document.querySelectorAll('[data-follow]').forEach(b=>b.onclick=()=>toggleFollow(b.dataset.follow));
+    document.querySelectorAll('[data-message]').forEach(b=>b.onclick=()=>sendMessage(b.dataset.message));
+    document.querySelectorAll('[data-open-chat]').forEach(b=>b.onclick=()=>openChatFromConversation(b));
+    document.querySelectorAll('[data-send-chat]').forEach(b=>b.onclick=sendChatMessage);
+    document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editPost(b.dataset.edit));
+    document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deletePost(b.dataset.delete));
+  }
   function bind(){
     document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>nav(b.dataset.nav));
     document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{state.filter=b.dataset.filter;state.route='/';render();});

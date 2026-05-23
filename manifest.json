@@ -1,8 +1,8 @@
 {
   "name": "Conecta Servicios",
   "short_name": "Conecta",
-  "description": "Red social local para vender, ofrecer y pedir ayuda en tu zona.",
-  "start_url": "/?v=6.3.4-formulario-estable",
+  "description": "Red social local para vender, ofrecer, pedir ayuda y conversar en tu zona.",
+  "start_url": "/?v=6.3.7-chat-publico-basico",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
