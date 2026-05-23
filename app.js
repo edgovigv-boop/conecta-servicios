@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.39-altavoz-perfil-fix
+/* Conecta Servicios v6.3.40-audio-perfil-aplicar
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.39-altavoz-perfil-fix';
+  const VERSION = 'v6.3.40-audio-perfil-aplicar';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2127,6 +2127,41 @@
       .owner-row span:not(.owner-dot){
         display:inline-block;
       }
+
+      /* v6.3.40: audio siempre visible y perfil aplicable */
+      .post-action-row.has-audio-action{
+        grid-template-columns:repeat(4, minmax(0,1fr)) !important;
+      }
+      .post-action-row.has-audio-action button{
+        font-size:11px !important;
+        padding-left:5px !important;
+        padding-right:5px !important;
+      }
+      .audio-row-btn{
+        background:rgba(0,0,0,.48) !important;
+        border-color:rgba(255,255,255,.44) !important;
+      }
+      .apply-profile-visible{
+        width:100%;
+        margin-top:10px;
+        border:1px solid rgba(91,46,234,.22);
+        background:rgba(91,46,234,.08);
+        color:#4c1d95;
+        font-weight:900;
+        border-radius:18px;
+        padding:13px 14px;
+      }
+      .profile-help{
+        color:#6b7280;
+        font-size:13px;
+        margin:8px 0 12px;
+      }
+      #profileName{
+        touch-action:manipulation;
+        -webkit-user-select:text !important;
+        user-select:text !important;
+        min-height:48px;
+      }
       @media (max-width:380px){
         .post-action-row button{
           font-size:11px !important;
@@ -2524,10 +2559,11 @@
         <h2>${esc(post.title || 'Publicación')}</h2>
         <p>${esc(shortDescription(post.description || ''))}</p>
         <div class="post-meta"><span>❤️ ${post.reactions || 0}</span><span>${new Date(post.createdAt || Date.now()).toLocaleDateString('es-MX')}</span></div>
-        <div class="post-action-row">
+        <div class="post-action-row ${isVideoPost(post) && post.mediaUrl ? 'has-audio-action' : ''}">
           <button type="button" data-like="${esc(post.id)}">❤️ Me gusta</button>
           <button type="button" data-message="${esc(post.id)}">✉️ Mensaje</button>
           <button type="button" data-share="${esc(post.id)}">↗️ Compartir</button>
+          ${isVideoPost(post) && post.mediaUrl ? `<button type="button" class="audio-row-btn" data-toggle-video-sound="${esc(post.id)}">🔇 Audio</button>` : ''}
         </div>
         ${statusLabel(post)}
         ${own ? `<div class="manage-row">${post.cloudStatus==='local'||post.mediaStatus==='pendiente'||post.mediaStatus==='error'?`<button class="retry" data-retry="${esc(post.id)}">Reintentar</button>`:''}<button data-edit="${esc(post.id)}">Editar</button><button class="danger" data-delete="${esc(post.id)}">Borrar</button></div>` : ''}
@@ -2628,8 +2664,10 @@ ${esc(shortDiagnosticText(diag))}</code>
       </div>
       <input id="profilePhotoInput" type="file" accept="image/*" hidden>
       <label>Nombre visible</label>
-      <input id="profileName" value="${esc(prof.name||'Usuario local')}" placeholder="Tu nombre o negocio">
+      <input id="profileName" type="text" inputmode="text" autocomplete="off" autocapitalize="words" value="${esc(prof.name||'Usuario local')}" placeholder="Tu nombre o negocio">
       <button class="big-button" data-save-profile>Guardar perfil</button>
+      <button class="ghost-button apply-profile-visible" type="button" data-apply-visible-profile>Aplicar mi nombre y foto a publicaciones visibles</button>
+      <p class="profile-help">Úsalo si tus publicaciones fueron creadas antes del cambio de perfil o desde otro celular.</p>
       <div class="profile-grid"><div class="stat"><strong>${mine.length}</strong><span>Publicaciones</span></div><div class="stat"><strong>${follows().length}</strong><span>Siguiendo</span></div><div class="stat"><strong>${unreadCount()}</strong><span>Sin leer</span></div></div>
     </section>${diagnosticsPanel()}<section class="feed">${mine.map(postCard).join('')||emptyState('No has publicado','Toca + para crear tu primera publicación.')}</section>`);
   }
@@ -3055,7 +3093,10 @@ ${esc(shortDiagnosticText(diag))}</code>
     video.muted = !video.muted;
     video.volume = 1;
     video.play().catch(()=>null);
-    document.querySelectorAll(`[data-toggle-video-sound="${safeId}"]`).forEach(el => el.textContent = video.muted ? '🔇' : '🔊');
+    document.querySelectorAll(`[data-toggle-video-sound="${safeId}"]`).forEach(el => {
+      if(el.classList.contains('audio-row-btn')) el.textContent = video.muted ? '🔇 Audio' : '🔊 Audio';
+      else el.textContent = video.muted ? '🔇' : '🔊';
+    });
     toast(video.muted ? 'Video en silencio.' : 'Sonido activado. Usa el volumen de tu dispositivo.');
   }
 
@@ -3198,13 +3239,35 @@ ${esc(shortDiagnosticText(diag))}</code>
     mine.forEach(p => syncPost({...p, ownerName:prof.name || 'Usuario local', ownerAvatar:prof.avatarData || '', updatedAt:now}).catch(()=>null));
   }
 
+  function applyProfileToVisiblePosts(){
+    const prof = profile();
+    const visible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p));
+    if(!visible.length) return toast('No hay publicaciones visibles para actualizar.');
+    if(!confirm(`Esto aplicará tu nombre y foto de perfil a ${visible.length} publicación(es) visibles en este dispositivo. Úsalo solo si esas publicaciones son tuyas. ¿Continuar?`)) return;
+
+    const now = new Date().toISOString();
+    const ids = new Set(visible.map(p => String(p.id)));
+    const updated = state.posts.map(p => ids.has(String(p.id)) ? {
+      ...p,
+      ownerId: userId(),
+      ownerName: prof.name || 'Usuario local',
+      ownerAvatar: prof.avatarData || '',
+      updatedAt: now
+    } : p);
+
+    saveLocalPosts(updated);
+    updated.filter(p => ids.has(String(p.id))).forEach(p => syncPost(p).catch(()=>null));
+    toast('Perfil aplicado a publicaciones visibles.');
+    render();
+  }
+
   async function profilePhotoChosen(event){
     const file = event.target.files?.[0];
     event.target.value = '';
     if(!file) return;
     if(!file.type.startsWith('image/')) return toast('Elige una imagen para tu perfil.');
     try{
-      const resized = await resizeImage(file, 260, .72);
+      const resized = await resizeImage(file, 180, .68);
       const avatarData = await blobToDataURL(resized);
       const current = profile();
       const name = document.getElementById('profileName')?.value.trim() || current.name || 'Usuario local';
@@ -3505,6 +3568,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       profileNameInput.onblur=()=>{setTimeout(()=>{state.profileEditing=false;},300);};
       profileNameInput.oninput=()=>{state.profileEditing=true;};
     }
+    document.querySelectorAll('[data-apply-visible-profile]').forEach(b=>b.onclick=applyProfileToVisiblePosts);
     document.querySelectorAll('[data-toggle-search]').forEach(b=>b.onclick=toggleSearchPanel);
     document.querySelectorAll('[data-open-store]').forEach(b=>b.onclick=()=>openStore(b.dataset.openStore));
     document.querySelectorAll('[data-top-tab]').forEach(b=>b.onclick=()=>setTopTab(b.dataset.topTab));

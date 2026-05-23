@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.39-altavoz-perfil-fix';
+  const VERSION = 'v6.3.40-audio-perfil-aplicar';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 
