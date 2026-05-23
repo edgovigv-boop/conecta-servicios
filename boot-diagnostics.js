@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.43-leer-ocultar-descripcion';
+  const VERSION = 'v6.4.0-home-estable';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 

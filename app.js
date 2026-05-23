@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.43-leer-ocultar-descripcion
+/* Conecta Servicios v6.4.0-home-estable
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.43-leer-ocultar-descripcion';
+  const VERSION = 'v6.4.0-home-estable';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2142,7 +2142,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.3.41: acciones icon-only y perfil simple */
+      /* v6.4.0: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2174,94 +2174,191 @@
         display:none !important;
       }
 
-      /* v6.3.43: descripción tipo TikTok con ...leer / ...ocultar */
+      /* v6.4.0-home-estable: bloque consolidado de Home/postCard.
+         No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
+      .media-bottom{
+        display:none !important;
+      }
+
+      .post-body{
+        left:12px !important;
+        right:12px !important;
+        bottom:calc(env(safe-area-inset-bottom) + 78px) !important;
+        padding:12px 12px 11px 12px !important;
+        border-radius:22px !important;
+        background:linear-gradient(180deg,rgba(0,0,0,.10),rgba(0,0,0,.56) 30%,rgba(0,0,0,.82)) !important;
+        backdrop-filter:blur(2px) !important;
+        box-shadow:0 14px 34px rgba(0,0,0,.18) !important;
+        color:#fff !important;
+        z-index:70 !important;
+        max-height:calc(100vh - 166px) !important;
+        overflow:hidden !important;
+      }
+
+      .post-body.expanded-description-body{
+        max-height:calc(100vh - 144px) !important;
+        background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.54) 12%,rgba(0,0,0,.88)) !important;
+      }
+
+      .post-body .owner-row{
+        font-size:13px !important;
+        margin-bottom:4px !important;
+        gap:8px !important;
+        align-items:center !important;
+      }
+
+      .post-body h2{
+        font-size:18px !important;
+        line-height:1.08 !important;
+        margin:0 0 4px !important;
+        color:#fff !important;
+        text-shadow:0 2px 12px rgba(0,0,0,.42);
+      }
+
       .post-description-short{
-        color:rgba(255,255,255,.94) !important;
+        display:block !important;
+        visibility:visible !important;
+        opacity:1 !important;
+        color:rgba(255,255,255,.95) !important;
         font-size:14px !important;
-        line-height:1.24 !important;
+        line-height:1.25 !important;
         margin:0 !important;
         white-space:pre-line !important;
-        text-shadow:0 2px 12px rgba(0,0,0,.35);
+        text-shadow:0 2px 12px rgba(0,0,0,.42);
+        max-height:none !important;
+        overflow:visible !important;
       }
+
       .post-description-short.is-collapsed{
         max-height:2.55em !important;
         overflow:hidden !important;
       }
+
       .description-toggle{
-        appearance:none;
-        border:0;
-        background:transparent;
-        color:#fff;
-        font-weight:900;
-        font-size:14px;
-        line-height:1;
-        padding:0 0 0 4px;
+        appearance:none !important;
+        border:0 !important;
+        background:transparent !important;
+        color:#fff !important;
+        font-weight:900 !important;
+        font-size:14px !important;
+        line-height:1 !important;
+        padding:0 0 0 4px !important;
         text-shadow:0 2px 10px rgba(0,0,0,.55);
       }
-      .read-toggle{
-        display:inline;
-      }
+
       .post-description-expanded{
+        display:block !important;
+        visibility:visible !important;
+        opacity:1 !important;
         color:#fff !important;
         font-size:15px !important;
         line-height:1.25 !important;
-        max-height:min(48vh, 360px) !important;
+        max-height:min(46vh, 350px) !important;
         overflow-y:auto !important;
         overscroll-behavior:contain !important;
         -webkit-overflow-scrolling:touch !important;
-        padding:10px 10px 30px 10px !important;
+        padding:10px 10px 34px 10px !important;
         margin-top:6px !important;
-        border-radius:18px;
-        background:linear-gradient(180deg,rgba(0,0,0,.10),rgba(0,0,0,.34)) !important;
-        border:1px solid rgba(255,255,255,.16);
-        backdrop-filter:blur(3px);
+        border-radius:18px !important;
+        background:rgba(0,0,0,.36) !important;
+        border:1px solid rgba(255,255,255,.18) !important;
+        backdrop-filter:blur(3px) !important;
         white-space:pre-line !important;
         scrollbar-width:thin;
         scrollbar-color:rgba(255,255,255,.65) rgba(255,255,255,.12);
         touch-action:pan-y !important;
+        position:relative !important;
+        z-index:150 !important;
       }
+
       .post-description-expanded::-webkit-scrollbar{
         width:4px;
       }
+
       .post-description-expanded::-webkit-scrollbar-thumb{
         background:rgba(255,255,255,.65);
         border-radius:999px;
       }
+
       .description-full-text{
         padding-bottom:8px;
       }
+
       .hide-toggle{
-        position:sticky;
-        bottom:0;
-        display:block;
-        width:100%;
-        text-align:right;
-        padding:8px 2px 0 0;
-        background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.38));
+        position:sticky !important;
+        bottom:0 !important;
+        display:block !important;
+        width:100% !important;
+        text-align:right !important;
+        padding:8px 2px 0 0 !important;
+        background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.38)) !important;
       }
-      .post-body p{
-        max-height:none !important;
+
+      .post-meta{
+        justify-content:flex-end !important;
+        margin-top:5px !important;
+        font-size:11px !important;
+        color:rgba(255,255,255,.82) !important;
       }
-      .post-body:has(.post-description-expanded){
-        bottom:calc(env(safe-area-inset-bottom) + 74px) !important;
-        max-height:calc(100vh - 154px) !important;
-        overflow:hidden !important;
-        background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.50) 12%,rgba(0,0,0,.88)) !important;
-      }
-      .post-body:has(.post-description-expanded) .post-meta,
-      .post-body:has(.post-description-expanded) .post-action-row,
-      .post-body:has(.post-description-expanded) .manage-row{
-        margin-top:8px !important;
-      }
+
       .post-action-row{
-        flex-shrink:0 !important;
+        display:grid !important;
+        grid-template-columns:repeat(3, 1fr) !important;
+        gap:10px !important;
+        width:100% !important;
+        margin-top:8px !important;
+        z-index:160 !important;
+        position:relative !important;
+        pointer-events:auto !important;
       }
+
+      .post-action-row.has-audio-action{
+        grid-template-columns:repeat(4, 1fr) !important;
+      }
+
+      .post-action-row .icon-only-action{
+        min-height:44px !important;
+        height:44px !important;
+        padding:0 !important;
+        border-radius:999px !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        text-align:center !important;
+        font-size:22px !important;
+        line-height:1 !important;
+        background:rgba(255,255,255,.22) !important;
+        border:1px solid rgba(255,255,255,.32) !important;
+        color:#fff !important;
+        box-shadow:0 10px 28px rgba(0,0,0,.20) !important;
+        backdrop-filter:blur(10px) !important;
+      }
+
+      .post-action-row.has-audio-action .icon-only-action{
+        font-size:21px !important;
+      }
+
+      .post-action-row .heart-action{
+        font-size:28px !important;
+        color:#fff !important;
+      }
+
+      .post-action-row .heart-action.liked{
+        color:#ef4444 !important;
+        text-shadow:0 2px 12px rgba(239,68,68,.45);
+      }
+
+      .audio-row-btn{
+        background:rgba(0,0,0,.50) !important;
+        border-color:rgba(255,255,255,.48) !important;
+      }
+
       @media (max-height:700px){
         .post-description-short{
           font-size:13px !important;
         }
         .post-description-expanded{
-          max-height:min(44vh, 300px) !important;
+          max-height:min(42vh, 290px) !important;
           font-size:14px !important;
         }
         .post-body h2{
@@ -2619,21 +2716,30 @@
   function shortDescription(text, max=118){
     const clean = String(text || '').replace(/\s+/g, ' ').trim();
     if(clean.length <= max) return clean;
-    return clean.slice(0, max).trim() + '... más';
+    return clean.slice(0, max).trim() + '...';
   }
 
-  function compactDescription(text, max=92){
+  function compactDescription(text, max=95){
     const clean = String(text || '').replace(/\s+/g, ' ').trim();
     if(clean.length <= max) return clean;
     return clean.slice(0, max).trim();
   }
 
+  function isLongDescription(text){
+    const raw = String(text || '').trim();
+    return raw.replace(/\s+/g, ' ').length > 110 || raw.split(/\n/).filter(Boolean).length > 3;
+  }
+
+  function isDescriptionExpanded(postId){
+    return !!state.expandedDescriptions?.has(String(postId));
+  }
+
   function descriptionMarkup(post){
     const raw = String(post?.description || '').trim();
-    if(!raw) return '';
-    const clean = raw.replace(/\s+/g, ' ');
-    const long = clean.length > 105 || raw.split(/\n/).length > 3;
-    const expanded = state.expandedDescriptions?.has(post.id);
+    if(!raw) return '<div class="post-description-short empty-desc">Sin descripción.</div>';
+
+    const long = isLongDescription(raw);
+    const expanded = isDescriptionExpanded(post.id);
 
     if(!long){
       return `<div class="post-description-short">${esc(raw)}</div>`;
@@ -2653,15 +2759,28 @@
   }
 
   function toggleDescription(postId){
+    const id = String(postId || '');
+    if(!id) return;
     if(!state.expandedDescriptions) state.expandedDescriptions = new Set();
-    if(state.expandedDescriptions.has(postId)) state.expandedDescriptions.delete(postId);
-    else state.expandedDescriptions.add(postId);
+    if(state.expandedDescriptions.has(id)) state.expandedDescriptions.delete(id);
+    else state.expandedDescriptions.add(id);
     render();
-    setTimeout(()=>{
-      const box = document.querySelector(`[data-description-box="${CSS.escape(postId)}"]`);
-      if(box) box.focus?.({preventScroll:true});
+    setTimeout(() => {
+      const safeId = (window.CSS && CSS.escape) ? CSS.escape(id) : id.replace(/["\\]/g, '\\$&');
+      const box = document.querySelector(`[data-description-box="${safeId}"]`);
+      box?.focus?.({preventScroll:true});
     }, 80);
   }
+
+  function heartIcon(postId){
+    return likedPostIds().includes(String(postId)) ? '❤️' : '♡';
+  }
+
+  function heartClass(postId){
+    return likedPostIds().includes(String(postId)) ? 'liked' : '';
+  }
+
+
 
   function statusLabel(post){
     if(norm(post.cloudStatus)==='subiendo') return '<span class="chip status-chip">Publicando...</span>';
@@ -2714,21 +2833,21 @@
     post = normalizePost(post);
     const own = post.ownerId === userId();
     const pending = isVideoPost(post) && !post.mediaUrl;
-    return `<article class="post-card">
+    const expandedDesc = isDescriptionExpanded(post.id);
+    return `<article class="post-card ${expandedDesc ? 'description-open' : ''}">
       <div class="media-area">
         ${mediaMarkup(post)}
         ${pending ? '<div class="media-pending">Video en proceso. La publicación ya está visible.</div>' : ''}
         <div class="media-top"><span class="chip ${categoryClass(post.category)}">${esc(normalizeCategory(post.category))}</span><span class="chip">📍 ${esc(post.zone || 'Zona')}</span></div>
         ${isVideoPost(post) && post.mediaUrl ? `<button class="sound-toggle-card" type="button" data-toggle-video-sound="${esc(post.id)}" aria-label="Activar sonido">🔇</button>` : ''}
-        <div class="media-bottom"><div class="action-stack"><button class="round-action" data-like="${esc(post.id)}"><span>❤️</span><small>${post.reactions || 0}</small></button><button class="round-action" data-message="${esc(post.id)}"><span>✉️</span><small>Mensaje</small></button><button class="round-action" data-share="${esc(post.id)}"><span>↗️</span><small>Compartir</small></button></div><button class="follow-btn ${isFollowing(post.ownerId)?'following':''}" data-follow="${esc(post.ownerId)}">${isFollowing(post.ownerId)?'Siguiendo':'Seguir'}</button></div>
       </div>
-      <div class="post-body">
+      <div class="post-body ${expandedDesc ? 'expanded-description-body' : ''}">
         <div class="owner-row" data-open-store="${esc(post.ownerId)}">${avatarMarkup(postAvatar(post), post.ownerName || 'Usuario local')}<span>${esc(post.ownerName || 'Usuario local')}</span></div>
         <h2>${esc(post.title || 'Publicación')}</h2>
         ${descriptionMarkup(post)}
-        <div class="post-meta"><span>❤️ ${post.reactions || 0}</span><span>${new Date(post.createdAt || Date.now()).toLocaleDateString('es-MX')}</span></div>
+        <div class="post-meta"><span>${new Date(post.createdAt || Date.now()).toLocaleDateString('es-MX')}</span></div>
         <div class="post-action-row ${isVideoPost(post) && post.mediaUrl ? 'has-audio-action' : ''}">
-          <button type="button" class="icon-only-action" data-like="${esc(post.id)}" aria-label="Me gusta" title="Me gusta">❤️</button>
+          <button type="button" class="icon-only-action heart-action ${heartClass(post.id)}" data-like="${esc(post.id)}" aria-label="Preferir" title="Para ti">${heartIcon(post.id)}</button>
           <button type="button" class="icon-only-action" data-message="${esc(post.id)}" aria-label="Mensaje" title="Mensaje">✉️</button>
           <button type="button" class="icon-only-action" data-share="${esc(post.id)}" aria-label="Compartir" title="Compartir">↗️</button>
           ${isVideoPost(post) && post.mediaUrl ? `<button type="button" class="icon-only-action audio-row-btn" data-toggle-video-sound="${esc(post.id)}" aria-label="Audio" title="Audio">🔇</button>` : ''}
@@ -3375,11 +3494,13 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function likePost(id){
-    const cur = likedPostIds();
-    const already = cur.includes(id);
-    if(!already) set(K.likedPosts, [...cur, id]);
-    saveLocalPosts(state.posts.map(p=>p.id===id?{...p,reactions:(p.reactions||0)+(already?0:1)}:p));
-    toast(already ? 'Ya está en Para ti.' : 'Agregado a Para ti.');
+    const postId = String(id || '');
+    const cur = likedPostIds().map(String);
+    const already = cur.includes(postId);
+    const next = already ? cur.filter(x => x !== postId) : [...cur, postId];
+    set(K.likedPosts, next);
+    saveLocalPosts(state.posts.map(p => String(p.id) === postId ? {...p, reactions:Math.max(0,(p.reactions||0)+(already?-1:1))} : p));
+    toast(already ? 'Quitado de Para ti.' : 'Agregado a Para ti.');
     render();
   }
   function toggleFollow(ownerId){ if(ownerId===userId()) return toast('Esta publicación es tuya.'); const cur=follows(); const next=cur.includes(ownerId)?cur.filter(id=>id!==ownerId):[...cur,ownerId]; set(K.follows,next); toast(cur.includes(ownerId)?'Dejaste de seguir.':'Ahora lo sigues.'); render(); }
@@ -3714,11 +3835,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('[data-reload-video]').forEach(el=>el.onclick=()=>reloadVideo(el.dataset.reloadVideo));
     document.querySelectorAll('[data-toggle-video-sound]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();toggleVideoSound(el.dataset.toggleVideoSound);});
     document.querySelectorAll('[data-gallery-dot]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();goGallery(el.dataset.galleryDot, el.dataset.galleryIndex);});
-    document.querySelectorAll('[data-toggle-description]').forEach(el=>el.onclick=(e)=>{
-      e.preventDefault();
-      e.stopPropagation();
-      toggleDescription(el.dataset.toggleDescription);
-    });
+    document.querySelectorAll('[data-toggle-description]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();toggleDescription(el.dataset.toggleDescription);});
     document.querySelectorAll('.post-description-expanded').forEach(el=>{
       el.onclick=e=>e.stopPropagation();
       el.ontouchstart=e=>e.stopPropagation();
