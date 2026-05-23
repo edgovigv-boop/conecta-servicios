@@ -1,11 +1,11 @@
-const CACHE_NAME = 'conecta-servicios-v6-3-31-tiendas-por-usuario';
+const CACHE_NAME = 'conecta-servicios-v6-3-32-multifoto-video-limpio';
 
 const ASSETS = [
   '/',
   '/index.html',
   '/styles.css?v=6.3.12-publicaciones-video-sync',
-  '/app.js?v=6.3.31-video-tus-resumable',
-  '/manifest.json?v=6.3.31-video-tus-resumable',
+  '/app.js?v=6.3.32-video-tus-resumable',
+  '/manifest.json?v=6.3.32-video-tus-resumable',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'
@@ -36,8 +36,8 @@ self.addEventListener('fetch', event => {
     url.pathname.endsWith('/index.html') ||
     url.pathname.endsWith('/app.js') ||
     url.pathname.endsWith('/service-worker.js') ||
-    url.search.includes('v=6331') ||
-    url.search.includes('v=6.3.31');
+    url.search.includes('v=6332') ||
+    url.search.includes('v=6.3.32');
 
   if (networkFirst) {
     event.respondWith(

@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.31-tiendas-por-usuario
+/* Conecta Servicios v6.3.32-multifoto-video-limpio
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.31-tiendas-por-usuario';
+  const VERSION = 'v6.3.32-multifoto-video-limpio';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -34,11 +34,7 @@
   const CATEGORIES = ['VENDO', 'OFREZCO', 'NECESITO'];
   const ZONES = ['Tejupilco', 'Toluca', 'Metepec', 'Chapultepec', 'Centro', 'Zona cercana', 'Todo México'];
 
-  const seed = [
-    {id:'seed-vendo-1',ownerId:'seed-shop',ownerName:'Proveedor local',title:'Vendo pan casero hoy',description:'Vendo pan casero hoy.\nRecién hecho, entrega local por la tarde.',category:'VENDO',zone:'Tejupilco',mediaUrl:'assets/dola-media/comida-01.jpg',mediaType:'image',reactions:4,status:'activa',cloudStatus:'publica',createdAt:new Date(Date.now()-3600000).toISOString(),updatedAt:new Date(Date.now()-3600000).toISOString()},
-    {id:'seed-ofrezco-1',ownerId:'seed-agent',ownerName:'Mensajero local',title:'Ofrezco mandados y entregas',description:'Ofrezco mandados y entregas.\nHago compras, pagos y entregas pequeñas.',category:'OFREZCO',zone:'Centro',mediaUrl:'assets/dola-media/mandados-01.jpg',mediaType:'image',reactions:2,status:'activa',cloudStatus:'publica',createdAt:new Date(Date.now()-7200000).toISOString(),updatedAt:new Date(Date.now()-7200000).toISOString()},
-    {id:'seed-necesito-1',ownerId:'seed-user',ownerName:'Cliente local',title:'Necesito viaje compartido',description:'Necesito viaje compartido.\nBusco salida mañana por la mañana.',category:'NECESITO',zone:'Chapultepec',mediaUrl:'assets/dola-media/solicitante-01.jpg',mediaType:'image',reactions:3,status:'activa',cloudStatus:'publica',createdAt:new Date(Date.now()-10800000).toISOString(),updatedAt:new Date(Date.now()-10800000).toISOString()}
-  ];
+  const seed = [];
 
   const app = document.getElementById('app');
   const toastEl = document.getElementById('toast');
@@ -63,6 +59,7 @@
     composerMediaRef: '',
     composerMediaName: '',
     composerMediaMime: '',
+    composerMediaItems: [],
     composerDraft: {description:'', zone:'', category:'VENDO'},
     cloudReady: false,
     publishing: false,
@@ -406,9 +403,9 @@
     const saved = get(K.posts, null);
     if(!saved){
       set(K.posts, seed);
-      return seed.map(p => normalizePost(p));
+      return seed.map(p => normalizePost(p)).filter(p => !isSeed(p));
     }
-    return (Array.isArray(saved) ? saved : []).map(p => normalizePost(p));
+    return (Array.isArray(saved) ? saved : []).map(p => normalizePost(p)).filter(p => !isSeed(p));
   }
 
   function stripForLocal(post){
@@ -498,7 +495,7 @@
 
     (local || []).map(p => normalizePost(p)).forEach(lp => {
       if(!lp || !lp.id) return;
-      if(isSeed(lp)){ merged.push(lp); return; }
+      if(isSeed(lp)){ return; }
 
       const sk = softKey(lp);
       if(deleted.has(String(lp.id)) || deleted.has('soft:' + sk) || isDeleted(lp)) return;
@@ -532,7 +529,7 @@
   }
 
   function saveLocalPosts(posts){
-    const normalized = dedupePosts(posts).filter(p => !isDeleted(p));
+    const normalized = dedupePosts(posts).filter(p => !isDeleted(p) && !isSeed(p));
     state.posts = normalized;
     set(K.posts, normalized.map(stripForLocal));
   }
@@ -691,6 +688,20 @@
     return url;
   }
 
+  function resolveMediaItem(item){
+    if(!item) return '';
+    if(item.mediaUrl) return item.mediaUrl;
+    if(item.mediaData) return item.mediaData;
+    if(item.mediaPreviewUrl) return item.mediaPreviewUrl;
+    if(item.mediaRef){
+      if(memoryUrls.has(item.mediaRef)) return memoryUrls.get(item.mediaRef);
+      loadMediaBlob(item.mediaRef).then(blob => {
+        if(blob){ objectUrlFor(item.mediaRef, blob); requestRenderSoon(); }
+      }).catch(()=>{});
+    }
+    return '';
+  }
+
   function resolveMedia(post){
     if(post?.mediaUrl) return post.mediaUrl;
     if(post?.mediaData) return post.mediaData;
@@ -823,10 +834,85 @@
     return true;
   }
 
+  async function uploadOneMediaItem(post, item, index, cfg){
+    let blob = null;
+    if(item.mediaRef) blob = await loadMediaBlob(item.mediaRef).catch(()=>null);
+    if(!blob && item.mediaData) blob = dataUrlToBlob(item.mediaData);
+    if(!blob) throw new Error(`NO_LOCAL_BLOB_ITEM_${index}`);
+
+    const supabaseBase = String(cfg.supabaseUrl || '').trim().replace(/\/rest\/v1\/?$/i,'').replace(/\/+$/g,'');
+    const bucket = cfg.storageBucket || STORAGE_BUCKET;
+    const originalName = item.mediaName || `foto-${index+1}.jpg`;
+    const safeName = originalName.replace(/[^a-z0-9_.-]/gi,'-').toLowerCase();
+    const path = `${encodeURIComponent(post.ownerId || userId())}/${encodeURIComponent(post.id)}/${Date.now()}-${index}-${safeName}`;
+    const url = `${supabaseBase}/storage/v1/object/${bucket}/${path}`;
+    const contentType = item.mediaMime || blob.type || 'application/octet-stream';
+    const itemIsVideo = String(item.mediaType || '').toLowerCase() === 'video' || contentType.startsWith('video/');
+
+    if(itemIsVideo || blob.size > 6 * 1024 * 1024){
+      await uploadMediaTus({blob, supabaseBase, bucket, path, anonKey: cfg.supabaseAnonKey, contentType});
+    }else{
+      const res = await fetch(url, {
+        method:'POST',
+        headers:{
+          apikey: cfg.supabaseAnonKey,
+          Authorization: `Bearer ${cfg.supabaseAnonKey}`,
+          'Content-Type': contentType,
+          'x-upsert':'true'
+        },
+        body: blob
+      });
+      if(!res.ok){
+        const detail = await res.text().catch(()=>'');
+        throw new Error(detail || `HTTP ${res.status}`);
+      }
+    }
+
+    return {
+      ...item,
+      mediaUrl: `${supabaseBase}/storage/v1/object/public/${bucket}/${path}`,
+      mediaStatus: '',
+      mediaPending: false,
+      mediaUploadedAt: new Date().toISOString(),
+      mediaType: item.mediaType || (itemIsVideo ? 'video' : 'image')
+    };
+  }
+
   async function uploadMediaToCloud(post){
     if(post.mediaUrl) return {post: normalizePost(post,'remote'), ok:true};
     const cfg = await getPublicConfig();
     if(!cfg.ok || !cfg.supabaseUrl || !cfg.supabaseAnonKey) return {post, ok:false, detail:'PUBLIC_CONFIG_MISSING'};
+
+    if(Array.isArray(post.mediaItems) && post.mediaItems.length){
+      try{
+        saveUploadDiagnostic('upload-gallery-start', 'Iniciando subida de galería.', {postId:post.id, count:post.mediaItems.length});
+        const uploadedItems = [];
+        for(let i=0; i<post.mediaItems.length; i++){
+          const item = post.mediaItems[i];
+          uploadedItems.push(item.mediaUrl ? item : await uploadOneMediaItem(post, item, i, cfg));
+          toast(`Subiendo fotos... ${i+1}/${post.mediaItems.length}`);
+        }
+        const first = uploadedItems[0] || {};
+        saveUploadDiagnostic('upload-gallery-success', 'Galería subida correctamente.', {postId:post.id, count:uploadedItems.length});
+        return {
+          ok:true,
+          post: normalizePost({
+            ...post,
+            mediaItems: uploadedItems,
+            mediaUrl: first.mediaUrl || post.mediaUrl || '',
+            mediaType: first.mediaType || 'image',
+            mediaStatus:'',
+            mediaPending:false,
+            cloudStatus:'publica',
+            updatedAt:new Date().toISOString()
+          }, 'remote')
+        };
+      }catch(error){
+        const detail = error?.message || String(error);
+        saveUploadDiagnostic('upload-gallery-error', detail, {postId:post.id});
+        return {post, ok:false, detail};
+      }
+    }
 
     let blob = null;
     if(post.mediaRef) blob = await loadMediaBlob(post.mediaRef).catch(()=>null);
@@ -1313,6 +1399,51 @@
       .store-feed{
         margin-top:0 !important;
       }
+      .media-carousel{
+        display:flex;
+        width:100%;
+        height:100%;
+        min-height:calc(100vh - 92px);
+        overflow-x:auto;
+        scroll-snap-type:x mandatory;
+        scrollbar-width:none;
+        background:#050507;
+      }
+      .media-carousel::-webkit-scrollbar{display:none;}
+      .media-carousel img{
+        flex:0 0 100%;
+        width:100%;
+        height:calc(100vh - 92px);
+        min-height:calc(100vh - 92px);
+        object-fit:cover;
+        scroll-snap-align:center;
+      }
+      .gallery-count{
+        position:absolute;
+        top:calc(env(safe-area-inset-top) + 128px);
+        right:14px;
+        z-index:10;
+        padding:6px 10px;
+        border-radius:999px;
+        background:rgba(0,0,0,.42);
+        color:#fff;
+        font-weight:900;
+        font-size:12px;
+        backdrop-filter:blur(8px);
+      }
+      .clean-video{
+        cursor:pointer;
+      }
+      .media-bottom{
+        display:flex !important;
+        opacity:1 !important;
+        visibility:visible !important;
+      }
+      .action-stack .round-action{
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+      }
       .visual-tab[data-top-tab="tienda"].active{color:#fff;}
       .visual-tab[data-nav="/siguiendo"]{max-width:82px;overflow:hidden;text-overflow:ellipsis;}
       .visual-search-btn{
@@ -1577,7 +1708,7 @@
         <button class="nav-item ${state.route==='/mensajes'?'active':''}" data-nav="/mensajes"><span class="nav-icon nav-icon-wrap">✉️${unreadBadge()}</span><small>Mensajes</small></button>
         <button class="nav-item ${state.route==='/perfil'?'active':''}" data-nav="/perfil"><span class="nav-icon">👤</span><small>Perfil</small></button>
       </nav>
-      <input id="mediaPicker" type="file" accept="image/*,video/*" hidden>
+      <input id="mediaPicker" type="file" accept="image/*,video/*" multiple hidden>
       ${videoViewerMarkup()}
     `;
   }
@@ -1634,15 +1765,21 @@
   }
 
   function mediaMarkup(post){
+    const items = Array.isArray(post.mediaItems) ? post.mediaItems.filter(item => item && (item.mediaUrl || item.mediaRef || item.mediaData || item.mediaPreviewUrl)) : [];
+    const imageItems = items.filter(item => String(item.mediaType || post.mediaType || 'image').toLowerCase() !== 'video');
+    if(imageItems.length > 1){
+      const slides = imageItems.map((item, index) => {
+        const src = resolveMediaItem(item);
+        return src ? `<img src="${esc(src)}" alt="${esc(post.title || 'Foto')} ${index+1}" loading="${index ? 'lazy' : 'eager'}">` : '';
+      }).join('');
+      return `<div class="media-carousel" data-gallery="${esc(post.id)}">${slides}<div class="gallery-count">1/${imageItems.length}</div></div>`;
+    }
+
     const media = resolveMedia(post);
     if(isVideoPost(post)){
       if(post.mediaUrl){
-        return `<div class="video-inline-wrap" data-video-wrap="${esc(post.id)}">
-          <video class="feed-video-player" src="${esc(post.mediaUrl)}" controls playsinline webkit-playsinline preload="auto" data-video-id="${esc(post.id)}"></video>
-          <div class="video-inline-actions">
-            <button type="button" data-reload-video="${esc(post.id)}">Recargar video</button>
-            <button type="button" data-open-video="${esc(post.id)}">Ver grande</button>
-          </div>
+        return `<div class="video-inline-wrap clean-video" data-video-wrap="${esc(post.id)}">
+          <video class="feed-video-player" src="${esc(post.mediaUrl)}" autoplay muted loop playsinline webkit-playsinline preload="auto" data-open-video="${esc(post.id)}" data-video-id="${esc(post.id)}"></video>
         </div>`;
       }
       const failed = norm(post.mediaStatus) === 'error';
@@ -1777,7 +1914,8 @@ ${esc(shortDiagnosticText(diag))}</code>
       mediaRef: state.composerMediaRef,
       mediaName: state.composerMediaName,
       mediaMime: state.composerMediaMime,
-      mediaType: state.mediaType
+      mediaType: state.mediaType,
+      mediaItems: state.composerMediaItems || []
     });
   }
 
@@ -1790,6 +1928,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     state.composerMediaName = saved.mediaName || '';
     state.composerMediaMime = saved.mediaMime || '';
     state.mediaType = saved.mediaType || state.mediaType || 'image';
+    state.composerMediaItems = Array.isArray(saved.mediaItems) ? saved.mediaItems : [];
   }
 
   function composerPage(){
@@ -1798,15 +1937,19 @@ ${esc(shortDiagnosticText(diag))}</code>
     const post = state.editing || null;
     if(post) state.composerDraft = {description:post.description||'', zone:post.zone||'', category:normalizeCategory(post.category)};
     const draft = state.composerDraft;
+    const previewItems = state.composerMediaItems?.length ? state.composerMediaItems : (post?.mediaItems || []);
     const media = state.preview || post?.mediaUrl || resolveMedia(post || {mediaRef:state.composerMediaRef});
     const isVideo = (state.mediaType || post?.mediaType) === 'video';
+    const previewMarkup = previewItems?.length > 1
+      ? `<div class="preview-gallery">${previewItems.map((item, idx) => { const src = resolveMediaItem(item); return src ? `<img src="${esc(src)}" alt="Foto ${idx+1}">` : ''; }).join('')}</div><small>${previewItems.length} fotos seleccionadas</small>`
+      : (media ? (isVideo ? `<video src="${esc(media)}" controls playsinline preload="metadata"></video>` : `<img src="${esc(media)}" alt="Vista previa">`) : '<div><strong>+ Agregar foto o video</strong><span>Desde tu dispositivo</span></div>');
     return shell(`<section class="composer">
       <button class="back-btn" data-nav="/">← Volver</button>
       <h1>${state.editing?'Editar publicación':'Nueva publicación'}</h1>
-      <p>Escribe aquí. Este campo no se borra mientras publicas.</p>
+      <p>Escribe aquí. Puedes elegir una foto, varias fotos o un video corto.</p>
       <label for="description">Descripción</label>
       <textarea id="description" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Ejemplo: Vendo tamales hoy&#10;Entrego en zona centro desde las 6 pm.">${esc(draft.description||'')}</textarea>
-      <div class="preview-compact" data-pick>${media?(isVideo?`<video src="${esc(media)}" controls playsinline preload="metadata"></video>`:`<img src="${esc(media)}" alt="Vista previa">`):'<div><strong>+ Agregar foto o video</strong><span>Desde tu dispositivo</span></div>'}</div>
+      <div class="preview-compact" data-pick>${previewMarkup}</div>
       <div class="form-grid"><div><label for="zone">Zona o municipio</label><input id="zone" list="zoneList" value="${esc(draft.zone||'')}" placeholder="Ej. Tejupilco"><datalist id="zoneList">${ZONES.map(z=>`<option value="${esc(z)}"></option>`).join('')}</datalist></div><div><label for="category">Categoría</label><select id="category">${CATEGORIES.map(c=>`<option value="${esc(c)}" ${normalizeCategory(draft.category)===c?'selected':''}>${esc(c)}</option>`).join('')}</select></div></div>
       <button class="big-button ${state.publishing?'publishing':''}" data-publish ${state.publishing?'disabled':''}>${state.publishing?'PUBLICANDO...':'PUBLICAR'}</button>
     </section>`);
@@ -1851,7 +1994,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       setTimeout(()=>scrollTo({top:0,behavior:'smooth'}),0);
     });
   }
-  function clearComposer(){ state.preview=''; state.mediaType='image'; state.editing=null; state.composerId=''; state.composerMediaRef=''; state.composerMediaName=''; state.composerMediaMime=''; state.composerDraft={description:'',zone:'',category:'VENDO'}; localStorage.removeItem(K.composer); }
+  function clearComposer(){ state.preview=''; state.mediaType='image'; state.editing=null; state.composerId=''; state.composerMediaRef=''; state.composerMediaName=''; state.composerMediaMime=''; state.composerMediaItems=[]; state.composerDraft={description:'',zone:'',category:'VENDO'}; localStorage.removeItem(K.composer); }
   function openPicker(){ if(state.publishing) return toast('Estamos terminando de publicar. Espera un momento.'); ensureComposerId(); document.getElementById('mediaPicker')?.click(); }
 
   function resizeImage(file,maxSide=IMAGE_MAX_SIDE,quality=.82){
@@ -1896,28 +2039,67 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   async function fileChosen(event){
-    const file = event.target.files?.[0];
+    const files = [...(event.target.files || [])];
     event.target.value = '';
-    if(!file) return;
+    if(!files.length) return;
 
-    const isVideo = file.type.startsWith('video/');
-    const maxMb = isVideo ? MAX_VIDEO_MB : MAX_IMAGE_MB;
-    if(file.size > maxMb * 1024 * 1024) return toast(isVideo ? `El video pesa más de ${maxMb} MB. Intenta grabarlo en calidad media o comprimirlo.` : `La imagen pesa demasiado. Máximo: ${maxMb} MB.`);
-
-    if(isVideo){
-      toast('Revisando duración del video...');
-      const duration = await readVideoDuration(file);
-      if(duration && duration > MAX_VIDEO_SECONDS + 1) return toast('El video dura más de 10 minutos.');
-    }
+    const hasVideo = files.some(file => file.type.startsWith('video/'));
+    if(hasVideo && files.length > 1) return toast('Por ahora puedes elegir varias fotos o un solo video.');
 
     try{
       const postId = ensureComposerId();
+
+      if(files.length > 1){
+        const images = files.filter(file => file.type.startsWith('image/'));
+        if(images.length !== files.length) return toast('Para varias imágenes, selecciona solo fotos.');
+
+        const items = [];
+        for(let i=0; i<images.length; i++){
+          const file = images[i];
+          if(file.size > MAX_IMAGE_MB * 1024 * 1024) return toast(`Una imagen pesa demasiado. Máximo: ${MAX_IMAGE_MB} MB.`);
+          const blob = await resizeImage(file).catch(()=>file);
+          const ref = `media-${postId}-${i}`;
+          await saveMediaBlob(ref, blob);
+          items.push({
+            mediaRef: ref,
+            mediaName: file.name || `foto-${i+1}.jpg`,
+            mediaMime: blob.type || file.type || 'image/jpeg',
+            mediaType: 'image',
+            mediaPreviewUrl: objectUrlFor(ref, blob)
+          });
+        }
+
+        state.mediaType = 'image';
+        state.composerMediaItems = items;
+        state.composerMediaRef = items[0]?.mediaRef || '';
+        state.composerMediaName = items[0]?.mediaName || '';
+        state.composerMediaMime = items[0]?.mediaMime || '';
+        state.preview = items[0]?.mediaPreviewUrl || '';
+        state.editing = null;
+        saveComposerDraft();
+        nav('/publicar');
+        setTimeout(()=>document.getElementById('description')?.focus(),250);
+        return;
+      }
+
+      const file = files[0];
+      const isVideo = file.type.startsWith('video/');
+      const maxMb = isVideo ? MAX_VIDEO_MB : MAX_IMAGE_MB;
+      if(file.size > maxMb * 1024 * 1024) return toast(isVideo ? `El video pesa más de ${maxMb} MB. Intenta grabarlo en calidad media o comprimirlo.` : `La imagen pesa demasiado. Máximo: ${maxMb} MB.`);
+
+      if(isVideo){
+        toast('Revisando duración del video...');
+        const duration = await readVideoDuration(file);
+        if(duration && duration > MAX_VIDEO_SECONDS + 1) return toast('El video dura más de 10 minutos.');
+      }
+
       const ref = `media-${postId}`;
       const kind = isVideo ? 'video' : 'image';
       let blob = file;
       if(kind === 'image') blob = await resizeImage(file).catch(()=>file);
       await saveMediaBlob(ref, blob);
       state.mediaType = kind;
+      state.composerMediaItems = [];
       state.composerMediaRef = ref;
       state.composerMediaName = file.name || `${kind}.bin`;
       state.composerMediaMime = blob.type || file.type || 'application/octet-stream';
@@ -1963,12 +2145,13 @@ ${esc(shortDiagnosticText(diag))}</code>
       zone: form.zone,
       category: form.category,
       mediaUrl: old?.mediaUrl || '',
+      mediaItems: state.composerMediaItems?.length ? state.composerMediaItems : (old?.mediaItems || []),
       mediaRef: state.composerMediaRef || old?.mediaRef || '',
       mediaPreviewUrl: state.preview || old?.mediaPreviewUrl || '',
       mediaType: state.mediaType || old?.mediaType || 'image',
       mediaMime: state.composerMediaMime || old?.mediaMime || '',
       mediaName: state.composerMediaName || old?.mediaName || '',
-      mediaStatus: state.composerMediaRef ? 'pendiente' : '',
+      mediaStatus: (state.composerMediaRef || state.composerMediaItems?.some(item => item.mediaRef && !item.mediaUrl)) ? 'pendiente' : '',
       status:'activa',
       reactions: old?.reactions || 0,
       createdAt: old?.createdAt || now,
@@ -2114,6 +2297,14 @@ ${esc(shortDiagnosticText(diag))}</code>
         const wrap = video.closest('.video-inline-wrap');
         wrap?.querySelectorAll('.video-load-error').forEach(el => el.remove());
       });
+
+      video.muted = true;
+      video.loop = true;
+      video.playsInline = true;
+      if(!video.dataset.csAutoplayTried){
+        video.dataset.csAutoplayTried = '1';
+        setTimeout(()=>video.play().catch(()=>null), 120);
+      }
 
       video.addEventListener('play', () => {
         state.videoPlayingId = postId;
