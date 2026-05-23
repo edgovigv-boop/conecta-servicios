@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.34-acciones-galeria-visibles
+/* Conecta Servicios v6.3.35-home-estetico-acciones-sonido
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.34-acciones-galeria-visibles';
+  const VERSION = 'v6.3.35-home-estetico-acciones-sonido';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -1613,6 +1613,97 @@
       .post-action-row button:active{
         transform:scale(.96) !important;
       }
+
+      /* v6.3.35 estética final: acciones horizontales, dots y audio visible */
+      .gallery-arrow{
+        display:none !important;
+      }
+      .gallery-dots{
+        position:absolute;
+        left:50%;
+        bottom:calc(env(safe-area-inset-bottom) + 150px);
+        transform:translateX(-50%);
+        z-index:92;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:7px;
+        padding:7px 10px;
+        border-radius:999px;
+        background:rgba(0,0,0,.24);
+        backdrop-filter:blur(8px);
+      }
+      .gallery-dot{
+        width:8px;
+        height:8px;
+        border-radius:999px;
+        border:0;
+        background:rgba(255,255,255,.48);
+        padding:0;
+        transition:all .18s ease;
+      }
+      .gallery-dot.active{
+        width:22px;
+        background:#fff;
+      }
+      .media-bottom{
+        display:none !important;
+      }
+      .post-body{
+        padding:54px 16px calc(env(safe-area-inset-bottom) + 86px) 16px !important;
+        background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.58) 28%,rgba(0,0,0,.86)) !important;
+      }
+      .post-body h2{
+        font-size:19px !important;
+        margin-bottom:5px !important;
+      }
+      .post-body p{
+        font-size:14px !important;
+        max-height:2.7em !important;
+      }
+      .post-action-row{
+        display:grid !important;
+        grid-template-columns:repeat(3, 1fr);
+        gap:8px !important;
+        width:100%;
+        margin-top:12px !important;
+        z-index:96 !important;
+      }
+      .post-action-row button{
+        display:flex !important;
+        align-items:center;
+        justify-content:center;
+        white-space:nowrap;
+        min-height:42px;
+        background:rgba(255,255,255,.22) !important;
+        border:1px solid rgba(255,255,255,.32) !important;
+        color:#fff !important;
+        font-size:13px !important;
+        box-shadow:0 10px 28px rgba(0,0,0,.20) !important;
+      }
+      .sound-toggle{
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        right:14px !important;
+        top:auto !important;
+        bottom:calc(env(safe-area-inset-bottom) + 248px) !important;
+        z-index:98 !important;
+        width:50px !important;
+        height:50px !important;
+        border:2px solid rgba(255,255,255,.55) !important;
+        background:rgba(0,0,0,.58) !important;
+        color:#fff !important;
+        opacity:1 !important;
+        visibility:visible !important;
+        pointer-events:auto !important;
+      }
+      .owner-row{
+        margin-bottom:4px !important;
+      }
+      .post-meta{
+        margin-top:6px !important;
+      }
       .media-bottom{
         display:flex !important;
         opacity:1 !important;
@@ -1952,11 +2043,10 @@
         const src = resolveMediaItem(item);
         return src ? `<img src="${esc(src)}" alt="${esc(post.title || 'Foto')} ${index+1}" loading="${index ? 'lazy' : 'eager'}">` : '';
       }).join('');
+      const dots = imageItems.map((_, index) => `<button type="button" class="gallery-dot ${index === 0 ? 'active' : ''}" data-gallery-dot="${esc(post.id)}" data-gallery-index="${index}" aria-label="Ver foto ${index+1}"></button>`).join('');
       return `<div class="media-carousel" data-gallery="${esc(post.id)}" data-gallery-total="${imageItems.length}">
         ${slides}
-        <button class="gallery-arrow gallery-prev" type="button" data-gallery-prev="${esc(post.id)}" aria-label="Foto anterior">‹</button>
-        <button class="gallery-arrow gallery-next" type="button" data-gallery-next="${esc(post.id)}" aria-label="Foto siguiente">›</button>
-        <div class="gallery-count" data-gallery-count="${esc(post.id)}">1/${imageItems.length}</div>
+        <div class="gallery-dots" data-gallery-dots="${esc(post.id)}">${dots}</div>
       </div>`;
     }
 
@@ -2473,20 +2563,16 @@ ${esc(shortDiagnosticText(diag))}</code>
     const id = gallery.dataset.gallery;
     const total = Number(gallery.dataset.galleryTotal || gallery.querySelectorAll('img').length || 1);
     const index = Math.min(total, Math.max(1, Math.round(gallery.scrollLeft / Math.max(1, gallery.clientWidth)) + 1));
-    const counter = document.querySelector(`[data-gallery-count="${CSS.escape(id)}"]`);
-    if(counter) counter.textContent = `${index}/${total}`;
-
-    const prev = document.querySelector(`[data-gallery-prev="${CSS.escape(id)}"]`);
-    const next = document.querySelector(`[data-gallery-next="${CSS.escape(id)}"]`);
-    if(prev) prev.classList.toggle('is-edge', index <= 1);
-    if(next) next.classList.toggle('is-edge', index >= total);
+    document.querySelectorAll(`[data-gallery-dot="${CSS.escape(id)}"]`).forEach((dot, i) => {
+      dot.classList.toggle('active', i === index - 1);
+    });
   }
 
-  function moveGallery(id, direction){
+  function goGallery(id, index){
     const safeId = (window.CSS && CSS.escape) ? CSS.escape(id) : String(id).replace(/["\\]/g, '\\$&');
     const gallery = document.querySelector(`[data-gallery="${safeId}"]`);
     if(!gallery) return;
-    gallery.scrollBy({left: direction * gallery.clientWidth, behavior:'smooth'});
+    gallery.scrollTo({left: Number(index || 0) * gallery.clientWidth, behavior:'smooth'});
     setTimeout(()=>updateGalleryCounter(gallery), 320);
   }
 
@@ -2514,6 +2600,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     if(btn) btn.textContent = video.muted ? '🔇' : '🔊';
     toast(video.muted ? 'Video en silencio.' : 'Sonido activado. Usa el volumen de tu dispositivo.');
   }
+
 
   function setupInternalVideos(){
     document.querySelectorAll('video.feed-video-player').forEach(video => {
@@ -2633,7 +2720,18 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
   function toggleFollow(ownerId){ if(ownerId===userId()) return toast('Esta publicación es tuya.'); const cur=follows(); const next=cur.includes(ownerId)?cur.filter(id=>id!==ownerId):[...cur,ownerId]; set(K.follows,next); toast(cur.includes(ownerId)?'Dejaste de seguir.':'Ahora lo sigues.'); render(); }
   function sharePost(id){ const p=state.posts.find(x=>x.id===id); if(!p) return; const text=`${p.title}\n\n${p.description}\n\n${p.category} · ${p.zone}\n\n${APP_URL}`; if(navigator.share) navigator.share({title:p.title,text,url:APP_URL}).catch(()=>{}); else navigator.clipboard?.writeText(text).then(()=>toast('Copiado para compartir.')); }
-  function saveProfile(){ const name=document.getElementById('profileName')?.value.trim()||'Usuario local'; set(K.profile,{name}); toast('Nombre guardado.'); render(); }
+  function saveProfile(){
+    const name=document.getElementById('profileName')?.value.trim()||'Usuario local';
+    set(K.profile,{name});
+    const mine = state.posts.filter(p => p.ownerId === userId());
+    if(mine.length){
+      const updated = state.posts.map(p => p.ownerId === userId() ? {...p, ownerName:name, updatedAt:new Date().toISOString()} : p);
+      saveLocalPosts(updated);
+      mine.forEach(p => syncPost({...p, ownerName:name, updatedAt:new Date().toISOString()}).catch(()=>null));
+    }
+    toast('Nombre guardado y aplicado a tus publicaciones.');
+    render();
+  }
   function clearFilters(){ state.filter='ALL'; state.query=''; render(); }
 
   function shortTime(value){ try { return value ? new Date(value).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}) : ''; } catch { return ''; } }
@@ -2891,8 +2989,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('[data-open-video]').forEach(el=>el.onclick=()=>openVideo(el.dataset.openVideo));
     document.querySelectorAll('[data-reload-video]').forEach(el=>el.onclick=()=>reloadVideo(el.dataset.reloadVideo));
     document.querySelectorAll('[data-toggle-video-sound]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();toggleVideoSound(el.dataset.toggleVideoSound);});
-    document.querySelectorAll('[data-gallery-prev]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();moveGallery(el.dataset.galleryPrev,-1);});
-    document.querySelectorAll('[data-gallery-next]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();moveGallery(el.dataset.galleryNext,1);});
+    document.querySelectorAll('[data-gallery-dot]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();goGallery(el.dataset.galleryDot, el.dataset.galleryIndex);});
     setupInternalVideos();
     setupGalleries();
     document.querySelectorAll('[data-open-chat]').forEach(b=>b.onclick=()=>openChatFromConversation(b));
