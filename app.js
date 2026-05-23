@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.38-altavoz-foto-perfil
+/* Conecta Servicios v6.3.39-altavoz-perfil-fix
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.38-altavoz-foto-perfil';
+  const VERSION = 'v6.3.39-altavoz-perfil-fix';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -81,13 +81,17 @@
     videoIsPlaying: false,
     lastUploadDiagnostic: null,
     runtimeDiagnostic: null,
-    audioCtx: null
+    audioCtx: null,
+    profileEditing: false
   };
 
   const esc = (v='') => String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   const uid = (p='id') => `${p}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const get = (k,f) => { try { return JSON.parse(localStorage.getItem(k)) ?? f; } catch { return f; } };
-  const set = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+  const set = (k,v) => {
+    try { localStorage.setItem(k, JSON.stringify(v)); return true; }
+    catch (err) { console.warn('[Conecta] No se pudo guardar localStorage', k, err); return false; }
+  };
   const norm = v => String(v || '').trim().toLowerCase();
 
   function userId(){ let id=localStorage.getItem(K.user); if(!id){ id=uid('u'); localStorage.setItem(K.user,id); } return id; }
@@ -275,8 +279,20 @@
     return !!(state.searchOpen && active && active.id === 'searchInput');
   }
 
+  function isTextInputActive(){
+    const el = document.activeElement;
+    if(!el) return false;
+    const tag = String(el.tagName || '').toLowerCase();
+    if(tag === 'textarea') return true;
+    if(tag === 'input'){
+      const type = String(el.getAttribute('type') || 'text').toLowerCase();
+      return !['button','submit','checkbox','radio','file','hidden'].includes(type);
+    }
+    return !!el.isContentEditable;
+  }
+
   function shouldAvoidRender(){
-    return isAnyVideoPlaying() || isSearchActive() || state.searchTyping;
+    return isAnyVideoPlaying() || isSearchActive() || state.searchTyping || state.profileEditing || isTextInputActive();
   }
 
   function isAnyVideoPlaying(){
@@ -502,7 +518,11 @@
 
       const rp = remoteById.get(String(lp.id)) || remoteBySoft.get(sk);
       if(rp){
-        const chosen = chooseBetterPost(lp, rp);
+        let chosen = chooseBetterPost(lp, rp);
+        if(chosen.ownerId === userId()){
+          const prof = profile();
+          chosen = {...chosen, ownerName: prof.name || chosen.ownerName || 'Usuario local', ownerAvatar: prof.avatarData || chosen.ownerAvatar || ''};
+        }
         merged.push(chosen);
         usedRemoteIds.add(String(rp.id));
         return;
@@ -521,6 +541,10 @@
       if(!rp || !rp.id || isDeleted(rp)) return;
       if(usedRemoteIds.has(String(rp.id))) return;
       if(merged.some(p => String(p.id) === String(rp.id))) return;
+      if(rp.ownerId === userId()){
+        const prof = profile();
+        rp = {...rp, ownerName: prof.name || rp.ownerName || 'Usuario local', ownerAvatar: prof.avatarData || rp.ownerAvatar || ''};
+      }
       merged.push(rp);
     });
 
@@ -647,7 +671,7 @@
   }
 
 
-  function requestRenderSoon(){ clearTimeout(requestRenderSoon._t); requestRenderSoon._t=setTimeout(()=>{ if(state.route !== '/publicar') render(); },60); }
+  function requestRenderSoon(){ clearTimeout(requestRenderSoon._t); requestRenderSoon._t=setTimeout(()=>{ if(state.route !== '/publicar' && !shouldAvoidRender()) render(); },60); }
 
   function openMediaDb(){
     if(mediaDbPromise) return mediaDbPromise;
@@ -703,8 +727,8 @@
   }
 
   function postAvatar(post){
+    if(post?.ownerId === userId()) return profile().avatarData || post?.ownerAvatar || '';
     if(post?.ownerAvatar) return post.ownerAvatar;
-    if(post?.ownerId === userId()) return profile().avatarData || '';
     return '';
   }
 
@@ -2065,6 +2089,44 @@
       .store-avatar,.owner-avatar{
         overflow:hidden !important;
       }
+
+      /* v6.3.39: altavoz fuera del video y perfil estable */
+      .sound-toggle-card{
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        position:absolute !important;
+        right:16px !important;
+        top:calc(env(safe-area-inset-top) + 160px) !important;
+        z-index:220 !important;
+        width:56px !important;
+        height:56px !important;
+        border-radius:999px !important;
+        border:2px solid rgba(255,255,255,.76) !important;
+        background:rgba(0,0,0,.72) !important;
+        color:#fff !important;
+        font-size:26px !important;
+        box-shadow:0 14px 38px rgba(0,0,0,.42) !important;
+        backdrop-filter:blur(14px) !important;
+        opacity:1 !important;
+        visibility:visible !important;
+        pointer-events:auto !important;
+      }
+      .sound-toggle{
+        z-index:210 !important;
+      }
+      #profileName{
+        font-size:16px !important;
+        -webkit-user-select:text !important;
+        user-select:text !important;
+        caret-color:#5b2eea;
+      }
+      .profile-panel{
+        scroll-margin-top:calc(env(safe-area-inset-top) + 90px);
+      }
+      .owner-row span:not(.owner-dot){
+        display:inline-block;
+      }
       @media (max-width:380px){
         .post-action-row button{
           font-size:11px !important;
@@ -2454,6 +2516,7 @@
         ${mediaMarkup(post)}
         ${pending ? '<div class="media-pending">Video en proceso. La publicación ya está visible.</div>' : ''}
         <div class="media-top"><span class="chip ${categoryClass(post.category)}">${esc(normalizeCategory(post.category))}</span><span class="chip">📍 ${esc(post.zone || 'Zona')}</span></div>
+        ${isVideoPost(post) && post.mediaUrl ? `<button class="sound-toggle-card" type="button" data-toggle-video-sound="${esc(post.id)}" aria-label="Activar sonido">🔇</button>` : ''}
         <div class="media-bottom"><div class="action-stack"><button class="round-action" data-like="${esc(post.id)}"><span>❤️</span><small>${post.reactions || 0}</small></button><button class="round-action" data-message="${esc(post.id)}"><span>✉️</span><small>Mensaje</small></button><button class="round-action" data-share="${esc(post.id)}"><span>↗️</span><small>Compartir</small></button></div><button class="follow-btn ${isFollowing(post.ownerId)?'following':''}" data-follow="${esc(post.ownerId)}">${isFollowing(post.ownerId)?'Siguiendo':'Seguir'}</button></div>
       </div>
       <div class="post-body">
@@ -2992,7 +3055,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     video.muted = !video.muted;
     video.volume = 1;
     video.play().catch(()=>null);
-    if(btn) btn.textContent = video.muted ? '🔇' : '🔊';
+    document.querySelectorAll(`[data-toggle-video-sound="${safeId}"]`).forEach(el => el.textContent = video.muted ? '🔇' : '🔊');
     toast(video.muted ? 'Video en silencio.' : 'Sonido activado. Usa el volumen de tu dispositivo.');
   }
 
@@ -3121,6 +3184,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     const nextProfile = {...current, name};
     set(K.profile,nextProfile);
     applyProfileToOwnPosts(nextProfile);
+    state.profileEditing=false;
     toast('Perfil guardado y aplicado a tus publicaciones.');
     render();
   }
@@ -3140,7 +3204,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     if(!file) return;
     if(!file.type.startsWith('image/')) return toast('Elige una imagen para tu perfil.');
     try{
-      const resized = await resizeImage(file, 480, .82);
+      const resized = await resizeImage(file, 260, .72);
       const avatarData = await blobToDataURL(resized);
       const current = profile();
       const name = document.getElementById('profileName')?.value.trim() || current.name || 'Usuario local';
@@ -3435,6 +3499,12 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('[data-pick-profile-photo]').forEach(b=>b.onclick=openProfilePhotoPicker);
     const profilePhotoInput=document.getElementById('profilePhotoInput');
     if(profilePhotoInput) profilePhotoInput.onchange=profilePhotoChosen;
+    const profileNameInput=document.getElementById('profileName');
+    if(profileNameInput){
+      profileNameInput.onfocus=()=>{state.profileEditing=true;};
+      profileNameInput.onblur=()=>{setTimeout(()=>{state.profileEditing=false;},300);};
+      profileNameInput.oninput=()=>{state.profileEditing=true;};
+    }
     document.querySelectorAll('[data-toggle-search]').forEach(b=>b.onclick=toggleSearchPanel);
     document.querySelectorAll('[data-open-store]').forEach(b=>b.onclick=()=>openStore(b.dataset.openStore));
     document.querySelectorAll('[data-top-tab]').forEach(b=>b.onclick=()=>setTopTab(b.dataset.topTab));
