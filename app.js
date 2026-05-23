@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.21-video-10min-1gb
+/* Conecta Servicios v6.3.22-video-tus-resumable
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.21-video-10min-1gb';
+  const VERSION = 'v6.3.22-video-tus-resumable';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -26,7 +26,7 @@
     composer: 'cs_v634_composer',
     seenMessages: 'cs_v639_seen_messages',
     readMessages: 'cs_v6310_read_messages',
-    deletedPosts: 'cs_v6320_deleted_posts'
+    deletedPosts: 'cs_v6322_deleted_posts'
   };
 
   const CATEGORIES = ['VENDO', 'OFREZCO', 'NECESITO'];
@@ -354,6 +354,110 @@
     return new Blob([bytes], {type:mime});
   }
 
+
+  function toTusMetadataValue(value){
+    const text = String(value || '');
+    const bytes = new TextEncoder().encode(text);
+    let binary = '';
+    bytes.forEach(b => binary += String.fromCharCode(b));
+    return btoa(binary);
+  }
+
+  function buildTusMetadata(meta){
+    return Object.entries(meta)
+      .filter(([,value]) => value !== undefined && value !== null && String(value) !== '')
+      .map(([key,value]) => `${key} ${toTusMetadataValue(value)}`)
+      .join(',');
+  }
+
+  function directStorageEndpoint(supabaseBase){
+    try{
+      const url = new URL(supabaseBase);
+      const projectId = url.hostname.split('.')[0];
+      if(projectId) return `https://${projectId}.storage.supabase.co/storage/v1/upload/resumable`;
+    }catch{}
+    return `${supabaseBase}/storage/v1/upload/resumable`;
+  }
+
+  async function fetchWithRetry(url, options, attempts=4){
+    let lastError = null;
+    for(let i=0;i<attempts;i++){
+      try{
+        const response = await fetch(url, options);
+        if(response.ok || response.status === 204) return response;
+        const detail = await response.text().catch(()=>'');
+        lastError = new Error(`HTTP ${response.status} ${detail}`.slice(0, 600));
+      }catch(error){
+        lastError = error;
+      }
+      await new Promise(resolve => setTimeout(resolve, [0, 1200, 3000, 6000][i] || 6000));
+    }
+    throw lastError || new Error('UPLOAD_FAILED');
+  }
+
+  function updateUploadToast(bytesUploaded, bytesTotal){
+    if(!bytesTotal) return;
+    const pct = Math.max(1, Math.min(99, Math.round((bytesUploaded / bytesTotal) * 100)));
+    const step = Math.floor(pct / 10) * 10;
+    if(updateUploadToast._lastStep === step) return;
+    updateUploadToast._lastStep = step;
+    toast(`Subiendo video... ${pct}%`);
+  }
+
+  async function uploadMediaTus({blob, supabaseBase, bucket, path, anonKey, contentType}){
+    const endpoint = directStorageEndpoint(supabaseBase);
+    const metadata = buildTusMetadata({
+      bucketName: bucket,
+      objectName: path,
+      contentType: contentType || blob.type || 'application/octet-stream',
+      cacheControl: '3600'
+    });
+
+    updateUploadToast._lastStep = -1;
+    toast('Preparando subida resumible...');
+
+    const create = await fetchWithRetry(endpoint, {
+      method: 'POST',
+      headers: {
+        'Tus-Resumable': '1.0.0',
+        'Upload-Length': String(blob.size),
+        'Upload-Metadata': metadata,
+        'Authorization': `Bearer ${anonKey}`,
+        'apikey': anonKey,
+        'x-upsert': 'true'
+      }
+    }, 3);
+
+    let uploadUrl = create.headers.get('Location') || create.headers.get('location');
+    if(uploadUrl && uploadUrl.startsWith('/')) uploadUrl = `${new URL(endpoint).origin}${uploadUrl}`;
+    if(!uploadUrl) throw new Error('Supabase no devolvió URL resumible para continuar la subida.');
+
+    const chunkSize = 6 * 1024 * 1024; // Recomendación Supabase/TUS: 6 MB.
+    let offset = 0;
+
+    while(offset < blob.size){
+      const chunk = blob.slice(offset, Math.min(offset + chunkSize, blob.size));
+      const patch = await fetchWithRetry(uploadUrl, {
+        method: 'PATCH',
+        headers: {
+          'Tus-Resumable': '1.0.0',
+          'Content-Type': 'application/offset+octet-stream',
+          'Upload-Offset': String(offset),
+          'Authorization': `Bearer ${anonKey}`,
+          'apikey': anonKey
+        },
+        body: chunk
+      }, 5);
+
+      const nextOffset = Number(patch.headers.get('Upload-Offset') || patch.headers.get('upload-offset') || 0);
+      offset = nextOffset > offset ? nextOffset : offset + chunk.size;
+      updateUploadToast(offset, blob.size);
+    }
+
+    toast('Video subido. Guardando publicación...');
+    return true;
+  }
+
   async function uploadMediaToCloud(post){
     if(post.mediaUrl) return {post: normalizePost(post,'remote'), ok:true};
     const cfg = await getPublicConfig();
@@ -371,20 +475,38 @@
     const path = `${encodeURIComponent(post.ownerId || userId())}/${encodeURIComponent(post.id)}/${Date.now()}-${safeName}`;
     const url = `${supabaseBase}/storage/v1/object/${bucket}/${path}`;
 
-    const res = await fetch(url, {
-      method:'POST',
-      headers:{
-        apikey: cfg.supabaseAnonKey,
-        Authorization: `Bearer ${cfg.supabaseAnonKey}`,
-        'Content-Type': post.mediaMime || blob.type || 'application/octet-stream',
-        'x-upsert':'true'
-      },
-      body: blob
-    });
+    const contentType = post.mediaMime || blob.type || 'application/octet-stream';
+    const shouldUseTus = isVideoPost(post) || blob.size > 6 * 1024 * 1024;
 
-    if(!res.ok){
-      const detail = await res.text().catch(()=>'');
-      return {post, ok:false, detail};
+    if(shouldUseTus){
+      try{
+        await uploadMediaTus({
+          blob,
+          supabaseBase,
+          bucket,
+          path,
+          anonKey: cfg.supabaseAnonKey,
+          contentType
+        });
+      }catch(error){
+        return {post, ok:false, detail: error?.message || String(error)};
+      }
+    }else{
+      const res = await fetch(url, {
+        method:'POST',
+        headers:{
+          apikey: cfg.supabaseAnonKey,
+          Authorization: `Bearer ${cfg.supabaseAnonKey}`,
+          'Content-Type': contentType,
+          'x-upsert':'true'
+        },
+        body: blob
+      });
+
+      if(!res.ok){
+        const detail = await res.text().catch(()=>'');
+        return {post, ok:false, detail};
+      }
     }
 
     const mediaUrl = `${supabaseBase}/storage/v1/object/public/${bucket}/${path}`;
@@ -837,7 +959,7 @@
         post = normalizePost({...post, cloudStatus:'publica', mediaStatus:'pendiente', updatedAt:new Date().toISOString()});
         await syncPost(post);
         saveLocalPosts([post, ...state.posts.filter(x=>x.id!==id)]);
-        toast(isVideoPost(post) ? 'Publicación visible. El video no subió; toca Reintentar.' : 'Publicación visible. La imagen quedó pendiente.');
+        console.warn('Media upload failed', uploaded.detail); toast(isVideoPost(post) ? 'Publicación visible. El video no terminó de subir; toca Reintentar y no cierres la app.' : 'Publicación visible. La imagen quedó pendiente.');
       }
     }else if(firstSync){
       toast('Publicación lista.');
