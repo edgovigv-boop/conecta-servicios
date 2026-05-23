@@ -1,8 +1,8 @@
-/* Conecta Servicios v6.3.3 - Publicar primero, multimedia después */
+/* Conecta Servicios v6.3.4 - Formulario estable */
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.3-publicar-primero';
+  const VERSION = 'v6.3.4-formulario-estable';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const MAX_FILE_MB = 40;
   const IMAGE_MAX_SIDE = 1280;
@@ -10,12 +10,12 @@
   const STORAGE_BUCKET = 'publication-media';
 
   const K = {
-    posts: 'cs_v633_posts',
-    user: 'cs_v633_user',
-    follows: 'cs_v633_follows',
-    messages: 'cs_v633_messages',
-    profile: 'cs_v633_profile',
-    composer: 'cs_v633_composer'
+    posts: 'cs_v634_posts',
+    user: 'cs_v634_user',
+    follows: 'cs_v634_follows',
+    messages: 'cs_v634_messages',
+    profile: 'cs_v634_profile',
+    composer: 'cs_v634_composer'
   };
 
   const CATEGORIES = ['VENDO', 'OFREZCO', 'NECESITO'];
@@ -44,6 +44,7 @@
     composerMediaRef:'',
     composerMediaName:'',
     composerMediaMime:'',
+    composerDraft:{description:'',zone:'',category:'VENDO'},
     cloudReady:false,
     publishing:false,
     syncing:false,
@@ -64,11 +65,39 @@
   function normalizeCategory(v){ const x=String(v||'').toUpperCase().trim(); return CATEGORIES.includes(x)?x:'VENDO'; }
   function titleFrom(text){ return (String(text||'').split('\n').map(x=>x.trim()).find(Boolean)||'Publicación').slice(0,72); }
 
+  function saveComposerDraft(){
+    set(K.composer, {
+      id: state.composerId,
+      description: state.composerDraft.description || '',
+      zone: state.composerDraft.zone || '',
+      category: normalizeCategory(state.composerDraft.category || 'VENDO'),
+      mediaRef: state.composerMediaRef,
+      mediaName: state.composerMediaName,
+      mediaMime: state.composerMediaMime,
+      mediaType: state.mediaType
+    });
+  }
+
+  function loadComposerDraft(){
+    const saved = get(K.composer, null);
+    if (!saved) return;
+    state.composerId = saved.id || state.composerId;
+    state.composerDraft = {
+      description: saved.description || '',
+      zone: saved.zone || '',
+      category: normalizeCategory(saved.category || state.filter || 'VENDO')
+    };
+    state.composerMediaRef = saved.mediaRef || '';
+    state.composerMediaName = saved.mediaName || '';
+    state.composerMediaMime = saved.mediaMime || '';
+    state.mediaType = saved.mediaType || state.mediaType || 'image';
+  }
+
   function openMediaDb(){
     if(mediaDbPromise) return mediaDbPromise;
     mediaDbPromise=new Promise((resolve,reject)=>{
       if(!('indexedDB' in window)) return reject(new Error('Sin multimedia local'));
-      const req=indexedDB.open('conecta_media_v633',1);
+      const req=indexedDB.open('conecta_media_v634',1);
       req.onupgradeneeded=()=>req.result.createObjectStore('files');
       req.onsuccess=()=>resolve(req.result);
       req.onerror=()=>reject(req.error);
@@ -100,7 +129,7 @@
     memoryUrls.set(ref,url);
     return url;
   }
-  function requestRenderSoon(){ clearTimeout(requestRenderSoon._t); requestRenderSoon._t=setTimeout(render,60); }
+  function requestRenderSoon(){ clearTimeout(requestRenderSoon._t); requestRenderSoon._t=setTimeout(()=>{ if(state.route !== '/publicar') render(); },60); }
   function resolveMedia(post){
     if(post.mediaUrl) return post.mediaUrl;
     if(post.mediaData) return post.mediaData;
@@ -200,12 +229,12 @@
       state.cloudReady=true;
       const remote=(data.posts||[]).map(p=>({...p,category:normalizeCategory(p.category),cloudStatus:'publica'}));
       saveLocalPosts(mergePosts(localPosts(),remote));
-      if(options.render!==false) render();
+      if(options.render!==false && state.route !== '/publicar') render();
       return true;
     }catch{
       state.cloudReady=false;
       state.posts=localPosts();
-      if(options.render!==false) render();
+      if(options.render!==false && state.route !== '/publicar') render();
       return false;
     }finally{ state.syncing=false; }
   }
@@ -273,10 +302,7 @@
         ${media?(isVideo?`<video src="${esc(media)}" controls playsinline preload="metadata"></video>`:`<img src="${esc(media)}" alt="${esc(post.title||'Publicación')}">`):'<div class="no-media">Conecta Servicios</div>'}
         ${pending?'<div class="media-pending">El video está pendiente. La publicación ya está visible.</div>':''}
         <div class="media-top"><span class="chip ${categoryClass(post.category)}">${esc(normalizeCategory(post.category))}</span><span class="chip">📍 ${esc(post.zone||'Zona')}</span></div>
-        <div class="media-bottom">
-          <div class="action-stack"><button class="round-action" data-like="${esc(post.id)}">❤️</button><button class="round-action" data-message="${esc(post.id)}">✉️</button><button class="round-action" data-share="${esc(post.id)}">↗️</button></div>
-          <button class="follow-btn ${isFollowing(post.ownerId)?'following':''}" data-follow="${esc(post.ownerId)}">${isFollowing(post.ownerId)?'Siguiendo':'Seguir'}</button>
-        </div>
+        <div class="media-bottom"><div class="action-stack"><button class="round-action" data-like="${esc(post.id)}">❤️</button><button class="round-action" data-message="${esc(post.id)}">✉️</button><button class="round-action" data-share="${esc(post.id)}">↗️</button></div><button class="follow-btn ${isFollowing(post.ownerId)?'following':''}" data-follow="${esc(post.ownerId)}">${isFollowing(post.ownerId)?'Siguiendo':'Seguir'}</button></div>
       </div>
       <div class="post-body">
         <div class="owner-row"><span class="owner-dot">👤</span>${esc(post.ownerName||'Usuario local')}</div>
@@ -295,20 +321,25 @@
   function messageCard(item){ return `<div class="list-item"><strong>${esc(item.postTitle||'Publicación')}</strong><small>${esc(item.postCategory||'')} · ${esc(item.postZone||'')}</small><p style="margin:10px 0 0;white-space:pre-wrap">${esc(item.text||'')}</p></div>`; }
   function profilePage(){ const prof=profile(); const mine=myPosts(); return shell(`<section class="panel"><h1>Perfil</h1><p>Guarda tu nombre visible y revisa tu actividad.</p><label>Nombre visible</label><input id="profileName" value="${esc(prof.name||'Usuario local')}" placeholder="Tu nombre o negocio"><button class="big-button" data-save-profile>Guardar nombre</button><div class="profile-grid"><div class="stat"><strong>${mine.length}</strong><span>Publicaciones</span></div><div class="stat"><strong>${follows().length}</strong><span>Siguiendo</span></div><div class="stat"><strong>${messages().length}</strong><span>Mensajes</span></div></div></section><section class="feed">${mine.map(postCard).join('')||emptyState('No has publicado','Toca + para crear tu primera publicación.')}</section>`); }
 
-  function ensureComposerId(){ if(!state.composerId){ state.composerId=uid('post'); set(K.composer,{id:state.composerId,createdAt:new Date().toISOString()}); } return state.composerId; }
+  function ensureComposerId(){ if(!state.composerId){ state.composerId=uid('post'); state.composerDraft.category = state.filter==='ALL'?'VENDO':normalizeCategory(state.filter); saveComposerDraft(); } return state.composerId; }
   function composerPage(){
+    loadComposerDraft();
     ensureComposerId();
-    const post=state.editing||{description:'',zone:'',category:state.filter==='ALL'?'VENDO':state.filter};
-    const media=state.preview||post.mediaUrl||resolveMedia(post);
-    const isVideo=(state.mediaType||post.mediaType)==='video';
+    let post = state.editing || null;
+    if(post){
+      state.composerDraft = {description: post.description || '', zone: post.zone || '', category: normalizeCategory(post.category)};
+    }
+    const draft = state.composerDraft;
+    const media=state.preview||(post?.mediaUrl)||resolveMedia(post||{mediaRef:state.composerMediaRef});
+    const isVideo=(state.mediaType||(post?.mediaType))==='video';
     return shell(`<section class="composer">
       <button class="back-btn" data-nav="/">← Volver</button>
       <h1>${state.editing?'Editar publicación':'Nueva publicación'}</h1>
-      <p>Primero escribe tu descripción. La primera línea será el título.</p>
-      <label>Descripción</label>
-      <textarea id="description" placeholder="Ejemplo: Vendo tamales hoy&#10;Entrego en zona centro desde las 6 pm.">${esc(post.description||'')}</textarea>
+      <p>Escribe aquí. Este campo ya no se borra mientras publicas.</p>
+      <label for="description">Descripción</label>
+      <textarea id="description" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Ejemplo: Vendo tamales hoy&#10;Entrego en zona centro desde las 6 pm.">${esc(draft.description||'')}</textarea>
       <div class="preview-compact" data-pick>${media?(isVideo?`<video src="${esc(media)}" controls playsinline preload="metadata"></video>`:`<img src="${esc(media)}" alt="Vista previa">`):'<div><strong>+ Agregar foto o video</strong><span>Desde tu dispositivo</span></div>'}</div>
-      <div class="form-grid"><div><label>Zona o municipio</label><input id="zone" list="zoneList" value="${esc(post.zone||'')}" placeholder="Ej. Tejupilco"><datalist id="zoneList">${ZONES.map(z=>`<option value="${esc(z)}"></option>`).join('')}</datalist></div><div><label>Categoría</label><select id="category">${CATEGORIES.map(c=>`<option value="${esc(c)}" ${normalizeCategory(post.category)===c?'selected':''}>${esc(c)}</option>`).join('')}</select></div></div>
+      <div class="form-grid"><div><label for="zone">Zona o municipio</label><input id="zone" list="zoneList" value="${esc(draft.zone||'')}" placeholder="Ej. Tejupilco"><datalist id="zoneList">${ZONES.map(z=>`<option value="${esc(z)}"></option>`).join('')}</datalist></div><div><label for="category">Categoría</label><select id="category">${CATEGORIES.map(c=>`<option value="${esc(c)}" ${normalizeCategory(draft.category)===c?'selected':''}>${esc(c)}</option>`).join('')}</select></div></div>
       <button class="big-button ${state.publishing?'publishing':''}" data-publish ${state.publishing?'disabled':''}>${state.publishing?'PUBLICANDO...':'PUBLICAR'}</button>
     </section>`);
   }
@@ -332,15 +363,19 @@
       const postId=ensureComposerId(); const ref=`media-${postId}`; const kind=file.type.startsWith('video')?'video':'image';
       let blob=file; if(kind==='image') blob=await resizeImage(file).catch(()=>file);
       await saveMediaBlob(ref,blob);
-      state.mediaType=kind; state.composerMediaRef=ref; state.composerMediaName=file.name||`${kind}.bin`; state.composerMediaMime=blob.type||file.type||'application/octet-stream'; state.preview=objectUrlFor(ref,blob); state.editing=null; nav('/publicar');
+      state.mediaType=kind; state.composerMediaRef=ref; state.composerMediaName=file.name||`${kind}.bin`; state.composerMediaMime=blob.type||file.type||'application/octet-stream'; state.preview=objectUrlFor(ref,blob); state.editing=null; saveComposerDraft(); nav('/publicar');
+      setTimeout(()=>document.getElementById('description')?.focus(),250);
     }catch{ toast('No se pudo abrir el archivo. Prueba con otro.'); }
   }
-  function collectForm(){ return {description:document.getElementById('description')?.value.trim()||'',zone:document.getElementById('zone')?.value.trim()||'',category:normalizeCategory(document.getElementById('category')?.value||'VENDO')}; }
-  function clearComposer(){ state.preview=''; state.mediaType='image'; state.editing=null; state.composerId=''; state.composerMediaRef=''; state.composerMediaName=''; state.composerMediaMime=''; localStorage.removeItem(K.composer); }
+  function collectForm(){ return {description:document.getElementById('description')?.value.trim()||state.composerDraft.description||'',zone:document.getElementById('zone')?.value.trim()||state.composerDraft.zone||'',category:normalizeCategory(document.getElementById('category')?.value||state.composerDraft.category||'VENDO')}; }
+  function clearComposer(){ state.preview=''; state.mediaType='image'; state.editing=null; state.composerId=''; state.composerMediaRef=''; state.composerMediaName=''; state.composerMediaMime=''; state.composerDraft={description:'',zone:'',category:'VENDO'}; localStorage.removeItem(K.composer); }
 
   async function publish(){
     if(state.publishing) return toast('Estamos terminando de publicar. Espera un momento.');
     const form=collectForm();
+    state.composerDraft = {...form};
+    saveComposerDraft();
+
     if(!form.description) return toast('Escribe una descripción.');
     if(!form.zone) return toast('Agrega zona o municipio.');
     if(!form.category) return toast('Selecciona VENDO, OFREZCO o NECESITO.');
@@ -403,7 +438,7 @@
     saveLocalPosts([post,...state.posts.filter(x=>x.id!==id)]); toast('Publicación lista.'); await syncFromCloud({render:false}); render();
   }
 
-  function editPost(id){ const post=state.posts.find(x=>x.id===id); if(!post||post.ownerId!==userId()) return toast('Solo puedes editar tus publicaciones.'); if(state.publishing) return toast('Estamos terminando de publicar. Espera un momento.'); state.editing={...post}; state.composerId=post.id; state.preview=resolveMedia(post); state.mediaType=post.mediaType||'image'; state.composerMediaRef=post.mediaRef||''; state.composerMediaName=post.mediaName||''; state.composerMediaMime=post.mediaMime||''; nav('/publicar'); }
+  function editPost(id){ const post=state.posts.find(x=>x.id===id); if(!post||post.ownerId!==userId()) return toast('Solo puedes editar tus publicaciones.'); if(state.publishing) return toast('Estamos terminando de publicar. Espera un momento.'); state.editing={...post}; state.composerId=post.id; state.preview=resolveMedia(post); state.mediaType=post.mediaType||'image'; state.composerMediaRef=post.mediaRef||''; state.composerMediaName=post.mediaName||''; state.composerMediaMime=post.mediaMime||''; state.composerDraft={description:post.description||'',zone:post.zone||'',category:normalizeCategory(post.category)}; saveComposerDraft(); nav('/publicar'); }
   function deletePost(id){ const post=state.posts.find(x=>x.id===id); if(!post||post.ownerId!==userId()) return toast('Solo puedes borrar tus publicaciones.'); if(!confirm('¿Borrar esta publicación?')) return; saveLocalPosts(state.posts.filter(x=>x.id!==id)); deleteCloud(id); toast('Publicación borrada.'); render(); }
   function likePost(id){ saveLocalPosts(state.posts.map(p=>p.id===id?{...p,reactions:(p.reactions||0)+1}:p)); render(); }
   function sharePost(id){ const p=state.posts.find(x=>x.id===id); if(!p) return; const text=`${p.title}\n\n${p.description}\n\n${p.category} · ${p.zone}\n\n${APP_URL}`; if(navigator.share) navigator.share({title:p.title,text,url:APP_URL}).catch(()=>{}); else navigator.clipboard?.writeText(text).then(()=>toast('Copiado para compartir.')); }
@@ -421,13 +456,22 @@
     bindDynamicFeedControls();
     const picker=document.getElementById('mediaPicker'); if(picker) picker.onchange=fileChosen;
     const search=document.getElementById('searchInput'); if(search) search.oninput=e=>{state.query=e.target.value;updateFeedOnly();};
+    const description=document.getElementById('description');
+    if(description){
+      description.oninput=e=>{ state.composerDraft.description=e.target.value; saveComposerDraft(); };
+      description.onfocus=()=>{ state.composerDraft.description=description.value; saveComposerDraft(); };
+    }
+    const zone=document.getElementById('zone');
+    if(zone) zone.oninput=e=>{ state.composerDraft.zone=e.target.value; saveComposerDraft(); };
+    const category=document.getElementById('category');
+    if(category) category.onchange=e=>{ state.composerDraft.category=normalizeCategory(e.target.value); saveComposerDraft(); };
   }
   function startPolling(){
     if(state.syncTimer) clearInterval(state.syncTimer);
-    state.syncTimer=setInterval(()=>{ if(document.visibilityState==='visible'&&!state.syncing&&!state.publishing) syncFromCloud({render:true}); },POLL_MS);
-    window.addEventListener('focus',()=>{ if(!state.syncing&&!state.publishing) syncFromCloud({render:true}); });
-    document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&!state.syncing&&!state.publishing) syncFromCloud({render:true}); });
+    state.syncTimer=setInterval(()=>{ if(document.visibilityState==='visible'&&!state.syncing&&!state.publishing&&state.route!=='/publicar') syncFromCloud({render:true}); },POLL_MS);
+    window.addEventListener('focus',()=>{ if(!state.syncing&&!state.publishing&&state.route!=='/publicar') syncFromCloud({render:true}); });
+    document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&!state.syncing&&!state.publishing&&state.route!=='/publicar') syncFromCloud({render:true}); });
   }
-  async function init(){ state.posts=localPosts(); render(); await syncFromCloud({render:true}); startPolling(); }
+  async function init(){ state.posts=localPosts(); loadComposerDraft(); render(); await syncFromCloud({render:true}); startPolling(); }
   init();
 })();
