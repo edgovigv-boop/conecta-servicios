@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.41-perfil-simple-iconos
+/* Conecta Servicios v6.3.42-descripcion-scroll
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.41-perfil-simple-iconos';
+  const VERSION = 'v6.3.42-descripcion-scroll';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2173,6 +2173,68 @@
         display:none !important;
       }
 
+      /* v6.3.42: descripción larga con scroll propio sobre la publicación */
+      .post-description-scroll{
+        color:rgba(255,255,255,.94) !important;
+        font-size:14px !important;
+        line-height:1.25 !important;
+        max-height:70px !important;
+        min-height:0 !important;
+        overflow-y:auto !important;
+        overscroll-behavior:contain !important;
+        -webkit-overflow-scrolling:touch !important;
+        padding:0 4px 0 0 !important;
+        margin:0 !important;
+        white-space:pre-line !important;
+        scrollbar-width:thin;
+        scrollbar-color:rgba(255,255,255,.65) rgba(255,255,255,.12);
+        touch-action:pan-y !important;
+      }
+      .post-description-scroll::-webkit-scrollbar{
+        width:4px;
+      }
+      .post-description-scroll::-webkit-scrollbar-thumb{
+        background:rgba(255,255,255,.65);
+        border-radius:999px;
+      }
+      .post-description-scroll.is-long{
+        border-left:3px solid rgba(255,255,255,.36);
+        padding-left:8px !important;
+        padding-bottom:18px !important;
+        position:relative;
+      }
+      .scroll-hint{
+        display:block;
+        position:sticky;
+        bottom:0;
+        margin-top:4px;
+        padding:4px 0 0;
+        font-size:10px;
+        line-height:1;
+        font-weight:900;
+        color:rgba(255,255,255,.72);
+        text-shadow:0 2px 10px rgba(0,0,0,.4);
+        background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.35));
+      }
+      .post-body p{
+        max-height:none !important;
+      }
+      .post-body{
+        max-height:calc(100vh - 180px) !important;
+      }
+      .post-action-row{
+        flex-shrink:0 !important;
+      }
+      @media (max-height:700px){
+        .post-description-scroll{
+          max-height:54px !important;
+          font-size:13px !important;
+        }
+        .post-body h2{
+          font-size:17px !important;
+        }
+      }
+
       .apply-profile-visible{
         width:100%;
         margin-top:10px;
@@ -2526,6 +2588,13 @@
     return clean.slice(0, max).trim() + '... más';
   }
 
+  function descriptionMarkup(post){
+    const raw = String(post?.description || '').trim();
+    const clean = raw.replace(/\s+/g, ' ');
+    const long = clean.length > 130;
+    return `<div class="post-description-scroll ${long ? 'is-long' : ''}" tabindex="0">${esc(raw || '')}${long ? '<span class="scroll-hint">Desliza aquí para leer todo</span>' : ''}</div>`;
+  }
+
 
   function statusLabel(post){
     if(norm(post.cloudStatus)==='subiendo') return '<span class="chip status-chip">Publicando...</span>';
@@ -2589,7 +2658,7 @@
       <div class="post-body">
         <div class="owner-row" data-open-store="${esc(post.ownerId)}">${avatarMarkup(postAvatar(post), post.ownerName || 'Usuario local')}<span>${esc(post.ownerName || 'Usuario local')}</span></div>
         <h2>${esc(post.title || 'Publicación')}</h2>
-        <p>${esc(shortDescription(post.description || ''))}</p>
+        ${descriptionMarkup(post)}
         <div class="post-meta"><span>❤️ ${post.reactions || 0}</span><span>${new Date(post.createdAt || Date.now()).toLocaleDateString('es-MX')}</span></div>
         <div class="post-action-row ${isVideoPost(post) && post.mediaUrl ? 'has-audio-action' : ''}">
           <button type="button" class="icon-only-action" data-like="${esc(post.id)}" aria-label="Me gusta" title="Me gusta">❤️</button>
@@ -3578,6 +3647,11 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('[data-reload-video]').forEach(el=>el.onclick=()=>reloadVideo(el.dataset.reloadVideo));
     document.querySelectorAll('[data-toggle-video-sound]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();toggleVideoSound(el.dataset.toggleVideoSound);});
     document.querySelectorAll('[data-gallery-dot]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();goGallery(el.dataset.galleryDot, el.dataset.galleryIndex);});
+    document.querySelectorAll('.post-description-scroll').forEach(el=>{
+      el.onclick=e=>e.stopPropagation();
+      el.ontouchstart=e=>e.stopPropagation();
+      el.onpointerdown=e=>e.stopPropagation();
+    });
     setupInternalVideos();
     setupGalleries();
     document.querySelectorAll('[data-open-chat]').forEach(b=>b.onclick=()=>openChatFromConversation(b));
