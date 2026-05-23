@@ -1,8 +1,8 @@
-/* Conecta Servicios v6.3.4 - Formulario estable */
+/* Conecta Servicios v6.3.6 - Borrado público sincronizado */
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.4-formulario-estable';
+  const VERSION = 'v6.3.6-borrado-publico';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const MAX_FILE_MB = 40;
   const IMAGE_MAX_SIDE = 1280;
@@ -149,6 +149,8 @@
 
   function betterPost(a,b){
     if(!a) return b; if(!b) return a;
+    if((b.status === 'eliminada') && (a.status !== 'eliminada')) return b;
+    if((a.status === 'eliminada') && (b.status !== 'eliminada')) return a;
     if(b.mediaUrl&&!a.mediaUrl) return b;
     if(a.mediaUrl&&!b.mediaUrl) return a;
     if(b.cloudStatus==='publica'&&a.cloudStatus!=='publica') return b;
@@ -181,8 +183,8 @@
       .filter(p=>!q||`${p.title||''} ${p.description||''} ${p.zone||''} ${p.category||''} ${p.ownerName||''}`.toLowerCase().includes(q))
       .sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
   }
-  function myPosts(){ return dedupePosts(state.posts).filter(p=>p.ownerId===userId()).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)); }
-  function followedPosts(){ const ids=new Set(follows()); return dedupePosts(state.posts).filter(p=>ids.has(p.ownerId)).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)); }
+  function myPosts(){ return dedupePosts(state.posts).filter(p=>p.ownerId===userId() && p.status !== 'eliminada').sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)); }
+  function followedPosts(){ const ids=new Set(follows()); return dedupePosts(state.posts).filter(p=>ids.has(p.ownerId) && p.status !== 'eliminada').sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)); }
 
   async function getPublicConfig(){
     try{ const res=await fetch('/api/public-config',{cache:'no-store'}); return await res.json(); }catch{ return {ok:false}; }
@@ -247,7 +249,9 @@
       return !!(res.ok&&data.ok);
     }catch{ return false; }
   }
+
   async function deleteCloud(id){
+    // Se conserva para compatibilidad, pero v6.3.6 usa borrado suave con syncPost.
     try{ await fetch('/api/publications',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,ownerId:userId(),admin:false})}); }catch{}
   }
 
@@ -439,7 +443,43 @@
   }
 
   function editPost(id){ const post=state.posts.find(x=>x.id===id); if(!post||post.ownerId!==userId()) return toast('Solo puedes editar tus publicaciones.'); if(state.publishing) return toast('Estamos terminando de publicar. Espera un momento.'); state.editing={...post}; state.composerId=post.id; state.preview=resolveMedia(post); state.mediaType=post.mediaType||'image'; state.composerMediaRef=post.mediaRef||''; state.composerMediaName=post.mediaName||''; state.composerMediaMime=post.mediaMime||''; state.composerDraft={description:post.description||'',zone:post.zone||'',category:normalizeCategory(post.category)}; saveComposerDraft(); nav('/publicar'); }
-  function deletePost(id){ const post=state.posts.find(x=>x.id===id); if(!post||post.ownerId!==userId()) return toast('Solo puedes borrar tus publicaciones.'); if(!confirm('¿Borrar esta publicación?')) return; saveLocalPosts(state.posts.filter(x=>x.id!==id)); deleteCloud(id); toast('Publicación borrada.'); render(); }
+
+  async function deletePost(id){
+    const post=state.posts.find(x=>x.id===id);
+    if(!post || post.ownerId!==userId()) return toast('Solo puedes borrar tus publicaciones.');
+    if(!confirm('¿Borrar esta publicación?')) return;
+
+    const tombstone = {
+      ...post,
+      status: 'eliminada',
+      cloudStatus: 'subiendo',
+      deletedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    // Primero se oculta localmente.
+    saveLocalPosts([tombstone, ...state.posts.filter(x=>x.id!==id)]);
+    render();
+    toast('Borrando...');
+
+    // Luego se marca eliminada en el muro público. Esto es más confiable que DELETE para este MVP sin login.
+    const ok = await syncPost({
+      ...tombstone,
+      cloudStatus: 'publica'
+    });
+
+    if(ok){
+      saveLocalPosts([{...tombstone, cloudStatus:'publica'}, ...state.posts.filter(x=>x.id!==id)]);
+      await syncFromCloud({render:false});
+      toast('Publicación borrada.');
+    }else{
+      saveLocalPosts([{...post, cloudStatus:'local'}, ...state.posts.filter(x=>x.id!==id)]);
+      toast('No se pudo borrar en el muro público. Revisa conexión e intenta de nuevo.');
+    }
+
+    render();
+  }
+
   function likePost(id){ saveLocalPosts(state.posts.map(p=>p.id===id?{...p,reactions:(p.reactions||0)+1}:p)); render(); }
   function sharePost(id){ const p=state.posts.find(x=>x.id===id); if(!p) return; const text=`${p.title}\n\n${p.description}\n\n${p.category} · ${p.zone}\n\n${APP_URL}`; if(navigator.share) navigator.share({title:p.title,text,url:APP_URL}).catch(()=>{}); else navigator.clipboard?.writeText(text).then(()=>toast('Copiado para compartir.')); }
   function toggleFollow(ownerId){ if(ownerId===userId()) return toast('Esta publicación es tuya.'); const cur=follows(); const next=cur.includes(ownerId)?cur.filter(id=>id!==ownerId):[...cur,ownerId]; set(K.follows,next); toast(cur.includes(ownerId)?'Dejaste de seguir.':'Ahora lo sigues.'); render(); }
