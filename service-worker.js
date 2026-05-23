@@ -1,11 +1,12 @@
-const CACHE_NAME = 'conecta-servicios-v6-3-12-publicaciones-video-sync';
+const CACHE_NAME = 'conecta-servicios-v6-3-13-video-playback';
 
 const ASSETS = [
   '/',
   '/index.html',
   '/styles.css?v=6.3.12-publicaciones-video-sync',
+  '/video-playback-guard.js?v=6.3.13-video-playback',
   '/app.js?v=6.3.12-publicaciones-video-sync',
-  '/manifest.json?v=6.3.12-publicaciones-video-sync',
+  '/manifest.json?v=6.3.13-video-playback',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'
@@ -17,17 +18,25 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))));
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))
+    )
+  );
   self.clients.claim();
 });
 
 self.addEventListener('fetch', event => {
   const req = event.request;
   const url = new URL(req.url);
+
   if (req.method !== 'GET' || url.pathname.startsWith('/api/')) return;
 
-  // Para evitar que un celular se quede con app.js viejo, HTML/JS/CSS van network-first.
-  const networkFirst = url.pathname === '/' || url.pathname.endsWith('.html') || url.pathname.endsWith('.js') || url.pathname.endsWith('.css');
+  const networkFirst =
+    req.mode === 'navigate' ||
+    url.pathname.endsWith('/index.html') ||
+    url.search.includes('v=6313') ||
+    url.search.includes('v=6.3.13');
 
   if (networkFirst) {
     event.respondWith(
