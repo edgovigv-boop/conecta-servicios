@@ -2,8 +2,9 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.23-reset-diagnostico-video';
+  const VERSION = 'v6.3.24-video-interno-directo';
   window.CONNECTA_BOOT_VERSION = VERSION;
+  window.CONNETA_BOOT_VERSION = VERSION;
 
   async function clearConectaCache(){
     try {

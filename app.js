@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.23-reset-diagnostico-video
+/* Conecta Servicios v6.3.24-video-interno-directo
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.23-reset-diagnostico-video';
+  const VERSION = 'v6.3.24-video-interno-directo';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -713,8 +713,20 @@
       .video-viewer-body{flex:1; display:flex; align-items:center; justify-content:center; min-height:0;}
       .video-viewer video{max-width:100%; max-height:100%; width:100%; background:#000; border-radius:18px;}
       .video-viewer-note{color:rgba(255,255,255,.75); font-size:13px; text-align:center; padding:10px 10px 16px;}
-      .media-area video{display:none !important;}
+      .media-area video.feed-video-player{
+        display:block !important;
+        width:100%;
+        min-height:360px;
+        height:100%;
+        object-fit:cover;
+        background:#000;
+      }
       .media-pending{display:none !important;}
+      .video-inline-wrap{position:relative;width:100%;height:100%;min-height:380px;background:#050507;}
+      .video-inline-wrap video{display:block;width:100%;height:100%;min-height:380px;object-fit:cover;background:#000;}
+      .video-inline-actions{position:absolute;left:14px;right:14px;bottom:84px;z-index:5;display:flex;gap:10px;justify-content:center;pointer-events:auto;}
+      .video-inline-actions button{border:0;border-radius:999px;padding:10px 14px;font-weight:900;background:rgba(255,255,255,.94);color:#111827;box-shadow:0 8px 22px rgba(0,0,0,.22);}
+      .video-load-error{position:absolute;left:18px;right:18px;top:45%;z-index:6;background:rgba(17,24,39,.9);color:#fff;border-radius:18px;padding:14px;text-align:center;font-weight:800;}
       .version-pill{display:inline-block;margin-top:3px;padding:3px 7px;border-radius:999px;background:rgba(91,46,234,.12);color:#5b2eea;font-size:10px;font-weight:900;}
       .diag-panel{margin:16px 0 0;padding:14px;border-radius:22px;background:#111827;color:#fff;box-shadow:0 16px 44px rgba(17,24,39,.20);}
       .diag-panel h2{margin:0 0 8px;font-size:18px;}
@@ -762,7 +774,7 @@
     return `<section class="glass-top">
       <div class="brand-row">
         <img src="assets/icons/conecta-logo-oficial.png" alt="Conecta" class="brand-logo" onerror="this.style.display='none'">
-        <div class="brand-title"><strong>Conecta</strong><span>Servicios</span><small class="version-pill">v6.3.23</small></div>
+        <div class="brand-title"><strong>Conecta</strong><span>Servicios</span><small class="version-pill">v6.3.24</small></div>
         <div style="display:flex;gap:10px;align-items:center"><div class="ghost-top"></div><button class="bell-btn" data-nav="/mensajes" title="Avisos">🔔</button></div>
       </div>
       <div class="path-row">
@@ -784,7 +796,7 @@
     return `<div><h1>${esc(title)}</h1><p>${state.cloudReady?'Publicaciones disponibles':'También funciona sin conexión'}</p></div>${state.syncing?'<span class="sync-pill">Actualizando...</span>':(state.filter!=='ALL'||state.query?'<button class="small-link" data-clear>Todo</button>':'')}`;
   }
   function feedMarkup(){ const posts=filteredPosts(); return posts.map(postCard).join('') || emptyState('No encontré publicaciones','Prueba otra búsqueda o publica algo con el botón +.'); }
-  function updateFeedOnly(){ const feed=document.getElementById('feed'); if(feed) feed.innerHTML=feedMarkup(); const title=document.getElementById('feedTitle'); if(title) title.innerHTML=feedTitleMarkup(); bindDynamicFeedControls(); }
+  function updateFeedOnly(){ const feed=document.getElementById('feed'); if(feed) feed.innerHTML=feedMarkup(); const title=document.getElementById('feedTitle'); if(title) title.innerHTML=feedTitleMarkup(); bindDynamicFeedControls(); setupInternalVideos(); }
   function categoryClass(cat){ return `chip-${normalizeCategory(cat).toLowerCase()}`; }
   function isFollowing(ownerId){ return follows().includes(ownerId); }
 
@@ -799,12 +811,11 @@
     const media = resolveMedia(post);
     if(isVideoPost(post)){
       if(post.mediaUrl){
-        return `<div class="video-tile" data-open-video="${esc(post.id)}">
-          <div class="video-tile-content">
-            <button class="video-play-big" type="button">▶</button>
-            <strong>Ver video</strong>
-            <small>El video se abre en un visor interno para evitar que el muro se quede cargando.</small>
-            <button class="video-pill-btn" type="button">Abrir visor</button>
+        return `<div class="video-inline-wrap" data-video-wrap="${esc(post.id)}">
+          <video class="feed-video-player" src="${esc(post.mediaUrl)}" controls playsinline webkit-playsinline preload="metadata" data-video-id="${esc(post.id)}"></video>
+          <div class="video-inline-actions">
+            <button type="button" data-reload-video="${esc(post.id)}">Recargar video</button>
+            <button type="button" data-open-video="${esc(post.id)}">Ver grande</button>
           </div>
         </div>`;
       }
@@ -935,6 +946,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     app.innerHTML = (routes[state.route] || homePage)();
     bind();
     if(state.route === '/chat') scrollChatToBottom('auto');
+    setupInternalVideos();
   }
 
   function nav(route){ state.route = route; if(route !== '/publicar' && !state.publishing) state.editing = null; render(); setTimeout(()=>scrollTo({top:0,behavior:'smooth'}),0); }
@@ -1177,6 +1189,52 @@ ${esc(shortDiagnosticText(diag))}</code>
       toast('No se pudo confirmar borrado. Revisa conexión.');
     }
     render();
+  }
+
+
+  function setupInternalVideos(){
+    document.querySelectorAll('video.feed-video-player').forEach(video => {
+      if(video.dataset.csBound === '1') return;
+      video.dataset.csBound = '1';
+
+      video.addEventListener('error', () => {
+        const postId = video.dataset.videoId || '';
+        const wrap = video.closest('.video-inline-wrap');
+        if(!wrap || wrap.querySelector('.video-load-error')) return;
+        const box = document.createElement('div');
+        box.className = 'video-load-error';
+        box.innerHTML = 'No se pudo cargar el video dentro de la app.<br><button type="button" data-reload-video="' + postId + '">Reintentar</button>';
+        wrap.appendChild(box);
+        saveUploadDiagnostic('video-playback-error', 'El video existe pero el reproductor interno no pudo cargarlo.', {postId, src: video.currentSrc || video.src});
+      });
+
+      video.addEventListener('loadedmetadata', () => {
+        const wrap = video.closest('.video-inline-wrap');
+        wrap?.querySelectorAll('.video-load-error').forEach(el => el.remove());
+      });
+
+      video.addEventListener('play', () => {
+        document.querySelectorAll('video.feed-video-player').forEach(other => {
+          if(other !== video) {
+            try { other.pause(); } catch {}
+          }
+        });
+      });
+    });
+  }
+
+  function reloadVideo(postId){
+    const post = state.posts.find(p => p.id === postId);
+    if(!post?.mediaUrl) return toast('El video todavía no tiene URL.');
+    const video = document.querySelector(`video.feed-video-player[data-video-id="${CSS.escape(postId)}"]`);
+    const wrap = document.querySelector(`[data-video-wrap="${CSS.escape(postId)}"]`);
+    wrap?.querySelectorAll('.video-load-error').forEach(el => el.remove());
+    if(video){
+      try { video.pause(); } catch {}
+      video.src = post.mediaUrl + (post.mediaUrl.includes('?') ? '&' : '?') + 'reload=' + Date.now();
+      video.load();
+      toast('Recargando video dentro de la app...');
+    }
   }
 
   function openVideo(postId){
@@ -1454,6 +1512,8 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('[data-follow]').forEach(b=>b.onclick=()=>toggleFollow(b.dataset.follow));
     document.querySelectorAll('[data-message]').forEach(b=>b.onclick=()=>openChat(b.dataset.message));
     document.querySelectorAll('[data-open-video]').forEach(el=>el.onclick=()=>openVideo(el.dataset.openVideo));
+    document.querySelectorAll('[data-reload-video]').forEach(el=>el.onclick=()=>reloadVideo(el.dataset.reloadVideo));
+    setupInternalVideos();
     document.querySelectorAll('[data-open-chat]').forEach(b=>b.onclick=()=>openChatFromConversation(b));
     document.querySelectorAll('[data-send-chat]').forEach(b=>b.onclick=sendChatMessage);
     document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editPost(b.dataset.edit));
@@ -1511,6 +1571,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.addEventListener('pointerdown', enableMessageFeedback, {once:true});
     document.addEventListener('keydown', enableMessageFeedback, {once:true});
     state.lastUploadDiagnostic = get('cs_v6323_last_upload_diagnostic', null);
+    window.CONNECTA_BOOT_VERSION = window.CONNECTA_BOOT_VERSION || VERSION;
     state.runtimeDiagnostic = diagnosticPayload('boot', 'App inicializada');
     state.posts = localPosts();
     loadComposerDraft();
