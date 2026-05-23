@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.0-home-estable
+/* Conecta Servicios v6.4.1-home-mensajes-fix
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.0-home-estable';
+  const VERSION = 'v6.4.1-home-mensajes-fix';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -356,9 +356,11 @@
     const data = {
       version: VERSION,
       bootVersion: window.CONNECTA_BOOT_VERSION || '',
+      userId: userId(),
+      profileName: profile().name || '',
       url: location.href,
       serviceWorkerControlled: !!navigator.serviceWorker?.controller,
-      localPosts: localPosts().map(p => ({id:p.id, title:p.title, mediaType:p.mediaType, mediaStatus:p.mediaStatus, cloudStatus:p.cloudStatus, hasMediaUrl:!!p.mediaUrl, mediaError:p.mediaError || ''})).slice(0, 30),
+      localPosts: localPosts().map(p => ({id:p.id, ownerId:p.ownerId, title:p.title, category:p.category, mediaType:p.mediaType, mediaStatus:p.mediaStatus, cloudStatus:p.cloudStatus, hasMediaUrl:!!p.mediaUrl, mediaError:p.mediaError || ''})).slice(0, 30),
       lastUploadDiagnostic: state.lastUploadDiagnostic || get('cs_v6323_last_upload_diagnostic', null)
     };
     const text = JSON.stringify(data, null, 2);
@@ -2142,7 +2144,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.0: acciones icon-only y perfil simple */
+      /* v6.4.1: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2174,7 +2176,7 @@
         display:none !important;
       }
 
-      /* v6.4.0-home-estable: bloque consolidado de Home/postCard.
+      /* v6.4.1-home-mensajes-fix: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2351,6 +2353,25 @@
       .audio-row-btn{
         background:rgba(0,0,0,.50) !important;
         border-color:rgba(255,255,255,.48) !important;
+      }
+
+      /* v6.4.1: asegurar ...leer visible y evitar mutaciones de ownerId */
+      .post-description-short.is-collapsed{
+        display:block !important;
+        max-height:2.65em !important;
+        overflow:hidden !important;
+      }
+      .post-description-short .read-toggle{
+        display:inline !important;
+        margin-left:4px !important;
+        padding:0 !important;
+        color:#fff !important;
+        font-weight:900 !important;
+        text-decoration:none !important;
+      }
+      .description-toggle{
+        cursor:pointer !important;
+        pointer-events:auto !important;
       }
 
       @media (max-height:700px){
@@ -2719,7 +2740,7 @@
     return clean.slice(0, max).trim() + '...';
   }
 
-  function compactDescription(text, max=95){
+  function compactDescription(text, max=62){
     const clean = String(text || '').replace(/\s+/g, ' ').trim();
     if(clean.length <= max) return clean;
     return clean.slice(0, max).trim();
@@ -2727,7 +2748,7 @@
 
   function isLongDescription(text){
     const raw = String(text || '').trim();
-    return raw.replace(/\s+/g, ' ').length > 110 || raw.split(/\n/).filter(Boolean).length > 3;
+    return raw.replace(/\s+/g, ' ').length > 65 || raw.split(/\n/).filter(Boolean).length > 1;
   }
 
   function isDescriptionExpanded(postId){
@@ -2913,6 +2934,7 @@
     const runtime = {
       version: VERSION,
       bootVersion: window.CONNECTA_BOOT_VERSION || '',
+      userId: userId(),
       serviceWorkerControlled: !!navigator.serviceWorker?.controller,
       url: location.href,
       localPosts: localPosts().length,
@@ -3511,7 +3533,6 @@ ${esc(shortDiagnosticText(diag))}</code>
     const nextProfile = {...current, name};
     set(K.profile,nextProfile);
     applyProfileToOwnPosts(nextProfile);
-    applyProfileToVisiblePosts({silent:true, skipConfirm:true});
     state.profileEditing=false;
     toast('Perfil guardado y aplicado a tus publicaciones.');
     render();
@@ -3527,19 +3548,19 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
+    // v6.4.1: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
-    const visible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p));
-    if(!visible.length){
-      if(!options.silent) toast('No hay publicaciones visibles para actualizar.');
+    const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
+    if(!ownVisible.length){
+      if(!options.silent) toast('No hay publicaciones propias visibles para actualizar.');
       return;
     }
-    if(!options.skipConfirm && !confirm(`Esto aplicará tu nombre y foto de perfil a ${visible.length} publicación(es) visibles en este dispositivo. Úsalo solo si esas publicaciones son tuyas. ¿Continuar?`)) return;
 
     const now = new Date().toISOString();
-    const ids = new Set(visible.map(p => String(p.id)));
+    const ids = new Set(ownVisible.map(p => String(p.id)));
     const updated = state.posts.map(p => ids.has(String(p.id)) ? {
       ...p,
-      ownerId: userId(),
       ownerName: prof.name || 'Usuario local',
       ownerAvatar: prof.avatarData || '',
       updatedAt: now
@@ -3548,7 +3569,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     saveLocalPosts(updated);
     updated.filter(p => ids.has(String(p.id))).forEach(p => syncPost(p).catch(()=>null));
     if(!options.silent){
-      toast('Perfil aplicado a publicaciones visibles.');
+      toast('Perfil aplicado a tus publicaciones propias.');
       render();
     }
   }
@@ -3566,8 +3587,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       const nextProfile = {...current, name, avatarData};
       set(K.profile, nextProfile);
       applyProfileToOwnPosts(nextProfile);
-      applyProfileToVisiblePosts({silent:true, skipConfirm:true});
-      toast('Foto de perfil guardada y aplicada.');
+      toast('Foto de perfil guardada y aplicada a tus publicaciones propias.');
       render();
     }catch{
       toast('No se pudo guardar la foto de perfil.');
