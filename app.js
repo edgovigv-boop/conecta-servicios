@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.27-busqueda-lupa-home
+/* Conecta Servicios v6.3.28-busqueda-teclado-fijo
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.27-busqueda-lupa-home';
+  const VERSION = 'v6.3.28-busqueda-teclado-fijo';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -48,6 +48,8 @@
     filter: 'ALL',
     query: '',
     searchOpen: false,
+    searchTyping: false,
+    searchRenderTimer: null,
     topTab: 'para-ti',
     posts: [],
     preview: '',
@@ -132,7 +134,17 @@
     state.query = String(value || '');
     state.filter = 'ALL';
     state.topTab = 'para-ti';
-    updateFeedOnly();
+    state.searchTyping = true;
+    clearTimeout(state.searchRenderTimer);
+    state.searchRenderTimer = setTimeout(() => {
+      updateFeedOnly();
+      state.searchTyping = false;
+      const input = document.getElementById('searchInput');
+      if(input && state.searchOpen){
+        input.focus({preventScroll:true});
+        try { input.setSelectionRange(input.value.length, input.value.length); } catch {}
+      }
+    }, 140);
   }
 
   function closeSearchPanel(){
@@ -185,6 +197,15 @@
     return `${diag.kind || 'diagnóstico'} · ${diag.at || ''}\n${d}${e ? '\n' + e : ''}`;
   }
 
+  function isSearchActive(){
+    const active = document.activeElement;
+    return !!(state.searchOpen && active && active.id === 'searchInput');
+  }
+
+  function shouldAvoidRender(){
+    return isAnyVideoPlaying() || isSearchActive() || state.searchTyping;
+  }
+
   function isAnyVideoPlaying(){
     if(state.videoIsPlaying) return true;
     try{
@@ -196,8 +217,8 @@
   }
 
   function safeRender(reason=''){
-    if(isAnyVideoPlaying()){
-      console.info('[Conecta] Render omitido durante reproducción de video', reason);
+    if(shouldAvoidRender()){
+      console.info('[Conecta] Render omitido durante reproducción/video/búsqueda', reason);
       return false;
     }
     render();
@@ -752,12 +773,12 @@
       state.cloudReady = true;
       saveLocalPosts(mergeLocalAndRemote(localPosts(), remote));
 
-      if(options.render !== false && state.route !== '/publicar' && !isAnyVideoPlaying()) render();
+      if(options.render !== false && state.route !== '/publicar' && !shouldAvoidRender()) render();
       return true;
     }catch{
       state.cloudReady = false;
       state.posts = localPosts().filter(p => !isDeleted(p));
-      if(options.render !== false && state.route !== '/publicar' && !isAnyVideoPlaying()) render();
+      if(options.render !== false && state.route !== '/publicar' && !shouldAvoidRender()) render();
       return false;
     }finally{
       state.syncing = false;
@@ -936,6 +957,15 @@
         pointer-events:auto;
         touch-action:manipulation;
       }
+      .tiktok-search-panel input{
+        -webkit-user-select:text;
+        user-select:text;
+        caret-color:#fff;
+      }
+      .tiktok-search-panel{
+        transform:translateZ(0);
+        will-change:auto;
+      }
       .tiktok-search-panel{
         position:relative;
         z-index:95;
@@ -1038,7 +1068,7 @@
         </div>
         <button class="tiktok-icon-btn" data-toggle-search title="Buscar">🔎</button>
       </div>
-      ${state.searchOpen ? `<div class="tiktok-search-panel"><span>🔎</span><input id="searchInput" type="search" inputmode="search" value="${esc(state.query)}" placeholder="Buscar: refrigerador, pan, viaje..." autocomplete="off" enterkeyhint="search"><button data-clear-search>${state.query ? 'Limpiar' : 'Cerrar'}</button></div>` : ''}
+      ${state.searchOpen ? `<div class="tiktok-search-panel"><span>🔎</span><input id="searchInput" type="search" inputmode="search" value="${esc(state.query)}" placeholder="Buscar: refrigerador, pan, viaje..." autocomplete="off" enterkeyhint="search"><button type="button" data-clear-search>${state.query ? 'Limpiar' : 'Cerrar'}</button></div>` : ''}
       <div class="tiktok-filter-row">
         ${pathButton('VENDO','🏪','Vendo','path-vendo')}
         ${pathButton('OFREZCO','🛵','Ofrezco','path-ofrezco')}
@@ -1668,7 +1698,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       state.publicMessages = list;
       state.messagesLoaded = true;
       if(state.route === '/chat') markActiveChatRead();
-      if(options.silent && state.route !== '/publicar' && !isAnyVideoPlaying() && (JSON.stringify(list)!==previous || unreadCount()!==previousUnread)) render();
+      if(options.silent && state.route !== '/publicar' && !shouldAvoidRender() && (JSON.stringify(list)!==previous || unreadCount()!==previousUnread)) render();
     }catch{
       if(!options.silent) state.messagesError = 'Todavía no se pudieron cargar los mensajes públicos.';
     }finally{
@@ -1690,7 +1720,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       state.chatMessages = list;
       state.chatLoaded = true;
       markMessagesRead(list);
-      if(options.silent && state.route === '/chat' && !isAnyVideoPlaying() && JSON.stringify(list)!==previous) render();
+      if(options.silent && state.route === '/chat' && !shouldAvoidRender() && JSON.stringify(list)!==previous) render();
       if(state.route === '/chat') scrollChatToBottom(options.silent ? 'smooth' : 'auto');
     }catch{ if(!options.silent) toast('No se pudieron cargar los mensajes.'); }
     finally{
@@ -1829,7 +1859,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('[data-save-profile]').forEach(b=>b.onclick=saveProfile);
     document.querySelectorAll('[data-toggle-search]').forEach(b=>b.onclick=toggleSearchPanel);
     document.querySelectorAll('[data-top-tab]').forEach(b=>b.onclick=()=>setTopTab(b.dataset.topTab));
-    document.querySelectorAll('[data-clear-search]').forEach(b=>b.onclick=()=>{ if(state.query){ state.query=''; updateFeedOnly(); setTimeout(()=>document.getElementById('searchInput')?.focus({preventScroll:true}),50); } else { closeSearchPanel(); } });
+    document.querySelectorAll('[data-clear-search]').forEach(b=>b.onclick=(e)=>{ e.preventDefault(); e.stopPropagation(); if(state.query){ state.query=''; state.searchTyping=true; updateFeedOnly(); setTimeout(()=>{ const i=document.getElementById('searchInput'); i?.focus({preventScroll:true}); try{i?.setSelectionRange(0,0)}catch{} state.searchTyping=false; },80); } else { closeSearchPanel(); } });
     bindDynamicFeedControls();
 
     const picker=document.getElementById('mediaPicker');
@@ -1837,12 +1867,20 @@ ${esc(shortDiagnosticText(diag))}</code>
 
     const search=document.getElementById('searchInput');
     if(search){
-      const handler = e => applySearchText(e.target.value);
+      let composing = false;
+      const handler = e => {
+        if(composing) return;
+        applySearchText(e.target.value);
+      };
+      search.oncompositionstart = () => { composing = true; state.searchTyping = true; };
+      search.oncompositionend = e => { composing = false; applySearchText(e.target.value); };
       search.oninput = handler;
       search.onsearch = handler;
-      search.onkeyup = handler;
       search.onclick = e => e.stopPropagation();
       search.onpointerdown = e => e.stopPropagation();
+      search.ontouchstart = e => e.stopPropagation();
+      search.onfocus = () => { state.searchTyping = true; };
+      search.onblur = () => { setTimeout(()=>{ state.searchTyping = false; }, 300); };
     }
 
     const description=document.getElementById('description');
@@ -1859,13 +1897,13 @@ ${esc(shortDiagnosticText(diag))}</code>
     if(document.visibilityState !== 'visible' || state.publishing) return;
     if(state.route === '/mensajes') loadMessagesForInbox({silent:true});
     else if(state.route === '/chat'){ loadChatMessages({silent:true}); loadMessagesForInbox({silent:true}); }
-    else { loadMessagesForInbox({silent:true}); if(!state.syncing && state.route !== '/publicar') syncFromCloud({render:!isAnyVideoPlaying()}); }
+    else { loadMessagesForInbox({silent:true}); if(!state.syncing && state.route !== '/publicar') syncFromCloud({render:!shouldAvoidRender()}); }
   }
 
   function startPolling(){
     if(state.syncTimer) clearInterval(state.syncTimer);
     if(state.messageTimer) clearInterval(state.messageTimer);
-    state.syncTimer = setInterval(()=>{ if(document.visibilityState==='visible' && !state.syncing && !state.publishing && !['/publicar','/mensajes','/chat'].includes(state.route)) syncFromCloud({render:!isAnyVideoPlaying()}); }, POLL_MS);
+    state.syncTimer = setInterval(()=>{ if(document.visibilityState==='visible' && !state.syncing && !state.publishing && !['/publicar','/mensajes','/chat'].includes(state.route)) syncFromCloud({render:!shouldAvoidRender()}); }, POLL_MS);
     state.messageTimer = setInterval(runVisibleRefresh, MESSAGE_POLL_MS);
     window.addEventListener('focus', runVisibleRefresh);
     document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') runVisibleRefresh(); });
