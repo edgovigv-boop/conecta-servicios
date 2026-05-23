@@ -1,11 +1,11 @@
-const CACHE_NAME = 'conecta-servicios-v6-3-9-chat-limpio-sonido';
+const CACHE_NAME = 'conecta-servicios-v6-3-10-chat-badge-scroll-alertas';
 
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=6.3.9-chat-limpio-sonido',
-  '/app.js?v=6.3.9-chat-limpio-sonido',
-  '/manifest.json?v=6.3.9-chat-limpio-sonido',
+  '/styles.css?v=6.3.10-chat-badge-scroll-alertas',
+  '/app.js?v=6.3.10-chat-badge-scroll-alertas',
+  '/manifest.json?v=6.3.10-chat-badge-scroll-alertas',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'

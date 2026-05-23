@@ -2,7 +2,7 @@
   "name": "Conecta Servicios",
   "short_name": "Conecta",
   "description": "Red social local para vender, ofrecer, pedir ayuda y conversar en tu zona.",
-  "start_url": "/?v=6.3.9-chat-limpio-sonido",
+  "start_url": "/?v=6.3.10-chat-badge-scroll-alertas",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",

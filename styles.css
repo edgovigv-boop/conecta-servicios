@@ -172,3 +172,18 @@ textarea:focus,input:focus,select:focus{border-color:var(--primary);box-shadow:0
 .bubble small{text-align:right}
 .bubble-row.theirs .bubble small{text-align:left}
 @media(max-width:660px){.chat-feed{min-height:380px;max-height:58vh}.chat-box textarea{min-height:72px}.conversation-avatar{width:42px;height:42px}.conversation-count{min-width:28px;height:28px}}
+
+/* v6.3.10 mensajes: badge rojo, autoscroll y alertas */
+.nav-icon-wrap{position:relative;display:inline-grid;place-items:center;min-width:32px;min-height:28px}
+.nav-badge{
+  position:absolute;top:-9px;right:-13px;
+  min-width:21px;height:21px;padding:0 5px;
+  border-radius:999px;background:#ef233c;color:#fff;
+  display:grid;place-items:center;
+  font-size:.68rem;font-weight:1000;line-height:1;
+  border:2px solid #fff;box-shadow:0 8px 18px rgba(239,35,60,.35);
+}
+.conversation-card.has-unread{background:#fff7f8;border-color:#fecdd3}
+.conversation-count.unread{background:#ef233c;color:#fff;box-shadow:0 8px 18px rgba(239,35,60,.25)}
+.chat-feed{scroll-behavior:smooth}
+.bubble-row.theirs .bubble{position:relative}

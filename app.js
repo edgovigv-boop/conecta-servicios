@@ -1,8 +1,8 @@
-/* Conecta Servicios v6.3.9 - Chat limpio con sonido y vibración */
+/* Conecta Servicios v6.3.10 - Chat con badge, autoscroll, sonido y vibración larga */
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.9-chat-limpio-sonido';
+  const VERSION = 'v6.3.10-chat-badge-scroll-alertas';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const MAX_FILE_MB = 40;
   const IMAGE_MAX_SIDE = 1280;
@@ -17,7 +17,8 @@
     messages: 'cs_v634_messages',
     profile: 'cs_v634_profile',
     composer: 'cs_v634_composer',
-    seenMessages: 'cs_v639_seen_messages'
+    seenMessages: 'cs_v639_seen_messages',
+    readMessages: 'cs_v6310_read_messages'
   };
 
   const CATEGORIES = ['VENDO', 'OFREZCO', 'NECESITO'];
@@ -61,6 +62,7 @@
     chatLoading: false,
     chatLoaded: false,
     knownMessageIds: new Set(),
+    readMessageIds: new Set(),
     messageFeedbackReady: false,
     audioCtx: null
   };
@@ -104,6 +106,63 @@
     try { set(K.seenMessages, [...state.knownMessageIds].slice(-800)); } catch {}
   }
 
+
+  function loadReadMessageIds(){
+    state.readMessageIds = new Set(get(K.readMessages, []));
+  }
+
+  function persistReadMessageIds(){
+    try { set(K.readMessages, [...state.readMessageIds].slice(-1200)); } catch {}
+  }
+
+  function unreadMessages(list = state.publicMessages){
+    return (list || []).filter(m => m && m.senderId !== userId() && !state.readMessageIds.has(m.id));
+  }
+
+  function unreadCount(){
+    return unreadMessages().length;
+  }
+
+  function unreadBadge(){
+    const count = unreadCount();
+    if(!count) return '';
+    const label = count > 99 ? '99+' : String(count);
+    return `<span class="nav-badge" aria-label="${label} mensajes sin leer">${label}</span>`;
+  }
+
+  function chatMatchesMessage(m, chat = state.chat){
+    if(!m || !chat) return false;
+    const me = userId();
+    return (m.postId || '') === (chat.postId || '') &&
+      ((m.senderId === me && m.receiverId === chat.peerId) ||
+       (m.senderId === chat.peerId && m.receiverId === me));
+  }
+
+  function markMessagesRead(list){
+    let changed = false;
+    (list || []).forEach(m => {
+      if(m && m.id && m.senderId !== userId() && !state.readMessageIds.has(m.id)){
+        state.readMessageIds.add(m.id);
+        changed = true;
+      }
+    });
+    if(changed) persistReadMessageIds();
+    return changed;
+  }
+
+  function markActiveChatRead(){
+    if(!state.chat) return false;
+    const relevant = (state.publicMessages || []).filter(m => chatMatchesMessage(m));
+    return markMessagesRead(relevant);
+  }
+
+  function scrollChatToBottom(mode = 'auto'){
+    setTimeout(() => {
+      const feed = document.getElementById('chatFeed');
+      if(feed) feed.scrollTo({top: feed.scrollHeight, behavior: mode});
+    }, 60);
+  }
+
   function enableMessageFeedback(){
     state.messageFeedbackReady = true;
     try {
@@ -126,19 +185,20 @@
       oscillator.frequency.setValueAtTime(740, ctx.currentTime);
       oscillator.frequency.exponentialRampToValueAtTime(980, ctx.currentTime + 0.11);
       gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.08, ctx.currentTime + 0.018);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.16);
+      // El tono sale por la salida normal del navegador, así obedece al volumen físico del dispositivo.
+      gain.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.018);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
       oscillator.connect(gain);
       gain.connect(ctx.destination);
       oscillator.start(ctx.currentTime);
-      oscillator.stop(ctx.currentTime + 0.18);
+      oscillator.stop(ctx.currentTime + 0.22);
     } catch {}
   }
 
   function notifyNewMessages(messages){
     const incoming = (messages || []).filter(m => m && m.senderId !== userId());
     if(!incoming.length) return;
-    try { if(navigator.vibrate) navigator.vibrate(incoming.length > 1 ? [80, 40, 80] : [90]); } catch {}
+    try { if(navigator.vibrate) navigator.vibrate(incoming.length > 1 ? [220, 90, 220] : [260]); } catch {}
     playMessageTone();
     const last = incoming[incoming.length - 1];
     toast(incoming.length > 1 ? `${incoming.length} mensajes nuevos` : `Nuevo mensaje de ${last.senderName || 'usuario local'}`);
@@ -372,7 +432,7 @@
       <button class="nav-item ${state.route==='/'?'active':''}" data-nav="/"><span class="nav-icon">🏠</span><small>Inicio</small></button>
       <button class="nav-item ${state.route==='/siguiendo'?'active':''}" data-nav="/siguiendo"><span class="nav-icon">🫂</span><small>Siguiendo</small></button>
       <button class="nav-plus" data-pick>+</button>
-      <button class="nav-item ${state.route==='/mensajes'?'active':''}" data-nav="/mensajes"><span class="nav-icon">✉️</span><small>Mensajes</small></button>
+      <button class="nav-item ${state.route==='/mensajes'?'active':''}" data-nav="/mensajes"><span class="nav-icon nav-icon-wrap">✉️${unreadBadge()}</span><small>Mensajes</small></button>
       <button class="nav-item ${state.route==='/perfil'?'active':''}" data-nav="/perfil"><span class="nav-icon">👤</span><small>Perfil</small></button>
     </nav>
     <input id="mediaPicker" type="file" accept="image/*,video/*" hidden>
@@ -460,23 +520,24 @@
         peerName,
         lastText: m.text || '',
         lastAt: m.createdAt || '',
-        count: (prev?.count || 0) + 1
+        count: (prev?.count || 0) + 1,
+        unread: (prev?.unread || 0) + ((m.senderId !== me && !state.readMessageIds.has(m.id)) ? 1 : 0)
       };
       if(!prev || new Date(current.lastAt || 0) >= new Date(prev.lastAt || 0)) map.set(key, current);
-      else map.set(key, {...prev, count: current.count});
+      else map.set(key, {...prev, count: current.count, unread: current.unread});
     });
     return [...map.values()].sort((a,b)=>new Date(b.lastAt||0)-new Date(a.lastAt||0));
   }
 
   function conversationCard(item){
-    const count = item.count || 1;
-    return `<button class="conversation-card" data-open-chat="1" data-post="${esc(item.postId)}" data-peer="${esc(item.peerId)}" data-title="${esc(item.postTitle)}" data-name="${esc(item.peerName)}">
+    const unread = item.unread || 0;
+    return `<button class="conversation-card ${unread ? 'has-unread' : ''}" data-open-chat="1" data-post="${esc(item.postId)}" data-peer="${esc(item.peerId)}" data-title="${esc(item.postTitle)}" data-name="${esc(item.peerName)}">
       <div class="conversation-avatar">💬</div>
       <div class="conversation-main">
         <div class="conversation-line"><strong>${esc(item.peerName || 'Usuario local')}</strong><small>${esc(shortDateTime(item.lastAt))}</small></div>
         <p>${esc(item.lastText || '')}</p>
       </div>
-      ${count > 1 ? `<span class="conversation-count">${count}</span>` : '<span class="conversation-dot"></span>'}
+      ${unread ? `<span class="conversation-count unread">${unread > 99 ? '99+' : unread}</span>` : '<span class="conversation-dot"></span>'}
     </button>`;
   }
 
@@ -536,7 +597,7 @@
     </section>`);
   }
 
-  function render(){ const routes={'/':homePage,'/siguiendo':followingPage,'/mensajes':messagesPage,'/perfil':profilePage,'/publicar':composerPage,'/chat':chatPage}; app.innerHTML=(routes[state.route]||homePage)(); bind(); }
+  function render(){ const routes={'/':homePage,'/siguiendo':followingPage,'/mensajes':messagesPage,'/perfil':profilePage,'/publicar':composerPage,'/chat':chatPage}; app.innerHTML=(routes[state.route]||homePage)(); bind(); if(state.route === '/chat') scrollChatToBottom('auto'); }
   function nav(route){ state.route=route; if(route!=='/publicar'&&!state.publishing) state.editing=null; render(); setTimeout(()=>scrollTo({top:0,behavior:'smooth'}),0); }
   function openPicker(){ if(state.publishing) return toast('Estamos terminando de publicar. Espera un momento.'); ensureComposerId(); document.getElementById('mediaPicker')?.click(); }
   function resizeImage(file,maxSide=IMAGE_MAX_SIDE,quality=.82){
@@ -697,10 +758,14 @@
     try{
       const list = await fetchPublicMessages({userId:userId()});
       const previous = JSON.stringify(state.publicMessages || []);
+      const previousUnread = unreadCount();
       trackMessages(list, {initial: !state.messagesLoaded});
       state.publicMessages = list;
       state.messagesLoaded = true;
-      if(options.silent && state.route === '/mensajes' && JSON.stringify(list) !== previous) render();
+      if(state.route === '/chat') markActiveChatRead();
+      const changed = JSON.stringify(list) !== previous;
+      const unreadChanged = unreadCount() !== previousUnread;
+      if(options.silent && state.route !== '/publicar' && (changed || unreadChanged)) render();
     }catch(e){
       if(!options.silent) state.messagesError = 'Todavía no se pudieron cargar los mensajes públicos. Revisa conexión o la tabla de mensajes.';
     }finally{
@@ -721,7 +786,10 @@
       trackMessages(list, {initial: !state.chatLoaded});
       state.chatMessages = list;
       state.chatLoaded = true;
-      if(options.silent && state.route === '/chat' && JSON.stringify(list) !== previous) render();
+      markMessagesRead(list);
+      const changed = JSON.stringify(list) !== previous;
+      if(options.silent && state.route === '/chat' && changed) render();
+      if(state.route === '/chat') scrollChatToBottom(options.silent ? 'smooth' : 'auto');
     }catch(e){
       if(!options.silent) toast('No se pudieron cargar los mensajes.');
     }finally{
@@ -741,6 +809,7 @@
     state.chat = {postId:p.id, postTitle:p.title || 'Publicación', peerId:p.ownerId, peerName:p.ownerName || 'Usuario local'};
     state.chatMessages = [];
     state.chatLoaded = false;
+    markActiveChatRead();
     nav('/chat');
   }
 
@@ -753,6 +822,7 @@
     };
     state.chatMessages = [];
     state.chatLoaded = false;
+    markActiveChatRead();
     nav('/chat');
   }
 
@@ -780,6 +850,7 @@
     if(input) input.value = '';
     state.chatMessages = [...state.chatMessages, msg];
     render();
+    scrollChatToBottom('smooth');
 
     try{
       await savePublicMessage(msg);
@@ -845,6 +916,6 @@
     window.addEventListener('focus',()=>{ runVisibleRefresh(); });
     document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') runVisibleRefresh(); });
   }
-  async function init(){ await refreshOldCaches(); loadKnownMessageIds(); document.addEventListener('pointerdown', enableMessageFeedback, {once:true}); document.addEventListener('keydown', enableMessageFeedback, {once:true}); state.posts=localPosts(); loadComposerDraft(); render(); await syncFromCloud({render:true}); startPolling(); }
+  async function init(){ await refreshOldCaches(); loadKnownMessageIds(); loadReadMessageIds(); document.addEventListener('pointerdown', enableMessageFeedback, {once:true}); document.addEventListener('keydown', enableMessageFeedback, {once:true}); state.posts=localPosts(); loadComposerDraft(); render(); await syncFromCloud({render:true}); startPolling(); }
   init();
 })();
