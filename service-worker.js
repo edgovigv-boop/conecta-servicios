@@ -1,11 +1,11 @@
-const CACHE_NAME = 'conecta-servicios-v6-3-1-publicacion-confiable';
+const CACHE_NAME = 'conecta-servicios-v6-3-2-multicelular-busqueda';
 
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=6.3.1-publicacion-confiable',
-  '/app.js?v=6.3.1-publicacion-confiable',
-  '/manifest.json?v=6.3.1-publicacion-confiable',
+  '/styles.css?v=6.3.2-multicelular-busqueda',
+  '/app.js?v=6.3.2-multicelular-busqueda',
+  '/manifest.json?v=6.3.2-multicelular-busqueda',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'

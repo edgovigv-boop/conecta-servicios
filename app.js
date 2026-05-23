@@ -1,21 +1,21 @@
-/* Conecta Servicios v6.3.1 - Publicación confiable y sincronización rápida */
+/* Conecta Servicios v6.3.2 - Multicelular + búsqueda sin cerrar teclado */
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.1-publicacion-confiable';
+  const VERSION = 'v6.3.2-multicelular-busqueda';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const MAX_FILE_MB = 40;
   const IMAGE_MAX_SIDE = 1280;
-  const POLL_MS = 12000;
+  const POLL_MS = 8000;
   const STORAGE_BUCKET = 'publication-media';
 
   const K = {
-    posts: 'cs_v631_posts',
-    user: 'cs_v631_user',
-    follows: 'cs_v631_follows',
-    messages: 'cs_v631_messages',
-    profile: 'cs_v631_profile',
-    composer: 'cs_v631_composer'
+    posts: 'cs_v632_posts',
+    user: 'cs_v632_user',
+    follows: 'cs_v632_follows',
+    messages: 'cs_v632_messages',
+    profile: 'cs_v632_profile',
+    composer: 'cs_v632_composer'
   };
 
   const CATEGORIES = ['VENDO', 'OFREZCO', 'NECESITO'];
@@ -87,7 +87,7 @@
     query: '',
     posts: [],
     preview: '',
-    previewUrl: '',
+    previewBlob: null,
     mediaType: 'image',
     editing: null,
     composerId: '',
@@ -173,7 +173,7 @@
     if (mediaDbPromise) return mediaDbPromise;
     mediaDbPromise = new Promise((resolve, reject) => {
       if (!('indexedDB' in window)) return reject(new Error('Sin almacenamiento multimedia'));
-      const req = indexedDB.open('conecta_media_v631', 1);
+      const req = indexedDB.open('conecta_media_v632', 1);
       req.onupgradeneeded = () => req.result.createObjectStore('files');
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);
@@ -230,9 +230,17 @@
     return '';
   }
 
-  function stripHeavy(post) {
+  function stripForLocal(post) {
     const copy = { ...post };
     delete copy.mediaPreviewUrl;
+    return copy;
+  }
+
+  function stripForRemote(post) {
+    const copy = { ...post };
+    delete copy.mediaPreviewUrl;
+    delete copy.mediaRef;
+    delete copy.mediaData;
     return copy;
   }
 
@@ -248,7 +256,7 @@
   function saveLocalPosts(posts) {
     const normalized = dedupePosts(posts.map(post => ({ ...post, category: normalizeCategory(post.category) })));
     state.posts = normalized;
-    set(K.posts, normalized.map(stripHeavy));
+    set(K.posts, normalized.map(stripForLocal));
   }
 
   function betterPost(a, b) {
@@ -286,11 +294,8 @@
 
     list.forEach(post => {
       const duplicateIndex = final.findIndex(existing => sameSoftKey(existing, post));
-      if (duplicateIndex >= 0) {
-        final[duplicateIndex] = betterPost(final[duplicateIndex], post);
-      } else {
-        final.push(post);
-      }
+      if (duplicateIndex >= 0) final[duplicateIndex] = betterPost(final[duplicateIndex], post);
+      else final.push(post);
     });
 
     return final;
@@ -314,16 +319,12 @@
   }
 
   function myPosts() {
-    return dedupePosts(state.posts)
-      .filter(post => post.ownerId === userId())
-      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    return dedupePosts(state.posts).filter(post => post.ownerId === userId()).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
   }
 
   function followedPosts() {
     const ids = new Set(follows());
-    return dedupePosts(state.posts)
-      .filter(post => ids.has(post.ownerId))
-      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    return dedupePosts(state.posts).filter(post => ids.has(post.ownerId)).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
   }
 
   async function getPublicConfig() {
@@ -347,18 +348,17 @@
   }
 
   async function uploadMediaToCloud(post) {
-    if (post.mediaUrl) return post;
+    if (post.mediaUrl) return { post, ok: true, reason: '' };
+
     const cfg = await getPublicConfig();
-    if (!cfg.ok || !cfg.supabaseUrl || !cfg.supabaseAnonKey) return post;
+    if (!cfg.ok || !cfg.supabaseUrl || !cfg.supabaseAnonKey) {
+      return { post, ok: false, reason: 'config' };
+    }
 
     let blob = null;
-    if (post.mediaRef) {
-      blob = await loadMediaBlob(post.mediaRef).catch(() => null);
-    }
-    if (!blob && post.mediaData) {
-      blob = dataUrlToBlob(post.mediaData);
-    }
-    if (!blob) return post;
+    if (post.mediaRef) blob = await loadMediaBlob(post.mediaRef).catch(() => null);
+    if (!blob && post.mediaData) blob = dataUrlToBlob(post.mediaData);
+    if (!blob) return { post, ok: false, reason: 'media' };
 
     const bucket = cfg.storageBucket || STORAGE_BUCKET;
     const safeName = (post.mediaName || `${post.mediaType || 'media'}.bin`).replace(/[^a-z0-9_.-]/gi, '-').toLowerCase();
@@ -376,20 +376,25 @@
       body: blob
     });
 
-    if (!res.ok) return post;
+    if (!res.ok) return { post, ok: false, reason: 'upload' };
 
     return {
-      ...post,
-      mediaUrl: `${cfg.supabaseUrl}/storage/v1/object/public/${bucket}/${path}`,
-      mediaData: '',
-      mediaPreviewUrl: '',
-      mediaUploadedAt: new Date().toISOString()
+      post: {
+        ...post,
+        mediaUrl: `${cfg.supabaseUrl}/storage/v1/object/public/${bucket}/${path}`,
+        mediaData: '',
+        mediaPreviewUrl: '',
+        mediaUploadedAt: new Date().toISOString()
+      },
+      ok: true,
+      reason: ''
     };
   }
 
   async function syncFromCloud(options = {}) {
     if (state.syncing) return false;
     state.syncing = true;
+
     try {
       const response = await fetch('/api/publications', { cache: 'no-store' });
       const data = await response.json();
@@ -419,7 +424,7 @@
 
   async function syncPost(post) {
     try {
-      const cleanPost = stripHeavy(post);
+      const cleanPost = stripForRemote(post);
       const response = await fetch('/api/publications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -493,7 +498,7 @@
 
         <label class="search-box">
           <span>🔎</span>
-          <input id="searchInput" value="${esc(state.query)}" placeholder="Buscar">
+          <input id="searchInput" value="${esc(state.query)}" placeholder="Buscar" autocomplete="off">
         </label>
       </section>
     `;
@@ -509,23 +514,43 @@
   }
 
   function homePage() {
-    const posts = filteredPosts();
     const title = state.filter === 'ALL' ? 'Publicaciones cerca de ti' : state.filter;
     return shell(`
       ${homeHeader()}
 
-      <section class="feed-title">
-        <div>
-          <h1>${esc(title)}</h1>
-          <p>${state.cloudReady ? 'Publicaciones disponibles' : 'También funciona sin conexión'}</p>
-        </div>
-        ${state.syncing ? '<span class="sync-pill">Actualizando...</span>' : (state.filter !== 'ALL' || state.query ? '<button class="small-link" data-clear>Todo</button>' : '')}
+      <section class="feed-title" id="feedTitle">
+        ${feedTitleMarkup(title)}
       </section>
 
-      <section class="feed">
-        ${posts.map(postCard).join('') || emptyState('No encontré publicaciones', 'Prueba otra búsqueda o publica algo con el botón +.')}
+      <section class="feed" id="feed">
+        ${feedMarkup()}
       </section>
     `);
+  }
+
+  function feedTitleMarkup(title = state.filter === 'ALL' ? 'Publicaciones cerca de ti' : state.filter) {
+    return `
+      <div>
+        <h1>${esc(title)}</h1>
+        <p>${state.cloudReady ? 'Publicaciones disponibles' : 'También funciona sin conexión'}</p>
+      </div>
+      ${state.syncing ? '<span class="sync-pill">Actualizando...</span>' : (state.filter !== 'ALL' || state.query ? '<button class="small-link" data-clear>Todo</button>' : '')}
+    `;
+  }
+
+  function feedMarkup() {
+    const posts = filteredPosts();
+    return posts.map(postCard).join('') || emptyState('No encontré publicaciones', 'Prueba otra búsqueda o publica algo con el botón +.');
+  }
+
+  function updateFeedOnly() {
+    const feed = document.getElementById('feed');
+    if (feed) feed.innerHTML = feedMarkup();
+
+    const feedTitle = document.getElementById('feedTitle');
+    if (feedTitle) feedTitle.innerHTML = feedTitleMarkup();
+
+    bindDynamicFeedControls();
   }
 
   function categoryClass(category) {
@@ -547,6 +572,7 @@
     const media = resolveMedia(post);
     const isVideo = post.mediaType === 'video';
     const own = post.ownerId === userId();
+    const mediaPending = post.mediaStatus === 'pendiente' || (!post.mediaUrl && post.mediaType === 'video' && post.cloudStatus === 'publica');
 
     return `
       <article class="post-card">
@@ -558,6 +584,8 @@
                 : `<img src="${esc(media)}" alt="${esc(post.title || 'Publicación')}">`)
               : '<div class="no-media">Conecta Servicios</div>'
           }
+
+          ${mediaPending ? '<div class="media-pending">El video está pendiente. La publicación ya está visible.</div>' : ''}
 
           <div class="media-top">
             <span class="chip ${categoryClass(post.category)}">${esc(normalizeCategory(post.category))}</span>
@@ -589,7 +617,7 @@
 
           ${own ? `
             <div class="manage-row">
-              ${post.cloudStatus === 'local' ? `<button class="retry" data-retry="${esc(post.id)}">Reintentar</button>` : ''}
+              ${post.cloudStatus === 'local' || post.mediaStatus === 'pendiente' ? `<button class="retry" data-retry="${esc(post.id)}">Reintentar</button>` : ''}
               <button data-edit="${esc(post.id)}">Editar</button>
               <button class="danger" data-delete="${esc(post.id)}">Borrar</button>
             </div>
@@ -670,21 +698,14 @@
   function ensureComposerId() {
     if (!state.composerId) {
       state.composerId = uid('post');
-      set(K.composer, {
-        id: state.composerId,
-        createdAt: new Date().toISOString()
-      });
+      set(K.composer, { id: state.composerId, createdAt: new Date().toISOString() });
     }
     return state.composerId;
   }
 
   function composerPage() {
     ensureComposerId();
-    const post = state.editing || {
-      description: '',
-      zone: '',
-      category: state.filter === 'ALL' ? 'VENDO' : state.filter
-    };
+    const post = state.editing || { description: '', zone: '', category: state.filter === 'ALL' ? 'VENDO' : state.filter };
     const media = state.preview || post.mediaUrl || resolveMedia(post);
     const isVideo = (state.mediaType || post.mediaType) === 'video';
 
@@ -745,9 +766,7 @@
 
   function nav(route) {
     state.route = route;
-    if (route !== '/publicar') {
-      if (!state.publishing) state.editing = null;
-    }
+    if (route !== '/publicar' && !state.publishing) state.editing = null;
     render();
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
   }
@@ -758,18 +777,9 @@
     document.getElementById('mediaPicker')?.click();
   }
 
-  function fileToDataURL(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result || '');
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
-
   function resizeImage(file, maxSide = IMAGE_MAX_SIDE, quality = 0.82) {
     return new Promise((resolve, reject) => {
-      if (!file.type.startsWith('image/')) return resolve(null);
+      if (!file.type.startsWith('image/')) return resolve(file);
       const img = new Image();
       const url = URL.createObjectURL(file);
       img.onload = () => {
@@ -782,10 +792,7 @@
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
-        canvas.toBlob(blob => {
-          if (!blob) return reject(new Error('No se pudo preparar imagen'));
-          resolve(blob);
-        }, 'image/jpeg', quality);
+        canvas.toBlob(blob => resolve(blob || file), 'image/jpeg', quality);
       };
       img.onerror = () => {
         URL.revokeObjectURL(url);
@@ -811,9 +818,7 @@
       const kind = file.type.startsWith('video') ? 'video' : 'image';
       let blob = file;
 
-      if (kind === 'image') {
-        blob = await resizeImage(file).catch(() => file);
-      }
+      if (kind === 'image') blob = await resizeImage(file).catch(() => file);
 
       await saveMediaBlob(ref, blob);
 
@@ -839,6 +844,7 @@
 
   function clearComposer() {
     state.preview = '';
+    state.previewBlob = null;
     state.mediaType = 'image';
     state.editing = null;
     state.composerId = '';
@@ -880,6 +886,7 @@
       mediaType: state.mediaType || old?.mediaType || 'image',
       mediaMime: state.composerMediaMime || old?.mediaMime || '',
       mediaName: state.composerMediaName || old?.mediaName || '',
+      mediaStatus: '',
       status: 'activa',
       reactions: old?.reactions || 0,
       createdAt: old?.createdAt || now,
@@ -896,17 +903,15 @@
     toast('Publicando...');
 
     try {
-      post = await uploadMediaToCloud(post);
+      const uploaded = await uploadMediaToCloud(post);
+      post = uploaded.post;
 
-      if (!post.mediaUrl && post.mediaRef && post.mediaType === 'video') {
+      if (!uploaded.ok && post.mediaRef) {
         post = {
           ...post,
-          cloudStatus: 'local',
+          mediaStatus: 'pendiente',
           updatedAt: new Date().toISOString()
         };
-        saveLocalPosts([post, ...state.posts.filter(item => item.id !== id)]);
-        toast('Tu publicación se guardó en este dispositivo, pero el video no pudo subirse. Revisa tu conexión e intenta de nuevo.');
-        return;
       }
 
       const ok = await syncPost({
@@ -925,7 +930,7 @@
 
       if (ok) {
         clearComposer();
-        toast('Publicación lista.');
+        toast(uploaded.ok || !post.mediaRef ? 'Publicación lista.' : 'Publicación visible. El video quedó pendiente en este dispositivo.');
         await syncFromCloud({ render: false });
       } else {
         toast('Tu publicación se guardó en este dispositivo. Revisa tu conexión e intenta de nuevo.');
@@ -955,7 +960,10 @@
     render();
 
     try {
-      post = await uploadMediaToCloud(post);
+      const uploaded = await uploadMediaToCloud(post);
+      post = uploaded.post;
+      post.mediaStatus = uploaded.ok ? '' : (post.mediaRef ? 'pendiente' : post.mediaStatus || '');
+
       const ok = await syncPost({ ...post, cloudStatus: 'publica', updatedAt: new Date().toISOString() });
       post = { ...post, cloudStatus: ok ? 'publica' : 'local', updatedAt: new Date().toISOString() };
       saveLocalPosts([post, ...state.posts.filter(item => item.id !== id)]);
@@ -1052,12 +1060,8 @@
     render();
   }
 
-  function bind() {
-    document.querySelectorAll('[data-nav]').forEach(button => button.onclick = () => nav(button.dataset.nav));
-    document.querySelectorAll('[data-filter]').forEach(button => button.onclick = () => { state.filter = button.dataset.filter; state.route = '/'; render(); });
+  function bindDynamicFeedControls() {
     document.querySelectorAll('[data-clear]').forEach(button => button.onclick = clearFilters);
-    document.querySelectorAll('[data-pick]').forEach(button => button.onclick = openPicker);
-    document.querySelectorAll('[data-publish]').forEach(button => button.onclick = publish);
     document.querySelectorAll('[data-retry]').forEach(button => button.onclick = () => retryPost(button.dataset.retry));
     document.querySelectorAll('[data-like]').forEach(button => button.onclick = () => likePost(button.dataset.like));
     document.querySelectorAll('[data-share]').forEach(button => button.onclick = () => sharePost(button.dataset.share));
@@ -1065,16 +1069,24 @@
     document.querySelectorAll('[data-message]').forEach(button => button.onclick = () => sendMessage(button.dataset.message));
     document.querySelectorAll('[data-edit]').forEach(button => button.onclick = () => editPost(button.dataset.edit));
     document.querySelectorAll('[data-delete]').forEach(button => button.onclick = () => deletePost(button.dataset.delete));
+  }
+
+  function bind() {
+    document.querySelectorAll('[data-nav]').forEach(button => button.onclick = () => nav(button.dataset.nav));
+    document.querySelectorAll('[data-filter]').forEach(button => button.onclick = () => { state.filter = button.dataset.filter; state.route = '/'; render(); });
+    document.querySelectorAll('[data-pick]').forEach(button => button.onclick = openPicker);
+    document.querySelectorAll('[data-publish]').forEach(button => button.onclick = publish);
     document.querySelectorAll('[data-save-profile]').forEach(button => button.onclick = saveProfile);
+    bindDynamicFeedControls();
 
     const picker = document.getElementById('mediaPicker');
     if (picker) picker.onchange = fileChosen;
 
     const search = document.getElementById('searchInput');
     if (search) {
-      search.oninput = (event) => {
+      search.oninput = event => {
         state.query = event.target.value;
-        render();
+        updateFeedOnly();
       };
     }
   }
@@ -1082,9 +1094,7 @@
   function startPolling() {
     if (state.syncTimer) clearInterval(state.syncTimer);
     state.syncTimer = setInterval(() => {
-      if (document.visibilityState === 'visible' && !state.syncing && !state.publishing) {
-        syncFromCloud({ render: true });
-      }
+      if (document.visibilityState === 'visible' && !state.syncing && !state.publishing) syncFromCloud({ render: true });
     }, POLL_MS);
 
     window.addEventListener('focus', () => {
@@ -1092,9 +1102,7 @@
     });
 
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && !state.syncing && !state.publishing) {
-        syncFromCloud({ render: true });
-      }
+      if (document.visibilityState === 'visible' && !state.syncing && !state.publishing) syncFromCloud({ render: true });
     });
   }
 
