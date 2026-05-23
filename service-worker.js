@@ -1,13 +1,14 @@
-const CACHE_NAME = 'conecta-servicios-v6-3-15-video-10-min';
+const CACHE_NAME = 'conecta-servicios-v6-3-17-limpieza-local-video';
 
 const ASSETS = [
   '/',
   '/index.html',
   '/styles.css?v=6.3.12-publicaciones-video-sync',
-  '/video-long-guard.js?v=6.3.15-video-10-min',
-  '/video-playback-guard.js?v=6.3.15-video-10-min',
+  '/stale-posts-guard.js?v=6.3.17-limpieza-local-video',
+  '/video-long-guard.js?v=6.3.17-limpieza-local-video',
+  '/video-playback-guard.js?v=6.3.17-limpieza-local-video',
   '/app.js?v=6.3.12-publicaciones-video-sync',
-  '/manifest.json?v=6.3.15-video-10-min',
+  '/manifest.json?v=6.3.17-limpieza-local-video',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'
@@ -36,8 +37,8 @@ self.addEventListener('fetch', event => {
   const networkFirst =
     req.mode === 'navigate' ||
     url.pathname.endsWith('/index.html') ||
-    url.search.includes('v=6315') ||
-    url.search.includes('v=6.3.15');
+    url.search.includes('v=6317') ||
+    url.search.includes('v=6.3.17');
 
   if (networkFirst) {
     event.respondWith(
