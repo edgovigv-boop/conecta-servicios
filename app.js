@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.33-galeria-audio-acciones
+/* Conecta Servicios v6.3.34-acciones-galeria-visibles
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.33-galeria-audio-acciones';
+  const VERSION = 'v6.3.34-acciones-galeria-visibles';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -1511,6 +1511,108 @@
         z-index:31 !important;
         pointer-events:auto !important;
       }
+      /* v6.3.34: galería y acciones siempre visibles */
+      .media-carousel{
+        position:relative !important;
+        overflow-x:auto !important;
+        overflow-y:hidden !important;
+        touch-action:pan-x pinch-zoom;
+      }
+      .gallery-arrow{
+        position:absolute !important;
+        top:50% !important;
+        transform:translateY(-50%) !important;
+        z-index:80 !important;
+        width:54px !important;
+        height:72px !important;
+        border:2px solid rgba(255,255,255,.65) !important;
+        border-radius:999px !important;
+        background:rgba(0,0,0,.62) !important;
+        color:#fff !important;
+        font-size:56px !important;
+        line-height:.8 !important;
+        font-weight:900 !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        text-shadow:0 3px 12px rgba(0,0,0,.65) !important;
+        box-shadow:0 12px 34px rgba(0,0,0,.32) !important;
+        backdrop-filter:blur(10px);
+        opacity:1 !important;
+        visibility:visible !important;
+        pointer-events:auto !important;
+      }
+      .gallery-prev{
+        left:12px !important;
+        right:auto !important;
+      }
+      .gallery-next{
+        right:12px !important;
+        left:auto !important;
+      }
+      .gallery-arrow.is-hidden,
+      .gallery-arrow.is-edge{
+        opacity:.62 !important;
+        pointer-events:auto !important;
+      }
+      .gallery-count{
+        z-index:82 !important;
+        background:rgba(0,0,0,.66) !important;
+        border:1px solid rgba(255,255,255,.35) !important;
+      }
+      .media-bottom{
+        right:10px !important;
+        bottom:148px !important;
+        z-index:75 !important;
+        opacity:1 !important;
+        visibility:visible !important;
+        display:flex !important;
+      }
+      .action-stack{
+        display:flex !important;
+        flex-direction:column !important;
+        gap:12px !important;
+      }
+      .action-stack .round-action{
+        width:56px !important;
+        height:56px !important;
+        min-width:56px !important;
+        min-height:56px !important;
+        background:rgba(255,255,255,.94) !important;
+        border:1px solid rgba(255,255,255,.86) !important;
+        box-shadow:0 12px 34px rgba(0,0,0,.32) !important;
+      }
+      .action-stack .round-action small{
+        font-size:8px !important;
+        max-width:50px !important;
+      }
+      .post-action-row{
+        display:flex !important;
+        gap:8px !important;
+        flex-wrap:wrap !important;
+        margin-top:10px !important;
+        position:relative !important;
+        z-index:90 !important;
+        pointer-events:auto !important;
+      }
+      .post-action-row button{
+        border:1px solid rgba(255,255,255,.30) !important;
+        border-radius:999px !important;
+        padding:8px 10px !important;
+        background:rgba(255,255,255,.18) !important;
+        color:#fff !important;
+        font-weight:900 !important;
+        font-size:12px !important;
+        backdrop-filter:blur(10px);
+        box-shadow:0 8px 22px rgba(0,0,0,.16) !important;
+      }
+      .post-action-row button:active,
+      .gallery-arrow:active{
+        transform:translateY(-50%) scale(.96) !important;
+      }
+      .post-action-row button:active{
+        transform:scale(.96) !important;
+      }
       .media-bottom{
         display:flex !important;
         opacity:1 !important;
@@ -1896,6 +1998,11 @@
         <h2>${esc(post.title || 'Publicación')}</h2>
         <p>${esc(shortDescription(post.description || ''))}</p>
         <div class="post-meta"><span>❤️ ${post.reactions || 0}</span><span>${new Date(post.createdAt || Date.now()).toLocaleDateString('es-MX')}</span></div>
+        <div class="post-action-row">
+          <button type="button" data-like="${esc(post.id)}">❤️ Me gusta</button>
+          <button type="button" data-message="${esc(post.id)}">✉️ Mensaje</button>
+          <button type="button" data-share="${esc(post.id)}">↗️ Compartir</button>
+        </div>
         ${statusLabel(post)}
         ${own ? `<div class="manage-row">${post.cloudStatus==='local'||post.mediaStatus==='pendiente'||post.mediaStatus==='error'?`<button class="retry" data-retry="${esc(post.id)}">Reintentar</button>`:''}<button data-edit="${esc(post.id)}">Editar</button><button class="danger" data-delete="${esc(post.id)}">Borrar</button></div>` : ''}
         ${post.cloudStatus==='local' ? '<div class="local-note">Tu publicación se guardó en este dispositivo. Revisa tu conexión e intenta de nuevo.</div>' : ''}
@@ -2371,8 +2478,8 @@ ${esc(shortDiagnosticText(diag))}</code>
 
     const prev = document.querySelector(`[data-gallery-prev="${CSS.escape(id)}"]`);
     const next = document.querySelector(`[data-gallery-next="${CSS.escape(id)}"]`);
-    if(prev) prev.classList.toggle('is-hidden', index <= 1);
-    if(next) next.classList.toggle('is-hidden', index >= total);
+    if(prev) prev.classList.toggle('is-edge', index <= 1);
+    if(next) next.classList.toggle('is-edge', index >= total);
   }
 
   function moveGallery(id, direction){

@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.33-galeria-audio-acciones';
+  const VERSION = 'v6.3.34-acciones-galeria-visibles';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 
