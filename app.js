@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.1-home-mensajes-fix
+/* Conecta Servicios v6.4.2-descripcion-visible-owner-sql
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.1-home-mensajes-fix';
+  const VERSION = 'v6.4.2-descripcion-visible-owner-sql';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -360,7 +360,7 @@
       profileName: profile().name || '',
       url: location.href,
       serviceWorkerControlled: !!navigator.serviceWorker?.controller,
-      localPosts: localPosts().map(p => ({id:p.id, ownerId:p.ownerId, title:p.title, category:p.category, mediaType:p.mediaType, mediaStatus:p.mediaStatus, cloudStatus:p.cloudStatus, hasMediaUrl:!!p.mediaUrl, mediaError:p.mediaError || ''})).slice(0, 30),
+      localPosts: localPosts().map(p => ({id:p.id, ownerId:p.ownerId, title:p.title, category:p.category, descriptionLength:String(p.description||'').length, captionLength:postCaptionText(p).length, mediaType:p.mediaType, mediaStatus:p.mediaStatus, cloudStatus:p.cloudStatus, hasMediaUrl:!!p.mediaUrl, mediaError:p.mediaError || ''})).slice(0, 30),
       lastUploadDiagnostic: state.lastUploadDiagnostic || get('cs_v6323_last_upload_diagnostic', null)
     };
     const text = JSON.stringify(data, null, 2);
@@ -2144,7 +2144,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.1: acciones icon-only y perfil simple */
+      /* v6.4.2: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2176,7 +2176,7 @@
         display:none !important;
       }
 
-      /* v6.4.1-home-mensajes-fix: bloque consolidado de Home/postCard.
+      /* v6.4.2-descripcion-visible-owner-sql: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2355,7 +2355,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.1: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.2: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2372,6 +2372,106 @@
       .description-toggle{
         cursor:pointer !important;
         pointer-events:auto !important;
+      }
+
+      /* v6.4.2: descripción visible, ...leer separado del texto */
+      .post-description-collapsed{
+        display:grid !important;
+        grid-template-columns:1fr auto !important;
+        align-items:end !important;
+        gap:4px !important;
+        width:100% !important;
+        position:relative !important;
+        z-index:180 !important;
+        margin-top:2px !important;
+      }
+
+      .description-preview{
+        display:block !important;
+        min-width:0 !important;
+        color:rgba(255,255,255,.95) !important;
+        font-size:14px !important;
+        line-height:1.25 !important;
+        max-height:2.5em !important;
+        overflow:hidden !important;
+        white-space:normal !important;
+        text-shadow:0 2px 12px rgba(0,0,0,.42);
+      }
+
+      .post-description-short{
+        display:block !important;
+        visibility:visible !important;
+        opacity:1 !important;
+        color:rgba(255,255,255,.95) !important;
+        font-size:14px !important;
+        line-height:1.25 !important;
+        margin-top:2px !important;
+        white-space:pre-line !important;
+        text-shadow:0 2px 12px rgba(0,0,0,.42);
+        position:relative !important;
+        z-index:180 !important;
+      }
+
+      .description-toggle,
+      .read-toggle,
+      .hide-toggle{
+        display:inline-flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        border:0 !important;
+        background:transparent !important;
+        color:#fff !important;
+        font-weight:900 !important;
+        font-size:14px !important;
+        line-height:1 !important;
+        padding:2px 0 2px 4px !important;
+        text-shadow:0 2px 10px rgba(0,0,0,.65) !important;
+        pointer-events:auto !important;
+        cursor:pointer !important;
+        white-space:nowrap !important;
+        z-index:190 !important;
+      }
+
+      .post-description-expanded{
+        display:block !important;
+        visibility:visible !important;
+        opacity:1 !important;
+        color:#fff !important;
+        font-size:15px !important;
+        line-height:1.25 !important;
+        max-height:min(46vh, 350px) !important;
+        overflow-y:auto !important;
+        overscroll-behavior:contain !important;
+        -webkit-overflow-scrolling:touch !important;
+        padding:10px 10px 34px 10px !important;
+        margin-top:6px !important;
+        border-radius:18px !important;
+        background:rgba(0,0,0,.36) !important;
+        border:1px solid rgba(255,255,255,.18) !important;
+        backdrop-filter:blur(3px) !important;
+        white-space:pre-line !important;
+        touch-action:pan-y !important;
+        position:relative !important;
+        z-index:180 !important;
+      }
+
+      .hide-toggle{
+        position:sticky !important;
+        bottom:0 !important;
+        display:flex !important;
+        width:100% !important;
+        justify-content:flex-end !important;
+        padding-top:8px !important;
+        background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.38)) !important;
+      }
+
+      .post-body.expanded-description-body{
+        max-height:calc(100vh - 144px) !important;
+        overflow:hidden !important;
+      }
+
+      .post-meta{
+        margin-top:5px !important;
       }
 
       @media (max-height:700px){
@@ -2740,7 +2840,15 @@
     return clean.slice(0, max).trim() + '...';
   }
 
-  function compactDescription(text, max=62){
+  function postCaptionText(post){
+    const description = String(post?.description || post?.details || post?.content || post?.body || '').trim();
+    const title = String(post?.title || '').trim();
+    // Si la descripción está vacía o es igual al título, usamos lo que haya.
+    if(description && description !== title) return description;
+    return description || title || '';
+  }
+
+  function compactDescription(text, max=68){
     const clean = String(text || '').replace(/\s+/g, ' ').trim();
     if(clean.length <= max) return clean;
     return clean.slice(0, max).trim();
@@ -2748,7 +2856,7 @@
 
   function isLongDescription(text){
     const raw = String(text || '').trim();
-    return raw.replace(/\s+/g, ' ').length > 65 || raw.split(/\n/).filter(Boolean).length > 1;
+    return raw.replace(/\s+/g, ' ').length > 68 || raw.split(/\n/).filter(Boolean).length > 1;
   }
 
   function isDescriptionExpanded(postId){
@@ -2756,8 +2864,8 @@
   }
 
   function descriptionMarkup(post){
-    const raw = String(post?.description || '').trim();
-    if(!raw) return '<div class="post-description-short empty-desc">Sin descripción.</div>';
+    const raw = postCaptionText(post);
+    if(!raw) return '';
 
     const long = isLongDescription(raw);
     const expanded = isDescriptionExpanded(post.id);
@@ -2773,8 +2881,8 @@
       </div>`;
     }
 
-    return `<div class="post-description-short is-collapsed">
-      <span>${esc(compactDescription(raw))}</span>
+    return `<div class="post-description-collapsed">
+      <div class="description-preview">${esc(compactDescription(raw))}</div>
       <button type="button" class="description-toggle read-toggle" data-toggle-description="${esc(post.id)}">...leer</button>
     </div>`;
   }
@@ -3548,7 +3656,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.1: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.2: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
