@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.26-top-tiktok
+/* Conecta Servicios v6.3.27-busqueda-lupa-home
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.26-top-tiktok';
+  const VERSION = 'v6.3.27-busqueda-lupa-home';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -116,8 +116,37 @@
 
   function toggleSearchPanel(){
     state.searchOpen = !state.searchOpen;
+    if(state.searchOpen){
+      state.filter = 'ALL';
+      state.topTab = 'para-ti';
+    }
     render();
-    if(state.searchOpen) setTimeout(()=>document.getElementById('searchInput')?.focus(), 80);
+    if(state.searchOpen) setTimeout(()=>{
+      const input = document.getElementById('searchInput');
+      input?.focus({preventScroll:true});
+      try { input?.setSelectionRange(input.value.length, input.value.length); } catch {}
+    }, 120);
+  }
+
+  function applySearchText(value){
+    state.query = String(value || '');
+    state.filter = 'ALL';
+    state.topTab = 'para-ti';
+    updateFeedOnly();
+  }
+
+  function closeSearchPanel(){
+    state.searchOpen = false;
+    state.query = '';
+    state.filter = 'ALL';
+    render();
+  }
+
+  function searchResultText(){
+    const q = state.query.trim();
+    if(!q) return '';
+    const count = filteredPosts().length;
+    return `${count} resultado${count === 1 ? '' : 's'} para “${q}”`;
   }
 
   function toast(msg){ if(!toastEl) return; toastEl.textContent=msg; toastEl.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.classList.remove('show'),3000); }
@@ -411,12 +440,36 @@
     set(K.posts, normalized.map(stripForLocal));
   }
 
+  function normalizeSearchText(value){
+    return String(value || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function postSearchText(post){
+    return normalizeSearchText([
+      post.title,
+      post.description,
+      post.zone,
+      post.category,
+      post.ownerName,
+      post.mediaName
+    ].join(' '));
+  }
+
   function filteredPosts(){
-    const q = state.query.trim().toLowerCase();
+    const q = normalizeSearchText(state.query);
     return dedupePosts(state.posts)
       .filter(p => !isDeleted(p))
-      .filter(p => state.filter === 'ALL' || normalizeCategory(p.category) === state.filter)
-      .filter(p => !q || `${p.title||''} ${p.description||''} ${p.zone||''} ${p.category||''} ${p.ownerName||''}`.toLowerCase().includes(q))
+      .filter(p => q ? true : (state.filter === 'ALL' || normalizeCategory(p.category) === state.filter))
+      .filter(p => {
+        if(!q) return true;
+        const haystack = postSearchText(p);
+        return q.split(' ').every(token => haystack.includes(token));
+      })
       .sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
   }
 
@@ -878,6 +931,15 @@
         background:rgba(255,255,255,.88);
         color:#111827;
       }
+      .tiktok-search-panel input,
+      .tiktok-search-panel button{
+        pointer-events:auto;
+        touch-action:manipulation;
+      }
+      .tiktok-search-panel{
+        position:relative;
+        z-index:95;
+      }
       .tiktok-filter-row{
         margin-top:8px;
         display:flex;
@@ -904,6 +966,18 @@
       .tiktok-filter-row .path-label{font-size:12px !important;font-weight:900;}
       .feed-title{margin-top:calc(env(safe-area-inset-top) + 112px) !important;}
       .brand-row,.path-row,.search-box{display:none;}
+      .feed-title{
+        padding:0 14px !important;
+      }
+      .feed-title h1{
+        font-size:20px !important;
+      }
+      .feed-title p{
+        font-size:12px !important;
+      }
+      .post-card{
+        scroll-margin-top:calc(env(safe-area-inset-top) + 118px);
+      }
       @media (max-width:420px){
         .tiktok-tab{font-size:15px;}
         .tiktok-tabs{gap:13px;}
@@ -964,7 +1038,7 @@
         </div>
         <button class="tiktok-icon-btn" data-toggle-search title="Buscar">🔎</button>
       </div>
-      ${state.searchOpen ? `<div class="tiktok-search-panel"><span>🔎</span><input id="searchInput" value="${esc(state.query)}" placeholder="Buscar publicación, negocio o zona" autocomplete="off"><button data-clear-search>${state.query ? 'Limpiar' : 'Cerrar'}</button></div>` : ''}
+      ${state.searchOpen ? `<div class="tiktok-search-panel"><span>🔎</span><input id="searchInput" type="search" inputmode="search" value="${esc(state.query)}" placeholder="Buscar: refrigerador, pan, viaje..." autocomplete="off" enterkeyhint="search"><button data-clear-search>${state.query ? 'Limpiar' : 'Cerrar'}</button></div>` : ''}
       <div class="tiktok-filter-row">
         ${pathButton('VENDO','🏪','Vendo','path-vendo')}
         ${pathButton('OFREZCO','🛵','Ofrezco','path-ofrezco')}
@@ -980,8 +1054,10 @@
 
   function homePage(){ return shell(`${homeHeader()}<section class="feed-title" id="feedTitle">${feedTitleMarkup()}</section><section class="feed" id="feed">${feedMarkup()}</section>`); }
   function feedTitleMarkup(){
-    const title = state.filter === 'ALL' ? 'Publicaciones cerca de ti' : state.filter;
-    return `<div><h1>${esc(title)}</h1><p>${state.cloudReady?'Publicaciones disponibles':'También funciona sin conexión'}</p></div>${state.syncing?'<span class="sync-pill">Actualizando...</span>':(state.filter!=='ALL'||state.query?'<button class="small-link" data-clear>Todo</button>':'')}`;
+    const searching = !!state.query.trim();
+    const title = searching ? 'Resultados' : (state.filter === 'ALL' ? 'Publicaciones cerca de ti' : state.filter);
+    const subtitle = searching ? searchResultText() : (state.cloudReady ? 'Publicaciones disponibles' : 'También funciona sin conexión');
+    return `<div><h1>${esc(title)}</h1><p>${esc(subtitle)}</p></div>${state.syncing?'<span class="sync-pill">Actualizando...</span>':(state.filter!=='ALL'||state.query?'<button class="small-link" data-clear>Todo</button>':'')}`;
   }
   function feedMarkup(){ const posts=filteredPosts(); return posts.map(postCard).join('') || emptyState('No encontré publicaciones','Prueba otra búsqueda o publica algo con el botón +.'); }
   function updateFeedOnly(){ const feed=document.getElementById('feed'); if(feed) feed.innerHTML=feedMarkup(); const title=document.getElementById('feedTitle'); if(title) title.innerHTML=feedTitleMarkup(); bindDynamicFeedControls(); setupInternalVideos(); }
@@ -1753,14 +1829,21 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('[data-save-profile]').forEach(b=>b.onclick=saveProfile);
     document.querySelectorAll('[data-toggle-search]').forEach(b=>b.onclick=toggleSearchPanel);
     document.querySelectorAll('[data-top-tab]').forEach(b=>b.onclick=()=>setTopTab(b.dataset.topTab));
-    document.querySelectorAll('[data-clear-search]').forEach(b=>b.onclick=()=>{ if(state.query){ state.query=''; updateFeedOnly(); } else { state.searchOpen=false; render(); } });
+    document.querySelectorAll('[data-clear-search]').forEach(b=>b.onclick=()=>{ if(state.query){ state.query=''; updateFeedOnly(); setTimeout(()=>document.getElementById('searchInput')?.focus({preventScroll:true}),50); } else { closeSearchPanel(); } });
     bindDynamicFeedControls();
 
     const picker=document.getElementById('mediaPicker');
     if(picker) picker.onchange=fileChosen;
 
     const search=document.getElementById('searchInput');
-    if(search) search.oninput=e=>{state.query=e.target.value;updateFeedOnly();};
+    if(search){
+      const handler = e => applySearchText(e.target.value);
+      search.oninput = handler;
+      search.onsearch = handler;
+      search.onkeyup = handler;
+      search.onclick = e => e.stopPropagation();
+      search.onpointerdown = e => e.stopPropagation();
+    }
 
     const description=document.getElementById('description');
     if(description) description.oninput=e=>{state.composerDraft.description=e.target.value; saveComposerDraft();};
