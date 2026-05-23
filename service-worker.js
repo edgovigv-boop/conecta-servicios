@@ -1,4 +1,4 @@
-const CACHE_NAME = 'conecta-servicios-v6-3-17-limpieza-local-video';
+const CACHE_NAME = 'conecta-servicios-v6-3-18-video-ligero-feed';
 
 const ASSETS = [
   '/',
@@ -7,8 +7,9 @@ const ASSETS = [
   '/stale-posts-guard.js?v=6.3.17-limpieza-local-video',
   '/video-long-guard.js?v=6.3.17-limpieza-local-video',
   '/video-playback-guard.js?v=6.3.17-limpieza-local-video',
+  '/video-feed-guard.js?v=6.3.18-video-ligero-feed',
   '/app.js?v=6.3.12-publicaciones-video-sync',
-  '/manifest.json?v=6.3.17-limpieza-local-video',
+  '/manifest.json?v=6.3.18-video-ligero-feed',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'
@@ -37,8 +38,8 @@ self.addEventListener('fetch', event => {
   const networkFirst =
     req.mode === 'navigate' ||
     url.pathname.endsWith('/index.html') ||
-    url.search.includes('v=6317') ||
-    url.search.includes('v=6.3.17');
+    url.search.includes('v=6318') ||
+    url.search.includes('v=6.3.18');
 
   if (networkFirst) {
     event.respondWith(
