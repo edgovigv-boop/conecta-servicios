@@ -1,11 +1,11 @@
-const CACHE_NAME = 'conecta-servicios-v6-1-0-tres-caminos';
+const CACHE_NAME = 'conecta-servicios-v6-2-0-home-mvp-social';
 
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=6.1.0-tres-caminos',
-  '/app.js?v=6.1.0-tres-caminos',
-  '/manifest.json?v=6.1.0-tres-caminos',
+  '/styles.css?v=6.2.0-home-mvp-social',
+  '/app.js?v=6.2.0-home-mvp-social',
+  '/manifest.json?v=6.2.0-home-mvp-social',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'
@@ -13,17 +13,11 @@ const ASSETS = [
 
 self.addEventListener('install', event => {
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS).catch(() => null))
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS).catch(() => null)));
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))
-    )
-  );
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))));
   self.clients.claim();
 });
 

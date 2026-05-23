@@ -1,8 +1,8 @@
 {
   "name": "Conecta Servicios",
   "short_name": "Conecta",
-  "description": "Conecta Servicios organizada solo por tres caminos: VENDO, OFREZCO y NECESITO.",
-  "start_url": "/?v=6.1.0-tres-caminos",
+  "description": "MVP social para publicar fácil desde tu multimedia y organizar por VENDO, OFREZCO y NECESITO.",
+  "start_url": "/?v=6.2.0-home-mvp-social",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",

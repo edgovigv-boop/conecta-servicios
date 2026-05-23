@@ -1,77 +1,81 @@
-/* Conecta Servicios v6.1.0 - Tres caminos: VENDO / OFREZCO / NECESITO */
+/* Conecta Servicios v6.2.0 - Home MVP social */
 (() => {
   'use strict';
 
-  const VERSION = 'v6.1.0-tres-caminos';
-  const ADMIN_PIN = '3145';
+  const VERSION = 'v6.2.0-home-mvp-social';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
+  const MAX_FILE_MB = 4;
   const K = {
-    posts: 'cs_v610_posts',
-    user: 'cs_v610_user',
-    admin: 'cs_v610_admin'
+    posts: 'cs_v620_posts',
+    user: 'cs_v620_user',
+    follows: 'cs_v620_follows',
+    messages: 'cs_v620_messages',
+    profile: 'cs_v620_profile'
   };
-
-  const app = document.getElementById('app');
-  const toastEl = document.getElementById('toast');
 
   const CATEGORIES = ['VENDO', 'OFREZCO', 'NECESITO'];
   const ZONES = ['Tejupilco', 'Toluca', 'Metepec', 'Chapultepec', 'Centro', 'Zona cercana', 'Todo México'];
 
   const seed = [
     {
-      id: 'plantilla-vendo-1',
-      title: 'PLANTILLA "ÚSALA"',
-      description: 'PLANTILLA "ÚSALA"\nVendo comida casera por pedido. Agrega aquí producto, precio, zona, horario y forma de entrega.',
+      id: 'seed-vendo-1',
+      ownerId: 'seed-shop',
+      ownerName: 'Proveedor local',
+      title: 'Vendo pan casero hoy',
+      description: 'Pan dulce y bolillo recién hecho. Entrega local por la tarde.',
       category: 'VENDO',
       zone: 'Tejupilco',
       mediaUrl: 'assets/dola-media/comida-01.jpg',
       mediaType: 'image',
-      ownerId: 'admin-template',
-      createdAt: new Date(Date.now() - 3600000).toISOString(),
-      reactions: 0,
+      reactions: 4,
       status: 'activa',
-      template: true
+      createdAt: new Date(Date.now() - 3600000).toISOString()
     },
     {
-      id: 'plantilla-ofrezco-1',
-      title: 'PLANTILLA "ÚSALA"',
-      description: 'PLANTILLA "ÚSALA"\nOfrezco servicio local. Describe aquí qué haces, en qué zona atiendes, horarios y cómo pueden contactarte.',
+      id: 'seed-ofrezco-1',
+      ownerId: 'seed-agent',
+      ownerName: 'Mensajero local',
+      title: 'Ofrezco mandados y entregas',
+      description: 'Hago pagos, compras y entregas pequeñas en zona centro y alrededores.',
       category: 'OFREZCO',
-      zone: 'Zona cercana',
-      mediaUrl: 'assets/dola-media/agente-01.jpg',
+      zone: 'Centro',
+      mediaUrl: 'assets/dola-media/mandados-01.jpg',
       mediaType: 'image',
-      ownerId: 'admin-template',
-      createdAt: new Date(Date.now() - 7200000).toISOString(),
-      reactions: 0,
+      reactions: 2,
       status: 'activa',
-      template: true
+      createdAt: new Date(Date.now() - 7200000).toISOString()
     },
     {
-      id: 'plantilla-necesito-1',
-      title: 'PLANTILLA "ÚSALA"',
-      description: 'PLANTILLA "ÚSALA"\nNecesito apoyo para una actividad local. Describe aquí lo que necesitas, zona, horario y condiciones.',
+      id: 'seed-necesito-1',
+      ownerId: 'seed-user',
+      ownerName: 'Cliente local',
+      title: 'Necesito viaje compartido',
+      description: 'Busco viaje mañana por la mañana. Salida desde Chapultepec.',
       category: 'NECESITO',
-      zone: 'Centro',
+      zone: 'Chapultepec',
       mediaUrl: 'assets/dola-media/solicitante-01.jpg',
       mediaType: 'image',
-      ownerId: 'admin-template',
-      createdAt: new Date(Date.now() - 10800000).toISOString(),
-      reactions: 0,
+      reactions: 3,
       status: 'activa',
-      template: true
+      createdAt: new Date(Date.now() - 10800000).toISOString()
     }
   ];
 
   const state = {
     route: '/',
-    path: '',
+    filter: 'ALL',
+    query: '',
     posts: [],
-    file: null,
     preview: '',
     mediaType: 'image',
     editing: null,
+    pickedFileData: '',
+    pickedFileName: '',
     cloudReady: false
   };
+
+  const app = document.getElementById('app');
+  const toastEl = document.getElementById('toast');
 
   function esc(value = '') {
     return String(value).replace(/[&<>'"]/g, char => ({
@@ -83,16 +87,13 @@
     }[char]));
   }
 
-  function uid(prefix = 'p') {
+  function uid(prefix = 'id') {
     return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   }
 
   function get(key, fallback) {
-    try {
-      return JSON.parse(localStorage.getItem(key)) ?? fallback;
-    } catch {
-      return fallback;
-    }
+    try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+    catch { return fallback; }
   }
 
   function set(key, value) {
@@ -108,8 +109,24 @@
     return id;
   }
 
-  function isAdmin() {
-    return localStorage.getItem(K.admin) === 'true';
+  function profile() {
+    const saved = get(K.profile, null);
+    if (saved) return saved;
+    const fresh = { name: 'Usuario local' };
+    set(K.profile, fresh);
+    return fresh;
+  }
+
+  function follows() {
+    return get(K.follows, []);
+  }
+
+  function messages() {
+    return get(K.messages, []);
+  }
+
+  function saveMessages(list) {
+    set(K.messages, list);
   }
 
   function toast(message) {
@@ -119,17 +136,16 @@
     toast._t = setTimeout(() => toastEl.classList.remove('show'), 2600);
   }
 
-  function normalizeCategory(category) {
-    const value = String(category || '').toUpperCase().trim();
-    return CATEGORIES.includes(value) ? value : 'NECESITO';
+  function normalizeCategory(value) {
+    const v = String(value || '').toUpperCase().trim();
+    return CATEGORIES.includes(v) ? v : 'VENDO';
   }
 
   function titleFrom(description) {
-    const first = String(description || '').split('\n').map(line => line.trim()).find(Boolean) || 'PUBLICACIÓN';
-    return first.slice(0, 72);
+    return (String(description || '').split('\n').map(line => line.trim()).find(Boolean) || 'Publicación').slice(0, 72);
   }
 
-  function loadLocal() {
+  function localPosts() {
     const saved = get(K.posts, null);
     if (!saved) {
       set(K.posts, seed);
@@ -138,24 +154,39 @@
     return saved.map(post => ({ ...post, category: normalizeCategory(post.category) }));
   }
 
-  function saveLocal(posts) {
+  function saveLocalPosts(posts) {
     const normalized = posts.map(post => ({ ...post, category: normalizeCategory(post.category) }));
     state.posts = normalized;
     set(K.posts, normalized);
   }
 
-  function visiblePosts() {
+  function filteredPosts() {
+    const q = state.query.trim().toLowerCase();
     return state.posts
       .filter(post => post.status !== 'eliminada')
-      .filter(post => !state.path || normalizeCategory(post.category) === state.path)
+      .filter(post => state.filter === 'ALL' ? true : normalizeCategory(post.category) === state.filter)
+      .filter(post => {
+        if (!q) return true;
+        const hay = `${post.title || ''} ${post.description || ''} ${post.zone || ''} ${post.ownerName || ''}`.toLowerCase();
+        return hay.includes(q);
+      })
       .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  }
+
+  function myPosts() {
+    return state.posts.filter(post => post.ownerId === userId());
+  }
+
+  function followedPosts() {
+    const ids = new Set(follows());
+    return state.posts.filter(post => ids.has(post.ownerId)).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
   }
 
   async function syncFromCloud() {
     try {
       const response = await fetch('/api/publications', { cache: 'no-store' });
       const data = await response.json();
-      if (!response.ok || !data.ok) throw new Error('Sin muro público');
+      if (!response.ok || !data.ok) throw new Error('offline');
 
       state.cloudReady = true;
       const remote = (data.posts || []).map(post => ({
@@ -163,18 +194,15 @@
         category: normalizeCategory(post.category),
         cloudStatus: 'publica'
       }));
-
-      const local = loadLocal();
+      const local = localPosts();
       const merged = [...remote];
-
       local.forEach(post => {
         if (!merged.some(item => item.id === post.id)) merged.push(post);
       });
-
-      saveLocal(merged);
+      saveLocalPosts(merged);
     } catch {
       state.cloudReady = false;
-      state.posts = loadLocal();
+      state.posts = localPosts();
     }
   }
 
@@ -186,7 +214,7 @@
         body: JSON.stringify({ post })
       });
       const data = await response.json().catch(() => ({ ok: false }));
-      if (!response.ok || !data.ok) throw new Error('No sincronizado');
+      if (!response.ok || !data.ok) throw new Error('sync');
       return true;
     } catch {
       return false;
@@ -198,7 +226,7 @@
       await fetch('/api/publications', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, ownerId: userId(), admin: isAdmin() })
+        body: JSON.stringify({ id, ownerId: userId(), admin: false })
       });
     } catch {}
   }
@@ -206,114 +234,129 @@
   function shell(content) {
     return `
       <main class="app-page">
-        <header class="topbar">
-          <div class="brand-block">
-            <img src="assets/icons/conecta-logo-oficial.png" alt="Conecta" class="brand-logo" onerror="this.style.display='none'">
-            <div>
-              <strong>Conecta Servicios</strong>
-              <span>${state.cloudReady ? 'Muro público' : 'Modo local'} · ${VERSION}</span>
-            </div>
-          </div>
-          <button class="admin-pill ${isAdmin() ? 'active' : ''}" data-admin>${isAdmin() ? 'Admin activo' : 'Admin'}</button>
-        </header>
+        <div class="top-safe"></div>
         ${content}
       </main>
 
       <nav class="bottom-nav">
-        <button class="nav-item ${state.route === '/' ? 'active' : ''}" data-home>🏠<small>Inicio</small></button>
+        <button class="nav-item ${state.route === '/' ? 'active' : ''}" data-nav="/">🏠<small>Inicio</small></button>
+        <button class="nav-item ${state.route === '/siguiendo' ? 'active' : ''}" data-nav="/siguiendo">🫂<small>Siguiendo</small></button>
         <button class="nav-plus" data-pick>+</button>
-        <button class="nav-item ${state.route === '/muro' ? 'active' : ''}" data-open-path="${esc(state.path || 'VENDO')}">📌<small>Muro</small></button>
+        <button class="nav-item ${state.route === '/mensajes' ? 'active' : ''}" data-nav="/mensajes">✉️<small>Mensajes</small></button>
+        <button class="nav-item ${state.route === '/perfil' ? 'active' : ''}" data-nav="/perfil">👤<small>Perfil</small></button>
       </nav>
 
       <input id="mediaPicker" type="file" accept="image/*,video/*" hidden>
     `;
   }
 
-  function home() {
-    return shell(`
-      <section class="home-only">
-        <div class="home-title">
-          <h1>¿Qué vas a hacer?</h1>
-          <p>Conecta Servicios queda ordenado solo por tres caminos.</p>
+  function topHeader() {
+    return `
+      <section class="top-card">
+        <div class="brand-row">
+          <img src="assets/icons/conecta-logo-oficial.png" alt="Conecta" class="brand-logo" onerror="this.style.display='none'">
+          <div class="brand-text">
+            <strong>Conecta</strong>
+            <span>Servicios</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <div class="top-ghost"></div>
+            <button class="bell-btn" title="Avisos">🔔</button>
+          </div>
         </div>
 
-        <div class="path-grid">
-          <button class="path-button path-vendo" data-open-path="VENDO">
-            <strong>VENDO</strong>
-            <span>Productos, comida, negocios y ventas locales</span>
-          </button>
+        <div class="overlay-controls">
+          <div class="path-row">
+            ${pathButton('VENDO', '🏪', 'Vendo', 'vendo')}
+            ${pathButton('OFREZCO', '🛵', 'Ofrezco', 'ofrezco')}
+            ${pathButton('NECESITO', '🧡', 'Necesito', 'necesito')}
+          </div>
 
-          <button class="path-button path-ofrezco" data-open-path="OFREZCO">
-            <strong>OFREZCO</strong>
-            <span>Servicios, trabajo, apoyo, entregas o habilidades</span>
-          </button>
-
-          <button class="path-button path-necesito" data-open-path="NECESITO">
-            <strong>NECESITO</strong>
-            <span>Ayuda, mandados, viajes, compras o soluciones</span>
-          </button>
+          <label class="search-float">
+            <span class="icon">🔎</span>
+            <input id="searchInput" value="${esc(state.query)}" placeholder="Buscar">
+          </label>
         </div>
       </section>
-    `);
+    `;
   }
 
-  function pathPage() {
-    const posts = visiblePosts();
-    return shell(`
-      <section class="section-head">
-        <div>
-          <h1>${esc(state.path || 'Muro')}</h1>
-          <p>${isAdmin() ? 'Admin: carga aquí tus plantillas.' : 'Publicaciones disponibles en este camino.'}</p>
+  function pathButton(key, icon, label, klass) {
+    const active = state.filter === key;
+    return `
+      <button class="path-btn ${klass} ${active ? 'active' : ''}" data-filter="${key}">
+        <div class="inner">
+          <span class="icon">${icon}</span>
+          <span class="label">${label}</span>
         </div>
-        ${isAdmin() ? '<button class="small-btn" data-pick>+ Publicar</button>' : ''}
-      </section>
+      </button>
+    `;
+  }
 
+  function homePage() {
+    return shell(`
+      ${topHeader()}
       <section class="feed">
-        ${posts.map(postCard).join('') || '<div class="empty">Todavía no hay publicaciones en este camino.</div>'}
+        ${filteredPosts().map(postCard).join('') || '<div class="empty">No hay publicaciones con ese filtro o búsqueda.</div>'}
       </section>
     `);
   }
 
-  function badgeClass(category) {
-    const cat = normalizeCategory(category).toLowerCase();
-    return `badge-${cat}`;
+  function categoryClass(category) {
+    return `cat-${normalizeCategory(category).toLowerCase()}`;
+  }
+
+  function isFollowing(ownerId) {
+    return follows().includes(ownerId);
   }
 
   function postCard(post) {
-    const canManage = isAdmin();
     const media = post.mediaUrl || post.mediaData || '';
     const isVideo = post.mediaType === 'video';
+    const own = post.ownerId === userId();
 
     return `
-      <article class="card">
-        <div class="post-media">
+      <article class="post-card">
+        <div class="media-shell">
           ${
             media
               ? (isVideo
                 ? `<video src="${esc(media)}" controls playsinline></video>`
                 : `<img src="${esc(media)}" alt="${esc(post.title || 'Publicación')}">`)
-              : '<div class="no-media">Conecta Servicios</div>'
+              : '<div class="media-empty">Conecta Servicios</div>'
           }
-          <span class="badge ${badgeClass(post.category)}">${esc(normalizeCategory(post.category))}</span>
+
+          <div class="media-overlay-top">
+            <span class="chip ${categoryClass(post.category)}">${esc(normalizeCategory(post.category))}</span>
+            <span class="chip">📍 ${esc(post.zone || 'Zona')}</span>
+          </div>
+
+          <div class="media-overlay-bottom">
+            <div class="floating-actions">
+              <button class="round-action" data-like="${esc(post.id)}">❤️</button>
+              <button class="round-action" data-message="${esc(post.id)}">✉️</button>
+              <button class="round-action" data-share="${esc(post.id)}">↗️</button>
+            </div>
+            <button class="follow-btn ${isFollowing(post.ownerId) ? 'following' : ''}" data-follow="${esc(post.ownerId)}">
+              ${isFollowing(post.ownerId) ? 'Siguiendo' : 'Seguir'}
+            </button>
+          </div>
         </div>
 
         <div class="post-body">
-          <h2>${esc(post.title || 'PUBLICACIÓN')}</h2>
+          <h2>${esc(post.title || 'Publicación')}</h2>
           <p>${esc(post.description || '')}</p>
-
           <div class="meta">
-            <span>📍 ${esc(post.zone || 'Zona')}</span>
+            <span>👤 ${esc(post.ownerName || 'Usuario local')}</span>
             <span>${new Date(post.createdAt || Date.now()).toLocaleDateString('es-MX')}</span>
           </div>
 
-          <div class="actions">
-            <button data-like="${esc(post.id)}">❤️ ${post.reactions || 0}</button>
-            <button data-share="${esc(post.id)}">Compartir</button>
-            ${canManage ? `
+          ${own ? `
+            <div class="edit-row">
               <button data-edit="${esc(post.id)}">Editar</button>
               <button class="danger" data-delete="${esc(post.id)}">Borrar</button>
-            ` : ''}
-          </div>
+            </div>
+          ` : ''}
 
           ${post.cloudStatus === 'local' ? '<div class="local-note">Guardada localmente. Revisa conexión o vuelve a intentar sincronizar.</div>' : ''}
         </div>
@@ -321,20 +364,82 @@
     `;
   }
 
-  function composer() {
-    const post = state.editing || {
-      description: 'PLANTILLA "ÚSALA"\n',
-      category: state.path || 'VENDO',
-      zone: ''
-    };
+  function followingPage() {
+    const posts = followedPosts();
+    return shell(`
+      <section class="helper-card">
+        <h1>Siguiendo</h1>
+        <p>Aquí aparecen proveedores, clientes o mensajeros que decidiste seguir.</p>
+      </section>
+      <section class="feed">
+        ${posts.map(postCard).join('') || '<div class="empty">Todavía no sigues a nadie.</div>'}
+      </section>
+    `);
+  }
 
+  function messagesPage() {
+    const list = messages().sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    return shell(`
+      <section class="messages-card">
+        <h1>Mensajes</h1>
+        <p>Aquí se registran los mensajes que envías desde las publicaciones.</p>
+        <div class="list">
+          ${list.map(messageCard).join('') || '<div class="empty">Todavía no hay mensajes.</div>'}
+        </div>
+      </section>
+    `);
+  }
+
+  function messageCard(item) {
+    return `
+      <div class="list-item">
+        <strong>${esc(item.postTitle || 'Publicación')}</strong>
+        <small>${esc(item.postCategory || '')} · ${esc(item.postZone || '')}</small>
+        <p style="margin:10px 0 0;white-space:pre-wrap">${esc(item.text || '')}</p>
+      </div>
+    `;
+  }
+
+  function profilePage() {
+    const prof = profile();
+    const mine = myPosts();
+    return shell(`
+      <section class="profile-card">
+        <h1>Perfil</h1>
+        <p>Por ahora este MVP se enfoca en publicar fácil. Aquí puedes ver un resumen rápido.</p>
+
+        <label>Nombre visible</label>
+        <input id="profileName" value="${esc(prof.name || 'Usuario local')}" placeholder="Tu nombre o negocio">
+
+        <button class="primary-action" style="margin-top:12px" data-save-profile>Guardar nombre</button>
+
+        <div class="profile-stats">
+          <div class="stat"><strong>${mine.length}</strong><span>Publicaciones</span></div>
+          <div class="stat"><strong>${follows().length}</strong><span>Siguiendo</span></div>
+          <div class="stat"><strong>${messages().length}</strong><span>Mensajes</span></div>
+        </div>
+      </section>
+
+      <section class="feed" style="margin-top:18px">
+        ${mine.map(postCard).join('') || '<div class="empty">Todavía no has publicado.</div>'}
+      </section>
+    `);
+  }
+
+  function composerPage() {
+    const post = state.editing || {
+      description: '',
+      zone: '',
+      category: state.filter === 'ALL' ? 'VENDO' : state.filter
+    };
     const media = state.preview || post.mediaUrl || post.mediaData || '';
     const isVideo = (state.mediaType || post.mediaType) === 'video';
 
     return shell(`
       <section class="composer-card">
-        <button class="ghost" data-back>← Volver</button>
-        <h1>${state.editing ? 'Editar publicación' : 'Publicar plantilla'}</h1>
+        <button class="ghost" data-nav="/">← Volver</button>
+        <h1>Nueva publicación</h1>
+        <p style="margin:0 0 14px;color:var(--muted)">Elige tu multimedia, escribe tu descripción y selecciona VENDO, OFREZCO o NECESITO.</p>
 
         <div class="preview" data-pick>
           ${
@@ -347,13 +452,13 @@
         </div>
 
         <label>Descripción</label>
-        <textarea id="description" placeholder='PLANTILLA "ÚSALA"&#10;Describe aquí la plantilla para que otra persona la use.'>${esc(post.description || '')}</textarea>
+        <textarea id="description" placeholder="Describe lo que vendes, ofreces o necesitas.">${esc(post.description || '')}</textarea>
 
         <div class="form-grid">
           <div>
             <label>Zona o municipio</label>
-            <input id="zone" list="zones" value="${esc(post.zone || '')}" placeholder="Ej. Tejupilco">
-            <datalist id="zones">
+            <input id="zone" list="zoneList" value="${esc(post.zone || '')}" placeholder="Ej. Tejupilco">
+            <datalist id="zoneList">
               ${ZONES.map(zone => `<option value="${esc(zone)}"></option>`).join('')}
             </datalist>
           </div>
@@ -373,44 +478,31 @@
 
   function render() {
     const routes = {
-      '/': home,
-      '/muro': pathPage,
-      '/publicar': composer
+      '/': homePage,
+      '/siguiendo': followingPage,
+      '/mensajes': messagesPage,
+      '/perfil': profilePage,
+      '/publicar': composerPage
     };
-    app.innerHTML = (routes[state.route] || home)();
+    app.innerHTML = (routes[state.route] || homePage)();
     bind();
   }
 
-  function goHome() {
-    state.route = '/';
-    state.path = '';
-    render();
-    setTimeout(() => scrollTo({ top: 0, behavior: 'smooth' }), 0);
-  }
-
-  function openPath(path) {
-    state.path = normalizeCategory(path);
-    state.route = '/muro';
-    render();
-    setTimeout(() => scrollTo({ top: 0, behavior: 'smooth' }), 0);
-  }
-
-  function openComposer() {
-    if (!isAdmin()) return toast('Solo Admin puede publicar por ahora.');
+  function openPicker() {
     document.getElementById('mediaPicker')?.click();
   }
 
-  function backFromComposer() {
-    if (state.path) openPath(state.path);
-    else goHome();
+  function nav(route) {
+    state.route = route;
+    render();
+    setTimeout(() => scrollTo({ top: 0, behavior: 'smooth' }), 0);
   }
 
-  function readImage(file) {
-    return new Promise(resolve => {
-      if (!file.type.startsWith('image/')) return resolve('');
+  async function fileToDataURL(file) {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result || '');
-      reader.onerror = () => resolve('');
+      reader.onerror = reject;
       reader.readAsDataURL(file);
     });
   }
@@ -420,150 +512,181 @@
     event.target.value = '';
     if (!file) return;
 
-    state.file = file;
+    if (file.size > MAX_FILE_MB * 1024 * 1024) {
+      toast(`Por ahora usa archivos de hasta ${MAX_FILE_MB} MB.`);
+      return;
+    }
+
     state.mediaType = file.type.startsWith('video') ? 'video' : 'image';
-    state.preview = state.mediaType === 'video' ? URL.createObjectURL(file) : await readImage(file);
-    state.editing = null;
-    state.route = '/publicar';
-    render();
+    try {
+      state.pickedFileData = await fileToDataURL(file);
+      state.preview = state.pickedFileData;
+      state.pickedFileName = file.name || 'media';
+      state.editing = null;
+      nav('/publicar');
+    } catch {
+      toast('No se pudo leer el archivo.');
+    }
   }
 
   function collectForm() {
     return {
       description: document.getElementById('description')?.value.trim() || '',
       zone: document.getElementById('zone')?.value.trim() || '',
-      category: normalizeCategory(document.getElementById('category')?.value || state.path || 'VENDO')
+      category: normalizeCategory(document.getElementById('category')?.value || 'VENDO')
     };
   }
 
   async function publish() {
-    if (!isAdmin()) return toast('Solo Admin puede publicar por ahora.');
-
     const form = collectForm();
-    if (!form.description) return toast('Escribe la descripción');
+    if (!form.description) return toast('Escribe una descripción');
     if (!form.zone) return toast('Agrega zona o municipio');
     if (!form.category) return toast('Selecciona VENDO, OFREZCO o NECESITO');
 
     const old = state.editing;
     const id = old?.id || uid('post');
+    const prof = profile();
 
     const post = {
       ...old,
       id,
       ownerId: old?.ownerId || userId(),
+      ownerName: prof.name || 'Usuario local',
       title: titleFrom(form.description),
       description: form.description,
       zone: form.zone,
       category: form.category,
-      mediaData: state.mediaType === 'image' ? (state.preview || old?.mediaData || '') : '',
+      mediaData: state.preview || old?.mediaData || '',
       mediaUrl: old?.mediaUrl || '',
       mediaType: state.mediaType || old?.mediaType || 'image',
       status: 'activa',
       reactions: old?.reactions || 0,
       createdAt: old?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      cloudStatus: 'subiendo',
-      template: true,
-      adminTemplate: true
+      cloudStatus: 'subiendo'
     };
 
-    saveLocal([post, ...state.posts.filter(item => item.id !== id)]);
+    saveLocalPosts([post, ...state.posts.filter(item => item.id !== id)]);
     toast('Publicando...');
 
     const ok = await syncPost(post);
-    const finalPost = { ...post, cloudStatus: ok ? 'publica' : 'local' };
-    saveLocal([finalPost, ...state.posts.filter(item => item.id !== id)]);
+    saveLocalPosts([{ ...post, cloudStatus: ok ? 'publica' : 'local' }, ...state.posts.filter(item => item.id !== id)]);
 
-    state.file = null;
     state.preview = '';
+    state.pickedFileData = '';
+    state.pickedFileName = '';
     state.mediaType = 'image';
     state.editing = null;
-    state.path = form.category;
+    state.filter = form.category;
+    state.query = '';
 
     if (ok) {
       await syncFromCloud();
       toast('Publicación lista');
+      nav('/');
     } else {
       toast('Tu publicación se guardó como borrador local. Revisa conexión o vuelve a intentar sincronizar.');
+      nav('/');
     }
-
-    openPath(form.category);
   }
 
   function editPost(id) {
-    if (!isAdmin()) return toast('Solo Admin puede editar por ahora.');
     const post = state.posts.find(item => item.id === id);
-    if (!post) return;
-
-    state.editing = { ...post, category: normalizeCategory(post.category) };
-    state.preview = post.mediaUrl || post.mediaData || '';
+    if (!post || post.ownerId !== userId()) return toast('Solo puedes editar tus publicaciones.');
+    state.editing = { ...post };
+    state.preview = post.mediaData || post.mediaUrl || '';
     state.mediaType = post.mediaType || 'image';
-    state.path = normalizeCategory(post.category);
-    state.route = '/publicar';
-    render();
+    nav('/publicar');
   }
 
   function deletePost(id) {
-    if (!isAdmin()) return toast('Solo Admin puede borrar por ahora.');
     const post = state.posts.find(item => item.id === id);
-    if (!post) return;
+    if (!post || post.ownerId !== userId()) return toast('Solo puedes borrar tus publicaciones.');
     if (!confirm('¿Borrar esta publicación?')) return;
 
-    saveLocal(state.posts.filter(item => item.id !== id));
+    saveLocalPosts(state.posts.filter(item => item.id !== id));
     deleteCloud(id);
     toast('Publicación borrada');
     render();
   }
 
   function likePost(id) {
-    saveLocal(state.posts.map(post => post.id === id ? { ...post, reactions: (post.reactions || 0) + 1 } : post));
+    saveLocalPosts(state.posts.map(post => post.id === id ? { ...post, reactions: (post.reactions || 0) + 1 } : post));
     render();
   }
 
   function sharePost(id) {
     const post = state.posts.find(item => item.id === id);
     if (!post) return;
-
     const text = `${post.title}\n\n${post.description}\n\n${post.category} · ${post.zone}\n\n${APP_URL}`;
-
-    if (navigator.share) {
-      navigator.share({ title: post.title, text, url: APP_URL }).catch(() => {});
-    } else {
-      navigator.clipboard?.writeText(text).then(() => toast('Copiado para compartir'));
-    }
+    if (navigator.share) navigator.share({ title: post.title, text, url: APP_URL }).catch(() => {});
+    else navigator.clipboard?.writeText(text).then(() => toast('Copiado para compartir'));
   }
 
-  function adminLogin() {
-    if (isAdmin()) return toast('Admin ya está activo');
+  function toggleFollow(ownerId) {
+    const current = follows();
+    const next = current.includes(ownerId)
+      ? current.filter(id => id !== ownerId)
+      : [...current, ownerId];
+    set(K.follows, next);
+    render();
+  }
 
-    const pin = prompt('PIN de admin');
-    if (pin === ADMIN_PIN) {
-      localStorage.setItem(K.admin, 'true');
-      toast('Admin activo');
-      render();
-    } else if (pin) {
-      toast('PIN incorrecto');
-    }
+  function sendMessage(postId) {
+    const post = state.posts.find(item => item.id === postId);
+    if (!post) return;
+    const text = prompt(`Mensaje para "${post.title}"`);
+    if (!text) return;
+    const list = messages();
+    list.unshift({
+      id: uid('m'),
+      postId,
+      postTitle: post.title,
+      postCategory: post.category,
+      postZone: post.zone,
+      ownerId: post.ownerId,
+      text,
+      createdAt: new Date().toISOString()
+    });
+    saveMessages(list);
+    toast('Mensaje guardado');
+  }
+
+  function saveProfile() {
+    const name = document.getElementById('profileName')?.value.trim() || 'Usuario local';
+    set(K.profile, { name });
+    toast('Nombre guardado');
   }
 
   function bind() {
-    document.querySelectorAll('[data-home]').forEach(button => button.onclick = goHome);
-    document.querySelectorAll('[data-open-path]').forEach(button => button.onclick = () => openPath(button.dataset.openPath));
-    document.querySelectorAll('[data-pick]').forEach(button => button.onclick = openComposer);
-    document.querySelectorAll('[data-back]').forEach(button => button.onclick = backFromComposer);
+    document.querySelectorAll('[data-nav]').forEach(button => button.onclick = () => nav(button.dataset.nav));
+    document.querySelectorAll('[data-filter]').forEach(button => button.onclick = () => { state.filter = button.dataset.filter; render(); });
+    document.querySelectorAll('[data-pick]').forEach(button => button.onclick = openPicker);
     document.querySelectorAll('[data-publish]').forEach(button => button.onclick = publish);
     document.querySelectorAll('[data-like]').forEach(button => button.onclick = () => likePost(button.dataset.like));
     document.querySelectorAll('[data-share]').forEach(button => button.onclick = () => sharePost(button.dataset.share));
+    document.querySelectorAll('[data-follow]').forEach(button => button.onclick = () => toggleFollow(button.dataset.follow));
+    document.querySelectorAll('[data-message]').forEach(button => button.onclick = () => sendMessage(button.dataset.message));
     document.querySelectorAll('[data-edit]').forEach(button => button.onclick = () => editPost(button.dataset.edit));
     document.querySelectorAll('[data-delete]').forEach(button => button.onclick = () => deletePost(button.dataset.delete));
-    document.querySelectorAll('[data-admin]').forEach(button => button.onclick = adminLogin);
+    document.querySelectorAll('[data-save-profile]').forEach(button => button.onclick = saveProfile);
 
     const picker = document.getElementById('mediaPicker');
     if (picker) picker.onchange = fileChosen;
+
+    const search = document.getElementById('searchInput');
+    if (search) {
+      search.oninput = (event) => {
+        state.query = event.target.value;
+        const currentRoute = state.route;
+        if (currentRoute !== '/') state.route = '/';
+        render();
+      };
+    }
   }
 
   async function init() {
-    state.posts = loadLocal();
+    state.posts = localPosts();
     render();
     await syncFromCloud();
     render();
