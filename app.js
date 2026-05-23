@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.36-home-base-menu-transparente
+/* Conecta Servicios v6.3.37-menu-dots-correccion
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.36-home-base-menu-transparente';
+  const VERSION = 'v6.3.37-menu-dots-correccion';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -1829,6 +1829,128 @@
       .post-card{
         min-height:calc(100vh - 72px) !important;
       }
+
+      /* v6.3.37: corrección precisa de menú y puntitos */
+      .gallery-stage{
+        position:relative !important;
+        width:100% !important;
+        height:calc(100vh - 72px) !important;
+        min-height:calc(100vh - 72px) !important;
+        overflow:hidden !important;
+        background:#050507 !important;
+      }
+      .gallery-stage .media-carousel{
+        position:relative !important;
+        width:100% !important;
+        height:100% !important;
+        min-height:100% !important;
+        overflow-x:auto !important;
+        overflow-y:hidden !important;
+        scroll-snap-type:x mandatory !important;
+      }
+      .gallery-stage .media-carousel img{
+        height:100% !important;
+        min-height:100% !important;
+      }
+      .gallery-dots{
+        position:absolute !important;
+        left:50% !important;
+        top:auto !important;
+        right:auto !important;
+        bottom:calc(env(safe-area-inset-bottom) + 230px) !important;
+        transform:translateX(-50%) !important;
+        z-index:120 !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        gap:7px !important;
+        padding:7px 11px !important;
+        border-radius:999px !important;
+        background:rgba(0,0,0,.42) !important;
+        border:1px solid rgba(255,255,255,.24) !important;
+        box-shadow:0 10px 30px rgba(0,0,0,.22) !important;
+        backdrop-filter:blur(10px) !important;
+        pointer-events:auto !important;
+      }
+      .gallery-dot{
+        width:8px !important;
+        height:8px !important;
+        border-radius:999px !important;
+        background:rgba(255,255,255,.55) !important;
+      }
+      .gallery-dot.active{
+        width:24px !important;
+        background:#fff !important;
+      }
+      .bottom-nav{
+        position:fixed !important;
+        left:50% !important;
+        right:auto !important;
+        bottom:calc(env(safe-area-inset-bottom) + 10px) !important;
+        transform:translateX(-50%) !important;
+        width:min(86vw, 360px) !important;
+        height:58px !important;
+        min-height:58px !important;
+        max-height:58px !important;
+        padding:4px 8px !important;
+        border-radius:24px !important;
+        background:rgba(255,255,255,.20) !important;
+        border:1px solid rgba(255,255,255,.30) !important;
+        backdrop-filter:blur(20px) saturate(1.15) !important;
+        -webkit-backdrop-filter:blur(20px) saturate(1.15) !important;
+        box-shadow:0 8px 30px rgba(0,0,0,.20) !important;
+        display:grid !important;
+        grid-template-columns:1fr 1fr 58px 1fr 1fr !important;
+        align-items:center !important;
+        gap:0 !important;
+        overflow:visible !important;
+      }
+      .nav-item{
+        height:50px !important;
+        min-height:50px !important;
+        padding:2px 4px !important;
+        border-radius:16px !important;
+        background:transparent !important;
+        box-shadow:none !important;
+      }
+      .nav-item.active{
+        background:rgba(255,255,255,.22) !important;
+      }
+      .nav-icon{
+        font-size:21px !important;
+        line-height:1 !important;
+      }
+      .nav-item small{
+        font-size:9px !important;
+        margin-top:1px !important;
+        line-height:1 !important;
+      }
+      .nav-plus{
+        width:56px !important;
+        height:56px !important;
+        min-width:56px !important;
+        min-height:56px !important;
+        margin:0 !important;
+        transform:translateY(-12px) !important;
+        border-radius:999px !important;
+        font-size:30px !important;
+        background:rgba(255,255,255,.78) !important;
+        color:#111827 !important;
+        border:1px solid rgba(255,255,255,.70) !important;
+        box-shadow:0 10px 28px rgba(0,0,0,.18) !important;
+      }
+      .post-body{
+        bottom:calc(env(safe-area-inset-bottom) + 78px) !important;
+        left:12px !important;
+        right:12px !important;
+        padding:12px 12px 11px 12px !important;
+      }
+      .post-action-row{
+        margin-top:7px !important;
+      }
+      .post-action-row button{
+        min-height:34px !important;
+      }
       @media (max-width:380px){
         .post-action-row button{
           font-size:11px !important;
@@ -2179,8 +2301,10 @@
         return src ? `<img src="${esc(src)}" alt="${esc(post.title || 'Foto')} ${index+1}" loading="${index ? 'lazy' : 'eager'}">` : '';
       }).join('');
       const dots = imageItems.map((_, index) => `<button type="button" class="gallery-dot ${index === 0 ? 'active' : ''}" data-gallery-dot="${esc(post.id)}" data-gallery-index="${index}" aria-label="Ver foto ${index+1}"></button>`).join('');
-      return `<div class="media-carousel" data-gallery="${esc(post.id)}" data-gallery-total="${imageItems.length}">
-        ${slides}
+      return `<div class="gallery-stage" data-gallery-stage="${esc(post.id)}">
+        <div class="media-carousel" data-gallery="${esc(post.id)}" data-gallery-total="${imageItems.length}">
+          ${slides}
+        </div>
         <div class="gallery-dots" data-gallery-dots="${esc(post.id)}">${dots}</div>
       </div>`;
     }
