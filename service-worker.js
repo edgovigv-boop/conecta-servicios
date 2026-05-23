@@ -1,11 +1,11 @@
-const CACHE_NAME = 'conecta-servicios-v6-3-8-chat-tiempo-real-cache';
+const CACHE_NAME = 'conecta-servicios-v6-3-9-chat-limpio-sonido';
 
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=6.3.8-chat-tiempo-real-cache',
-  '/app.js?v=6.3.8-chat-tiempo-real-cache',
-  '/manifest.json?v=6.3.8-chat-tiempo-real-cache',
+  '/styles.css?v=6.3.9-chat-limpio-sonido',
+  '/app.js?v=6.3.9-chat-limpio-sonido',
+  '/manifest.json?v=6.3.9-chat-limpio-sonido',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'

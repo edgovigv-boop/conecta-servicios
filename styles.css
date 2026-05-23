@@ -156,3 +156,19 @@ textarea:focus,input:focus,select:focus{border-color:var(--primary);box-shadow:0
 .bubble small{display:block;opacity:.75;font-size:.72rem;font-weight:900}
 .chat-box{display:grid;gap:10px}
 .chat-box textarea{min-height:96px;font-size:16px}
+
+
+/* v6.3.9 chat limpio + feedback */
+.messages-panel h1{margin-bottom:14px}
+.compact-empty{padding:18px 16px}
+.conversation-list{gap:10px}
+.conversation-line{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px}
+.conversation-line small{font-size:.75rem;white-space:nowrap;color:var(--muted);font-weight:900}
+.conversation-dot{width:12px;height:12px;border-radius:999px;background:var(--primary);box-shadow:0 0 0 4px rgba(91,46,234,.12)}
+.chat-topbar{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;margin-bottom:10px}
+.chat-topbar .back-btn{width:44px;height:44px;border-radius:16px;background:#f3efff;margin:0;display:grid;place-items:center;font-size:1.15rem}
+.chat-topbar h1{font-size:1.28rem;margin:0;letter-spacing:-.03em}
+.chat-topbar small{display:block;color:var(--muted);font-weight:900;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.bubble small{text-align:right}
+.bubble-row.theirs .bubble small{text-align:left}
+@media(max-width:660px){.chat-feed{min-height:380px;max-height:58vh}.chat-box textarea{min-height:72px}.conversation-avatar{width:42px;height:42px}.conversation-count{min-width:28px;height:28px}}

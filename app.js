@@ -1,13 +1,13 @@
-/* Conecta Servicios v6.3.8 - Chat en pantalla, polling y limpieza de caché */
+/* Conecta Servicios v6.3.9 - Chat limpio con sonido y vibración */
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.8-chat-tiempo-real-cache';
+  const VERSION = 'v6.3.9-chat-limpio-sonido';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const MAX_FILE_MB = 40;
   const IMAGE_MAX_SIDE = 1280;
   const POLL_MS = 7000;
-  const MESSAGE_POLL_MS = 3500;
+  const MESSAGE_POLL_MS = 3000;
   const STORAGE_BUCKET = 'publication-media';
 
   const K = {
@@ -16,7 +16,8 @@
     follows: 'cs_v634_follows',
     messages: 'cs_v634_messages',
     profile: 'cs_v634_profile',
-    composer: 'cs_v634_composer'
+    composer: 'cs_v634_composer',
+    seenMessages: 'cs_v639_seen_messages'
   };
 
   const CATEGORIES = ['VENDO', 'OFREZCO', 'NECESITO'];
@@ -58,7 +59,10 @@
     chat: null,
     chatMessages: [],
     chatLoading: false,
-    chatLoaded: false
+    chatLoaded: false,
+    knownMessageIds: new Set(),
+    messageFeedbackReady: false,
+    audioCtx: null
   };
 
   const esc = (v='') => String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -74,6 +78,86 @@
   function toast(msg){ toastEl.textContent=msg; toastEl.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.classList.remove('show'),2800); }
   function normalizeCategory(v){ const x=String(v||'').toUpperCase().trim(); return CATEGORIES.includes(x)?x:'VENDO'; }
   function titleFrom(text){ return (String(text||'').split('\n').map(x=>x.trim()).find(Boolean)||'Publicación').slice(0,72); }
+
+
+  function shortTime(value){
+    if(!value) return '';
+    try { return new Date(value).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}); }
+    catch { return ''; }
+  }
+
+  function shortDateTime(value){
+    if(!value) return '';
+    try {
+      const d = new Date(value);
+      const today = new Date();
+      const sameDay = d.toDateString() === today.toDateString();
+      return sameDay ? d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}) : d.toLocaleDateString('es-MX',{day:'2-digit',month:'short'});
+    } catch { return ''; }
+  }
+
+  function loadKnownMessageIds(){
+    state.knownMessageIds = new Set(get(K.seenMessages, []));
+  }
+
+  function persistKnownMessageIds(){
+    try { set(K.seenMessages, [...state.knownMessageIds].slice(-800)); } catch {}
+  }
+
+  function enableMessageFeedback(){
+    state.messageFeedbackReady = true;
+    try {
+      const AudioCtor = window.AudioContext || window.webkitAudioContext;
+      if(AudioCtor && !state.audioCtx) state.audioCtx = new AudioCtor();
+      if(state.audioCtx?.state === 'suspended') state.audioCtx.resume().catch(()=>null);
+    } catch {}
+  }
+
+  function playMessageTone(){
+    try {
+      const AudioCtor = window.AudioContext || window.webkitAudioContext;
+      if(!AudioCtor) return;
+      const ctx = state.audioCtx || new AudioCtor();
+      state.audioCtx = ctx;
+      if(ctx.state === 'suspended') ctx.resume().catch(()=>null);
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(740, ctx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(980, ctx.currentTime + 0.11);
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.08, ctx.currentTime + 0.018);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.16);
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.18);
+    } catch {}
+  }
+
+  function notifyNewMessages(messages){
+    const incoming = (messages || []).filter(m => m && m.senderId !== userId());
+    if(!incoming.length) return;
+    try { if(navigator.vibrate) navigator.vibrate(incoming.length > 1 ? [80, 40, 80] : [90]); } catch {}
+    playMessageTone();
+    const last = incoming[incoming.length - 1];
+    toast(incoming.length > 1 ? `${incoming.length} mensajes nuevos` : `Nuevo mensaje de ${last.senderName || 'usuario local'}`);
+  }
+
+  function trackMessages(list, options = {}){
+    const initial = !!options.initial;
+    const freshIncoming = [];
+    (list || []).forEach(m => {
+      if(!m || !m.id) return;
+      if(!state.knownMessageIds.has(m.id)){
+        if(!initial && m.senderId !== userId()) freshIncoming.push(m);
+        state.knownMessageIds.add(m.id);
+      }
+    });
+    persistKnownMessageIds();
+    if(freshIncoming.length) notifyNewMessages(freshIncoming);
+  }
+
 
 
   async function refreshOldCaches(){
@@ -351,13 +435,12 @@
   function messagesPage(){
     if(!state.messagesLoaded && !state.messagesLoading) loadMessagesForInbox();
     const groups = conversationGroups(state.publicMessages || []);
-    return shell(`<section class="panel">
-      <h1>Conversaciones</h1>
-      <p>Aquí ves mensajes enviados y recibidos desde tus publicaciones.</p>
-      ${state.messagesLoading ? '<div class="empty"><strong>Cargando mensajes...</strong>Espera un momento.</div>' : ''}
+    return shell(`<section class="panel messages-panel">
+      <h1>Mensajes</h1>
+      ${state.messagesLoading ? '<div class="empty compact-empty"><strong>Cargando...</strong></div>' : ''}
       ${state.messagesError ? `<div class="local-note">${esc(state.messagesError)}</div>` : ''}
-      <div class="list">
-        ${groups.map(conversationCard).join('') || (!state.messagesLoading ? emptyState('Sin conversaciones todavía','Toca el sobre en una publicación para escribir.') : '')}
+      <div class="list conversation-list">
+        ${groups.map(conversationCard).join('') || (!state.messagesLoading ? emptyState('Sin conversaciones','Cuando alguien te escriba, aparecerá aquí.') : '')}
       </div>
     </section>`);
   }
@@ -386,33 +469,34 @@
   }
 
   function conversationCard(item){
+    const count = item.count || 1;
     return `<button class="conversation-card" data-open-chat="1" data-post="${esc(item.postId)}" data-peer="${esc(item.peerId)}" data-title="${esc(item.postTitle)}" data-name="${esc(item.peerName)}">
       <div class="conversation-avatar">💬</div>
       <div class="conversation-main">
-        <strong>${esc(item.peerName || 'Usuario local')}</strong>
-        <small>${esc(item.postTitle || 'Publicación')}</small>
+        <div class="conversation-line"><strong>${esc(item.peerName || 'Usuario local')}</strong><small>${esc(shortDateTime(item.lastAt))}</small></div>
         <p>${esc(item.lastText || '')}</p>
       </div>
-      <span class="conversation-count">${item.count || 1}</span>
+      ${count > 1 ? `<span class="conversation-count">${count}</span>` : '<span class="conversation-dot"></span>'}
     </button>`;
   }
 
   function chatPage(){
     const chat = state.chat;
     if(!chat){
-      return shell(`<section class="panel"><button class="back-btn" data-nav="/mensajes">← Volver</button><h1>Conversación</h1><p>Abre una conversación desde Mensajes o desde el sobre de una publicación.</p></section>`);
+      return shell(`<section class="panel"><button class="back-btn" data-nav="/mensajes">← Volver</button><h1>Chat</h1></section>`);
     }
     if(!state.chatLoaded && !state.chatLoading) loadChatMessages();
     return shell(`<section class="panel chat-panel">
-      <button class="back-btn" data-nav="/mensajes">← Conversaciones</button>
-      <h1>${esc(chat.peerName || 'Usuario local')}</h1>
-      <p>${esc(chat.postTitle || 'Publicación')}</p>
+      <div class="chat-topbar">
+        <button class="back-btn" data-nav="/mensajes">←</button>
+        <div><h1>${esc(chat.peerName || 'Usuario local')}</h1><small>${esc(chat.postTitle || 'Publicación')}</small></div>
+      </div>
       <div class="chat-feed" id="chatFeed">
-        ${state.chatLoading ? '<div class="empty"><strong>Cargando conversación...</strong></div>' : ''}
-        ${state.chatMessages.map(chatBubble).join('') || (!state.chatLoading ? '<div class="empty"><strong>Sin mensajes todavía</strong>Escribe el primer mensaje.</div>' : '')}
+        ${state.chatLoading ? '<div class="empty compact-empty"><strong>Cargando...</strong></div>' : ''}
+        ${state.chatMessages.map(chatBubble).join('') || (!state.chatLoading ? '<div class="empty compact-empty"><strong>Empieza la conversación</strong></div>' : '')}
       </div>
       <div class="chat-box">
-        <textarea id="chatText" placeholder="Escribe un mensaje claro y amable"></textarea>
+        <textarea id="chatText" placeholder="Escribe un mensaje"></textarea>
         <button class="big-button" data-send-chat>Enviar</button>
       </div>
     </section>`);
@@ -423,7 +507,7 @@
     return `<div class="bubble-row ${mine ? 'mine' : 'theirs'}">
       <div class="bubble">
         <p>${esc(m.text || '')}</p>
-        <small>${esc(m.senderName || 'Usuario local')} · ${new Date(m.createdAt || Date.now()).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})}</small>
+        <small>${esc(shortTime(m.createdAt || Date.now()))}${mine ? ' ✓' : ''}</small>
       </div>
     </div>`;
   }
@@ -613,6 +697,7 @@
     try{
       const list = await fetchPublicMessages({userId:userId()});
       const previous = JSON.stringify(state.publicMessages || []);
+      trackMessages(list, {initial: !state.messagesLoaded});
       state.publicMessages = list;
       state.messagesLoaded = true;
       if(options.silent && state.route === '/mensajes' && JSON.stringify(list) !== previous) render();
@@ -633,6 +718,7 @@
     try{
       const list = await fetchPublicMessages({userId:userId(), postId:state.chat.postId, peerId:state.chat.peerId});
       const previous = JSON.stringify(state.chatMessages || []);
+      trackMessages(list, {initial: !state.chatLoaded});
       state.chatMessages = list;
       state.chatLoaded = true;
       if(options.silent && state.route === '/chat' && JSON.stringify(list) !== previous) render();
@@ -742,8 +828,13 @@
   function runVisibleRefresh(){
     if(document.visibilityState !== 'visible' || state.publishing) return;
     if(state.route === '/mensajes') loadMessagesForInbox({silent:true});
-    else if(state.route === '/chat') loadChatMessages({silent:true});
-    else if(!state.syncing && state.route !== '/publicar') syncFromCloud({render:true});
+    else if(state.route === '/chat'){
+      loadChatMessages({silent:true});
+      loadMessagesForInbox({silent:true});
+    }else{
+      loadMessagesForInbox({silent:true});
+      if(!state.syncing && state.route !== '/publicar') syncFromCloud({render:true});
+    }
   }
 
   function startPolling(){
@@ -754,6 +845,6 @@
     window.addEventListener('focus',()=>{ runVisibleRefresh(); });
     document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') runVisibleRefresh(); });
   }
-  async function init(){ await refreshOldCaches(); state.posts=localPosts(); loadComposerDraft(); render(); await syncFromCloud({render:true}); startPolling(); }
+  async function init(){ await refreshOldCaches(); loadKnownMessageIds(); document.addEventListener('pointerdown', enableMessageFeedback, {once:true}); document.addEventListener('keydown', enableMessageFeedback, {once:true}); state.posts=localPosts(); loadComposerDraft(); render(); await syncFromCloud({render:true}); startPolling(); }
   init();
 })();
