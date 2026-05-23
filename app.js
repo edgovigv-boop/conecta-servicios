@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.37-menu-dots-correccion
+/* Conecta Servicios v6.3.38-altavoz-foto-perfil
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.37-menu-dots-correccion';
+  const VERSION = 'v6.3.38-altavoz-foto-perfil';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -91,7 +91,7 @@
   const norm = v => String(v || '').trim().toLowerCase();
 
   function userId(){ let id=localStorage.getItem(K.user); if(!id){ id=uid('u'); localStorage.setItem(K.user,id); } return id; }
-  function profile(){ const saved=get(K.profile,null); if(saved) return saved; const fresh={name:'Usuario local'}; set(K.profile,fresh); return fresh; }
+  function profile(){ const saved=get(K.profile,null); if(saved) return {...saved, avatarData:saved.avatarData||''}; const fresh={name:'Usuario local', avatarData:''}; set(K.profile,fresh); return fresh; }
   function follows(){ return get(K.follows,[]); }
   const PILOT_MUNICIPALITIES = [
     {name:'Tejupilco', lat:18.905, lon:-100.153},
@@ -616,6 +616,7 @@
     return {
       ownerId,
       ownerName: first.ownerName || (ownerId === userId() ? profile().name || 'Mi perfil' : 'Usuario local'),
+      ownerAvatar: first.ownerAvatar || (ownerId === userId() ? profile().avatarData || '' : ''),
       total: posts.length,
       vendo: posts.filter(p => normalizeCategory(p.category) === 'VENDO').length,
       ofrezco: posts.filter(p => normalizeCategory(p.category) === 'OFREZCO').length,
@@ -686,6 +687,25 @@
     const url = URL.createObjectURL(blob);
     memoryUrls.set(ref, url);
     return url;
+  }
+
+  function blobToDataURL(blob){
+    return new Promise((resolve,reject)=>{
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(reader.error || new Error('No se pudo leer imagen'));
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  function avatarMarkup(src, alt='Usuario'){
+    return src ? `<img class="owner-avatar-img" src="${esc(src)}" alt="${esc(alt)}">` : '<span class="owner-dot">👤</span>';
+  }
+
+  function postAvatar(post){
+    if(post?.ownerAvatar) return post.ownerAvatar;
+    if(post?.ownerId === userId()) return profile().avatarData || '';
+    return '';
   }
 
   function resolveMediaItem(item){
@@ -1951,6 +1971,100 @@
       .post-action-row button{
         min-height:34px !important;
       }
+
+      /* v6.3.38: altavoz visible y foto de perfil */
+      .sound-toggle{
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        position:absolute !important;
+        right:16px !important;
+        bottom:calc(env(safe-area-inset-bottom) + 228px) !important;
+        top:auto !important;
+        z-index:160 !important;
+        width:52px !important;
+        height:52px !important;
+        border-radius:999px !important;
+        border:2px solid rgba(255,255,255,.72) !important;
+        background:rgba(0,0,0,.66) !important;
+        color:#fff !important;
+        font-size:24px !important;
+        box-shadow:0 12px 34px rgba(0,0,0,.35) !important;
+        backdrop-filter:blur(12px) !important;
+        opacity:1 !important;
+        visibility:visible !important;
+        pointer-events:auto !important;
+      }
+      .video-inline-wrap.clean-video{
+        position:relative !important;
+      }
+      .owner-row{
+        gap:8px !important;
+        align-items:center !important;
+      }
+      .owner-avatar-img{
+        width:100% !important;
+        height:100% !important;
+        object-fit:cover !important;
+        border-radius:inherit !important;
+        display:block !important;
+      }
+      .owner-row .owner-avatar-img,
+      .owner-row .owner-dot{
+        width:42px !important;
+        height:42px !important;
+        min-width:42px !important;
+        border-radius:999px !important;
+        background:rgba(255,255,255,.92) !important;
+        border:2px solid rgba(255,255,255,.70) !important;
+        box-shadow:0 10px 24px rgba(0,0,0,.18) !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        overflow:hidden !important;
+      }
+      .profile-avatar-editor{
+        display:flex;
+        gap:14px;
+        align-items:center;
+        padding:12px;
+        border-radius:22px;
+        background:linear-gradient(135deg,rgba(91,46,234,.10),rgba(20,184,166,.10));
+        margin:12px 0 16px;
+      }
+      .profile-avatar-button{
+        width:78px;
+        height:78px;
+        min-width:78px;
+        border-radius:26px;
+        border:2px solid rgba(91,46,234,.22);
+        background:#fff;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        overflow:hidden;
+        font-size:34px;
+        box-shadow:0 14px 34px rgba(91,46,234,.15);
+      }
+      .profile-avatar-button img{
+        width:100%;
+        height:100%;
+        object-fit:cover;
+      }
+      .profile-avatar-editor strong{
+        display:block;
+        color:#111827;
+        font-size:17px;
+      }
+      .profile-avatar-editor span{
+        display:block;
+        color:#6b7280;
+        font-size:13px;
+        margin:4px 0 6px;
+      }
+      .store-avatar,.owner-avatar{
+        overflow:hidden !important;
+      }
       @media (max-width:380px){
         .post-action-row button{
           font-size:11px !important;
@@ -2343,7 +2457,7 @@
         <div class="media-bottom"><div class="action-stack"><button class="round-action" data-like="${esc(post.id)}"><span>❤️</span><small>${post.reactions || 0}</small></button><button class="round-action" data-message="${esc(post.id)}"><span>✉️</span><small>Mensaje</small></button><button class="round-action" data-share="${esc(post.id)}"><span>↗️</span><small>Compartir</small></button></div><button class="follow-btn ${isFollowing(post.ownerId)?'following':''}" data-follow="${esc(post.ownerId)}">${isFollowing(post.ownerId)?'Siguiendo':'Seguir'}</button></div>
       </div>
       <div class="post-body">
-        <div class="owner-row" data-open-store="${esc(post.ownerId)}"><span class="owner-dot">👤</span>${esc(post.ownerName || 'Usuario local')}</div>
+        <div class="owner-row" data-open-store="${esc(post.ownerId)}">${avatarMarkup(postAvatar(post), post.ownerName || 'Usuario local')}<span>${esc(post.ownerName || 'Usuario local')}</span></div>
         <h2>${esc(post.title || 'Publicación')}</h2>
         <p>${esc(shortDescription(post.description || ''))}</p>
         <div class="post-meta"><span>❤️ ${post.reactions || 0}</span><span>${new Date(post.createdAt || Date.now()).toLocaleDateString('es-MX')}</span></div>
@@ -2362,7 +2476,7 @@
   function emptyState(t,x){ return `<div class="empty"><strong>${esc(t)}</strong>${esc(x)}</div>`; }
   function ownerCard(summary, extra=''){
     return `<article class="owner-card">
-      <div class="owner-avatar">${summary.isMe ? '👤' : '🏪'}</div>
+      <div class="owner-avatar">${summary.ownerAvatar ? `<img class="owner-avatar-img" src="${esc(summary.ownerAvatar)}" alt="${esc(summary.ownerName || 'Usuario')}">` : (summary.isMe ? '👤' : '🏪')}</div>
       <div class="owner-card-main">
         <strong>${esc(summary.ownerName || 'Usuario local')}</strong>
         <span>${summary.vendo} en tienda · ${summary.ofrezco} ofrece · ${summary.necesito} necesita</span>
@@ -2384,7 +2498,7 @@
     return shell(`<section class="panel store-panel">
       <button class="small-link" data-nav="/">← Volver al Home</button>
       <div class="store-hero">
-        <div class="store-avatar">${summary.isMe ? '👤' : '🏪'}</div>
+        <div class="store-avatar">${summary.ownerAvatar ? `<img class="owner-avatar-img" src="${esc(summary.ownerAvatar)}" alt="${esc(summary.ownerName || 'Usuario')}">` : (summary.isMe ? '👤' : '🏪')}</div>
         <div>
           <p class="store-kicker">${summary.isMe ? 'Mi cuenta' : 'Cuenta local'}</p>
           <h1>${esc(summary.isMe ? 'Mi tienda' : summary.ownerName || 'Tienda')}</h1>
@@ -2434,7 +2548,28 @@ ${esc(shortDiagnosticText(diag))}</code>
     </section>`;
   }
 
-  function profilePage(){ const prof=profile(); const mine=myPosts(); return shell(`<section class="panel"><h1>Perfil</h1><p>Guarda tu nombre visible y revisa tu actividad.</p><label>Nombre visible</label><input id="profileName" value="${esc(prof.name||'Usuario local')}" placeholder="Tu nombre o negocio"><button class="big-button" data-save-profile>Guardar nombre</button><div class="profile-grid"><div class="stat"><strong>${mine.length}</strong><span>Publicaciones</span></div><div class="stat"><strong>${follows().length}</strong><span>Siguiendo</span></div><div class="stat"><strong>${unreadCount()}</strong><span>Sin leer</span></div></div></section>${diagnosticsPanel()}<section class="feed">${mine.map(postCard).join('')||emptyState('No has publicado','Toca + para crear tu primera publicación.')}</section>`); }
+  function profilePage(){
+    const prof=profile();
+    const mine=myPosts();
+    const avatar = prof.avatarData || '';
+    return shell(`<section class="panel profile-panel">
+      <h1>Perfil</h1>
+      <p>Guarda tu nombre visible y foto de perfil. Esa imagen aparecerá como anunciante en tus publicaciones.</p>
+      <div class="profile-avatar-editor">
+        <button class="profile-avatar-button" type="button" data-pick-profile-photo>${avatar ? `<img src="${esc(avatar)}" alt="Foto de perfil">` : '👤'}</button>
+        <div>
+          <strong>${esc(prof.name || 'Usuario local')}</strong>
+          <span>Foto para posicionar tu canal o negocio</span>
+          <button class="small-link" type="button" data-pick-profile-photo>Cambiar foto</button>
+        </div>
+      </div>
+      <input id="profilePhotoInput" type="file" accept="image/*" hidden>
+      <label>Nombre visible</label>
+      <input id="profileName" value="${esc(prof.name||'Usuario local')}" placeholder="Tu nombre o negocio">
+      <button class="big-button" data-save-profile>Guardar perfil</button>
+      <div class="profile-grid"><div class="stat"><strong>${mine.length}</strong><span>Publicaciones</span></div><div class="stat"><strong>${follows().length}</strong><span>Siguiendo</span></div><div class="stat"><strong>${unreadCount()}</strong><span>Sin leer</span></div></div>
+    </section>${diagnosticsPanel()}<section class="feed">${mine.map(postCard).join('')||emptyState('No has publicado','Toca + para crear tu primera publicación.')}</section>`);
+  }
 
   function ensureComposerId(){
     if(!state.composerId){
@@ -2681,6 +2816,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       id,
       ownerId: old?.ownerId || userId(),
       ownerName: prof.name || 'Usuario local',
+      ownerAvatar: prof.avatarData || old?.ownerAvatar || '',
       title: titleFrom(form.description),
       description: form.description,
       zone: form.zone,
@@ -2980,16 +3116,46 @@ ${esc(shortDiagnosticText(diag))}</code>
   function toggleFollow(ownerId){ if(ownerId===userId()) return toast('Esta publicación es tuya.'); const cur=follows(); const next=cur.includes(ownerId)?cur.filter(id=>id!==ownerId):[...cur,ownerId]; set(K.follows,next); toast(cur.includes(ownerId)?'Dejaste de seguir.':'Ahora lo sigues.'); render(); }
   function sharePost(id){ const p=state.posts.find(x=>x.id===id); if(!p) return; const text=`${p.title}\n\n${p.description}\n\n${p.category} · ${p.zone}\n\n${APP_URL}`; if(navigator.share) navigator.share({title:p.title,text,url:APP_URL}).catch(()=>{}); else navigator.clipboard?.writeText(text).then(()=>toast('Copiado para compartir.')); }
   function saveProfile(){
+    const current = profile();
     const name=document.getElementById('profileName')?.value.trim()||'Usuario local';
-    set(K.profile,{name});
-    const mine = state.posts.filter(p => p.ownerId === userId());
-    if(mine.length){
-      const updated = state.posts.map(p => p.ownerId === userId() ? {...p, ownerName:name, updatedAt:new Date().toISOString()} : p);
-      saveLocalPosts(updated);
-      mine.forEach(p => syncPost({...p, ownerName:name, updatedAt:new Date().toISOString()}).catch(()=>null));
-    }
-    toast('Nombre guardado y aplicado a tus publicaciones.');
+    const nextProfile = {...current, name};
+    set(K.profile,nextProfile);
+    applyProfileToOwnPosts(nextProfile);
+    toast('Perfil guardado y aplicado a tus publicaciones.');
     render();
+  }
+
+  function applyProfileToOwnPosts(prof=profile()){
+    const mine = state.posts.filter(p => p.ownerId === userId());
+    if(!mine.length) return;
+    const now = new Date().toISOString();
+    const updated = state.posts.map(p => p.ownerId === userId() ? {...p, ownerName:prof.name || 'Usuario local', ownerAvatar:prof.avatarData || '', updatedAt:now} : p);
+    saveLocalPosts(updated);
+    mine.forEach(p => syncPost({...p, ownerName:prof.name || 'Usuario local', ownerAvatar:prof.avatarData || '', updatedAt:now}).catch(()=>null));
+  }
+
+  async function profilePhotoChosen(event){
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if(!file) return;
+    if(!file.type.startsWith('image/')) return toast('Elige una imagen para tu perfil.');
+    try{
+      const resized = await resizeImage(file, 480, .82);
+      const avatarData = await blobToDataURL(resized);
+      const current = profile();
+      const name = document.getElementById('profileName')?.value.trim() || current.name || 'Usuario local';
+      const nextProfile = {...current, name, avatarData};
+      set(K.profile, nextProfile);
+      applyProfileToOwnPosts(nextProfile);
+      toast('Foto de perfil guardada.');
+      render();
+    }catch{
+      toast('No se pudo guardar la foto de perfil.');
+    }
+  }
+
+  function openProfilePhotoPicker(){
+    document.getElementById('profilePhotoInput')?.click();
   }
   function clearFilters(){ state.filter='ALL'; state.query=''; render(); }
 
@@ -3266,6 +3432,9 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=openPicker);
     document.querySelectorAll('[data-publish]').forEach(b=>b.onclick=publish);
     document.querySelectorAll('[data-save-profile]').forEach(b=>b.onclick=saveProfile);
+    document.querySelectorAll('[data-pick-profile-photo]').forEach(b=>b.onclick=openProfilePhotoPicker);
+    const profilePhotoInput=document.getElementById('profilePhotoInput');
+    if(profilePhotoInput) profilePhotoInput.onchange=profilePhotoChosen;
     document.querySelectorAll('[data-toggle-search]').forEach(b=>b.onclick=toggleSearchPanel);
     document.querySelectorAll('[data-open-store]').forEach(b=>b.onclick=()=>openStore(b.dataset.openStore));
     document.querySelectorAll('[data-top-tab]').forEach(b=>b.onclick=()=>setTopTab(b.dataset.topTab));
