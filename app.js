@@ -1,16 +1,21 @@
-/* Conecta Servicios v6.3.0 - MVP social local abuelita friendly */
+/* Conecta Servicios v6.3.1 - Publicación confiable y sincronización rápida */
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.0-mvp-social-local';
+  const VERSION = 'v6.3.1-publicacion-confiable';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
-  const MAX_FILE_MB = 4;
+  const MAX_FILE_MB = 40;
+  const IMAGE_MAX_SIDE = 1280;
+  const POLL_MS = 12000;
+  const STORAGE_BUCKET = 'publication-media';
+
   const K = {
-    posts: 'cs_v630_posts',
-    user: 'cs_v630_user',
-    follows: 'cs_v630_follows',
-    messages: 'cs_v630_messages',
-    profile: 'cs_v630_profile'
+    posts: 'cs_v631_posts',
+    user: 'cs_v631_user',
+    follows: 'cs_v631_follows',
+    messages: 'cs_v631_messages',
+    profile: 'cs_v631_profile',
+    composer: 'cs_v631_composer'
   };
 
   const CATEGORIES = ['VENDO', 'OFREZCO', 'NECESITO'];
@@ -27,9 +32,12 @@
       zone: 'Tejupilco',
       mediaUrl: 'assets/dola-media/comida-01.jpg',
       mediaType: 'image',
+      mediaMime: 'image/jpeg',
       reactions: 4,
       status: 'activa',
-      createdAt: new Date(Date.now() - 3600000).toISOString()
+      cloudStatus: 'publica',
+      createdAt: new Date(Date.now() - 3600000).toISOString(),
+      updatedAt: new Date(Date.now() - 3600000).toISOString()
     },
     {
       id: 'seed-ofrezco-1',
@@ -41,9 +49,12 @@
       zone: 'Centro',
       mediaUrl: 'assets/dola-media/mandados-01.jpg',
       mediaType: 'image',
+      mediaMime: 'image/jpeg',
       reactions: 2,
       status: 'activa',
-      createdAt: new Date(Date.now() - 7200000).toISOString()
+      cloudStatus: 'publica',
+      createdAt: new Date(Date.now() - 7200000).toISOString(),
+      updatedAt: new Date(Date.now() - 7200000).toISOString()
     },
     {
       id: 'seed-necesito-1',
@@ -55,11 +66,20 @@
       zone: 'Chapultepec',
       mediaUrl: 'assets/dola-media/solicitante-01.jpg',
       mediaType: 'image',
+      mediaMime: 'image/jpeg',
       reactions: 3,
       status: 'activa',
-      createdAt: new Date(Date.now() - 10800000).toISOString()
+      cloudStatus: 'publica',
+      createdAt: new Date(Date.now() - 10800000).toISOString(),
+      updatedAt: new Date(Date.now() - 10800000).toISOString()
     }
   ];
+
+  const app = document.getElementById('app');
+  const toastEl = document.getElementById('toast');
+
+  const memoryUrls = new Map();
+  let mediaDbPromise = null;
 
   const state = {
     route: '/',
@@ -67,13 +87,19 @@
     query: '',
     posts: [],
     preview: '',
+    previewUrl: '',
     mediaType: 'image',
     editing: null,
-    cloudReady: false
+    composerId: '',
+    composerMediaRef: '',
+    composerMediaName: '',
+    composerMediaMime: '',
+    cloudReady: false,
+    publishing: false,
+    syncing: false,
+    lastSyncAt: 0,
+    syncTimer: null
   };
-
-  const app = document.getElementById('app');
-  const toastEl = document.getElementById('toast');
 
   function esc(value = '') {
     return String(value).replace(/[&<>'"]/g, char => ({
@@ -143,6 +169,73 @@
     return (String(description || '').split('\n').map(line => line.trim()).find(Boolean) || 'Publicación').slice(0, 72);
   }
 
+  function openMediaDb() {
+    if (mediaDbPromise) return mediaDbPromise;
+    mediaDbPromise = new Promise((resolve, reject) => {
+      if (!('indexedDB' in window)) return reject(new Error('Sin almacenamiento multimedia'));
+      const req = indexedDB.open('conecta_media_v631', 1);
+      req.onupgradeneeded = () => req.result.createObjectStore('files');
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    return mediaDbPromise;
+  }
+
+  async function saveMediaBlob(ref, blob) {
+    const db = await openMediaDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('files', 'readwrite');
+      tx.objectStore('files').put(blob, ref);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
+  async function loadMediaBlob(ref) {
+    const db = await openMediaDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('files', 'readonly');
+      const req = tx.objectStore('files').get(ref);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  function objectUrlFor(ref, blob) {
+    if (!ref || !blob) return '';
+    if (memoryUrls.has(ref)) return memoryUrls.get(ref);
+    const url = URL.createObjectURL(blob);
+    memoryUrls.set(ref, url);
+    return url;
+  }
+
+  function requestRenderSoon() {
+    clearTimeout(requestRenderSoon._t);
+    requestRenderSoon._t = setTimeout(render, 60);
+  }
+
+  function resolveMedia(post) {
+    if (post.mediaUrl) return post.mediaUrl;
+    if (post.mediaData) return post.mediaData;
+    if (post.mediaPreviewUrl) return post.mediaPreviewUrl;
+    if (post.mediaRef) {
+      if (memoryUrls.has(post.mediaRef)) return memoryUrls.get(post.mediaRef);
+      loadMediaBlob(post.mediaRef).then(blob => {
+        if (blob) {
+          objectUrlFor(post.mediaRef, blob);
+          requestRenderSoon();
+        }
+      }).catch(() => {});
+    }
+    return '';
+  }
+
+  function stripHeavy(post) {
+    const copy = { ...post };
+    delete copy.mediaPreviewUrl;
+    return copy;
+  }
+
   function localPosts() {
     const saved = get(K.posts, null);
     if (!saved) {
@@ -153,14 +246,63 @@
   }
 
   function saveLocalPosts(posts) {
-    const normalized = posts.map(post => ({ ...post, category: normalizeCategory(post.category) }));
+    const normalized = dedupePosts(posts.map(post => ({ ...post, category: normalizeCategory(post.category) })));
     state.posts = normalized;
-    set(K.posts, normalized);
+    set(K.posts, normalized.map(stripHeavy));
+  }
+
+  function betterPost(a, b) {
+    if (!a) return b;
+    if (!b) return a;
+    if (b.mediaUrl && !a.mediaUrl) return b;
+    if (a.mediaUrl && !b.mediaUrl) return a;
+    if (b.cloudStatus === 'publica' && a.cloudStatus !== 'publica') return b;
+    if (a.cloudStatus === 'publica' && b.cloudStatus !== 'publica') return a;
+    const ad = new Date(a.updatedAt || a.createdAt || 0).getTime();
+    const bd = new Date(b.updatedAt || b.createdAt || 0).getTime();
+    return bd >= ad ? { ...a, ...b } : { ...b, ...a };
+  }
+
+  function sameSoftKey(a, b) {
+    if (!a || !b) return false;
+    if ((a.ownerId || '') !== (b.ownerId || '')) return false;
+    if (normalizeCategory(a.category) !== normalizeCategory(b.category)) return false;
+    if ((a.zone || '').trim().toLowerCase() !== (b.zone || '').trim().toLowerCase()) return false;
+    if ((a.description || '').trim().toLowerCase() !== (b.description || '').trim().toLowerCase()) return false;
+    const at = new Date(a.createdAt || 0).getTime();
+    const bt = new Date(b.createdAt || 0).getTime();
+    return Math.abs(at - bt) < 120000;
+  }
+
+  function dedupePosts(posts) {
+    const byId = new Map();
+    posts.forEach(post => {
+      if (!post || !post.id) return;
+      byId.set(post.id, betterPost(byId.get(post.id), post));
+    });
+
+    const list = [...byId.values()].sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
+    const final = [];
+
+    list.forEach(post => {
+      const duplicateIndex = final.findIndex(existing => sameSoftKey(existing, post));
+      if (duplicateIndex >= 0) {
+        final[duplicateIndex] = betterPost(final[duplicateIndex], post);
+      } else {
+        final.push(post);
+      }
+    });
+
+    return final;
+  }
+
+  function mergePosts(local, remote) {
+    return dedupePosts([...(remote || []), ...(local || [])]);
   }
 
   function filteredPosts() {
     const q = state.query.trim().toLowerCase();
-    return state.posts
+    return dedupePosts(state.posts)
       .filter(post => post.status !== 'eliminada')
       .filter(post => state.filter === 'ALL' ? true : normalizeCategory(post.category) === state.filter)
       .filter(post => {
@@ -172,19 +314,82 @@
   }
 
   function myPosts() {
-    return state.posts
+    return dedupePosts(state.posts)
       .filter(post => post.ownerId === userId())
       .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
   }
 
   function followedPosts() {
     const ids = new Set(follows());
-    return state.posts
+    return dedupePosts(state.posts)
       .filter(post => ids.has(post.ownerId))
       .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
   }
 
-  async function syncFromCloud() {
+  async function getPublicConfig() {
+    try {
+      const res = await fetch('/api/public-config', { cache: 'no-store' });
+      const data = await res.json();
+      return data || { ok: false };
+    } catch {
+      return { ok: false };
+    }
+  }
+
+  function dataUrlToBlob(dataUrl) {
+    const [header, body] = String(dataUrl || '').split(',');
+    if (!header || !body) return null;
+    const mime = (header.match(/data:([^;]+)/) || [])[1] || 'application/octet-stream';
+    const bin = atob(body);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new Blob([bytes], { type: mime });
+  }
+
+  async function uploadMediaToCloud(post) {
+    if (post.mediaUrl) return post;
+    const cfg = await getPublicConfig();
+    if (!cfg.ok || !cfg.supabaseUrl || !cfg.supabaseAnonKey) return post;
+
+    let blob = null;
+    if (post.mediaRef) {
+      blob = await loadMediaBlob(post.mediaRef).catch(() => null);
+    }
+    if (!blob && post.mediaData) {
+      blob = dataUrlToBlob(post.mediaData);
+    }
+    if (!blob) return post;
+
+    const bucket = cfg.storageBucket || STORAGE_BUCKET;
+    const safeName = (post.mediaName || `${post.mediaType || 'media'}.bin`).replace(/[^a-z0-9_.-]/gi, '-').toLowerCase();
+    const path = `${encodeURIComponent(post.ownerId || userId())}/${encodeURIComponent(post.id)}/${Date.now()}-${safeName}`;
+    const url = `${cfg.supabaseUrl}/storage/v1/object/${bucket}/${path}`;
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        apikey: cfg.supabaseAnonKey,
+        Authorization: `Bearer ${cfg.supabaseAnonKey}`,
+        'Content-Type': post.mediaMime || blob.type || 'application/octet-stream',
+        'x-upsert': 'true'
+      },
+      body: blob
+    });
+
+    if (!res.ok) return post;
+
+    return {
+      ...post,
+      mediaUrl: `${cfg.supabaseUrl}/storage/v1/object/public/${bucket}/${path}`,
+      mediaData: '',
+      mediaPreviewUrl: '',
+      mediaUploadedAt: new Date().toISOString()
+    };
+  }
+
+  async function syncFromCloud(options = {}) {
+    if (state.syncing) return false;
+    state.syncing = true;
     try {
       const response = await fetch('/api/publications', { cache: 'no-store' });
       const data = await response.json();
@@ -197,25 +402,28 @@
         cloudStatus: 'publica'
       }));
 
-      const local = localPosts();
-      const merged = [...remote];
-      local.forEach(post => {
-        if (!merged.some(item => item.id === post.id)) merged.push(post);
-      });
-
+      const merged = mergePosts(localPosts(), remote);
       saveLocalPosts(merged);
+      state.lastSyncAt = Date.now();
+      if (options.render !== false) render();
+      return true;
     } catch {
       state.cloudReady = false;
       state.posts = localPosts();
+      if (options.render !== false) render();
+      return false;
+    } finally {
+      state.syncing = false;
     }
   }
 
   async function syncPost(post) {
     try {
+      const cleanPost = stripHeavy(post);
       const response = await fetch('/api/publications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ post })
+        body: JSON.stringify({ post: cleanPost })
       });
       const data = await response.json().catch(() => ({ ok: false }));
       if (!response.ok || !data.ok) throw new Error('sync');
@@ -311,7 +519,7 @@
           <h1>${esc(title)}</h1>
           <p>${state.cloudReady ? 'Publicaciones disponibles' : 'También funciona sin conexión'}</p>
         </div>
-        ${state.filter !== 'ALL' || state.query ? '<button class="small-link" data-clear>Todo</button>' : ''}
+        ${state.syncing ? '<span class="sync-pill">Actualizando...</span>' : (state.filter !== 'ALL' || state.query ? '<button class="small-link" data-clear>Todo</button>' : '')}
       </section>
 
       <section class="feed">
@@ -328,8 +536,15 @@
     return follows().includes(ownerId);
   }
 
+  function statusLabel(post) {
+    if (post.cloudStatus === 'subiendo') return '<span class="chip status-chip">Publicando...</span>';
+    if (post.cloudStatus === 'local') return '<span class="chip status-chip local">Guardada en este dispositivo</span>';
+    if (post.cloudStatus === 'publica') return '<span class="chip status-chip publica">Publicada</span>';
+    return '';
+  }
+
   function postCard(post) {
-    const media = post.mediaUrl || post.mediaData || '';
+    const media = resolveMedia(post);
     const isVideo = post.mediaType === 'video';
     const own = post.ownerId === userId();
 
@@ -370,8 +585,11 @@
             <span>${new Date(post.createdAt || Date.now()).toLocaleDateString('es-MX')}</span>
           </div>
 
+          ${statusLabel(post)}
+
           ${own ? `
             <div class="manage-row">
+              ${post.cloudStatus === 'local' ? `<button class="retry" data-retry="${esc(post.id)}">Reintentar</button>` : ''}
               <button data-edit="${esc(post.id)}">Editar</button>
               <button class="danger" data-delete="${esc(post.id)}">Borrar</button>
             </div>
@@ -449,13 +667,25 @@
     `);
   }
 
+  function ensureComposerId() {
+    if (!state.composerId) {
+      state.composerId = uid('post');
+      set(K.composer, {
+        id: state.composerId,
+        createdAt: new Date().toISOString()
+      });
+    }
+    return state.composerId;
+  }
+
   function composerPage() {
+    ensureComposerId();
     const post = state.editing || {
       description: '',
       zone: '',
       category: state.filter === 'ALL' ? 'VENDO' : state.filter
     };
-    const media = state.preview || post.mediaUrl || post.mediaData || '';
+    const media = state.preview || post.mediaUrl || resolveMedia(post);
     const isVideo = (state.mediaType || post.mediaType) === 'video';
 
     return shell(`
@@ -494,7 +724,9 @@
           </div>
         </div>
 
-        <button class="big-button" data-publish>PUBLICAR</button>
+        <button class="big-button ${state.publishing ? 'publishing' : ''}" data-publish ${state.publishing ? 'disabled' : ''}>
+          ${state.publishing ? 'PUBLICANDO...' : 'PUBLICAR'}
+        </button>
       </section>
     `);
   }
@@ -513,11 +745,16 @@
 
   function nav(route) {
     state.route = route;
+    if (route !== '/publicar') {
+      if (!state.publishing) state.editing = null;
+    }
     render();
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
   }
 
   function openPicker() {
+    if (state.publishing) return toast('Estamos terminando de publicar. Espera un momento.');
+    ensureComposerId();
     document.getElementById('mediaPicker')?.click();
   }
 
@@ -530,7 +767,7 @@
     });
   }
 
-  function resizeImage(file, maxSide = 1280, quality = 0.82) {
+  function resizeImage(file, maxSide = IMAGE_MAX_SIDE, quality = 0.82) {
     return new Promise((resolve, reject) => {
       if (!file.type.startsWith('image/')) return resolve(null);
       const img = new Image();
@@ -545,7 +782,10 @@
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', quality));
+        canvas.toBlob(blob => {
+          if (!blob) return reject(new Error('No se pudo preparar imagen'));
+          resolve(blob);
+        }, 'image/jpeg', quality);
       };
       img.onerror = () => {
         URL.revokeObjectURL(url);
@@ -561,15 +801,27 @@
     if (!file) return;
 
     if (file.size > MAX_FILE_MB * 1024 * 1024) {
-      toast('Por ahora usa archivos más ligeros para evitar errores.');
+      toast('Por ahora usa un archivo más ligero para evitar errores.');
       return;
     }
 
     try {
-      state.mediaType = file.type.startsWith('video') ? 'video' : 'image';
-      state.preview = state.mediaType === 'image'
-        ? (await resizeImage(file) || await fileToDataURL(file))
-        : await fileToDataURL(file);
+      const postId = ensureComposerId();
+      const ref = `media-${postId}`;
+      const kind = file.type.startsWith('video') ? 'video' : 'image';
+      let blob = file;
+
+      if (kind === 'image') {
+        blob = await resizeImage(file).catch(() => file);
+      }
+
+      await saveMediaBlob(ref, blob);
+
+      state.mediaType = kind;
+      state.composerMediaRef = ref;
+      state.composerMediaName = file.name || `${kind}.bin`;
+      state.composerMediaMime = blob.type || file.type || 'application/octet-stream';
+      state.preview = objectUrlFor(ref, blob);
       state.editing = null;
       nav('/publicar');
     } catch {
@@ -585,17 +837,34 @@
     };
   }
 
+  function clearComposer() {
+    state.preview = '';
+    state.mediaType = 'image';
+    state.editing = null;
+    state.composerId = '';
+    state.composerMediaRef = '';
+    state.composerMediaName = '';
+    state.composerMediaMime = '';
+    localStorage.removeItem(K.composer);
+  }
+
   async function publish() {
+    if (state.publishing) {
+      toast('Estamos terminando de publicar. Espera un momento.');
+      return;
+    }
+
     const form = collectForm();
     if (!form.description) return toast('Escribe una descripción.');
     if (!form.zone) return toast('Agrega zona o municipio.');
     if (!form.category) return toast('Selecciona VENDO, OFREZCO o NECESITO.');
 
     const old = state.editing;
-    const id = old?.id || uid('post');
+    const id = old?.id || ensureComposerId();
     const prof = profile();
+    const now = new Date().toISOString();
 
-    const post = {
+    let post = {
       ...old,
       id,
       ownerId: old?.ownerId || userId(),
@@ -604,44 +873,115 @@
       description: form.description,
       zone: form.zone,
       category: form.category,
-      mediaData: state.preview || old?.mediaData || '',
       mediaUrl: old?.mediaUrl || '',
+      mediaData: old?.mediaData || '',
+      mediaRef: state.composerMediaRef || old?.mediaRef || '',
+      mediaPreviewUrl: state.preview || old?.mediaPreviewUrl || '',
       mediaType: state.mediaType || old?.mediaType || 'image',
+      mediaMime: state.composerMediaMime || old?.mediaMime || '',
+      mediaName: state.composerMediaName || old?.mediaName || '',
       status: 'activa',
       reactions: old?.reactions || 0,
-      createdAt: old?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: old?.createdAt || now,
+      updatedAt: now,
       cloudStatus: 'subiendo'
     };
 
+    state.publishing = true;
     saveLocalPosts([post, ...state.posts.filter(item => item.id !== id)]);
-    toast('Publicando...');
-
-    const ok = await syncPost(post);
-    saveLocalPosts([{ ...post, cloudStatus: ok ? 'publica' : 'local' }, ...state.posts.filter(item => item.id !== id)]);
-
-    state.preview = '';
-    state.mediaType = 'image';
-    state.editing = null;
     state.filter = form.category;
     state.query = '';
+    state.route = '/';
+    render();
+    toast('Publicando...');
 
-    if (ok) {
-      await syncFromCloud();
-      toast('Publicación lista.');
-    } else {
+    try {
+      post = await uploadMediaToCloud(post);
+
+      if (!post.mediaUrl && post.mediaRef && post.mediaType === 'video') {
+        post = {
+          ...post,
+          cloudStatus: 'local',
+          updatedAt: new Date().toISOString()
+        };
+        saveLocalPosts([post, ...state.posts.filter(item => item.id !== id)]);
+        toast('Tu publicación se guardó en este dispositivo, pero el video no pudo subirse. Revisa tu conexión e intenta de nuevo.');
+        return;
+      }
+
+      const ok = await syncPost({
+        ...post,
+        cloudStatus: 'publica',
+        updatedAt: new Date().toISOString()
+      });
+
+      post = {
+        ...post,
+        cloudStatus: ok ? 'publica' : 'local',
+        updatedAt: new Date().toISOString()
+      };
+
+      saveLocalPosts([post, ...state.posts.filter(item => item.id !== id)]);
+
+      if (ok) {
+        clearComposer();
+        toast('Publicación lista.');
+        await syncFromCloud({ render: false });
+      } else {
+        toast('Tu publicación se guardó en este dispositivo. Revisa tu conexión e intenta de nuevo.');
+      }
+    } catch {
+      post = {
+        ...post,
+        cloudStatus: 'local',
+        updatedAt: new Date().toISOString()
+      };
+      saveLocalPosts([post, ...state.posts.filter(item => item.id !== id)]);
+      toast('Tu publicación se guardó en este dispositivo. Revisa tu conexión e intenta de nuevo.');
+    } finally {
+      state.publishing = false;
+      render();
+    }
+  }
+
+  async function retryPost(id) {
+    const found = state.posts.find(item => item.id === id);
+    if (!found) return;
+    if (found.ownerId !== userId()) return toast('Solo puedes reintentar tus publicaciones.');
+
+    toast('Publicando...');
+    let post = { ...found, cloudStatus: 'subiendo', updatedAt: new Date().toISOString() };
+    saveLocalPosts([post, ...state.posts.filter(item => item.id !== id)]);
+    render();
+
+    try {
+      post = await uploadMediaToCloud(post);
+      const ok = await syncPost({ ...post, cloudStatus: 'publica', updatedAt: new Date().toISOString() });
+      post = { ...post, cloudStatus: ok ? 'publica' : 'local', updatedAt: new Date().toISOString() };
+      saveLocalPosts([post, ...state.posts.filter(item => item.id !== id)]);
+      toast(ok ? 'Publicación lista.' : 'Tu publicación se guardó en este dispositivo. Revisa tu conexión e intenta de nuevo.');
+      if (ok) await syncFromCloud({ render: false });
+    } catch {
+      post = { ...post, cloudStatus: 'local', updatedAt: new Date().toISOString() };
+      saveLocalPosts([post, ...state.posts.filter(item => item.id !== id)]);
       toast('Tu publicación se guardó en este dispositivo. Revisa tu conexión e intenta de nuevo.');
     }
 
-    nav('/');
+    render();
   }
 
   function editPost(id) {
     const post = state.posts.find(item => item.id === id);
     if (!post || post.ownerId !== userId()) return toast('Solo puedes editar tus publicaciones.');
+    if (state.publishing) return toast('Estamos terminando de publicar. Espera un momento.');
+
     state.editing = { ...post };
-    state.preview = post.mediaData || post.mediaUrl || '';
+    state.composerId = post.id;
+    state.preview = resolveMedia(post);
     state.mediaType = post.mediaType || 'image';
+    state.composerMediaRef = post.mediaRef || '';
+    state.composerMediaName = post.mediaName || '';
+    state.composerMediaMime = post.mediaMime || '';
     nav('/publicar');
   }
 
@@ -649,6 +989,7 @@
     const post = state.posts.find(item => item.id === id);
     if (!post || post.ownerId !== userId()) return toast('Solo puedes borrar tus publicaciones.');
     if (!confirm('¿Borrar esta publicación?')) return;
+
     saveLocalPosts(state.posts.filter(item => item.id !== id));
     deleteCloud(id);
     toast('Publicación borrada.');
@@ -671,9 +1012,7 @@
   function toggleFollow(ownerId) {
     if (ownerId === userId()) return toast('Esta publicación es tuya.');
     const current = follows();
-    const next = current.includes(ownerId)
-      ? current.filter(id => id !== ownerId)
-      : [...current, ownerId];
+    const next = current.includes(ownerId) ? current.filter(id => id !== ownerId) : [...current, ownerId];
     set(K.follows, next);
     toast(current.includes(ownerId) ? 'Dejaste de seguir.' : 'Ahora lo sigues.');
     render();
@@ -719,6 +1058,7 @@
     document.querySelectorAll('[data-clear]').forEach(button => button.onclick = clearFilters);
     document.querySelectorAll('[data-pick]').forEach(button => button.onclick = openPicker);
     document.querySelectorAll('[data-publish]').forEach(button => button.onclick = publish);
+    document.querySelectorAll('[data-retry]').forEach(button => button.onclick = () => retryPost(button.dataset.retry));
     document.querySelectorAll('[data-like]').forEach(button => button.onclick = () => likePost(button.dataset.like));
     document.querySelectorAll('[data-share]').forEach(button => button.onclick = () => sharePost(button.dataset.share));
     document.querySelectorAll('[data-follow]').forEach(button => button.onclick = () => toggleFollow(button.dataset.follow));
@@ -736,15 +1076,33 @@
         state.query = event.target.value;
         render();
       };
-      search.focus = search.focus.bind(search);
     }
+  }
+
+  function startPolling() {
+    if (state.syncTimer) clearInterval(state.syncTimer);
+    state.syncTimer = setInterval(() => {
+      if (document.visibilityState === 'visible' && !state.syncing && !state.publishing) {
+        syncFromCloud({ render: true });
+      }
+    }, POLL_MS);
+
+    window.addEventListener('focus', () => {
+      if (!state.syncing && !state.publishing) syncFromCloud({ render: true });
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && !state.syncing && !state.publishing) {
+        syncFromCloud({ render: true });
+      }
+    });
   }
 
   async function init() {
     state.posts = localPosts();
     render();
-    await syncFromCloud();
-    render();
+    await syncFromCloud({ render: true });
+    startPolling();
   }
 
   init();

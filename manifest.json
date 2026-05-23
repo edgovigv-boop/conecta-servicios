@@ -2,7 +2,7 @@
   "name": "Conecta Servicios",
   "short_name": "Conecta",
   "description": "Red social local para vender, ofrecer y pedir ayuda en tu zona.",
-  "start_url": "/?v=6.3.0-mvp-social-local",
+  "start_url": "/?v=6.3.1-publicacion-confiable",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
