@@ -1,11 +1,11 @@
-const CACHE_NAME = 'conecta-servicios-v6-3-25-video-sin-rerender';
+const CACHE_NAME = 'conecta-servicios-v6-3-26-top-tiktok';
 
 const ASSETS = [
   '/',
   '/index.html',
   '/styles.css?v=6.3.12-publicaciones-video-sync',
-  '/app.js?v=6.3.25-video-tus-resumable',
-  '/manifest.json?v=6.3.25-video-tus-resumable',
+  '/app.js?v=6.3.26-video-tus-resumable',
+  '/manifest.json?v=6.3.26-video-tus-resumable',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'
@@ -36,8 +36,8 @@ self.addEventListener('fetch', event => {
     url.pathname.endsWith('/index.html') ||
     url.pathname.endsWith('/app.js') ||
     url.pathname.endsWith('/service-worker.js') ||
-    url.search.includes('v=6325') ||
-    url.search.includes('v=6.3.25');
+    url.search.includes('v=6326') ||
+    url.search.includes('v=6.3.26');
 
   if (networkFirst) {
     event.respondWith(

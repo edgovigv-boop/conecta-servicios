@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.25-video-sin-rerender
+/* Conecta Servicios v6.3.26-top-tiktok
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.25-video-sin-rerender';
+  const VERSION = 'v6.3.26-top-tiktok';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -47,6 +47,8 @@
     route: '/',
     filter: 'ALL',
     query: '',
+    searchOpen: false,
+    topTab: 'para-ti',
     posts: [],
     preview: '',
     mediaType: 'image',
@@ -88,6 +90,36 @@
   function userId(){ let id=localStorage.getItem(K.user); if(!id){ id=uid('u'); localStorage.setItem(K.user,id); } return id; }
   function profile(){ const saved=get(K.profile,null); if(saved) return saved; const fresh={name:'Usuario local'}; set(K.profile,fresh); return fresh; }
   function follows(){ return get(K.follows,[]); }
+  function municipioLabel(){
+    const saved = localStorage.getItem('cs_v6326_municipio');
+    if(saved) return saved;
+    try {
+      const zones = filteredAll().map(p => p.zone).filter(Boolean);
+      return zones[0] || 'Tejupilco';
+    } catch {
+      return 'Tejupilco';
+    }
+  }
+
+  function setTopTab(tab){
+    state.topTab = tab === 'municipio' ? 'municipio' : 'para-ti';
+    if(state.topTab === 'municipio'){
+      const municipio = municipioLabel();
+      state.query = '';
+      state.filter = 'ALL';
+      toast(`Viendo ${municipio}`);
+    }else{
+      toast('Para ti');
+    }
+    render();
+  }
+
+  function toggleSearchPanel(){
+    state.searchOpen = !state.searchOpen;
+    render();
+    if(state.searchOpen) setTimeout(()=>document.getElementById('searchInput')?.focus(), 80);
+  }
+
   function toast(msg){ if(!toastEl) return; toastEl.textContent=msg; toastEl.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.classList.remove('show'),3000); }
 
   function diagnosticPayload(kind, detail='', extra={}){
@@ -750,6 +782,134 @@
       .video-inline-actions button{border:0;border-radius:999px;padding:10px 14px;font-weight:900;background:rgba(255,255,255,.94);color:#111827;box-shadow:0 8px 22px rgba(0,0,0,.22);}
       .video-load-error{position:absolute;left:18px;right:18px;top:45%;z-index:6;background:rgba(17,24,39,.9);color:#fff;border-radius:18px;padding:14px;text-align:center;font-weight:800;}
       body.video-playing .sync-pill{opacity:.45;}
+      .top-space{height:0 !important;}
+      .glass-top.tiktok-top{
+        position:fixed !important;
+        top:0; left:0; right:0;
+        z-index:80;
+        padding:calc(env(safe-area-inset-top) + 8px) 14px 10px;
+        background:linear-gradient(180deg,rgba(0,0,0,.48),rgba(0,0,0,.18),rgba(0,0,0,0)) !important;
+        backdrop-filter:none !important;
+        -webkit-backdrop-filter:none !important;
+        border:0 !important;
+        box-shadow:none !important;
+        color:#fff;
+      }
+      .tiktok-topbar{
+        display:grid;
+        grid-template-columns:42px 1fr 42px;
+        align-items:center;
+        gap:10px;
+        min-height:44px;
+      }
+      .tiktok-tabs{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:18px;
+        min-width:0;
+      }
+      .tiktok-tab{
+        appearance:none;
+        border:0;
+        background:transparent;
+        color:rgba(255,255,255,.78);
+        font-weight:900;
+        font-size:16px;
+        padding:8px 2px;
+        position:relative;
+        text-shadow:0 2px 12px rgba(0,0,0,.55);
+        white-space:nowrap;
+      }
+      .tiktok-tab.active{color:#fff;}
+      .tiktok-tab.active::after{
+        content:"";
+        position:absolute;
+        left:50%;
+        bottom:1px;
+        transform:translateX(-50%);
+        width:28px;
+        height:3px;
+        border-radius:999px;
+        background:#fff;
+        box-shadow:0 2px 10px rgba(0,0,0,.25);
+      }
+      .tiktok-icon-btn{
+        width:42px;
+        height:42px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        border:0;
+        border-radius:999px;
+        background:rgba(0,0,0,.16);
+        color:#fff;
+        font-size:21px;
+        font-weight:900;
+        text-shadow:0 2px 12px rgba(0,0,0,.55);
+        backdrop-filter:blur(6px);
+      }
+      .tiktok-search-panel{
+        margin-top:8px;
+        display:flex;
+        align-items:center;
+        gap:8px;
+        padding:8px 10px;
+        border-radius:999px;
+        background:rgba(0,0,0,.38);
+        backdrop-filter:blur(10px);
+      }
+      .tiktok-search-panel input{
+        flex:1;
+        min-width:0;
+        border:0;
+        background:transparent;
+        color:#fff;
+        outline:none;
+        font-size:16px;
+        font-weight:700;
+      }
+      .tiktok-search-panel input::placeholder{color:rgba(255,255,255,.78);}
+      .tiktok-search-panel button{
+        border:0;
+        border-radius:999px;
+        padding:7px 10px;
+        font-weight:900;
+        background:rgba(255,255,255,.88);
+        color:#111827;
+      }
+      .tiktok-filter-row{
+        margin-top:8px;
+        display:flex;
+        gap:8px;
+        justify-content:center;
+        pointer-events:auto;
+      }
+      .tiktok-filter-row .path-card{
+        min-width:0;
+        flex:0 1 auto;
+        padding:7px 11px !important;
+        border-radius:999px !important;
+        background:rgba(255,255,255,.20) !important;
+        color:#fff !important;
+        border:1px solid rgba(255,255,255,.18) !important;
+        box-shadow:none !important;
+        backdrop-filter:blur(8px);
+      }
+      .tiktok-filter-row .path-card.active{
+        background:rgba(255,255,255,.88) !important;
+        color:#111827 !important;
+      }
+      .tiktok-filter-row .path-icon{font-size:14px !important;}
+      .tiktok-filter-row .path-label{font-size:12px !important;font-weight:900;}
+      .feed-title{margin-top:calc(env(safe-area-inset-top) + 112px) !important;}
+      .brand-row,.path-row,.search-box{display:none;}
+      @media (max-width:420px){
+        .tiktok-tab{font-size:15px;}
+        .tiktok-tabs{gap:13px;}
+        .tiktok-filter-row{gap:6px;}
+        .tiktok-filter-row .path-card{padding:7px 9px !important;}
+      }
       .version-pill{display:inline-block;margin-top:3px;padding:3px 7px;border-radius:999px;background:rgba(91,46,234,.12);color:#5b2eea;font-size:10px;font-weight:900;}
       .diag-panel{margin:16px 0 0;padding:14px;border-radius:22px;background:#111827;color:#fff;box-shadow:0 16px 44px rgba(17,24,39,.20);}
       .diag-panel h2{margin:0 0 8px;font-size:18px;}
@@ -794,20 +954,25 @@
   }
 
   function homeHeader(){
-    return `<section class="glass-top">
-      <div class="brand-row">
-        <img src="assets/icons/conecta-logo-oficial.png" alt="Conecta" class="brand-logo" onerror="this.style.display='none'">
-        <div class="brand-title"><strong>Conecta</strong><span>Servicios</span><small class="version-pill">v6.3.25</small></div>
-        <div style="display:flex;gap:10px;align-items:center"><div class="ghost-top"></div><button class="bell-btn" data-nav="/mensajes" title="Avisos">🔔</button></div>
+    const municipio = municipioLabel();
+    return `<section class="glass-top tiktok-top">
+      <div class="tiktok-topbar">
+        <button class="tiktok-icon-btn" data-nav="/perfil" title="Perfil">👤</button>
+        <div class="tiktok-tabs">
+          <button class="tiktok-tab ${state.topTab === 'para-ti' ? 'active' : ''}" data-top-tab="para-ti">Para ti</button>
+          <button class="tiktok-tab ${state.topTab === 'municipio' ? 'active' : ''}" data-top-tab="municipio">${esc(municipio)}</button>
+        </div>
+        <button class="tiktok-icon-btn" data-toggle-search title="Buscar">🔎</button>
       </div>
-      <div class="path-row">
+      ${state.searchOpen ? `<div class="tiktok-search-panel"><span>🔎</span><input id="searchInput" value="${esc(state.query)}" placeholder="Buscar publicación, negocio o zona" autocomplete="off"><button data-clear-search>${state.query ? 'Limpiar' : 'Cerrar'}</button></div>` : ''}
+      <div class="tiktok-filter-row">
         ${pathButton('VENDO','🏪','Vendo','path-vendo')}
         ${pathButton('OFREZCO','🛵','Ofrezco','path-ofrezco')}
         ${pathButton('NECESITO','🧡','Necesito','path-necesito')}
       </div>
-      <label class="search-box"><span>🔎</span><input id="searchInput" value="${esc(state.query)}" placeholder="Buscar" autocomplete="off"></label>
     </section>`;
   }
+
 
   function pathButton(key,icon,label,klass){
     return `<button class="path-card ${klass} ${state.filter===key?'active':''}" data-filter="${key}"><span class="path-icon">${icon}</span><span class="path-label">${label}</span></button>`;
@@ -1586,6 +1751,9 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=openPicker);
     document.querySelectorAll('[data-publish]').forEach(b=>b.onclick=publish);
     document.querySelectorAll('[data-save-profile]').forEach(b=>b.onclick=saveProfile);
+    document.querySelectorAll('[data-toggle-search]').forEach(b=>b.onclick=toggleSearchPanel);
+    document.querySelectorAll('[data-top-tab]').forEach(b=>b.onclick=()=>setTopTab(b.dataset.topTab));
+    document.querySelectorAll('[data-clear-search]').forEach(b=>b.onclick=()=>{ if(state.query){ state.query=''; updateFeedOnly(); } else { state.searchOpen=false; render(); } });
     bindDynamicFeedControls();
 
     const picker=document.getElementById('mediaPicker');

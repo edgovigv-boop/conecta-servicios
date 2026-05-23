@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.25-video-sin-rerender';
+  const VERSION = 'v6.3.26-top-tiktok';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 
