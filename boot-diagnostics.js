@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.32-multifoto-video-limpio';
+  const VERSION = 'v6.3.33-galeria-audio-acciones';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 

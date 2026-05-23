@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.32-multifoto-video-limpio
+/* Conecta Servicios v6.3.33-galeria-audio-acciones
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.32-multifoto-video-limpio';
+  const VERSION = 'v6.3.33-galeria-audio-acciones';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -1434,6 +1434,83 @@
       .clean-video{
         cursor:pointer;
       }
+      .gallery-arrow{
+        position:absolute;
+        top:50%;
+        transform:translateY(-50%);
+        z-index:18;
+        width:44px;
+        height:58px;
+        border:0;
+        border-radius:999px;
+        background:rgba(0,0,0,.36);
+        color:#fff;
+        font-size:42px;
+        line-height:1;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        text-shadow:0 2px 10px rgba(0,0,0,.4);
+        backdrop-filter:blur(8px);
+      }
+      .gallery-prev{left:10px;}
+      .gallery-next{right:10px;}
+      .gallery-arrow.is-hidden{
+        opacity:.18;
+        pointer-events:none;
+      }
+      .sound-toggle{
+        position:absolute;
+        right:14px;
+        top:calc(env(safe-area-inset-top) + 128px);
+        z-index:22;
+        width:44px;
+        height:44px;
+        border:0;
+        border-radius:999px;
+        background:rgba(0,0,0,.42);
+        color:#fff;
+        font-size:21px;
+        backdrop-filter:blur(8px);
+        box-shadow:0 10px 28px rgba(0,0,0,.22);
+      }
+      .media-bottom{
+        z-index:30 !important;
+        opacity:1 !important;
+        visibility:visible !important;
+        pointer-events:auto !important;
+      }
+      .action-stack{
+        z-index:31 !important;
+        pointer-events:auto !important;
+      }
+      .round-action{
+        display:flex !important;
+        flex-direction:column;
+        align-items:center !important;
+        justify-content:center !important;
+        gap:1px;
+        color:#111827 !important;
+        pointer-events:auto !important;
+      }
+      .round-action span{
+        line-height:1;
+      }
+      .round-action small{
+        display:block;
+        font-size:9px;
+        line-height:1;
+        font-weight:900;
+        color:#111827;
+        max-width:54px;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+      }
+      .follow-btn{
+        z-index:31 !important;
+        pointer-events:auto !important;
+      }
       .media-bottom{
         display:flex !important;
         opacity:1 !important;
@@ -1692,9 +1769,9 @@
         <span></span>
       </div>
       <div class="video-viewer-body">
-        <video src="${esc(state.videoViewer.url)}" controls playsinline webkit-playsinline preload="auto"></video>
+        <video src="${esc(state.videoViewer.url)}" controls autoplay playsinline webkit-playsinline preload="auto"></video>
       </div>
-      <div class="video-viewer-note">Si el navegador no inicia solo, toca ▶ dentro del reproductor.</div>
+      <div class="video-viewer-note">El sonido usa el volumen de tu dispositivo. Si no inicia solo, toca ▶.</div>
     </div>`;
   }
 
@@ -1747,7 +1824,7 @@
     return `<div><h1>${esc(title)}</h1><p>${esc(subtitle)}</p></div>${state.syncing?'<span class="sync-pill">Actualizando...</span>':(state.filter!=='ALL'||state.query?'<button class="small-link" data-clear>Todo</button>':'')}`;
   }
   function feedMarkup(){ const posts=filteredPosts(); return posts.map(postCard).join('') || emptyState('No encontré publicaciones','Prueba otra búsqueda o publica algo con el botón +.'); }
-  function updateFeedOnly(){ const feed=document.getElementById('feed'); if(feed) feed.innerHTML=feedMarkup(); const title=document.getElementById('feedTitle'); if(title) title.innerHTML=feedTitleMarkup(); bindDynamicFeedControls(); setupInternalVideos(); }
+  function updateFeedOnly(){ const feed=document.getElementById('feed'); if(feed) feed.innerHTML=feedMarkup(); const title=document.getElementById('feedTitle'); if(title) title.innerHTML=feedTitleMarkup(); bindDynamicFeedControls(); setupInternalVideos(); setupGalleries(); }
   function categoryClass(cat){ return `chip-${normalizeCategory(cat).toLowerCase()}`; }
   function isFollowing(ownerId){ return follows().includes(ownerId); }
   function shortDescription(text, max=118){
@@ -1767,12 +1844,18 @@
   function mediaMarkup(post){
     const items = Array.isArray(post.mediaItems) ? post.mediaItems.filter(item => item && (item.mediaUrl || item.mediaRef || item.mediaData || item.mediaPreviewUrl)) : [];
     const imageItems = items.filter(item => String(item.mediaType || post.mediaType || 'image').toLowerCase() !== 'video');
+
     if(imageItems.length > 1){
       const slides = imageItems.map((item, index) => {
         const src = resolveMediaItem(item);
         return src ? `<img src="${esc(src)}" alt="${esc(post.title || 'Foto')} ${index+1}" loading="${index ? 'lazy' : 'eager'}">` : '';
       }).join('');
-      return `<div class="media-carousel" data-gallery="${esc(post.id)}">${slides}<div class="gallery-count">1/${imageItems.length}</div></div>`;
+      return `<div class="media-carousel" data-gallery="${esc(post.id)}" data-gallery-total="${imageItems.length}">
+        ${slides}
+        <button class="gallery-arrow gallery-prev" type="button" data-gallery-prev="${esc(post.id)}" aria-label="Foto anterior">‹</button>
+        <button class="gallery-arrow gallery-next" type="button" data-gallery-next="${esc(post.id)}" aria-label="Foto siguiente">›</button>
+        <div class="gallery-count" data-gallery-count="${esc(post.id)}">1/${imageItems.length}</div>
+      </div>`;
     }
 
     const media = resolveMedia(post);
@@ -1780,6 +1863,7 @@
       if(post.mediaUrl){
         return `<div class="video-inline-wrap clean-video" data-video-wrap="${esc(post.id)}">
           <video class="feed-video-player" src="${esc(post.mediaUrl)}" autoplay muted loop playsinline webkit-playsinline preload="auto" data-open-video="${esc(post.id)}" data-video-id="${esc(post.id)}"></video>
+          <button class="sound-toggle" type="button" data-toggle-video-sound="${esc(post.id)}" aria-label="Activar sonido">🔇</button>
         </div>`;
       }
       const failed = norm(post.mediaStatus) === 'error';
@@ -1805,7 +1889,7 @@
         ${mediaMarkup(post)}
         ${pending ? '<div class="media-pending">Video en proceso. La publicación ya está visible.</div>' : ''}
         <div class="media-top"><span class="chip ${categoryClass(post.category)}">${esc(normalizeCategory(post.category))}</span><span class="chip">📍 ${esc(post.zone || 'Zona')}</span></div>
-        <div class="media-bottom"><div class="action-stack"><button class="round-action" data-like="${esc(post.id)}">❤️</button><button class="round-action" data-message="${esc(post.id)}">✉️</button><button class="round-action" data-share="${esc(post.id)}">↗️</button></div><button class="follow-btn ${isFollowing(post.ownerId)?'following':''}" data-follow="${esc(post.ownerId)}">${isFollowing(post.ownerId)?'Siguiendo':'Seguir'}</button></div>
+        <div class="media-bottom"><div class="action-stack"><button class="round-action" data-like="${esc(post.id)}"><span>❤️</span><small>${post.reactions || 0}</small></button><button class="round-action" data-message="${esc(post.id)}"><span>✉️</span><small>Mensaje</small></button><button class="round-action" data-share="${esc(post.id)}"><span>↗️</span><small>Compartir</small></button></div><button class="follow-btn ${isFollowing(post.ownerId)?'following':''}" data-follow="${esc(post.ownerId)}">${isFollowing(post.ownerId)?'Siguiendo':'Seguir'}</button></div>
       </div>
       <div class="post-body">
         <div class="owner-row" data-open-store="${esc(post.ownerId)}"><span class="owner-dot">👤</span>${esc(post.ownerName || 'Usuario local')}</div>
@@ -1962,6 +2046,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     bind();
     if(state.route === '/chat') scrollChatToBottom('auto');
     setupInternalVideos();
+    setupGalleries();
   }
 
   function routeUrl(route){
@@ -2276,6 +2361,53 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
 
+  function updateGalleryCounter(gallery){
+    if(!gallery) return;
+    const id = gallery.dataset.gallery;
+    const total = Number(gallery.dataset.galleryTotal || gallery.querySelectorAll('img').length || 1);
+    const index = Math.min(total, Math.max(1, Math.round(gallery.scrollLeft / Math.max(1, gallery.clientWidth)) + 1));
+    const counter = document.querySelector(`[data-gallery-count="${CSS.escape(id)}"]`);
+    if(counter) counter.textContent = `${index}/${total}`;
+
+    const prev = document.querySelector(`[data-gallery-prev="${CSS.escape(id)}"]`);
+    const next = document.querySelector(`[data-gallery-next="${CSS.escape(id)}"]`);
+    if(prev) prev.classList.toggle('is-hidden', index <= 1);
+    if(next) next.classList.toggle('is-hidden', index >= total);
+  }
+
+  function moveGallery(id, direction){
+    const safeId = (window.CSS && CSS.escape) ? CSS.escape(id) : String(id).replace(/["\\]/g, '\\$&');
+    const gallery = document.querySelector(`[data-gallery="${safeId}"]`);
+    if(!gallery) return;
+    gallery.scrollBy({left: direction * gallery.clientWidth, behavior:'smooth'});
+    setTimeout(()=>updateGalleryCounter(gallery), 320);
+  }
+
+  function setupGalleries(){
+    document.querySelectorAll('.media-carousel').forEach(gallery => {
+      if(gallery.dataset.galleryBound === '1') return;
+      gallery.dataset.galleryBound = '1';
+      gallery.addEventListener('scroll', () => {
+        clearTimeout(gallery._countTimer);
+        gallery._countTimer = setTimeout(()=>updateGalleryCounter(gallery), 90);
+      }, {passive:true});
+      updateGalleryCounter(gallery);
+    });
+  }
+
+  function toggleVideoSound(postId){
+    const safeId = (window.CSS && CSS.escape) ? CSS.escape(postId) : String(postId).replace(/["\\]/g, '\\$&');
+    const video = document.querySelector(`video.feed-video-player[data-video-id="${safeId}"]`);
+    const btn = document.querySelector(`[data-toggle-video-sound="${safeId}"]`);
+    if(!video) return;
+
+    video.muted = !video.muted;
+    video.volume = 1;
+    video.play().catch(()=>null);
+    if(btn) btn.textContent = video.muted ? '🔇' : '🔊';
+    toast(video.muted ? 'Video en silencio.' : 'Sonido activado. Usa el volumen de tu dispositivo.');
+  }
+
   function setupInternalVideos(){
     document.querySelectorAll('video.feed-video-player').forEach(video => {
       if(video.dataset.csBound === '1') return;
@@ -2367,8 +2499,13 @@ ${esc(shortDiagnosticText(diag))}</code>
     render();
     setTimeout(()=>{
       const video = document.querySelector('.video-viewer video');
-      if(video) video.focus?.();
-    }, 80);
+      if(video){
+        video.muted = false;
+        video.volume = 1;
+        video.focus?.();
+        video.play?.().catch(()=>null);
+      }
+    }, 120);
   }
 
   function closeVideo(){
@@ -2646,7 +2783,11 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('[data-message]').forEach(b=>b.onclick=()=>openChat(b.dataset.message));
     document.querySelectorAll('[data-open-video]').forEach(el=>el.onclick=()=>openVideo(el.dataset.openVideo));
     document.querySelectorAll('[data-reload-video]').forEach(el=>el.onclick=()=>reloadVideo(el.dataset.reloadVideo));
+    document.querySelectorAll('[data-toggle-video-sound]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();toggleVideoSound(el.dataset.toggleVideoSound);});
+    document.querySelectorAll('[data-gallery-prev]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();moveGallery(el.dataset.galleryPrev,-1);});
+    document.querySelectorAll('[data-gallery-next]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();moveGallery(el.dataset.galleryNext,1);});
     setupInternalVideos();
+    setupGalleries();
     document.querySelectorAll('[data-open-chat]').forEach(b=>b.onclick=()=>openChatFromConversation(b));
     document.querySelectorAll('[data-send-chat]').forEach(b=>b.onclick=sendChatMessage);
     document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editPost(b.dataset.edit));
