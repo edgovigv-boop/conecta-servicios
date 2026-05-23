@@ -1,11 +1,11 @@
-const CACHE_NAME = 'conecta-servicios-v6-2-0-home-mvp-social';
+const CACHE_NAME = 'conecta-servicios-v6-3-0-mvp-social-local';
 
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=6.2.0-home-mvp-social',
-  '/app.js?v=6.2.0-home-mvp-social',
-  '/manifest.json?v=6.2.0-home-mvp-social',
+  '/styles.css?v=6.3.0-mvp-social-local',
+  '/app.js?v=6.3.0-mvp-social-local',
+  '/manifest.json?v=6.3.0-mvp-social-local',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'

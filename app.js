@@ -1,16 +1,16 @@
-/* Conecta Servicios v6.2.0 - Home MVP social */
+/* Conecta Servicios v6.3.0 - MVP social local abuelita friendly */
 (() => {
   'use strict';
 
-  const VERSION = 'v6.2.0-home-mvp-social';
+  const VERSION = 'v6.3.0-mvp-social-local';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const MAX_FILE_MB = 4;
   const K = {
-    posts: 'cs_v620_posts',
-    user: 'cs_v620_user',
-    follows: 'cs_v620_follows',
-    messages: 'cs_v620_messages',
-    profile: 'cs_v620_profile'
+    posts: 'cs_v630_posts',
+    user: 'cs_v630_user',
+    follows: 'cs_v630_follows',
+    messages: 'cs_v630_messages',
+    profile: 'cs_v630_profile'
   };
 
   const CATEGORIES = ['VENDO', 'OFREZCO', 'NECESITO'];
@@ -22,7 +22,7 @@
       ownerId: 'seed-shop',
       ownerName: 'Proveedor local',
       title: 'Vendo pan casero hoy',
-      description: 'Pan dulce y bolillo recién hecho. Entrega local por la tarde.',
+      description: 'Vendo pan casero hoy.\nRecién hecho, entrega local por la tarde. Pregunta por disponibilidad.',
       category: 'VENDO',
       zone: 'Tejupilco',
       mediaUrl: 'assets/dola-media/comida-01.jpg',
@@ -36,7 +36,7 @@
       ownerId: 'seed-agent',
       ownerName: 'Mensajero local',
       title: 'Ofrezco mandados y entregas',
-      description: 'Hago pagos, compras y entregas pequeñas en zona centro y alrededores.',
+      description: 'Ofrezco mandados y entregas.\nHago compras, pagos y entregas pequeñas en zona centro y alrededores.',
       category: 'OFREZCO',
       zone: 'Centro',
       mediaUrl: 'assets/dola-media/mandados-01.jpg',
@@ -50,7 +50,7 @@
       ownerId: 'seed-user',
       ownerName: 'Cliente local',
       title: 'Necesito viaje compartido',
-      description: 'Busco viaje mañana por la mañana. Salida desde Chapultepec.',
+      description: 'Necesito viaje compartido.\nBusco salida mañana por la mañana desde Chapultepec.',
       category: 'NECESITO',
       zone: 'Chapultepec',
       mediaUrl: 'assets/dola-media/solicitante-01.jpg',
@@ -69,8 +69,6 @@
     preview: '',
     mediaType: 'image',
     editing: null,
-    pickedFileData: '',
-    pickedFileName: '',
     cloudReady: false
   };
 
@@ -133,7 +131,7 @@
     toastEl.textContent = message;
     toastEl.classList.add('show');
     clearTimeout(toast._t);
-    toast._t = setTimeout(() => toastEl.classList.remove('show'), 2600);
+    toast._t = setTimeout(() => toastEl.classList.remove('show'), 2800);
   }
 
   function normalizeCategory(value) {
@@ -167,19 +165,23 @@
       .filter(post => state.filter === 'ALL' ? true : normalizeCategory(post.category) === state.filter)
       .filter(post => {
         if (!q) return true;
-        const hay = `${post.title || ''} ${post.description || ''} ${post.zone || ''} ${post.ownerName || ''}`.toLowerCase();
-        return hay.includes(q);
+        const haystack = `${post.title || ''} ${post.description || ''} ${post.zone || ''} ${post.category || ''} ${post.ownerName || ''}`.toLowerCase();
+        return haystack.includes(q);
       })
       .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
   }
 
   function myPosts() {
-    return state.posts.filter(post => post.ownerId === userId());
+    return state.posts
+      .filter(post => post.ownerId === userId())
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
   }
 
   function followedPosts() {
     const ids = new Set(follows());
-    return state.posts.filter(post => ids.has(post.ownerId)).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    return state.posts
+      .filter(post => ids.has(post.ownerId))
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
   }
 
   async function syncFromCloud() {
@@ -194,11 +196,13 @@
         category: normalizeCategory(post.category),
         cloudStatus: 'publica'
       }));
+
       const local = localPosts();
       const merged = [...remote];
       local.forEach(post => {
         if (!merged.some(item => item.id === post.id)) merged.push(post);
       });
+
       saveLocalPosts(merged);
     } catch {
       state.cloudReady = false;
@@ -234,76 +238,90 @@
   function shell(content) {
     return `
       <main class="app-page">
-        <div class="top-safe"></div>
+        <div class="top-space"></div>
         ${content}
       </main>
 
       <nav class="bottom-nav">
-        <button class="nav-item ${state.route === '/' ? 'active' : ''}" data-nav="/">🏠<small>Inicio</small></button>
-        <button class="nav-item ${state.route === '/siguiendo' ? 'active' : ''}" data-nav="/siguiendo">🫂<small>Siguiendo</small></button>
+        <button class="nav-item ${state.route === '/' ? 'active' : ''}" data-nav="/">
+          <span class="nav-icon">🏠</span><small>Inicio</small>
+        </button>
+        <button class="nav-item ${state.route === '/siguiendo' ? 'active' : ''}" data-nav="/siguiendo">
+          <span class="nav-icon">🫂</span><small>Siguiendo</small>
+        </button>
         <button class="nav-plus" data-pick>+</button>
-        <button class="nav-item ${state.route === '/mensajes' ? 'active' : ''}" data-nav="/mensajes">✉️<small>Mensajes</small></button>
-        <button class="nav-item ${state.route === '/perfil' ? 'active' : ''}" data-nav="/perfil">👤<small>Perfil</small></button>
+        <button class="nav-item ${state.route === '/mensajes' ? 'active' : ''}" data-nav="/mensajes">
+          <span class="nav-icon">✉️</span><small>Mensajes</small>
+        </button>
+        <button class="nav-item ${state.route === '/perfil' ? 'active' : ''}" data-nav="/perfil">
+          <span class="nav-icon">👤</span><small>Perfil</small>
+        </button>
       </nav>
 
       <input id="mediaPicker" type="file" accept="image/*,video/*" hidden>
     `;
   }
 
-  function topHeader() {
+  function homeHeader() {
     return `
-      <section class="top-card">
+      <section class="glass-top">
         <div class="brand-row">
           <img src="assets/icons/conecta-logo-oficial.png" alt="Conecta" class="brand-logo" onerror="this.style.display='none'">
-          <div class="brand-text">
+          <div class="brand-title">
             <strong>Conecta</strong>
             <span>Servicios</span>
           </div>
           <div style="display:flex;gap:10px;align-items:center">
-            <div class="top-ghost"></div>
-            <button class="bell-btn" title="Avisos">🔔</button>
+            <div class="ghost-top"></div>
+            <button class="bell-btn" data-nav="/mensajes" title="Avisos">🔔</button>
           </div>
         </div>
 
-        <div class="overlay-controls">
-          <div class="path-row">
-            ${pathButton('VENDO', '🏪', 'Vendo', 'vendo')}
-            ${pathButton('OFREZCO', '🛵', 'Ofrezco', 'ofrezco')}
-            ${pathButton('NECESITO', '🧡', 'Necesito', 'necesito')}
-          </div>
-
-          <label class="search-float">
-            <span class="icon">🔎</span>
-            <input id="searchInput" value="${esc(state.query)}" placeholder="Buscar">
-          </label>
+        <div class="path-row">
+          ${pathButton('VENDO', '🏪', 'Vendo', 'path-vendo')}
+          ${pathButton('OFREZCO', '🛵', 'Ofrezco', 'path-ofrezco')}
+          ${pathButton('NECESITO', '🧡', 'Necesito', 'path-necesito')}
         </div>
+
+        <label class="search-box">
+          <span>🔎</span>
+          <input id="searchInput" value="${esc(state.query)}" placeholder="Buscar">
+        </label>
       </section>
     `;
   }
 
-  function pathButton(key, icon, label, klass) {
-    const active = state.filter === key;
+  function pathButton(key, icon, label, styleClass) {
     return `
-      <button class="path-btn ${klass} ${active ? 'active' : ''}" data-filter="${key}">
-        <div class="inner">
-          <span class="icon">${icon}</span>
-          <span class="label">${label}</span>
-        </div>
+      <button class="path-card ${styleClass} ${state.filter === key ? 'active' : ''}" data-filter="${key}">
+        <span class="path-icon">${icon}</span>
+        <span class="path-label">${label}</span>
       </button>
     `;
   }
 
   function homePage() {
+    const posts = filteredPosts();
+    const title = state.filter === 'ALL' ? 'Publicaciones cerca de ti' : state.filter;
     return shell(`
-      ${topHeader()}
+      ${homeHeader()}
+
+      <section class="feed-title">
+        <div>
+          <h1>${esc(title)}</h1>
+          <p>${state.cloudReady ? 'Publicaciones disponibles' : 'También funciona sin conexión'}</p>
+        </div>
+        ${state.filter !== 'ALL' || state.query ? '<button class="small-link" data-clear>Todo</button>' : ''}
+      </section>
+
       <section class="feed">
-        ${filteredPosts().map(postCard).join('') || '<div class="empty">No hay publicaciones con ese filtro o búsqueda.</div>'}
+        ${posts.map(postCard).join('') || emptyState('No encontré publicaciones', 'Prueba otra búsqueda o publica algo con el botón +.')}
       </section>
     `);
   }
 
   function categoryClass(category) {
-    return `cat-${normalizeCategory(category).toLowerCase()}`;
+    return `chip-${normalizeCategory(category).toLowerCase()}`;
   }
 
   function isFollowing(ownerId) {
@@ -317,25 +335,25 @@
 
     return `
       <article class="post-card">
-        <div class="media-shell">
+        <div class="media-area">
           ${
             media
               ? (isVideo
-                ? `<video src="${esc(media)}" controls playsinline></video>`
+                ? `<video src="${esc(media)}" controls playsinline preload="metadata"></video>`
                 : `<img src="${esc(media)}" alt="${esc(post.title || 'Publicación')}">`)
-              : '<div class="media-empty">Conecta Servicios</div>'
+              : '<div class="no-media">Conecta Servicios</div>'
           }
 
-          <div class="media-overlay-top">
+          <div class="media-top">
             <span class="chip ${categoryClass(post.category)}">${esc(normalizeCategory(post.category))}</span>
             <span class="chip">📍 ${esc(post.zone || 'Zona')}</span>
           </div>
 
-          <div class="media-overlay-bottom">
-            <div class="floating-actions">
-              <button class="round-action" data-like="${esc(post.id)}">❤️</button>
-              <button class="round-action" data-message="${esc(post.id)}">✉️</button>
-              <button class="round-action" data-share="${esc(post.id)}">↗️</button>
+          <div class="media-bottom">
+            <div class="action-stack">
+              <button class="round-action" data-like="${esc(post.id)}" title="Me gusta">❤️</button>
+              <button class="round-action" data-message="${esc(post.id)}" title="Mensaje">✉️</button>
+              <button class="round-action" data-share="${esc(post.id)}" title="Compartir">↗️</button>
             </div>
             <button class="follow-btn ${isFollowing(post.ownerId) ? 'following' : ''}" data-follow="${esc(post.ownerId)}">
               ${isFollowing(post.ownerId) ? 'Siguiendo' : 'Seguir'}
@@ -344,35 +362,40 @@
         </div>
 
         <div class="post-body">
+          <div class="owner-row"><span class="owner-dot">👤</span>${esc(post.ownerName || 'Usuario local')}</div>
           <h2>${esc(post.title || 'Publicación')}</h2>
           <p>${esc(post.description || '')}</p>
-          <div class="meta">
-            <span>👤 ${esc(post.ownerName || 'Usuario local')}</span>
+          <div class="post-meta">
+            <span>❤️ ${post.reactions || 0}</span>
             <span>${new Date(post.createdAt || Date.now()).toLocaleDateString('es-MX')}</span>
           </div>
 
           ${own ? `
-            <div class="edit-row">
+            <div class="manage-row">
               <button data-edit="${esc(post.id)}">Editar</button>
               <button class="danger" data-delete="${esc(post.id)}">Borrar</button>
             </div>
           ` : ''}
 
-          ${post.cloudStatus === 'local' ? '<div class="local-note">Guardada localmente. Revisa conexión o vuelve a intentar sincronizar.</div>' : ''}
+          ${post.cloudStatus === 'local' ? '<div class="local-note">Tu publicación se guardó en este dispositivo. Revisa tu conexión e intenta de nuevo.</div>' : ''}
         </div>
       </article>
     `;
   }
 
+  function emptyState(title, text) {
+    return `<div class="empty"><strong>${esc(title)}</strong>${esc(text)}</div>`;
+  }
+
   function followingPage() {
     const posts = followedPosts();
     return shell(`
-      <section class="helper-card">
+      <section class="panel">
         <h1>Siguiendo</h1>
         <p>Aquí aparecen proveedores, clientes o mensajeros que decidiste seguir.</p>
       </section>
       <section class="feed">
-        ${posts.map(postCard).join('') || '<div class="empty">Todavía no sigues a nadie.</div>'}
+        ${posts.map(postCard).join('') || emptyState('Todavía no sigues a nadie', 'Toca Seguir en una publicación para verla aquí.')}
       </section>
     `);
   }
@@ -380,11 +403,11 @@
   function messagesPage() {
     const list = messages().sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     return shell(`
-      <section class="messages-card">
+      <section class="panel">
         <h1>Mensajes</h1>
-        <p>Aquí se registran los mensajes que envías desde las publicaciones.</p>
+        <p>Aquí se guardan los mensajes que escribes desde las publicaciones.</p>
         <div class="list">
-          ${list.map(messageCard).join('') || '<div class="empty">Todavía no hay mensajes.</div>'}
+          ${list.map(messageCard).join('') || emptyState('Sin mensajes todavía', 'Toca el sobre en una publicación para escribir uno.')}
         </div>
       </section>
     `);
@@ -404,24 +427,24 @@
     const prof = profile();
     const mine = myPosts();
     return shell(`
-      <section class="profile-card">
+      <section class="panel">
         <h1>Perfil</h1>
-        <p>Por ahora este MVP se enfoca en publicar fácil. Aquí puedes ver un resumen rápido.</p>
+        <p>Guarda tu nombre visible y revisa tu actividad.</p>
 
         <label>Nombre visible</label>
         <input id="profileName" value="${esc(prof.name || 'Usuario local')}" placeholder="Tu nombre o negocio">
 
-        <button class="primary-action" style="margin-top:12px" data-save-profile>Guardar nombre</button>
+        <button class="big-button" data-save-profile>Guardar nombre</button>
 
-        <div class="profile-stats">
+        <div class="profile-grid">
           <div class="stat"><strong>${mine.length}</strong><span>Publicaciones</span></div>
           <div class="stat"><strong>${follows().length}</strong><span>Siguiendo</span></div>
           <div class="stat"><strong>${messages().length}</strong><span>Mensajes</span></div>
         </div>
       </section>
 
-      <section class="feed" style="margin-top:18px">
-        ${mine.map(postCard).join('') || '<div class="empty">Todavía no has publicado.</div>'}
+      <section class="feed">
+        ${mine.map(postCard).join('') || emptyState('No has publicado', 'Toca + para crear tu primera publicación.')}
       </section>
     `);
   }
@@ -436,23 +459,23 @@
     const isVideo = (state.mediaType || post.mediaType) === 'video';
 
     return shell(`
-      <section class="composer-card">
-        <button class="ghost" data-nav="/">← Volver</button>
-        <h1>Nueva publicación</h1>
-        <p style="margin:0 0 14px;color:var(--muted)">Elige tu multimedia, escribe tu descripción y selecciona VENDO, OFREZCO o NECESITO.</p>
+      <section class="composer">
+        <button class="back-btn" data-nav="/">← Volver</button>
+        <h1>${state.editing ? 'Editar publicación' : 'Nueva publicación'}</h1>
+        <p>Escribe claro. La primera línea será el título.</p>
 
         <div class="preview" data-pick>
           ${
             media
               ? (isVideo
-                ? `<video src="${esc(media)}" controls playsinline></video>`
+                ? `<video src="${esc(media)}" controls playsinline preload="metadata"></video>`
                 : `<img src="${esc(media)}" alt="Vista previa">`)
               : '<div><strong>+ Agregar foto o video</strong><span>Desde tu dispositivo</span></div>'
           }
         </div>
 
         <label>Descripción</label>
-        <textarea id="description" placeholder="Describe lo que vendes, ofreces o necesitas.">${esc(post.description || '')}</textarea>
+        <textarea id="description" placeholder="Ejemplo: Vendo tamales hoy&#10;Entrego en zona centro desde las 6 pm.">${esc(post.description || '')}</textarea>
 
         <div class="form-grid">
           <div>
@@ -471,7 +494,7 @@
           </div>
         </div>
 
-        <button class="primary-action publish-only" data-publish>PUBLICAR</button>
+        <button class="big-button" data-publish>PUBLICAR</button>
       </section>
     `);
   }
@@ -488,22 +511,47 @@
     bind();
   }
 
+  function nav(route) {
+    state.route = route;
+    render();
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
+  }
+
   function openPicker() {
     document.getElementById('mediaPicker')?.click();
   }
 
-  function nav(route) {
-    state.route = route;
-    render();
-    setTimeout(() => scrollTo({ top: 0, behavior: 'smooth' }), 0);
-  }
-
-  async function fileToDataURL(file) {
+  function fileToDataURL(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result || '');
       reader.onerror = reject;
       reader.readAsDataURL(file);
+    });
+  }
+
+  function resizeImage(file, maxSide = 1280, quality = 0.82) {
+    return new Promise((resolve, reject) => {
+      if (!file.type.startsWith('image/')) return resolve(null);
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+        const width = Math.max(1, Math.round(img.width * scale));
+        const height = Math.max(1, Math.round(img.height * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('No se pudo leer imagen'));
+      };
+      img.src = url;
     });
   }
 
@@ -513,19 +561,19 @@
     if (!file) return;
 
     if (file.size > MAX_FILE_MB * 1024 * 1024) {
-      toast(`Por ahora usa archivos de hasta ${MAX_FILE_MB} MB.`);
+      toast('Por ahora usa archivos más ligeros para evitar errores.');
       return;
     }
 
-    state.mediaType = file.type.startsWith('video') ? 'video' : 'image';
     try {
-      state.pickedFileData = await fileToDataURL(file);
-      state.preview = state.pickedFileData;
-      state.pickedFileName = file.name || 'media';
+      state.mediaType = file.type.startsWith('video') ? 'video' : 'image';
+      state.preview = state.mediaType === 'image'
+        ? (await resizeImage(file) || await fileToDataURL(file))
+        : await fileToDataURL(file);
       state.editing = null;
       nav('/publicar');
     } catch {
-      toast('No se pudo leer el archivo.');
+      toast('No se pudo abrir el archivo. Prueba con otro.');
     }
   }
 
@@ -539,9 +587,9 @@
 
   async function publish() {
     const form = collectForm();
-    if (!form.description) return toast('Escribe una descripción');
-    if (!form.zone) return toast('Agrega zona o municipio');
-    if (!form.category) return toast('Selecciona VENDO, OFREZCO o NECESITO');
+    if (!form.description) return toast('Escribe una descripción.');
+    if (!form.zone) return toast('Agrega zona o municipio.');
+    if (!form.category) return toast('Selecciona VENDO, OFREZCO o NECESITO.');
 
     const old = state.editing;
     const id = old?.id || uid('post');
@@ -573,8 +621,6 @@
     saveLocalPosts([{ ...post, cloudStatus: ok ? 'publica' : 'local' }, ...state.posts.filter(item => item.id !== id)]);
 
     state.preview = '';
-    state.pickedFileData = '';
-    state.pickedFileName = '';
     state.mediaType = 'image';
     state.editing = null;
     state.filter = form.category;
@@ -582,12 +628,12 @@
 
     if (ok) {
       await syncFromCloud();
-      toast('Publicación lista');
-      nav('/');
+      toast('Publicación lista.');
     } else {
-      toast('Tu publicación se guardó como borrador local. Revisa conexión o vuelve a intentar sincronizar.');
-      nav('/');
+      toast('Tu publicación se guardó en este dispositivo. Revisa tu conexión e intenta de nuevo.');
     }
+
+    nav('/');
   }
 
   function editPost(id) {
@@ -603,10 +649,9 @@
     const post = state.posts.find(item => item.id === id);
     if (!post || post.ownerId !== userId()) return toast('Solo puedes borrar tus publicaciones.');
     if (!confirm('¿Borrar esta publicación?')) return;
-
     saveLocalPosts(state.posts.filter(item => item.id !== id));
     deleteCloud(id);
-    toast('Publicación borrada');
+    toast('Publicación borrada.');
     render();
   }
 
@@ -620,15 +665,17 @@
     if (!post) return;
     const text = `${post.title}\n\n${post.description}\n\n${post.category} · ${post.zone}\n\n${APP_URL}`;
     if (navigator.share) navigator.share({ title: post.title, text, url: APP_URL }).catch(() => {});
-    else navigator.clipboard?.writeText(text).then(() => toast('Copiado para compartir'));
+    else navigator.clipboard?.writeText(text).then(() => toast('Copiado para compartir.'));
   }
 
   function toggleFollow(ownerId) {
+    if (ownerId === userId()) return toast('Esta publicación es tuya.');
     const current = follows();
     const next = current.includes(ownerId)
       ? current.filter(id => id !== ownerId)
       : [...current, ownerId];
     set(K.follows, next);
+    toast(current.includes(ownerId) ? 'Dejaste de seguir.' : 'Ahora lo sigues.');
     render();
   }
 
@@ -637,6 +684,7 @@
     if (!post) return;
     const text = prompt(`Mensaje para "${post.title}"`);
     if (!text) return;
+
     const list = messages();
     list.unshift({
       id: uid('m'),
@@ -649,18 +697,26 @@
       createdAt: new Date().toISOString()
     });
     saveMessages(list);
-    toast('Mensaje guardado');
+    toast('Mensaje guardado.');
   }
 
   function saveProfile() {
     const name = document.getElementById('profileName')?.value.trim() || 'Usuario local';
     set(K.profile, { name });
-    toast('Nombre guardado');
+    toast('Nombre guardado.');
+    render();
+  }
+
+  function clearFilters() {
+    state.filter = 'ALL';
+    state.query = '';
+    render();
   }
 
   function bind() {
     document.querySelectorAll('[data-nav]').forEach(button => button.onclick = () => nav(button.dataset.nav));
-    document.querySelectorAll('[data-filter]').forEach(button => button.onclick = () => { state.filter = button.dataset.filter; render(); });
+    document.querySelectorAll('[data-filter]').forEach(button => button.onclick = () => { state.filter = button.dataset.filter; state.route = '/'; render(); });
+    document.querySelectorAll('[data-clear]').forEach(button => button.onclick = clearFilters);
     document.querySelectorAll('[data-pick]').forEach(button => button.onclick = openPicker);
     document.querySelectorAll('[data-publish]').forEach(button => button.onclick = publish);
     document.querySelectorAll('[data-like]').forEach(button => button.onclick = () => likePost(button.dataset.like));
@@ -678,10 +734,9 @@
     if (search) {
       search.oninput = (event) => {
         state.query = event.target.value;
-        const currentRoute = state.route;
-        if (currentRoute !== '/') state.route = '/';
         render();
       };
+      search.focus = search.focus.bind(search);
     }
   }
 
