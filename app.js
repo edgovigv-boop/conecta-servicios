@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.30-tabs-zona-back
+/* Conecta Servicios v6.3.31-tiendas-por-usuario
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.30-tabs-zona-back';
+  const VERSION = 'v6.3.31-tiendas-por-usuario';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -53,6 +53,8 @@
     searchTyping: false,
     searchRenderTimer: null,
     topTab: 'para-ti',
+    storeOwnerId: '',
+    storeOwnerName: '',
     posts: [],
     preview: '',
     mediaType: 'image',
@@ -603,6 +605,49 @@
   function myPosts(){ return filteredAll().filter(p => p.ownerId === userId()); }
   function followedPosts(){ const ids = new Set(follows()); return filteredAll().filter(p => ids.has(p.ownerId)); }
   function filteredAll(){ return dedupePosts(state.posts).filter(p => !isDeleted(p)).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)); }
+  function ownerPosts(ownerId){
+    return filteredAll().filter(p => p.ownerId === ownerId);
+  }
+
+  function ownerVendoPosts(ownerId){
+    return ownerPosts(ownerId).filter(p => normalizeCategory(p.category) === 'VENDO');
+  }
+
+  function ownerSummary(ownerId){
+    const posts = ownerPosts(ownerId);
+    const first = posts[0] || {};
+    return {
+      ownerId,
+      ownerName: first.ownerName || (ownerId === userId() ? profile().name || 'Mi perfil' : 'Usuario local'),
+      total: posts.length,
+      vendo: posts.filter(p => normalizeCategory(p.category) === 'VENDO').length,
+      ofrezco: posts.filter(p => normalizeCategory(p.category) === 'OFREZCO').length,
+      necesito: posts.filter(p => normalizeCategory(p.category) === 'NECESITO').length,
+      lastAt: posts[0]?.createdAt || '',
+      isFollowing: follows().includes(ownerId),
+      isMe: ownerId === userId()
+    };
+  }
+
+  function allOwnerSummaries(){
+    const ids = new Set(filteredAll().map(p => p.ownerId).filter(Boolean));
+    ids.add(userId());
+    return [...ids].map(ownerSummary)
+      .filter(s => s.total > 0 || s.isMe)
+      .sort((a,b) => (b.isMe - a.isMe) || (Number(b.isFollowing) - Number(a.isFollowing)) || b.vendo - a.vendo || new Date(b.lastAt||0)-new Date(a.lastAt||0));
+  }
+
+  function openStore(ownerId){
+    const id = ownerId || userId();
+    const summary = ownerSummary(id);
+    state.storeOwnerId = id;
+    state.storeOwnerName = summary.ownerName;
+    state.topTab = 'tienda';
+    state.filter = 'ALL';
+    state.query = '';
+    nav('/tienda');
+  }
+
 
   function requestRenderSoon(){ clearTimeout(requestRenderSoon._t); requestRenderSoon._t=setTimeout(()=>{ if(state.route !== '/publicar') render(); },60); }
 
@@ -1164,6 +1209,110 @@
         overflow:hidden;
         text-overflow:ellipsis;
       }
+      .owner-row{
+        cursor:pointer;
+        display:inline-flex !important;
+        width:auto;
+        max-width:100%;
+      }
+      .store-panel,.owner-directory,.following-panel{
+        margin:calc(env(safe-area-inset-top) + 92px) 12px 12px !important;
+      }
+      .owner-directory{
+        margin-top:12px !important;
+      }
+      .store-hero{
+        display:flex;
+        gap:14px;
+        align-items:center;
+      }
+      .store-avatar,.owner-avatar{
+        width:54px;
+        height:54px;
+        border-radius:18px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:linear-gradient(135deg,#5b2eea,#14b8a6);
+        color:#fff;
+        font-size:28px;
+        box-shadow:0 14px 32px rgba(91,46,234,.22);
+        flex:0 0 auto;
+      }
+      .store-kicker{
+        margin:0 0 3px !important;
+        font-size:12px !important;
+        color:#6b7280 !important;
+        text-transform:uppercase;
+        letter-spacing:.06em;
+        font-weight:900;
+      }
+      .store-stats{
+        display:flex;
+        gap:8px;
+        flex-wrap:wrap;
+        margin-top:14px;
+      }
+      .store-stats span{
+        padding:8px 11px;
+        border-radius:999px;
+        background:#f3f4f6;
+        color:#111827;
+        font-size:12px;
+        font-weight:800;
+      }
+      .owner-list{
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+      }
+      .owner-card{
+        display:grid;
+        grid-template-columns:54px 1fr auto;
+        gap:12px;
+        align-items:center;
+        padding:12px;
+        border-radius:20px;
+        background:#fff;
+        box-shadow:0 12px 34px rgba(17,24,39,.08);
+      }
+      .owner-card-main strong{
+        display:block;
+        font-size:15px;
+        color:#111827;
+      }
+      .owner-card-main span{
+        display:block;
+        color:#6b7280;
+        font-size:12px;
+        margin-top:3px;
+      }
+      .owner-card-actions{
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+        align-items:flex-end;
+      }
+      .owner-card-actions button{
+        border:0;
+        border-radius:999px;
+        padding:8px 11px;
+        background:#5b2eea;
+        color:#fff;
+        font-weight:900;
+        font-size:12px;
+        white-space:nowrap;
+      }
+      .owner-card-actions button.following{
+        background:#111827;
+      }
+      .owner-card-actions small{
+        color:#6b7280;
+        font-weight:800;
+      }
+      .store-feed{
+        margin-top:0 !important;
+      }
       .visual-tab[data-top-tab="tienda"].active{color:#fff;}
       .visual-tab[data-nav="/siguiendo"]{max-width:82px;overflow:hidden;text-overflow:ellipsis;}
       .visual-search-btn{
@@ -1440,7 +1589,7 @@
         <div class="visual-tabs">
           <button class="visual-tab municipio-tab ${state.topTab === 'municipio' ? 'active' : ''}" data-top-tab="municipio">${esc(municipio)}</button>
           <button class="visual-tab" data-nav="/siguiendo">Siguiendo</button>
-          <button class="visual-tab ${state.topTab === 'tienda' ? 'active' : ''}" data-top-tab="tienda">Tienda</button>
+          <button class="visual-tab ${state.route === '/tienda' ? 'active' : ''}" data-open-store="${esc(userId())}">Tienda</button>
           <button class="visual-tab ${state.topTab === 'para-ti' ? 'active' : ''}" data-top-tab="para-ti">Para ti</button>
         </div>
         <button class="tiktok-icon-btn visual-search-btn" data-toggle-search title="Buscar">🔎</button>
@@ -1522,7 +1671,7 @@
         <div class="media-bottom"><div class="action-stack"><button class="round-action" data-like="${esc(post.id)}">❤️</button><button class="round-action" data-message="${esc(post.id)}">✉️</button><button class="round-action" data-share="${esc(post.id)}">↗️</button></div><button class="follow-btn ${isFollowing(post.ownerId)?'following':''}" data-follow="${esc(post.ownerId)}">${isFollowing(post.ownerId)?'Siguiendo':'Seguir'}</button></div>
       </div>
       <div class="post-body">
-        <div class="owner-row"><span class="owner-dot">👤</span>${esc(post.ownerName || 'Usuario local')}</div>
+        <div class="owner-row" data-open-store="${esc(post.ownerId)}"><span class="owner-dot">👤</span>${esc(post.ownerName || 'Usuario local')}</div>
         <h2>${esc(post.title || 'Publicación')}</h2>
         <p>${esc(shortDescription(post.description || ''))}</p>
         <div class="post-meta"><span>❤️ ${post.reactions || 0}</span><span>${new Date(post.createdAt || Date.now()).toLocaleDateString('es-MX')}</span></div>
@@ -1534,7 +1683,53 @@
   }
 
   function emptyState(t,x){ return `<div class="empty"><strong>${esc(t)}</strong>${esc(x)}</div>`; }
-  function followingPage(){ const posts=followedPosts(); return shell(`<section class="panel"><button class="small-link" data-nav="/">← Volver al Home</button><h1>Siguiendo</h1><p>Aquí aparecen proveedores, clientes o mensajeros que decidiste seguir.</p></section><section class="feed">${posts.map(postCard).join('')||emptyState('Todavía no sigues a nadie','Toca Seguir en una publicación para verla aquí.')}</section>`); }
+  function ownerCard(summary, extra=''){
+    return `<article class="owner-card">
+      <div class="owner-avatar">${summary.isMe ? '👤' : '🏪'}</div>
+      <div class="owner-card-main">
+        <strong>${esc(summary.ownerName || 'Usuario local')}</strong>
+        <span>${summary.vendo} en tienda · ${summary.ofrezco} ofrece · ${summary.necesito} necesita</span>
+        ${extra}
+      </div>
+      <div class="owner-card-actions">
+        <button data-open-store="${esc(summary.ownerId)}">Ver tienda</button>
+        ${summary.isMe ? '<small>Tu cuenta</small>' : `<button class="${summary.isFollowing ? 'following' : ''}" data-follow="${esc(summary.ownerId)}">${summary.isFollowing ? 'Siguiendo' : 'Seguir'}</button>`}
+      </div>
+    </article>`;
+  }
+
+  function storePage(){
+    const ownerId = state.storeOwnerId || userId();
+    const summary = ownerSummary(ownerId);
+    const vendo = ownerVendoPosts(ownerId);
+    const suggestions = allOwnerSummaries().filter(s => s.ownerId !== ownerId && s.vendo > 0).slice(0, 8);
+
+    return shell(`<section class="panel store-panel">
+      <button class="small-link" data-nav="/">← Volver al Home</button>
+      <div class="store-hero">
+        <div class="store-avatar">${summary.isMe ? '👤' : '🏪'}</div>
+        <div>
+          <p class="store-kicker">${summary.isMe ? 'Mi cuenta' : 'Cuenta local'}</p>
+          <h1>${esc(summary.isMe ? 'Mi tienda' : summary.ownerName || 'Tienda')}</h1>
+          <p>Solo publicaciones VENDO de este usuario. Sus publicaciones de OFREZCO y NECESITO no aparecen aquí.</p>
+        </div>
+      </div>
+      <div class="store-stats">
+        <span><strong>${summary.vendo}</strong> en venta</span>
+        <span><strong>${summary.total}</strong> publicaciones</span>
+        <span><strong>${summary.isFollowing ? 'Sí' : 'No'}</strong> siguiendo</span>
+      </div>
+      ${summary.isMe && !vendo.length ? '<div class="local-note">Publica algo en categoría VENDO para empezar tu tienda.</div>' : ''}
+    </section>
+    <section class="feed store-feed">${vendo.map(postCard).join('') || emptyState('Esta tienda aún no tiene productos','Cuando publique en VENDO, aparecerá aquí.')}</section>
+    ${suggestions.length ? `<section class="panel owner-directory"><h2>Otras tiendas locales</h2><div class="owner-list">${suggestions.map(s => ownerCard(s)).join('')}</div></section>` : ''}`);
+  }
+
+  function followingPage(){
+    const ids = follows();
+    const summaries = ids.map(ownerSummary).filter(s => s.total > 0);
+    return shell(`<section class="panel following-panel"><button class="small-link" data-nav="/">← Volver al Home</button><h1>Siguiendo</h1><p>Personas, proveedores, clientes o mensajeros que sigues. Entra a su cuenta para ver su tienda VENDO.</p></section><section class="panel owner-directory"><div class="owner-list">${summaries.map(s => ownerCard(s)).join('') || emptyState('Todavía no sigues a nadie','Toca Seguir en una publicación para ver su cuenta y tienda aquí.')}</div></section>`);
+  }
 
   function diagnosticsPanel(){
     const diag = state.lastUploadDiagnostic || get('cs_v6323_last_upload_diagnostic', null);
@@ -1619,7 +1814,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
   function render(){
     injectRootStyles();
-    const routes = {'/':homePage, '/siguiendo':followingPage, '/mensajes':messagesPage, '/perfil':profilePage, '/publicar':composerPage, '/chat':chatPage};
+    const routes = {'/':homePage, '/tienda':storePage, '/siguiendo':followingPage, '/mensajes':messagesPage, '/perfil':profilePage, '/publicar':composerPage, '/chat':chatPage};
     app.innerHTML = (routes[state.route] || homePage)();
     bind();
     if(state.route === '/chat') scrollChatToBottom('auto');
@@ -1646,7 +1841,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     const initialHash = location.hash.replace('#','');
     if(initialHash){
       const route = '/' + initialHash.replace(/^\//,'');
-      if(['/siguiendo','/mensajes','/perfil','/publicar','/chat'].includes(route)) state.route = route;
+      if(['/tienda','/siguiendo','/mensajes','/perfil','/publicar','/chat'].includes(route)) state.route = route;
     }
     history.replaceState?.({route:state.route || '/'}, '', routeUrl(state.route || '/'));
     window.addEventListener('popstate', e => {
@@ -2277,6 +2472,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('[data-publish]').forEach(b=>b.onclick=publish);
     document.querySelectorAll('[data-save-profile]').forEach(b=>b.onclick=saveProfile);
     document.querySelectorAll('[data-toggle-search]').forEach(b=>b.onclick=toggleSearchPanel);
+    document.querySelectorAll('[data-open-store]').forEach(b=>b.onclick=()=>openStore(b.dataset.openStore));
     document.querySelectorAll('[data-top-tab]').forEach(b=>b.onclick=()=>setTopTab(b.dataset.topTab));
     document.querySelectorAll('[data-clear-search]').forEach(b=>b.onclick=(e)=>{ e.preventDefault(); e.stopPropagation(); if(state.query){ state.query=''; state.searchTyping=true; updateFeedOnly(); setTimeout(()=>{ const i=document.getElementById('searchInput'); i?.focus({preventScroll:true}); try{i?.setSelectionRange(0,0)}catch{} state.searchTyping=false; },80); } else { closeSearchPanel(); } });
     bindDynamicFeedControls();
