@@ -1,16 +1,11 @@
-const CACHE_NAME = 'conecta-servicios-v6-3-19-video-abrir-directo';
+const CACHE_NAME = 'conecta-servicios-v6-3-20-video-root-fix';
 
 const ASSETS = [
   '/',
   '/index.html',
   '/styles.css?v=6.3.12-publicaciones-video-sync',
-  '/stale-posts-guard.js?v=6.3.17-limpieza-local-video',
-  '/video-long-guard.js?v=6.3.17-limpieza-local-video',
-  '/video-playback-guard.js?v=6.3.17-limpieza-local-video',
-  '/video-feed-guard.js?v=6.3.18-video-ligero-feed',
-  '/video-open-guard.js?v=6.3.19-video-abrir-directo',
-  '/app.js?v=6.3.12-publicaciones-video-sync',
-  '/manifest.json?v=6.3.19-video-abrir-directo',
+  '/app.js?v=6.3.20-video-root-fix',
+  '/manifest.json?v=6.3.20-video-root-fix',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'
@@ -24,7 +19,7 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))
+      Promise.all(keys.filter(key => key.startsWith('conecta-servicios-') && key !== CACHE_NAME).map(key => caches.delete(key)))
     )
   );
   self.clients.claim();
@@ -39,8 +34,10 @@ self.addEventListener('fetch', event => {
   const networkFirst =
     req.mode === 'navigate' ||
     url.pathname.endsWith('/index.html') ||
-    url.search.includes('v=6319') ||
-    url.search.includes('v=6.3.19');
+    url.pathname.endsWith('/app.js') ||
+    url.pathname.endsWith('/service-worker.js') ||
+    url.search.includes('v=6320') ||
+    url.search.includes('v=6.3.20');
 
   if (networkFirst) {
     event.respondWith(

@@ -1,11 +1,11 @@
 // api/publications.js
-// Conecta Servicios v6.3.5
-// Adaptador seguro para publicar y leer el muro general desde Supabase.
-// Corrige normalización de SUPABASE_URL y agrega diagnóstico seguro sin exponer llaves.
+// Conecta Servicios v6.3.20 - Muro público con normalización de video.
+// Mantiene service role solo en backend.
 
 function send(res, status, payload) {
   res.statusCode = status;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
   res.end(JSON.stringify(payload));
 }
 
@@ -17,29 +17,19 @@ function readBody(req) {
       if (body.length > 6_000_000) req.destroy();
     });
     req.on('end', () => {
-      try {
-        resolve(body ? JSON.parse(body) : {});
-      } catch (e) {
-        reject(e);
-      }
+      try { resolve(body ? JSON.parse(body) : {}); }
+      catch (e) { reject(e); }
     });
     req.on('error', reject);
   });
 }
 
 function cleanSupabaseUrl(raw) {
-  let value = String(raw || '').trim();
-  value = value.replace(/\/rest\/v1\/?$/i, '');
-  value = value.replace(/\/+$/g, '');
-  return value;
+  return String(raw || '').trim().replace(/\/rest\/v1\/?$/i, '').replace(/\/+$/g, '');
 }
 
 function safeHost(url) {
-  try {
-    return new URL(url).host;
-  } catch {
-    return '';
-  }
+  try { return new URL(url).host; } catch { return ''; }
 }
 
 function env() {
@@ -53,38 +43,19 @@ function env() {
   try {
     const parsed = new URL(url);
     validUrl = parsed.protocol === 'https:' && parsed.hostname.endsWith('.supabase.co');
-  } catch {
-    validUrl = false;
-  }
+  } catch { validUrl = false; }
 
-  return {
-    url,
-    key,
-    table,
-    ok: !!(url && key && validUrl),
-    hasUrl: !!rawUrl,
-    hasKey: !!rawKey,
-    validUrl,
-    host: safeHost(url)
-  };
+  return { url, key, table, ok: !!(url && key && validUrl), hasUrl: !!rawUrl, hasKey: !!rawKey, validUrl, host: safeHost(url) };
 }
 
 function diagnostics(extra = {}) {
   const cfg = env();
-  return {
-    hasUrl: cfg.hasUrl,
-    hasServiceRoleKey: cfg.hasKey,
-    validUrl: cfg.validUrl,
-    supabaseHost: cfg.host,
-    table: cfg.table,
-    ...extra
-  };
+  return { hasUrl: cfg.hasUrl, hasServiceRoleKey: cfg.hasKey, validUrl: cfg.validUrl, supabaseHost: cfg.host, table: cfg.table, ...extra };
 }
 
 async function supabaseFetch(path, options = {}) {
   const { url, key } = env();
-  const target = `${url}/rest/v1/${path}`;
-  return fetch(target, {
+  return fetch(`${url}/rest/v1/${path}`, {
     ...options,
     headers: {
       apikey: key,
@@ -95,6 +66,33 @@ async function supabaseFetch(path, options = {}) {
   });
 }
 
+function isVideoUrl(url = '') {
+  return /\.(mp4|mov|webm|m4v)(\?|$)/i.test(String(url));
+}
+
+function normalizePost(post, row = {}) {
+  const p = { ...(post || {}) };
+  const mediaUrl = String(p.mediaUrl || '').trim();
+
+  p.id = p.id || row.client_id;
+  p.ownerId = p.ownerId || row.owner_id || '';
+  p.status = row.status || p.status || 'activa';
+  p.createdAt = p.createdAt || row.created_at;
+  p.updatedAt = p.updatedAt || row.updated_at || row.created_at;
+
+  if (mediaUrl) {
+    p.mediaUrl = mediaUrl;
+    p.cloudStatus = 'publica';
+    p.mediaStatus = '';
+    p.mediaPending = false;
+    if (String(p.mediaType || '').toLowerCase() === 'video' || isVideoUrl(mediaUrl) || String(p.mediaMime || '').startsWith('video/')) {
+      p.mediaType = 'video';
+    }
+  }
+
+  return p;
+}
+
 module.exports = async function handler(req, res) {
   const cfg = env();
 
@@ -102,9 +100,7 @@ module.exports = async function handler(req, res) {
     return send(res, 200, {
       ok: cfg.ok,
       diagnostics: diagnostics(),
-      message: cfg.ok
-        ? 'Configuración básica presente. Probando lectura normal en /api/publications.'
-        : 'Revisa SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY en Vercel.'
+      message: cfg.ok ? 'Configuración básica presente. Probando lectura normal en /api/publications.' : 'Revisa SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY en Vercel.'
     });
   }
 
@@ -119,30 +115,20 @@ module.exports = async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const r = await supabaseFetch(`${cfg.table}?select=client_id,owner_id,status,data,created_at&order=created_at.desc`);
+      const r = await supabaseFetch(`${cfg.table}?select=client_id,owner_id,status,data,created_at,updated_at&order=created_at.desc`);
       const rows = await r.json().catch(() => []);
       if (!r.ok) {
-        return send(res, r.status, {
-          ok: false,
-          error: 'SUPABASE_GET_FAILED',
-          detail: rows,
-          diagnostics: diagnostics({ httpStatus: r.status })
-        });
+        return send(res, r.status, { ok: false, error: 'SUPABASE_GET_FAILED', detail: rows, diagnostics: diagnostics({ httpStatus: r.status }) });
       }
       return send(res, 200, {
         ok: true,
-        posts: rows.map(row => ({
-          ...(row.data || {}),
-          id: row.client_id,
-          ownerId: row.owner_id,
-          status: row.status || row.data?.status || 'activa'
-        }))
+        posts: rows.map(row => normalizePost(row.data || {}, row))
       });
     }
 
     if (req.method === 'POST') {
       const body = await readBody(req);
-      const post = body.post;
+      const post = normalizePost(body.post || {});
       if (!post || !post.id) return send(res, 400, { ok: false, error: 'MISSING_POST' });
 
       const row = {
@@ -161,14 +147,9 @@ module.exports = async function handler(req, res) {
 
       const data = await r.json().catch(() => null);
       if (!r.ok) {
-        return send(res, r.status, {
-          ok: false,
-          error: 'SUPABASE_UPSERT_FAILED',
-          detail: data,
-          diagnostics: diagnostics({ httpStatus: r.status })
-        });
+        return send(res, r.status, { ok: false, error: 'SUPABASE_UPSERT_FAILED', detail: data, diagnostics: diagnostics({ httpStatus: r.status }) });
       }
-      return send(res, 200, { ok: true, post });
+      return send(res, 200, { ok: true, post: normalizePost(data?.[0]?.data || post, data?.[0] || row) });
     }
 
     if (req.method === 'DELETE') {
@@ -185,24 +166,13 @@ module.exports = async function handler(req, res) {
       }
 
       const r = await supabaseFetch(`${cfg.table}?client_id=eq.${encodeURIComponent(id)}`, { method: 'DELETE' });
-      if (!r.ok) {
-        return send(res, r.status, {
-          ok: false,
-          error: 'SUPABASE_DELETE_FAILED',
-          diagnostics: diagnostics({ httpStatus: r.status })
-        });
-      }
+      if (!r.ok) return send(res, r.status, { ok: false, error: 'SUPABASE_DELETE_FAILED', diagnostics: diagnostics({ httpStatus: r.status }) });
       return send(res, 200, { ok: true });
     }
 
     res.setHeader('Allow', 'GET, POST, DELETE');
     return send(res, 405, { ok: false, error: 'METHOD_NOT_ALLOWED' });
   } catch (error) {
-    return send(res, 500, {
-      ok: false,
-      error: 'PUBLICATIONS_API_ERROR',
-      message: error?.message || String(error),
-      diagnostics: diagnostics()
-    });
+    return send(res, 500, { ok: false, error: 'PUBLICATIONS_API_ERROR', message: error?.message || String(error), diagnostics: diagnostics() });
   }
 };
