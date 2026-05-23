@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.28-busqueda-teclado-fijo
+/* Conecta Servicios v6.3.29-home-visual-tiktok
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.28-busqueda-teclado-fijo';
+  const VERSION = 'v6.3.29-home-visual-tiktok';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -1008,6 +1008,274 @@
       .post-card{
         scroll-margin-top:calc(env(safe-area-inset-top) + 118px);
       }
+      /* v6.3.29 Home visual estilo red social */
+      .glass-top.visual-top{
+        background:linear-gradient(180deg,rgba(0,0,0,.58),rgba(0,0,0,.18),rgba(0,0,0,0)) !important;
+        padding:calc(env(safe-area-inset-top) + 6px) 10px 8px !important;
+      }
+      .visual-topbar{
+        grid-template-columns:1fr 44px !important;
+        gap:8px !important;
+      }
+      .visual-tabs{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:10px;
+        overflow:hidden;
+        min-width:0;
+      }
+      .visual-tab{
+        appearance:none;
+        border:0;
+        background:transparent;
+        color:rgba(255,255,255,.76);
+        font-weight:900;
+        font-size:15px;
+        line-height:1;
+        padding:9px 0 8px;
+        text-shadow:0 2px 12px rgba(0,0,0,.72);
+        white-space:nowrap;
+        position:relative;
+      }
+      .visual-tab.active{
+        color:#fff;
+        font-size:17px;
+      }
+      .visual-tab.active::after{
+        content:"";
+        position:absolute;
+        left:50%;
+        bottom:0;
+        width:28px;
+        height:3px;
+        border-radius:999px;
+        background:#fff;
+        transform:translateX(-50%);
+      }
+      .municipio-tab{
+        max-width:88px;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+      .visual-search-btn{
+        width:40px !important;
+        height:40px !important;
+        background:rgba(0,0,0,.10) !important;
+        backdrop-filter:none !important;
+        font-size:24px !important;
+        box-shadow:none !important;
+      }
+      .visual-search-panel{
+        margin:6px 6px 0 !important;
+        background:rgba(0,0,0,.50) !important;
+        box-shadow:0 12px 30px rgba(0,0,0,.18);
+      }
+      .visual-filter-row{
+        margin-top:6px !important;
+        gap:6px !important;
+      }
+      .visual-filter-row .path-card{
+        padding:5px 9px !important;
+        min-height:0 !important;
+        border-radius:999px !important;
+        background:rgba(255,255,255,.16) !important;
+        transform:none !important;
+      }
+      .visual-filter-row .path-card.active{
+        background:rgba(255,255,255,.78) !important;
+        color:#111827 !important;
+      }
+      .visual-filter-row .path-icon{
+        display:none !important;
+      }
+      .visual-filter-row .path-label{
+        font-size:11px !important;
+        letter-spacing:.02em;
+      }
+      .feed-title{
+        display:none !important;
+      }
+      .feed{
+        padding-top:0 !important;
+        padding-left:0 !important;
+        padding-right:0 !important;
+        gap:8px !important;
+      }
+      .post-card{
+        position:relative !important;
+        margin:0 0 10px !important;
+        border-radius:0 !important;
+        overflow:hidden !important;
+        background:#050507 !important;
+        box-shadow:none !important;
+        min-height:calc(100vh - 92px) !important;
+      }
+      .post-card .media-area{
+        height:calc(100vh - 92px) !important;
+        min-height:560px !important;
+        border-radius:0 !important;
+        background:#050507 !important;
+        overflow:hidden !important;
+      }
+      .post-card .media-area img,
+      .post-card .media-area .no-media,
+      .video-inline-wrap,
+      .video-inline-wrap video,
+      .media-area video.feed-video-player{
+        min-height:calc(100vh - 92px) !important;
+        height:calc(100vh - 92px) !important;
+        object-fit:cover !important;
+        border-radius:0 !important;
+      }
+      .media-top{
+        top:calc(env(safe-area-inset-top) + 88px) !important;
+        left:12px !important;
+        right:auto !important;
+        gap:6px !important;
+        z-index:8 !important;
+      }
+      .media-top .chip{
+        padding:6px 10px !important;
+        font-size:11px !important;
+        font-weight:900 !important;
+        color:#fff !important;
+        background:rgba(0,0,0,.30) !important;
+        border:1px solid rgba(255,255,255,.18) !important;
+        backdrop-filter:blur(8px);
+      }
+      .media-bottom{
+        position:absolute !important;
+        right:10px !important;
+        left:auto !important;
+        bottom:118px !important;
+        z-index:9 !important;
+        display:flex !important;
+        flex-direction:column !important;
+        align-items:center !important;
+        gap:10px !important;
+        pointer-events:auto !important;
+      }
+      .action-stack{
+        display:flex !important;
+        flex-direction:column !important;
+        gap:10px !important;
+        align-items:center !important;
+      }
+      .round-action{
+        width:48px !important;
+        height:48px !important;
+        border-radius:999px !important;
+        font-size:21px !important;
+        background:rgba(255,255,255,.82) !important;
+        backdrop-filter:blur(8px) !important;
+        box-shadow:0 10px 25px rgba(0,0,0,.16) !important;
+      }
+      .follow-btn{
+        min-width:0 !important;
+        padding:9px 12px !important;
+        border-radius:18px !important;
+        font-size:13px !important;
+        font-weight:900 !important;
+        background:rgba(20,184,166,.86) !important;
+        box-shadow:0 10px 28px rgba(0,0,0,.18) !important;
+      }
+      .follow-btn.following{
+        background:rgba(17,24,39,.78) !important;
+        color:#fff !important;
+      }
+      .video-inline-actions{
+        left:12px !important;
+        right:auto !important;
+        bottom:auto !important;
+        top:calc(env(safe-area-inset-top) + 128px) !important;
+        transform:none !important;
+        justify-content:flex-start !important;
+        gap:7px !important;
+        z-index:7 !important;
+      }
+      .video-inline-actions button{
+        padding:7px 10px !important;
+        border-radius:999px !important;
+        font-size:12px !important;
+        background:rgba(0,0,0,.38) !important;
+        color:#fff !important;
+        border:1px solid rgba(255,255,255,.18) !important;
+        box-shadow:none !important;
+        backdrop-filter:blur(8px);
+      }
+      .post-body{
+        position:absolute !important;
+        left:0 !important;
+        right:0 !important;
+        bottom:0 !important;
+        z-index:7 !important;
+        color:#fff !important;
+        background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.62) 22%,rgba(0,0,0,.84)) !important;
+        padding:76px 84px calc(env(safe-area-inset-bottom) + 82px) 16px !important;
+        border-radius:0 !important;
+        box-shadow:none !important;
+      }
+      .post-body .owner-row{
+        color:rgba(255,255,255,.92) !important;
+        font-size:14px !important;
+        font-weight:900 !important;
+        margin-bottom:5px !important;
+      }
+      .post-body h2{
+        color:#fff !important;
+        font-size:20px !important;
+        line-height:1.12 !important;
+        margin:0 0 7px !important;
+        text-shadow:0 2px 15px rgba(0,0,0,.45);
+      }
+      .post-body p{
+        color:rgba(255,255,255,.92) !important;
+        font-size:15px !important;
+        line-height:1.25 !important;
+        margin:0 !important;
+        max-height:3.75em;
+        overflow:hidden;
+      }
+      .post-meta{
+        color:rgba(255,255,255,.82) !important;
+        font-size:12px !important;
+        margin-top:8px !important;
+      }
+      .status-chip{
+        display:none !important;
+      }
+      .manage-row{
+        margin-top:9px !important;
+        display:flex !important;
+        gap:8px !important;
+        flex-wrap:wrap !important;
+      }
+      .manage-row button{
+        padding:8px 10px !important;
+        border-radius:999px !important;
+        border:0 !important;
+        background:rgba(255,255,255,.90) !important;
+        color:#111827 !important;
+        font-weight:900 !important;
+      }
+      .manage-row .danger{
+        background:rgba(254,226,226,.94) !important;
+        color:#991b1b !important;
+      }
+      .bottom-nav{
+        background:rgba(255,255,255,.88) !important;
+        backdrop-filter:blur(14px) !important;
+        box-shadow:0 -14px 34px rgba(0,0,0,.14) !important;
+      }
+      .nav-plus{
+        box-shadow:0 12px 32px rgba(0,0,0,.18) !important;
+      }
+      .local-note{
+        background:rgba(255,255,255,.14) !important;
+        color:#fff !important;
+        border:1px solid rgba(255,255,255,.18) !important;
+      }
       @media (max-width:420px){
         .tiktok-tab{font-size:15px;}
         .tiktok-tabs{gap:13px;}
@@ -1059,17 +1327,18 @@
 
   function homeHeader(){
     const municipio = municipioLabel();
-    return `<section class="glass-top tiktok-top">
-      <div class="tiktok-topbar">
-        <button class="tiktok-icon-btn" data-nav="/perfil" title="Perfil">👤</button>
-        <div class="tiktok-tabs">
-          <button class="tiktok-tab ${state.topTab === 'para-ti' ? 'active' : ''}" data-top-tab="para-ti">Para ti</button>
-          <button class="tiktok-tab ${state.topTab === 'municipio' ? 'active' : ''}" data-top-tab="municipio">${esc(municipio)}</button>
+    return `<section class="glass-top tiktok-top visual-top">
+      <div class="tiktok-topbar visual-topbar">
+        <div class="visual-tabs">
+          <button class="visual-tab municipio-tab ${state.topTab === 'municipio' ? 'active' : ''}" data-top-tab="municipio">${esc(municipio)}</button>
+          <button class="visual-tab" data-nav="/siguiendo">Siguiendo</button>
+          <button class="visual-tab" data-filter="VENDO">Tienda</button>
+          <button class="visual-tab ${state.topTab === 'para-ti' ? 'active' : ''}" data-top-tab="para-ti">Para ti</button>
         </div>
-        <button class="tiktok-icon-btn" data-toggle-search title="Buscar">🔎</button>
+        <button class="tiktok-icon-btn visual-search-btn" data-toggle-search title="Buscar">🔎</button>
       </div>
-      ${state.searchOpen ? `<div class="tiktok-search-panel"><span>🔎</span><input id="searchInput" type="search" inputmode="search" value="${esc(state.query)}" placeholder="Buscar: refrigerador, pan, viaje..." autocomplete="off" enterkeyhint="search"><button type="button" data-clear-search>${state.query ? 'Limpiar' : 'Cerrar'}</button></div>` : ''}
-      <div class="tiktok-filter-row">
+      ${state.searchOpen ? `<div class="tiktok-search-panel visual-search-panel"><span>🔎</span><input id="searchInput" type="search" inputmode="search" value="${esc(state.query)}" placeholder="Buscar: refrigerador, pan, viaje..." autocomplete="off" enterkeyhint="search"><button type="button" data-clear-search>${state.query ? 'Limpiar' : 'Cerrar'}</button></div>` : ''}
+      <div class="tiktok-filter-row visual-filter-row">
         ${pathButton('VENDO','🏪','Vendo','path-vendo')}
         ${pathButton('OFREZCO','🛵','Ofrezco','path-ofrezco')}
         ${pathButton('NECESITO','🧡','Necesito','path-necesito')}
@@ -1093,6 +1362,12 @@
   function updateFeedOnly(){ const feed=document.getElementById('feed'); if(feed) feed.innerHTML=feedMarkup(); const title=document.getElementById('feedTitle'); if(title) title.innerHTML=feedTitleMarkup(); bindDynamicFeedControls(); setupInternalVideos(); }
   function categoryClass(cat){ return `chip-${normalizeCategory(cat).toLowerCase()}`; }
   function isFollowing(ownerId){ return follows().includes(ownerId); }
+  function shortDescription(text, max=118){
+    const clean = String(text || '').replace(/\s+/g, ' ').trim();
+    if(clean.length <= max) return clean;
+    return clean.slice(0, max).trim() + '... más';
+  }
+
 
   function statusLabel(post){
     if(norm(post.cloudStatus)==='subiendo') return '<span class="chip status-chip">Publicando...</span>';
@@ -1141,7 +1416,7 @@
       <div class="post-body">
         <div class="owner-row"><span class="owner-dot">👤</span>${esc(post.ownerName || 'Usuario local')}</div>
         <h2>${esc(post.title || 'Publicación')}</h2>
-        <p>${esc(post.description || '')}</p>
+        <p>${esc(shortDescription(post.description || ''))}</p>
         <div class="post-meta"><span>❤️ ${post.reactions || 0}</span><span>${new Date(post.createdAt || Date.now()).toLocaleDateString('es-MX')}</span></div>
         ${statusLabel(post)}
         ${own ? `<div class="manage-row">${post.cloudStatus==='local'||post.mediaStatus==='pendiente'||post.mediaStatus==='error'?`<button class="retry" data-retry="${esc(post.id)}">Reintentar</button>`:''}<button data-edit="${esc(post.id)}">Editar</button><button class="danger" data-delete="${esc(post.id)}">Borrar</button></div>` : ''}
