@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.22-video-tus-resumable
+/* Conecta Servicios v6.3.23-reset-diagnostico-video
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.22-video-tus-resumable';
+  const VERSION = 'v6.3.23-reset-diagnostico-video';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -72,6 +72,8 @@
     knownMessageIds: new Set(),
     readMessageIds: new Set(),
     videoViewer: null,
+    lastUploadDiagnostic: null,
+    runtimeDiagnostic: null,
     audioCtx: null
   };
 
@@ -85,6 +87,90 @@
   function profile(){ const saved=get(K.profile,null); if(saved) return saved; const fresh={name:'Usuario local'}; set(K.profile,fresh); return fresh; }
   function follows(){ return get(K.follows,[]); }
   function toast(msg){ if(!toastEl) return; toastEl.textContent=msg; toastEl.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.classList.remove('show'),3000); }
+
+  function diagnosticPayload(kind, detail='', extra={}){
+    return {
+      version: VERSION,
+      kind,
+      detail: String(detail || '').slice(0, 1200),
+      extra,
+      at: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+      url: location.href,
+      serviceWorkerControlled: !!navigator.serviceWorker?.controller,
+      bootVersion: window.CONNETA_BOOT_VERSION || window.CONNECTA_BOOT_VERSION || ''
+    };
+  }
+
+  function saveUploadDiagnostic(kind, detail='', extra={}){
+    const payload = diagnosticPayload(kind, detail, extra);
+    state.lastUploadDiagnostic = payload;
+    try { set('cs_v6323_last_upload_diagnostic', payload); } catch {}
+    console.warn('[Conecta video diagnostic]', payload);
+    return payload;
+  }
+
+  function clearUploadDiagnostic(){
+    state.lastUploadDiagnostic = null;
+    try { localStorage.removeItem('cs_v6323_last_upload_diagnostic'); } catch {}
+  }
+
+  function shortDiagnosticText(diag){
+    if(!diag) return 'Sin error registrado en esta versión.';
+    const d = diag.detail || '';
+    const e = diag.extra ? JSON.stringify(diag.extra).slice(0, 500) : '';
+    return `${diag.kind || 'diagnóstico'} · ${diag.at || ''}\n${d}${e ? '\n' + e : ''}`;
+  }
+
+  async function resetTechnicalApp(){
+    if(!confirm('Esto limpiará caché, service worker y publicaciones locales de este dispositivo. Las publicaciones públicas seguirán en Supabase. ¿Continuar?')) return;
+    toast('Limpiando caché local...');
+    try{
+      const keepUser = localStorage.getItem(K.user);
+      const keepProfile = localStorage.getItem(K.profile);
+      const keepFollows = localStorage.getItem(K.follows);
+      const keepRead = localStorage.getItem(K.readMessages);
+
+      if('caches' in window){
+        const keys = await caches.keys();
+        await Promise.all(keys.filter(k => k.startsWith('conecta-servicios-')).map(k => caches.delete(k)));
+      }
+
+      if('serviceWorker' in navigator){
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(reg => reg.unregister().catch(()=>null)));
+      }
+
+      Object.keys(localStorage).forEach(key => {
+        if(key.startsWith('cs_v') || key.startsWith('conecta') || key.includes('cache_version')) localStorage.removeItem(key);
+      });
+
+      if(keepUser) localStorage.setItem(K.user, keepUser);
+      if(keepProfile) localStorage.setItem(K.profile, keepProfile);
+      if(keepFollows) localStorage.setItem(K.follows, keepFollows);
+      if(keepRead) localStorage.setItem(K.readMessages, keepRead);
+
+      toast('Limpieza lista. Recargando...');
+      setTimeout(()=>location.replace('/?v=6323-reset-' + Date.now()), 800);
+    }catch(error){
+      saveUploadDiagnostic('reset-error', error?.message || String(error));
+      toast('No se pudo limpiar completo. Revisa diagnóstico.');
+    }
+  }
+
+  function copyDiagnostics(){
+    const data = {
+      version: VERSION,
+      bootVersion: window.CONNECTA_BOOT_VERSION || '',
+      url: location.href,
+      serviceWorkerControlled: !!navigator.serviceWorker?.controller,
+      localPosts: localPosts().map(p => ({id:p.id, title:p.title, mediaType:p.mediaType, mediaStatus:p.mediaStatus, cloudStatus:p.cloudStatus, hasMediaUrl:!!p.mediaUrl, mediaError:p.mediaError || ''})).slice(0, 30),
+      lastUploadDiagnostic: state.lastUploadDiagnostic || get('cs_v6323_last_upload_diagnostic', null)
+    };
+    const text = JSON.stringify(data, null, 2);
+    navigator.clipboard?.writeText(text).then(()=>toast('Diagnóstico copiado.')).catch(()=>alert(text));
+  }
+
   function normalizeCategory(v){ const x=String(v||'').toUpperCase().trim(); return CATEGORIES.includes(x)?x:'VENDO'; }
   function titleFrom(text){ return (String(text||'').split('\n').map(x=>x.trim()).find(Boolean)||'Publicación').slice(0,72); }
   function isSeed(post){ return String(post?.id || '').startsWith('seed-'); }
@@ -466,7 +552,9 @@
     let blob = null;
     if(post.mediaRef) blob = await loadMediaBlob(post.mediaRef).catch(()=>null);
     if(!blob && post.mediaData) blob = dataUrlToBlob(post.mediaData);
-    if(!blob) return {post, ok:false, detail:'NO_LOCAL_BLOB'};
+    if(!blob){ saveUploadDiagnostic('upload-no-blob', 'No se encontró el archivo local para subir.', {postId:post.id, mediaRef:post.mediaRef}); return {post, ok:false, detail:'NO_LOCAL_BLOB'}; }
+
+    saveUploadDiagnostic('upload-start', 'Iniciando subida de multimedia.', {postId:post.id, mediaType:post.mediaType, bytes:blob.size, mime:post.mediaMime || blob.type});
 
     const supabaseBase = String(cfg.supabaseUrl || '').trim().replace(/\/rest\/v1\/?$/i,'').replace(/\/+$/g,'');
     const bucket = cfg.storageBucket || STORAGE_BUCKET;
@@ -489,7 +577,9 @@
           contentType
         });
       }catch(error){
-        return {post, ok:false, detail: error?.message || String(error)};
+        const detail = error?.message || String(error);
+        saveUploadDiagnostic('upload-tus-error', detail, {postId:post.id, bytes:blob.size, bucket, path});
+        return {post, ok:false, detail};
       }
     }else{
       const res = await fetch(url, {
@@ -505,11 +595,13 @@
 
       if(!res.ok){
         const detail = await res.text().catch(()=>'');
+        saveUploadDiagnostic('upload-direct-error', detail, {postId:post.id, status:res.status, bucket, path});
         return {post, ok:false, detail};
       }
     }
 
     const mediaUrl = `${supabaseBase}/storage/v1/object/public/${bucket}/${path}`;
+    saveUploadDiagnostic('upload-success', 'Multimedia subida correctamente.', {postId:post.id, mediaUrl, bytes:blob.size});
     return {
       ok:true,
       post: normalizePost({
@@ -623,6 +715,15 @@
       .video-viewer-note{color:rgba(255,255,255,.75); font-size:13px; text-align:center; padding:10px 10px 16px;}
       .media-area video{display:none !important;}
       .media-pending{display:none !important;}
+      .version-pill{display:inline-block;margin-top:3px;padding:3px 7px;border-radius:999px;background:rgba(91,46,234,.12);color:#5b2eea;font-size:10px;font-weight:900;}
+      .diag-panel{margin:16px 0 0;padding:14px;border-radius:22px;background:#111827;color:#fff;box-shadow:0 16px 44px rgba(17,24,39,.20);}
+      .diag-panel h2{margin:0 0 8px;font-size:18px;}
+      .diag-panel p{margin:6px 0;color:rgba(255,255,255,.78);}
+      .diag-panel code{display:block;white-space:pre-wrap;word-break:break-word;background:rgba(255,255,255,.08);border-radius:14px;padding:10px;margin-top:8px;font-size:12px;color:#fff;}
+      .diag-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+      .diag-actions button{border:0;border-radius:999px;padding:10px 13px;font-weight:900;}
+      .diag-reset{background:#fee2e2;color:#991b1b;}
+      .diag-copy{background:#e0e7ff;color:#3730a3;}
     `;
     document.head.appendChild(style);
   }
@@ -661,7 +762,7 @@
     return `<section class="glass-top">
       <div class="brand-row">
         <img src="assets/icons/conecta-logo-oficial.png" alt="Conecta" class="brand-logo" onerror="this.style.display='none'">
-        <div class="brand-title"><strong>Conecta</strong><span>Servicios</span></div>
+        <div class="brand-title"><strong>Conecta</strong><span>Servicios</span><small class="version-pill">v6.3.23</small></div>
         <div style="display:flex;gap:10px;align-items:center"><div class="ghost-top"></div><button class="bell-btn" data-nav="/mensajes" title="Avisos">🔔</button></div>
       </div>
       <div class="path-row">
@@ -707,11 +808,12 @@
           </div>
         </div>`;
       }
+      const failed = norm(post.mediaStatus) === 'error';
       return `<div class="video-tile video-pending-tile">
         <div class="video-tile-content">
-          <button class="video-play-big" type="button" disabled>⏳</button>
-          <strong>Video en proceso</strong>
-          <small>La publicación ya está visible. Toca Reintentar si tarda demasiado.</small>
+          <button class="video-play-big" type="button" disabled>${failed ? '⚠️' : '⏳'}</button>
+          <strong>${failed ? 'Video no subió' : 'Video en proceso'}</strong>
+          <small>${failed ? 'Toca Reintentar. Si vuelve a fallar, abre Perfil y copia el diagnóstico.' : 'La publicación ya está visible. Mantén la app abierta o toca Reintentar si tarda demasiado.'}</small>
         </div>
       </div>`;
     }
@@ -737,7 +839,7 @@
         <p>${esc(post.description || '')}</p>
         <div class="post-meta"><span>❤️ ${post.reactions || 0}</span><span>${new Date(post.createdAt || Date.now()).toLocaleDateString('es-MX')}</span></div>
         ${statusLabel(post)}
-        ${own ? `<div class="manage-row">${post.cloudStatus==='local'||post.mediaStatus==='pendiente'?`<button class="retry" data-retry="${esc(post.id)}">Reintentar</button>`:''}<button data-edit="${esc(post.id)}">Editar</button><button class="danger" data-delete="${esc(post.id)}">Borrar</button></div>` : ''}
+        ${own ? `<div class="manage-row">${post.cloudStatus==='local'||post.mediaStatus==='pendiente'||post.mediaStatus==='error'?`<button class="retry" data-retry="${esc(post.id)}">Reintentar</button>`:''}<button data-edit="${esc(post.id)}">Editar</button><button class="danger" data-delete="${esc(post.id)}">Borrar</button></div>` : ''}
         ${post.cloudStatus==='local' ? '<div class="local-note">Tu publicación se guardó en este dispositivo. Revisa tu conexión e intenta de nuevo.</div>' : ''}
       </div>
     </article>`;
@@ -745,7 +847,34 @@
 
   function emptyState(t,x){ return `<div class="empty"><strong>${esc(t)}</strong>${esc(x)}</div>`; }
   function followingPage(){ const posts=followedPosts(); return shell(`<section class="panel"><h1>Siguiendo</h1><p>Aquí aparecen proveedores, clientes o mensajeros que decidiste seguir.</p></section><section class="feed">${posts.map(postCard).join('')||emptyState('Todavía no sigues a nadie','Toca Seguir en una publicación para verla aquí.')}</section>`); }
-  function profilePage(){ const prof=profile(); const mine=myPosts(); return shell(`<section class="panel"><h1>Perfil</h1><p>Guarda tu nombre visible y revisa tu actividad.</p><label>Nombre visible</label><input id="profileName" value="${esc(prof.name||'Usuario local')}" placeholder="Tu nombre o negocio"><button class="big-button" data-save-profile>Guardar nombre</button><div class="profile-grid"><div class="stat"><strong>${mine.length}</strong><span>Publicaciones</span></div><div class="stat"><strong>${follows().length}</strong><span>Siguiendo</span></div><div class="stat"><strong>${unreadCount()}</strong><span>Sin leer</span></div></div></section><section class="feed">${mine.map(postCard).join('')||emptyState('No has publicado','Toca + para crear tu primera publicación.')}</section>`); }
+
+  function diagnosticsPanel(){
+    const diag = state.lastUploadDiagnostic || get('cs_v6323_last_upload_diagnostic', null);
+    const runtime = {
+      version: VERSION,
+      bootVersion: window.CONNECTA_BOOT_VERSION || '',
+      serviceWorkerControlled: !!navigator.serviceWorker?.controller,
+      url: location.href,
+      localPosts: localPosts().length,
+      publicMessages: state.publicMessages.length,
+      lastUpload: diag ? (diag.kind || 'registrado') : 'sin registro'
+    };
+
+    return `<section class="diag-panel">
+      <h2>Diagnóstico técnico</h2>
+      <p>Sirve para confirmar si este celular cargó la versión nueva y ver el último error real del video.</p>
+      <code>${esc(JSON.stringify(runtime, null, 2))}
+
+Último video:
+${esc(shortDiagnosticText(diag))}</code>
+      <div class="diag-actions">
+        <button class="diag-copy" data-copy-diagnostics>Copiar diagnóstico</button>
+        <button class="diag-reset" data-reset-app>Reset app / caché</button>
+      </div>
+    </section>`;
+  }
+
+  function profilePage(){ const prof=profile(); const mine=myPosts(); return shell(`<section class="panel"><h1>Perfil</h1><p>Guarda tu nombre visible y revisa tu actividad.</p><label>Nombre visible</label><input id="profileName" value="${esc(prof.name||'Usuario local')}" placeholder="Tu nombre o negocio"><button class="big-button" data-save-profile>Guardar nombre</button><div class="profile-grid"><div class="stat"><strong>${mine.length}</strong><span>Publicaciones</span></div><div class="stat"><strong>${follows().length}</strong><span>Siguiendo</span></div><div class="stat"><strong>${unreadCount()}</strong><span>Sin leer</span></div></div></section>${diagnosticsPanel()}<section class="feed">${mine.map(postCard).join('')||emptyState('No has publicado','Toca + para crear tu primera publicación.')}</section>`); }
 
   function ensureComposerId(){
     if(!state.composerId){
@@ -956,10 +1085,11 @@
         saveLocalPosts([post, ...state.posts.filter(x=>x.id!==id)]);
         toast('Publicación lista.');
       }else{
-        post = normalizePost({...post, cloudStatus:'publica', mediaStatus:'pendiente', updatedAt:new Date().toISOString()});
+        post = normalizePost({...post, cloudStatus:'publica', mediaStatus:'error', mediaError:String(uploaded.detail || '').slice(0, 500), updatedAt:new Date().toISOString()});
+        saveUploadDiagnostic('upload-failed-visible', uploaded.detail || 'Subida no completada.', {postId:post.id});
         await syncPost(post);
         saveLocalPosts([post, ...state.posts.filter(x=>x.id!==id)]);
-        console.warn('Media upload failed', uploaded.detail); toast(isVideoPost(post) ? 'Publicación visible. El video no terminó de subir; toca Reintentar y no cierres la app.' : 'Publicación visible. La imagen quedó pendiente.');
+        console.warn('Media upload failed', uploaded.detail); toast(isVideoPost(post) ? 'Video no subió. Toca Reintentar o copia diagnóstico en Perfil.' : 'Publicación visible. La imagen no subió.');
       }
     }else if(firstSync){
       toast('Publicación lista.');
@@ -996,7 +1126,7 @@
       const uploaded = await uploadMediaToCloud(post).catch(()=>({ok:false, post}));
       post = uploaded.ok
         ? normalizePost({...uploaded.post, cloudStatus:'publica', mediaStatus:'', updatedAt:new Date().toISOString()}, 'remote')
-        : normalizePost({...post, cloudStatus:'publica', mediaStatus:'pendiente', updatedAt:new Date().toISOString()});
+        : normalizePost({...post, cloudStatus:'publica', mediaStatus:'error', mediaError:String(uploaded.detail || '').slice(0,500), updatedAt:new Date().toISOString()});
       await syncPost(post);
     }else{
       post = normalizePost({...post, cloudStatus:'publica', mediaStatus: post.mediaUrl ? '' : post.mediaStatus, updatedAt:new Date().toISOString()}, 'remote');
@@ -1329,6 +1459,8 @@
     document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editPost(b.dataset.edit));
     document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deletePost(b.dataset.delete));
     document.querySelectorAll('[data-close-video]').forEach(b=>b.onclick=closeVideo);
+    document.querySelectorAll('[data-reset-app]').forEach(b=>b.onclick=resetTechnicalApp);
+    document.querySelectorAll('[data-copy-diagnostics]').forEach(b=>b.onclick=copyDiagnostics);
   }
 
   function bind(){
@@ -1378,6 +1510,8 @@
     loadReadMessageIds();
     document.addEventListener('pointerdown', enableMessageFeedback, {once:true});
     document.addEventListener('keydown', enableMessageFeedback, {once:true});
+    state.lastUploadDiagnostic = get('cs_v6323_last_upload_diagnostic', null);
+    state.runtimeDiagnostic = diagnosticPayload('boot', 'App inicializada');
     state.posts = localPosts();
     loadComposerDraft();
     render();
