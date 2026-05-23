@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.29-home-visual-tiktok
+/* Conecta Servicios v6.3.30-tabs-zona-back
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.29-home-visual-tiktok';
+  const VERSION = 'v6.3.30-tabs-zona-back';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -26,7 +26,9 @@
     composer: 'cs_v634_composer',
     seenMessages: 'cs_v639_seen_messages',
     readMessages: 'cs_v6310_read_messages',
-    deletedPosts: 'cs_v6322_deleted_posts'
+    deletedPosts: 'cs_v6322_deleted_posts',
+    likedPosts: 'cs_v6330_liked_posts',
+    municipality: 'cs_v6330_municipality'
   };
 
   const CATEGORIES = ['VENDO', 'OFREZCO', 'NECESITO'];
@@ -92,29 +94,101 @@
   function userId(){ let id=localStorage.getItem(K.user); if(!id){ id=uid('u'); localStorage.setItem(K.user,id); } return id; }
   function profile(){ const saved=get(K.profile,null); if(saved) return saved; const fresh={name:'Usuario local'}; set(K.profile,fresh); return fresh; }
   function follows(){ return get(K.follows,[]); }
+  const PILOT_MUNICIPALITIES = [
+    {name:'Tejupilco', lat:18.905, lon:-100.153},
+    {name:'Chapultepec', lat:19.203, lon:-99.562},
+    {name:'Calimaya', lat:19.164, lon:-99.618},
+    {name:'Metepec', lat:19.253, lon:-99.607},
+    {name:'Toluca', lat:19.282, lon:-99.655},
+    {name:'Mexicaltzingo', lat:19.212, lon:-99.585},
+    {name:'San Mateo Atenco', lat:19.267, lon:-99.532},
+    {name:'Ayala', lat:18.762, lon:-98.982}
+  ];
+
+  function kmBetween(a,b,c,d){
+    const R=6371, toRad=x=>x*Math.PI/180;
+    const dLat=toRad(c-a), dLon=toRad(d-b);
+    const s=Math.sin(dLat/2)**2 + Math.cos(toRad(a))*Math.cos(toRad(c))*Math.sin(dLon/2)**2;
+    return 2*R*Math.asin(Math.sqrt(s));
+  }
+
+  function approximateMunicipio(lat, lon){
+    let best = null;
+    PILOT_MUNICIPALITIES.forEach(m => {
+      const km = kmBetween(lat, lon, m.lat, m.lon);
+      if(!best || km < best.km) best = {...m, km};
+    });
+    return best && best.km <= 80 ? best.name : 'Tu zona';
+  }
+
+  function municipalityInfo(){
+    return get(K.municipality, null);
+  }
+
   function municipioLabel(){
-    const saved = localStorage.getItem('cs_v6326_municipio');
-    if(saved) return saved;
+    const saved = municipalityInfo();
+    if(saved?.name) return saved.name;
     try {
-      const zones = filteredAll().map(p => p.zone).filter(Boolean);
-      return zones[0] || 'Tejupilco';
+      const zones = filteredAll().map(p => p.zone).filter(Boolean).filter(z => z !== 'Todo México');
+      return zones[0] || 'Tu zona';
     } catch {
-      return 'Tejupilco';
+      return 'Tu zona';
+    }
+  }
+
+  function saveMunicipio(name, source='manual'){
+    const clean = String(name || '').trim() || 'Tu zona';
+    set(K.municipality, {name: clean, source, updatedAt: new Date().toISOString()});
+    try { localStorage.setItem('cs_v6326_municipio', clean); } catch {}
+    return clean;
+  }
+
+  function selectMunicipioTab(){
+    state.topTab = 'municipio';
+    state.filter = 'ALL';
+    state.query = '';
+    const saved = municipalityInfo();
+    if(saved?.name){
+      toast(`Viendo ${saved.name}`);
+      render();
+      return;
+    }
+    if(!navigator.geolocation){
+      const manual = prompt('Escribe tu municipio para personalizar tu Home:', municipioLabel());
+      if(manual) saveMunicipio(manual, 'manual');
+      render();
+      return;
+    }
+    if(confirm('¿Quieres usar tu ubicación aproximada para personalizar tu Home por municipio? No guardamos coordenadas exactas, solo el nombre aproximado.')){
+      toast('Detectando zona aproximada...');
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          const name = approximateMunicipio(pos.coords.latitude, pos.coords.longitude);
+          saveMunicipio(name, 'approx-geolocation');
+          toast(`Home personalizado para ${name}`);
+          render();
+        },
+        () => {
+          const manual = prompt('No se pudo detectar. Escribe tu municipio:', municipioLabel());
+          if(manual) saveMunicipio(manual, 'manual');
+          render();
+        },
+        {enableHighAccuracy:false, timeout:9000, maximumAge:86400000}
+      );
+    } else {
+      render();
     }
   }
 
   function setTopTab(tab){
-    state.topTab = tab === 'municipio' ? 'municipio' : 'para-ti';
-    if(state.topTab === 'municipio'){
-      const municipio = municipioLabel();
-      state.query = '';
-      state.filter = 'ALL';
-      toast(`Viendo ${municipio}`);
-    }else{
-      toast('Para ti');
-    }
+    if(tab === 'municipio') return selectMunicipioTab();
+    state.topTab = tab === 'tienda' ? 'tienda' : 'para-ti';
+    state.filter = state.topTab === 'tienda' ? 'VENDO' : 'ALL';
+    state.query = '';
+    toast(state.topTab === 'tienda' ? 'Tienda: publicaciones VENDO' : 'Para ti');
     render();
   }
+
 
   function toggleSearchPanel(){
     state.searchOpen = !state.searchOpen;
@@ -461,6 +535,24 @@
     set(K.posts, normalized.map(stripForLocal));
   }
 
+  function likedPostIds(){ return get(K.likedPosts, []); }
+  function likedCategories(){
+    const ids = new Set(likedPostIds());
+    return new Set(filteredAll().filter(p => ids.has(p.id)).map(p => normalizeCategory(p.category)).filter(Boolean));
+  }
+  function paraTiScore(post){
+    const likedIds = new Set(likedPostIds());
+    const cats = likedCategories();
+    const currentMunicipio = norm(municipioLabel());
+    let score = 0;
+    if(likedIds.has(post.id)) score += 10000;
+    if(cats.has(normalizeCategory(post.category))) score += 500;
+    if(currentMunicipio && norm(post.zone) === currentMunicipio) score += 350;
+    score += Math.min(300, Number(post.reactions || 0) * 15);
+    score += Math.max(0, 180 - ((Date.now() - new Date(post.createdAt || 0).getTime()) / 3600000));
+    return score;
+  }
+
   function normalizeSearchText(value){
     return String(value || '')
       .toLowerCase()
@@ -483,15 +575,29 @@
 
   function filteredPosts(){
     const q = normalizeSearchText(state.query);
-    return dedupePosts(state.posts)
+    let list = dedupePosts(state.posts)
       .filter(p => !isDeleted(p))
-      .filter(p => q ? true : (state.filter === 'ALL' || normalizeCategory(p.category) === state.filter))
+      .filter(p => {
+        if(q) return true;
+        if(state.topTab === 'tienda') return normalizeCategory(p.category) === 'VENDO';
+        if(state.topTab === 'municipio'){
+          const municipio = norm(municipioLabel());
+          return !municipio || municipio === 'tu zona' ? true : norm(p.zone) === municipio || norm(p.zone) === 'todo méxico';
+        }
+        return state.filter === 'ALL' || normalizeCategory(p.category) === state.filter;
+      })
       .filter(p => {
         if(!q) return true;
         const haystack = postSearchText(p);
         return q.split(' ').every(token => haystack.includes(token));
-      })
-      .sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+      });
+
+    if(!q && state.topTab === 'para-ti'){
+      list = list.sort((a,b) => paraTiScore(b) - paraTiScore(a));
+    } else {
+      list = list.sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+    }
+    return list;
   }
 
   function myPosts(){ return filteredAll().filter(p => p.ownerId === userId()); }
@@ -1058,6 +1164,8 @@
         overflow:hidden;
         text-overflow:ellipsis;
       }
+      .visual-tab[data-top-tab="tienda"].active{color:#fff;}
+      .visual-tab[data-nav="/siguiendo"]{max-width:82px;overflow:hidden;text-overflow:ellipsis;}
       .visual-search-btn{
         width:40px !important;
         height:40px !important;
@@ -1332,7 +1440,7 @@
         <div class="visual-tabs">
           <button class="visual-tab municipio-tab ${state.topTab === 'municipio' ? 'active' : ''}" data-top-tab="municipio">${esc(municipio)}</button>
           <button class="visual-tab" data-nav="/siguiendo">Siguiendo</button>
-          <button class="visual-tab" data-filter="VENDO">Tienda</button>
+          <button class="visual-tab ${state.topTab === 'tienda' ? 'active' : ''}" data-top-tab="tienda">Tienda</button>
           <button class="visual-tab ${state.topTab === 'para-ti' ? 'active' : ''}" data-top-tab="para-ti">Para ti</button>
         </div>
         <button class="tiktok-icon-btn visual-search-btn" data-toggle-search title="Buscar">🔎</button>
@@ -1426,7 +1534,7 @@
   }
 
   function emptyState(t,x){ return `<div class="empty"><strong>${esc(t)}</strong>${esc(x)}</div>`; }
-  function followingPage(){ const posts=followedPosts(); return shell(`<section class="panel"><h1>Siguiendo</h1><p>Aquí aparecen proveedores, clientes o mensajeros que decidiste seguir.</p></section><section class="feed">${posts.map(postCard).join('')||emptyState('Todavía no sigues a nadie','Toca Seguir en una publicación para verla aquí.')}</section>`); }
+  function followingPage(){ const posts=followedPosts(); return shell(`<section class="panel"><button class="small-link" data-nav="/">← Volver al Home</button><h1>Siguiendo</h1><p>Aquí aparecen proveedores, clientes o mensajeros que decidiste seguir.</p></section><section class="feed">${posts.map(postCard).join('')||emptyState('Todavía no sigues a nadie','Toca Seguir en una publicación para verla aquí.')}</section>`); }
 
   function diagnosticsPanel(){
     const diag = state.lastUploadDiagnostic || get('cs_v6323_last_upload_diagnostic', null);
@@ -1518,7 +1626,36 @@ ${esc(shortDiagnosticText(diag))}</code>
     setupInternalVideos();
   }
 
-  function nav(route){ state.route = route; if(route !== '/publicar' && !state.publishing) state.editing = null; render(); setTimeout(()=>scrollTo({top:0,behavior:'smooth'}),0); }
+  function routeUrl(route){
+    const base = location.pathname + location.search;
+    return route === '/' ? base.replace(/#.*/, '') : `${base.replace(/#.*/, '')}#${route.replace(/^\//,'')}`;
+  }
+  function nav(route, options={}){
+    state.route = route;
+    if(route !== '/publicar' && !state.publishing) state.editing = null;
+    if(options.push !== false && history.pushState){
+      const currentRoute = history.state?.route || '/';
+      if(currentRoute !== route) history.pushState({route}, '', routeUrl(route));
+    } else if(options.replace && history.replaceState){
+      history.replaceState({route}, '', routeUrl(route));
+    }
+    render();
+    setTimeout(()=>scrollTo({top:0,behavior:'smooth'}),0);
+  }
+  function setupNavigationHistory(){
+    const initialHash = location.hash.replace('#','');
+    if(initialHash){
+      const route = '/' + initialHash.replace(/^\//,'');
+      if(['/siguiendo','/mensajes','/perfil','/publicar','/chat'].includes(route)) state.route = route;
+    }
+    history.replaceState?.({route:state.route || '/'}, '', routeUrl(state.route || '/'));
+    window.addEventListener('popstate', e => {
+      state.route = e.state?.route || '/';
+      if(state.route !== '/publicar' && !state.publishing) state.editing = null;
+      render();
+      setTimeout(()=>scrollTo({top:0,behavior:'smooth'}),0);
+    });
+  }
   function clearComposer(){ state.preview=''; state.mediaType='image'; state.editing=null; state.composerId=''; state.composerMediaRef=''; state.composerMediaName=''; state.composerMediaMime=''; state.composerDraft={description:'',zone:'',category:'VENDO'}; localStorage.removeItem(K.composer); }
   function openPicker(){ if(state.publishing) return toast('Estamos terminando de publicar. Espera un momento.'); ensureComposerId(); document.getElementById('mediaPicker')?.click(); }
 
@@ -1856,7 +1993,14 @@ ${esc(shortDiagnosticText(diag))}</code>
     render();
   }
 
-  function likePost(id){ saveLocalPosts(state.posts.map(p=>p.id===id?{...p,reactions:(p.reactions||0)+1}:p)); render(); }
+  function likePost(id){
+    const cur = likedPostIds();
+    const already = cur.includes(id);
+    if(!already) set(K.likedPosts, [...cur, id]);
+    saveLocalPosts(state.posts.map(p=>p.id===id?{...p,reactions:(p.reactions||0)+(already?0:1)}:p));
+    toast(already ? 'Ya está en Para ti.' : 'Agregado a Para ti.');
+    render();
+  }
   function toggleFollow(ownerId){ if(ownerId===userId()) return toast('Esta publicación es tuya.'); const cur=follows(); const next=cur.includes(ownerId)?cur.filter(id=>id!==ownerId):[...cur,ownerId]; set(K.follows,next); toast(cur.includes(ownerId)?'Dejaste de seguir.':'Ahora lo sigues.'); render(); }
   function sharePost(id){ const p=state.posts.find(x=>x.id===id); if(!p) return; const text=`${p.title}\n\n${p.description}\n\n${p.category} · ${p.zone}\n\n${APP_URL}`; if(navigator.share) navigator.share({title:p.title,text,url:APP_URL}).catch(()=>{}); else navigator.clipboard?.writeText(text).then(()=>toast('Copiado para compartir.')); }
   function saveProfile(){ const name=document.getElementById('profileName')?.value.trim()||'Usuario local'; set(K.profile,{name}); toast('Nombre guardado.'); render(); }
@@ -2128,7 +2272,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
   function bind(){
     document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>nav(b.dataset.nav));
-    document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{state.filter=b.dataset.filter;state.route='/';render();});
+    document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{state.filter=b.dataset.filter;state.topTab='';state.query='';nav('/', {replace:true});});
     document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=openPicker);
     document.querySelectorAll('[data-publish]').forEach(b=>b.onclick=publish);
     document.querySelectorAll('[data-save-profile]').forEach(b=>b.onclick=saveProfile);
@@ -2196,6 +2340,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     state.runtimeDiagnostic = diagnosticPayload('boot', 'App inicializada');
     state.posts = localPosts();
     loadComposerDraft();
+    setupNavigationHistory();
     render();
     await syncFromCloud({render:true});
     startPolling();
