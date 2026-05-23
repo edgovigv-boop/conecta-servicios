@@ -1,11 +1,11 @@
-const CACHE_NAME = 'conecta-servicios-v6-3-7-chat-publico-basico';
+const CACHE_NAME = 'conecta-servicios-v6-3-8-chat-tiempo-real-cache';
 
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=6.3.7-chat-publico-basico',
-  '/app.js?v=6.3.7-chat-publico-basico',
-  '/manifest.json?v=6.3.7-chat-publico-basico',
+  '/styles.css?v=6.3.8-chat-tiempo-real-cache',
+  '/app.js?v=6.3.8-chat-tiempo-real-cache',
+  '/manifest.json?v=6.3.8-chat-tiempo-real-cache',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'
@@ -23,7 +23,22 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   const req = event.request;
-  if (req.method !== 'GET' || new URL(req.url).pathname.startsWith('/api/')) return;
+  const url = new URL(req.url);
+  if (req.method !== 'GET' || url.pathname.startsWith('/api/')) return;
+
+  // Para evitar que un celular se quede con app.js viejo, HTML/JS/CSS van network-first.
+  const networkFirst = url.pathname === '/' || url.pathname.endsWith('.html') || url.pathname.endsWith('.js') || url.pathname.endsWith('.css');
+
+  if (networkFirst) {
+    event.respondWith(
+      fetch(req).then(res => {
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(req, copy)).catch(() => null);
+        return res;
+      }).catch(() => caches.match(req).then(cached => cached || caches.match('/index.html')))
+    );
+    return;
+  }
 
   event.respondWith(
     caches.match(req).then(cached =>

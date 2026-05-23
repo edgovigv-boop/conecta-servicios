@@ -1,12 +1,13 @@
-/* Conecta Servicios v6.3.6 - Borrado público sincronizado */
+/* Conecta Servicios v6.3.8 - Chat en pantalla, polling y limpieza de caché */
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.7-chat-publico-basico';
+  const VERSION = 'v6.3.8-chat-tiempo-real-cache';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const MAX_FILE_MB = 40;
   const IMAGE_MAX_SIDE = 1280;
   const POLL_MS = 7000;
+  const MESSAGE_POLL_MS = 3500;
   const STORAGE_BUCKET = 'publication-media';
 
   const K = {
@@ -49,6 +50,7 @@
     publishing:false,
     syncing:false,
     syncTimer:null,
+    messageTimer:null,
     publicMessages: [],
     messagesLoaded: false,
     messagesLoading: false,
@@ -72,6 +74,23 @@
   function toast(msg){ toastEl.textContent=msg; toastEl.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.classList.remove('show'),2800); }
   function normalizeCategory(v){ const x=String(v||'').toUpperCase().trim(); return CATEGORIES.includes(x)?x:'VENDO'; }
   function titleFrom(text){ return (String(text||'').split('\n').map(x=>x.trim()).find(Boolean)||'Publicación').slice(0,72); }
+
+
+  async function refreshOldCaches(){
+    try{
+      const cacheKey = `cs_cache_version_${VERSION}`;
+      if(localStorage.getItem('cs_cache_version') === cacheKey) return;
+      if('caches' in window){
+        const keys = await caches.keys();
+        await Promise.all(keys.filter(k => k.startsWith('conecta-servicios-')).map(k => caches.delete(k)));
+      }
+      if('serviceWorker' in navigator){
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(reg => reg.update().catch(()=>null)));
+      }
+      localStorage.setItem('cs_cache_version', cacheKey);
+    }catch{}
+  }
 
   function saveComposerDraft(){
     set(K.composer, {
@@ -587,32 +606,41 @@
     return data.message || message;
   }
 
-  async function loadMessagesForInbox(){
-    state.messagesLoading = true;
+  async function loadMessagesForInbox(options = {}){
+    if(state.messagesLoading) return;
+    state.messagesLoading = !options.silent;
     state.messagesError = '';
     try{
-      state.publicMessages = await fetchPublicMessages({userId:userId()});
+      const list = await fetchPublicMessages({userId:userId()});
+      const previous = JSON.stringify(state.publicMessages || []);
+      state.publicMessages = list;
       state.messagesLoaded = true;
+      if(options.silent && state.route === '/mensajes' && JSON.stringify(list) !== previous) render();
     }catch(e){
-      state.messagesError = 'Todavía no se pudieron cargar los mensajes públicos. Revisa conexión o la tabla de mensajes.';
+      if(!options.silent) state.messagesError = 'Todavía no se pudieron cargar los mensajes públicos. Revisa conexión o la tabla de mensajes.';
     }finally{
       state.messagesLoading = false;
-      if(state.route === '/mensajes') render();
+      if(state.route === '/mensajes' && !options.silent) render();
     }
   }
 
-  async function loadChatMessages(){
-    if(!state.chat) return;
-    state.chatLoading = true;
+  async function loadChatMessages(options = {}){
+    if(!state.chat || state.chatLoading) return;
+    const activeInput = document.getElementById('chatText');
+    const isTyping = !!(activeInput && document.activeElement === activeInput && activeInput.value.trim());
+    if(options.silent && isTyping) return;
+    state.chatLoading = !options.silent;
     try{
       const list = await fetchPublicMessages({userId:userId(), postId:state.chat.postId, peerId:state.chat.peerId});
+      const previous = JSON.stringify(state.chatMessages || []);
       state.chatMessages = list;
       state.chatLoaded = true;
+      if(options.silent && state.route === '/chat' && JSON.stringify(list) !== previous) render();
     }catch(e){
-      toast('No se pudieron cargar los mensajes.');
+      if(!options.silent) toast('No se pudieron cargar los mensajes.');
     }finally{
       state.chatLoading = false;
-      if(state.route === '/chat') render();
+      if(state.route === '/chat' && !options.silent) render();
     }
   }
 
@@ -670,7 +698,7 @@
     try{
       await savePublicMessage(msg);
       state.messagesLoaded = false;
-      await loadChatMessages();
+      await loadChatMessages({silent:true});
       toast('Mensaje enviado.');
     }catch(e){
       toast('No se pudo enviar. Revisa conexión e intenta de nuevo.');
@@ -711,12 +739,21 @@
     const category=document.getElementById('category');
     if(category) category.onchange=e=>{ state.composerDraft.category=normalizeCategory(e.target.value); saveComposerDraft(); };
   }
+  function runVisibleRefresh(){
+    if(document.visibilityState !== 'visible' || state.publishing) return;
+    if(state.route === '/mensajes') loadMessagesForInbox({silent:true});
+    else if(state.route === '/chat') loadChatMessages({silent:true});
+    else if(!state.syncing && state.route !== '/publicar') syncFromCloud({render:true});
+  }
+
   function startPolling(){
     if(state.syncTimer) clearInterval(state.syncTimer);
-    state.syncTimer=setInterval(()=>{ if(document.visibilityState==='visible'&&!state.syncing&&!state.publishing&&state.route!=='/publicar') syncFromCloud({render:true}); },POLL_MS);
-    window.addEventListener('focus',()=>{ if(!state.syncing&&!state.publishing&&state.route!=='/publicar') syncFromCloud({render:true}); });
-    document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&!state.syncing&&!state.publishing&&state.route!=='/publicar') syncFromCloud({render:true}); });
+    if(state.messageTimer) clearInterval(state.messageTimer);
+    state.syncTimer=setInterval(()=>{ if(document.visibilityState==='visible'&&!state.syncing&&!state.publishing&&state.route!=='/publicar'&&state.route!=='/mensajes'&&state.route!=='/chat') syncFromCloud({render:true}); },POLL_MS);
+    state.messageTimer=setInterval(()=>{ runVisibleRefresh(); }, MESSAGE_POLL_MS);
+    window.addEventListener('focus',()=>{ runVisibleRefresh(); });
+    document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') runVisibleRefresh(); });
   }
-  async function init(){ state.posts=localPosts(); loadComposerDraft(); render(); await syncFromCloud({render:true}); startPolling(); }
+  async function init(){ await refreshOldCaches(); state.posts=localPosts(); loadComposerDraft(); render(); await syncFromCloud({render:true}); startPolling(); }
   init();
 })();
