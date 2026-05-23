@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.40-audio-perfil-aplicar
+/* Conecta Servicios v6.3.41-perfil-simple-iconos
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.40-audio-perfil-aplicar';
+  const VERSION = 'v6.3.41-perfil-simple-iconos';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2141,6 +2141,38 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
+      /* v6.3.41: acciones icon-only y perfil simple */
+      .post-action-row{
+        grid-template-columns:repeat(3, 1fr) !important;
+        gap:10px !important;
+      }
+      .post-action-row.has-audio-action{
+        grid-template-columns:repeat(4, 1fr) !important;
+      }
+      .post-action-row .icon-only-action{
+        min-height:44px !important;
+        height:44px !important;
+        padding:0 !important;
+        font-size:22px !important;
+        line-height:1 !important;
+        border-radius:999px !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        text-align:center !important;
+      }
+      .post-action-row.has-audio-action .icon-only-action{
+        font-size:21px !important;
+      }
+      .audio-row-btn{
+        background:rgba(0,0,0,.50) !important;
+        border-color:rgba(255,255,255,.48) !important;
+      }
+      .profile-help,
+      .apply-profile-visible{
+        display:none !important;
+      }
+
       .apply-profile-visible{
         width:100%;
         margin-top:10px;
@@ -2560,10 +2592,10 @@
         <p>${esc(shortDescription(post.description || ''))}</p>
         <div class="post-meta"><span>❤️ ${post.reactions || 0}</span><span>${new Date(post.createdAt || Date.now()).toLocaleDateString('es-MX')}</span></div>
         <div class="post-action-row ${isVideoPost(post) && post.mediaUrl ? 'has-audio-action' : ''}">
-          <button type="button" data-like="${esc(post.id)}">❤️ Me gusta</button>
-          <button type="button" data-message="${esc(post.id)}">✉️ Mensaje</button>
-          <button type="button" data-share="${esc(post.id)}">↗️ Compartir</button>
-          ${isVideoPost(post) && post.mediaUrl ? `<button type="button" class="audio-row-btn" data-toggle-video-sound="${esc(post.id)}">🔇 Audio</button>` : ''}
+          <button type="button" class="icon-only-action" data-like="${esc(post.id)}" aria-label="Me gusta" title="Me gusta">❤️</button>
+          <button type="button" class="icon-only-action" data-message="${esc(post.id)}" aria-label="Mensaje" title="Mensaje">✉️</button>
+          <button type="button" class="icon-only-action" data-share="${esc(post.id)}" aria-label="Compartir" title="Compartir">↗️</button>
+          ${isVideoPost(post) && post.mediaUrl ? `<button type="button" class="icon-only-action audio-row-btn" data-toggle-video-sound="${esc(post.id)}" aria-label="Audio" title="Audio">🔇</button>` : ''}
         </div>
         ${statusLabel(post)}
         ${own ? `<div class="manage-row">${post.cloudStatus==='local'||post.mediaStatus==='pendiente'||post.mediaStatus==='error'?`<button class="retry" data-retry="${esc(post.id)}">Reintentar</button>`:''}<button data-edit="${esc(post.id)}">Editar</button><button class="danger" data-delete="${esc(post.id)}">Borrar</button></div>` : ''}
@@ -2666,8 +2698,6 @@ ${esc(shortDiagnosticText(diag))}</code>
       <label>Nombre visible</label>
       <input id="profileName" type="text" inputmode="text" autocomplete="off" autocapitalize="words" value="${esc(prof.name||'Usuario local')}" placeholder="Tu nombre o negocio">
       <button class="big-button" data-save-profile>Guardar perfil</button>
-      <button class="ghost-button apply-profile-visible" type="button" data-apply-visible-profile>Aplicar mi nombre y foto a publicaciones visibles</button>
-      <p class="profile-help">Úsalo si tus publicaciones fueron creadas antes del cambio de perfil o desde otro celular.</p>
       <div class="profile-grid"><div class="stat"><strong>${mine.length}</strong><span>Publicaciones</span></div><div class="stat"><strong>${follows().length}</strong><span>Siguiendo</span></div><div class="stat"><strong>${unreadCount()}</strong><span>Sin leer</span></div></div>
     </section>${diagnosticsPanel()}<section class="feed">${mine.map(postCard).join('')||emptyState('No has publicado','Toca + para crear tu primera publicación.')}</section>`);
   }
@@ -3094,8 +3124,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     video.volume = 1;
     video.play().catch(()=>null);
     document.querySelectorAll(`[data-toggle-video-sound="${safeId}"]`).forEach(el => {
-      if(el.classList.contains('audio-row-btn')) el.textContent = video.muted ? '🔇 Audio' : '🔊 Audio';
-      else el.textContent = video.muted ? '🔇' : '🔊';
+      el.textContent = video.muted ? '🔇' : '🔊';
     });
     toast(video.muted ? 'Video en silencio.' : 'Sonido activado. Usa el volumen de tu dispositivo.');
   }
@@ -3225,6 +3254,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     const nextProfile = {...current, name};
     set(K.profile,nextProfile);
     applyProfileToOwnPosts(nextProfile);
+    applyProfileToVisiblePosts({silent:true, skipConfirm:true});
     state.profileEditing=false;
     toast('Perfil guardado y aplicado a tus publicaciones.');
     render();
@@ -3239,11 +3269,14 @@ ${esc(shortDiagnosticText(diag))}</code>
     mine.forEach(p => syncPost({...p, ownerName:prof.name || 'Usuario local', ownerAvatar:prof.avatarData || '', updatedAt:now}).catch(()=>null));
   }
 
-  function applyProfileToVisiblePosts(){
+  function applyProfileToVisiblePosts(options={}){
     const prof = profile();
     const visible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p));
-    if(!visible.length) return toast('No hay publicaciones visibles para actualizar.');
-    if(!confirm(`Esto aplicará tu nombre y foto de perfil a ${visible.length} publicación(es) visibles en este dispositivo. Úsalo solo si esas publicaciones son tuyas. ¿Continuar?`)) return;
+    if(!visible.length){
+      if(!options.silent) toast('No hay publicaciones visibles para actualizar.');
+      return;
+    }
+    if(!options.skipConfirm && !confirm(`Esto aplicará tu nombre y foto de perfil a ${visible.length} publicación(es) visibles en este dispositivo. Úsalo solo si esas publicaciones son tuyas. ¿Continuar?`)) return;
 
     const now = new Date().toISOString();
     const ids = new Set(visible.map(p => String(p.id)));
@@ -3257,8 +3290,10 @@ ${esc(shortDiagnosticText(diag))}</code>
 
     saveLocalPosts(updated);
     updated.filter(p => ids.has(String(p.id))).forEach(p => syncPost(p).catch(()=>null));
-    toast('Perfil aplicado a publicaciones visibles.');
-    render();
+    if(!options.silent){
+      toast('Perfil aplicado a publicaciones visibles.');
+      render();
+    }
   }
 
   async function profilePhotoChosen(event){
@@ -3274,7 +3309,8 @@ ${esc(shortDiagnosticText(diag))}</code>
       const nextProfile = {...current, name, avatarData};
       set(K.profile, nextProfile);
       applyProfileToOwnPosts(nextProfile);
-      toast('Foto de perfil guardada.');
+      applyProfileToVisiblePosts({silent:true, skipConfirm:true});
+      toast('Foto de perfil guardada y aplicada.');
       render();
     }catch{
       toast('No se pudo guardar la foto de perfil.');
@@ -3568,7 +3604,6 @@ ${esc(shortDiagnosticText(diag))}</code>
       profileNameInput.onblur=()=>{setTimeout(()=>{state.profileEditing=false;},300);};
       profileNameInput.oninput=()=>{state.profileEditing=true;};
     }
-    document.querySelectorAll('[data-apply-visible-profile]').forEach(b=>b.onclick=applyProfileToVisiblePosts);
     document.querySelectorAll('[data-toggle-search]').forEach(b=>b.onclick=toggleSearchPanel);
     document.querySelectorAll('[data-open-store]').forEach(b=>b.onclick=()=>openStore(b.dataset.openStore));
     document.querySelectorAll('[data-top-tab]').forEach(b=>b.onclick=()=>setTopTab(b.dataset.topTab));
