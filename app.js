@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.3.42-descripcion-scroll
+/* Conecta Servicios v6.3.43-leer-ocultar-descripcion
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.3.42-descripcion-scroll';
+  const VERSION = 'v6.3.43-leer-ocultar-descripcion';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -82,7 +82,8 @@
     lastUploadDiagnostic: null,
     runtimeDiagnostic: null,
     audioCtx: null,
-    profileEditing: false
+    profileEditing: false,
+    expandedDescriptions: new Set()
   };
 
   const esc = (v='') => String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -2173,62 +2174,95 @@
         display:none !important;
       }
 
-      /* v6.3.42: descripción larga con scroll propio sobre la publicación */
-      .post-description-scroll{
+      /* v6.3.43: descripción tipo TikTok con ...leer / ...ocultar */
+      .post-description-short{
         color:rgba(255,255,255,.94) !important;
         font-size:14px !important;
+        line-height:1.24 !important;
+        margin:0 !important;
+        white-space:pre-line !important;
+        text-shadow:0 2px 12px rgba(0,0,0,.35);
+      }
+      .post-description-short.is-collapsed{
+        max-height:2.55em !important;
+        overflow:hidden !important;
+      }
+      .description-toggle{
+        appearance:none;
+        border:0;
+        background:transparent;
+        color:#fff;
+        font-weight:900;
+        font-size:14px;
+        line-height:1;
+        padding:0 0 0 4px;
+        text-shadow:0 2px 10px rgba(0,0,0,.55);
+      }
+      .read-toggle{
+        display:inline;
+      }
+      .post-description-expanded{
+        color:#fff !important;
+        font-size:15px !important;
         line-height:1.25 !important;
-        max-height:70px !important;
-        min-height:0 !important;
+        max-height:min(48vh, 360px) !important;
         overflow-y:auto !important;
         overscroll-behavior:contain !important;
         -webkit-overflow-scrolling:touch !important;
-        padding:0 4px 0 0 !important;
-        margin:0 !important;
+        padding:10px 10px 30px 10px !important;
+        margin-top:6px !important;
+        border-radius:18px;
+        background:linear-gradient(180deg,rgba(0,0,0,.10),rgba(0,0,0,.34)) !important;
+        border:1px solid rgba(255,255,255,.16);
+        backdrop-filter:blur(3px);
         white-space:pre-line !important;
         scrollbar-width:thin;
         scrollbar-color:rgba(255,255,255,.65) rgba(255,255,255,.12);
         touch-action:pan-y !important;
       }
-      .post-description-scroll::-webkit-scrollbar{
+      .post-description-expanded::-webkit-scrollbar{
         width:4px;
       }
-      .post-description-scroll::-webkit-scrollbar-thumb{
+      .post-description-expanded::-webkit-scrollbar-thumb{
         background:rgba(255,255,255,.65);
         border-radius:999px;
       }
-      .post-description-scroll.is-long{
-        border-left:3px solid rgba(255,255,255,.36);
-        padding-left:8px !important;
-        padding-bottom:18px !important;
-        position:relative;
+      .description-full-text{
+        padding-bottom:8px;
       }
-      .scroll-hint{
-        display:block;
+      .hide-toggle{
         position:sticky;
         bottom:0;
-        margin-top:4px;
-        padding:4px 0 0;
-        font-size:10px;
-        line-height:1;
-        font-weight:900;
-        color:rgba(255,255,255,.72);
-        text-shadow:0 2px 10px rgba(0,0,0,.4);
-        background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.35));
+        display:block;
+        width:100%;
+        text-align:right;
+        padding:8px 2px 0 0;
+        background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.38));
       }
       .post-body p{
         max-height:none !important;
       }
-      .post-body{
-        max-height:calc(100vh - 180px) !important;
+      .post-body:has(.post-description-expanded){
+        bottom:calc(env(safe-area-inset-bottom) + 74px) !important;
+        max-height:calc(100vh - 154px) !important;
+        overflow:hidden !important;
+        background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.50) 12%,rgba(0,0,0,.88)) !important;
+      }
+      .post-body:has(.post-description-expanded) .post-meta,
+      .post-body:has(.post-description-expanded) .post-action-row,
+      .post-body:has(.post-description-expanded) .manage-row{
+        margin-top:8px !important;
       }
       .post-action-row{
         flex-shrink:0 !important;
       }
       @media (max-height:700px){
-        .post-description-scroll{
-          max-height:54px !important;
+        .post-description-short{
           font-size:13px !important;
+        }
+        .post-description-expanded{
+          max-height:min(44vh, 300px) !important;
+          font-size:14px !important;
         }
         .post-body h2{
           font-size:17px !important;
@@ -2588,13 +2622,46 @@
     return clean.slice(0, max).trim() + '... más';
   }
 
-  function descriptionMarkup(post){
-    const raw = String(post?.description || '').trim();
-    const clean = raw.replace(/\s+/g, ' ');
-    const long = clean.length > 130;
-    return `<div class="post-description-scroll ${long ? 'is-long' : ''}" tabindex="0">${esc(raw || '')}${long ? '<span class="scroll-hint">Desliza aquí para leer todo</span>' : ''}</div>`;
+  function compactDescription(text, max=92){
+    const clean = String(text || '').replace(/\s+/g, ' ').trim();
+    if(clean.length <= max) return clean;
+    return clean.slice(0, max).trim();
   }
 
+  function descriptionMarkup(post){
+    const raw = String(post?.description || '').trim();
+    if(!raw) return '';
+    const clean = raw.replace(/\s+/g, ' ');
+    const long = clean.length > 105 || raw.split(/\n/).length > 3;
+    const expanded = state.expandedDescriptions?.has(post.id);
+
+    if(!long){
+      return `<div class="post-description-short">${esc(raw)}</div>`;
+    }
+
+    if(expanded){
+      return `<div class="post-description-expanded" data-description-box="${esc(post.id)}" tabindex="0">
+        <div class="description-full-text">${esc(raw)}</div>
+        <button type="button" class="description-toggle hide-toggle" data-toggle-description="${esc(post.id)}">...ocultar</button>
+      </div>`;
+    }
+
+    return `<div class="post-description-short is-collapsed">
+      <span>${esc(compactDescription(raw))}</span>
+      <button type="button" class="description-toggle read-toggle" data-toggle-description="${esc(post.id)}">...leer</button>
+    </div>`;
+  }
+
+  function toggleDescription(postId){
+    if(!state.expandedDescriptions) state.expandedDescriptions = new Set();
+    if(state.expandedDescriptions.has(postId)) state.expandedDescriptions.delete(postId);
+    else state.expandedDescriptions.add(postId);
+    render();
+    setTimeout(()=>{
+      const box = document.querySelector(`[data-description-box="${CSS.escape(postId)}"]`);
+      if(box) box.focus?.({preventScroll:true});
+    }, 80);
+  }
 
   function statusLabel(post){
     if(norm(post.cloudStatus)==='subiendo') return '<span class="chip status-chip">Publicando...</span>';
@@ -3647,7 +3714,12 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('[data-reload-video]').forEach(el=>el.onclick=()=>reloadVideo(el.dataset.reloadVideo));
     document.querySelectorAll('[data-toggle-video-sound]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();toggleVideoSound(el.dataset.toggleVideoSound);});
     document.querySelectorAll('[data-gallery-dot]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();goGallery(el.dataset.galleryDot, el.dataset.galleryIndex);});
-    document.querySelectorAll('.post-description-scroll').forEach(el=>{
+    document.querySelectorAll('[data-toggle-description]').forEach(el=>el.onclick=(e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      toggleDescription(el.dataset.toggleDescription);
+    });
+    document.querySelectorAll('.post-description-expanded').forEach(el=>{
       el.onclick=e=>e.stopPropagation();
       el.ontouchstart=e=>e.stopPropagation();
       el.onpointerdown=e=>e.stopPropagation();
