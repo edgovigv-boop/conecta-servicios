@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.6-inbox-visible
+/* Conecta Servicios v6.4.7-mensajes-conversacion-estable
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.6-inbox-visible';
+  const VERSION = 'v6.4.7-mensajes-conversacion-estable';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2148,7 +2148,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.6: acciones icon-only y perfil simple */
+      /* v6.4.7: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2180,7 +2180,7 @@
         display:none !important;
       }
 
-      /* v6.4.6-inbox-visible: bloque consolidado de Home/postCard.
+      /* v6.4.7-mensajes-conversacion-estable: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2359,7 +2359,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.6: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.7: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2378,7 +2378,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.6: descripción visible, ...leer separado del texto */
+      /* v6.4.7: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2513,7 +2513,7 @@
         min-height:48px;
       }
 
-      /* v6.4.6-inbox-visible */
+      /* v6.4.7-mensajes-conversacion-estable */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2684,6 +2684,106 @@
         white-space:nowrap;
       }
 
+
+
+      .conversation-section h2{
+        font-size:16px;
+        color:#111827;
+        margin:14px 0 10px;
+      }
+      .stable-conversation-card{
+        display:flex !important;
+        align-items:center !important;
+        gap:12px !important;
+        border:1px solid rgba(91,46,234,.14) !important;
+        border-radius:24px !important;
+        background:#fff !important;
+        box-shadow:0 14px 34px rgba(17,24,39,.08) !important;
+        padding:14px !important;
+        min-height:86px !important;
+      }
+      .stable-conversation-card.has-unread{
+        background:linear-gradient(135deg,#ffffff,#f0fdf4) !important;
+        border-color:rgba(16,185,129,.26) !important;
+      }
+      .stable-conversation-card .conversation-avatar{
+        width:46px !important;
+        height:46px !important;
+        min-width:46px !important;
+        border-radius:999px !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        background:rgba(91,46,234,.10) !important;
+        font-size:22px !important;
+      }
+      .stable-conversation-card .conversation-main{
+        flex:1 !important;
+        min-width:0 !important;
+      }
+      .stable-conversation-card .conversation-line{
+        display:flex !important;
+        justify-content:space-between !important;
+        align-items:center !important;
+        gap:8px !important;
+      }
+      .stable-conversation-card strong{
+        color:#111827 !important;
+        font-size:15px !important;
+      }
+      .stable-conversation-card em{
+        display:block !important;
+        color:#6b7280 !important;
+        font-style:normal !important;
+        font-size:12px !important;
+        font-weight:800 !important;
+        margin:3px 0 4px !important;
+        white-space:nowrap !important;
+        overflow:hidden !important;
+        text-overflow:ellipsis !important;
+      }
+      .stable-conversation-card p{
+        color:#111827 !important;
+        margin:0 !important;
+        font-size:14px !important;
+        line-height:1.25 !important;
+        white-space:nowrap !important;
+        overflow:hidden !important;
+        text-overflow:ellipsis !important;
+      }
+      .conversation-mini{
+        display:block;
+        color:#6b7280;
+        font-size:11px;
+        font-weight:800;
+        margin-top:5px;
+      }
+      .conversation-chevron{
+        font-size:32px;
+        color:#9ca3af;
+        font-weight:900;
+      }
+      .message-backup-details{
+        margin-top:18px;
+        border-top:1px solid rgba(17,24,39,.08);
+        padding-top:12px;
+      }
+      .message-backup-details summary{
+        cursor:pointer;
+        font-weight:900;
+        color:#5b2eea;
+        padding:8px 0;
+      }
+      .chat-refresh-btn{
+        border:1px solid rgba(91,46,234,.16);
+        background:#fff;
+        color:#5b2eea;
+        border-radius:999px;
+        padding:8px 10px;
+        font-size:12px;
+        font-weight:900;
+        margin-left:auto;
+      }
 
       .visible-message-list{
         display:flex !important;
@@ -3042,6 +3142,106 @@
         white-space:nowrap;
       }
 
+
+
+      .conversation-section h2{
+        font-size:16px;
+        color:#111827;
+        margin:14px 0 10px;
+      }
+      .stable-conversation-card{
+        display:flex !important;
+        align-items:center !important;
+        gap:12px !important;
+        border:1px solid rgba(91,46,234,.14) !important;
+        border-radius:24px !important;
+        background:#fff !important;
+        box-shadow:0 14px 34px rgba(17,24,39,.08) !important;
+        padding:14px !important;
+        min-height:86px !important;
+      }
+      .stable-conversation-card.has-unread{
+        background:linear-gradient(135deg,#ffffff,#f0fdf4) !important;
+        border-color:rgba(16,185,129,.26) !important;
+      }
+      .stable-conversation-card .conversation-avatar{
+        width:46px !important;
+        height:46px !important;
+        min-width:46px !important;
+        border-radius:999px !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        background:rgba(91,46,234,.10) !important;
+        font-size:22px !important;
+      }
+      .stable-conversation-card .conversation-main{
+        flex:1 !important;
+        min-width:0 !important;
+      }
+      .stable-conversation-card .conversation-line{
+        display:flex !important;
+        justify-content:space-between !important;
+        align-items:center !important;
+        gap:8px !important;
+      }
+      .stable-conversation-card strong{
+        color:#111827 !important;
+        font-size:15px !important;
+      }
+      .stable-conversation-card em{
+        display:block !important;
+        color:#6b7280 !important;
+        font-style:normal !important;
+        font-size:12px !important;
+        font-weight:800 !important;
+        margin:3px 0 4px !important;
+        white-space:nowrap !important;
+        overflow:hidden !important;
+        text-overflow:ellipsis !important;
+      }
+      .stable-conversation-card p{
+        color:#111827 !important;
+        margin:0 !important;
+        font-size:14px !important;
+        line-height:1.25 !important;
+        white-space:nowrap !important;
+        overflow:hidden !important;
+        text-overflow:ellipsis !important;
+      }
+      .conversation-mini{
+        display:block;
+        color:#6b7280;
+        font-size:11px;
+        font-weight:800;
+        margin-top:5px;
+      }
+      .conversation-chevron{
+        font-size:32px;
+        color:#9ca3af;
+        font-weight:900;
+      }
+      .message-backup-details{
+        margin-top:18px;
+        border-top:1px solid rgba(17,24,39,.08);
+        padding-top:12px;
+      }
+      .message-backup-details summary{
+        cursor:pointer;
+        font-weight:900;
+        color:#5b2eea;
+        padding:8px 0;
+      }
+      .chat-refresh-btn{
+        border:1px solid rgba(91,46,234,.16);
+        background:#fff;
+        color:#5b2eea;
+        border-radius:999px;
+        padding:8px 10px;
+        font-size:12px;
+        font-weight:900;
+        margin-left:auto;
+      }
 
       .visible-message-list{
         display:flex !important;
@@ -4116,7 +4316,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.6: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.7: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -4379,36 +4579,88 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function conversationGroups(list){
-    const me=userId();
+    const me = userId();
     const map = new Map();
-    (list||[]).forEach(m => {
-      const peerId = m.senderId === me ? m.receiverId : m.senderId;
-      const peerName = m.senderId === me ? (m.receiverName || 'Usuario local') : (m.senderName || 'Usuario local');
-      const key = `${m.postId || ''}::${peerId || ''}`;
-      const prev = map.get(key);
-      const item = {
-        postId:m.postId||'',
-        postTitle:m.postTitle||'Publicación',
+
+    (list || []).forEach(m => {
+      if(!m || !m.id) return;
+
+      const incoming = m.receiverId === me && m.senderId !== me;
+      const outgoing = m.senderId === me && m.receiverId !== me;
+      if(!incoming && !outgoing) return;
+
+      const peerId = incoming ? m.senderId : m.receiverId;
+      const peerName = incoming ? (m.senderName || 'Usuario local') : (m.receiverName || 'Usuario local');
+      const postId = m.postId || '';
+      const key = `${postId}::${peerId || ''}`;
+      const prev = map.get(key) || {
+        key,
+        postId,
+        postTitle: m.postTitle || 'Publicación',
         peerId,
         peerName,
-        lastText:m.text||'',
-        lastAt:m.createdAt||'',
-        count:(prev?.count||0)+1,
-        unread:(prev?.unread||0)+((m.senderId!==me && !state.readMessageIds.has(m.id))?1:0)
+        messages: [],
+        incoming: 0,
+        outgoing: 0,
+        unread: 0,
+        lastText: '',
+        lastAt: ''
       };
-      if(!prev || new Date(item.lastAt||0) >= new Date(prev.lastAt||0)) map.set(key,item);
-      else map.set(key,{...prev,count:item.count,unread:item.unread});
+
+      const nextMessages = [...prev.messages, m].sort((a,b)=>new Date(a.createdAt||0)-new Date(b.createdAt||0));
+      const last = nextMessages[nextMessages.length - 1] || m;
+
+      map.set(key, {
+        ...prev,
+        postTitle: last.postTitle || prev.postTitle || 'Publicación',
+        peerName: peerName || prev.peerName || 'Usuario local',
+        messages: nextMessages,
+        incoming: prev.incoming + (incoming ? 1 : 0),
+        outgoing: prev.outgoing + (outgoing ? 1 : 0),
+        unread: prev.unread + (incoming && !state.readMessageIds.has(m.id) ? 1 : 0),
+        lastText: last.text || '',
+        lastAt: last.createdAt || ''
+      });
     });
+
     return [...map.values()].sort((a,b)=>new Date(b.lastAt||0)-new Date(a.lastAt||0));
   }
 
   function conversationCard(item){
     const unread = item.unread || 0;
-    return `<button class="conversation-card ${unread?'has-unread':''}" data-open-chat="1" data-post="${esc(item.postId)}" data-peer="${esc(item.peerId)}" data-title="${esc(item.postTitle)}" data-name="${esc(item.peerName)}">
-      <div class="conversation-avatar">💬</div>
-      <div class="conversation-main"><div class="conversation-line"><strong>${esc(item.peerName || 'Usuario local')}</strong><small>${esc(shortDateTime(item.lastAt))}</small></div><p>${esc(item.lastText || '')}</p></div>
-      ${unread ? `<span class="conversation-count unread">${unread>99?'99+':unread}</span>` : '<span class="conversation-dot"></span>'}
+    const count = item.messages?.length || item.count || 0;
+    const last = item.lastText || '';
+    return `<button class="conversation-card stable-conversation-card ${unread?'has-unread':''}" data-open-chat="1" data-post="${esc(item.postId)}" data-peer="${esc(item.peerId)}" data-title="${esc(item.postTitle)}" data-name="${esc(item.peerName)}">
+      <div class="conversation-avatar">${unread ? '📩' : '💬'}</div>
+      <div class="conversation-main">
+        <div class="conversation-line">
+          <strong>${esc(item.peerName || 'Usuario local')}</strong>
+          <small>${esc(shortDateTime(item.lastAt))}</small>
+        </div>
+        <em>${esc(item.postTitle || 'Publicación')}</em>
+        <p>${esc(last)}</p>
+        <span class="conversation-mini">${count} mensaje${count===1?'':'s'} · ${item.incoming || 0} recibido${(item.incoming||0)===1?'':'s'}</span>
+      </div>
+      ${unread ? `<span class="conversation-count unread">${unread>99?'99+':unread}</span>` : '<span class="conversation-chevron">›</span>'}
     </button>`;
+  }
+
+  function conversationListMarkup(){
+    const groups = conversationGroups(state.publicMessages || []);
+    if(!groups.length) return '';
+    return `<div class="conversation-section">
+      <h2>Conversaciones</h2>
+      <div class="list conversation-list">${groups.map(conversationCard).join('')}</div>
+    </div>`;
+  }
+
+  function directMessagesBackupMarkup(){
+    const direct = messageVisibleList();
+    if(!direct) return '';
+    return `<details class="message-backup-details">
+      <summary>Ver mensajes individuales</summary>
+      ${direct}
+    </details>`;
   }
 
   function messagesPage(){
@@ -4419,11 +4671,12 @@ ${esc(shortDiagnosticText(diag))}</code>
     }
 
     const lastFetch = state.messagesLastFetchedAt ? shortTime(state.messagesLastFetchedAt) : 'sin cargar';
-    const visibleList = messageVisibleList();
+    const conversations = conversationListMarkup();
+    const backup = directMessagesBackupMarkup();
 
     return shell(`<section class="panel messages-panel">
       <h1>Mensajes</h1>
-      <p>Aquí aparecen los mensajes recibidos desde tus publicaciones.</p>
+      <p>Aquí aparecen las conversaciones de tus publicaciones.</p>
       <div class="message-toolbar">
         <button type="button" class="small-link refresh-messages-btn" data-refresh-messages>Actualizar mensajes</button>
         <small>${state.messagesLoading ? 'Cargando...' : `${state.messagesLastCount || 0} mensajes · ${esc(lastFetch)}`}</small>
@@ -4433,7 +4686,8 @@ ${esc(shortDiagnosticText(diag))}</code>
         <small>API: ${state.messagesError ? 'con error' : (state.messagesLoaded ? 'cargada' : 'pendiente')}</small>
       </div>
       ${state.messagesError ? `<div class="local-note">${esc(state.messagesError)}</div>` : ''}
-      ${visibleList || (!state.messagesLoading ? emptyState('Sin mensajes visibles','Si dice mensajes cargados pero no se ven, copia el diagnóstico técnico.') : '<div class="empty compact-empty"><strong>Cargando...</strong></div>')}
+      ${conversations || (!state.messagesLoading ? emptyState('Sin conversaciones','Toca Actualizar mensajes. Cuando alguien escriba desde una publicación aparecerá aquí.') : '<div class="empty compact-empty"><strong>Cargando...</strong></div>')}
+      ${backup}
     </section>`);
   }
 
@@ -4447,7 +4701,11 @@ ${esc(shortDiagnosticText(diag))}</code>
     if(!chat) return shell(`<section class="panel"><button class="back-btn" data-nav="/mensajes">← Volver</button><h1>Chat</h1></section>`);
     if(!state.chatLoaded && !state.chatLoading) loadChatMessages();
     return shell(`<section class="panel chat-panel">
-      <div class="chat-topbar"><button class="back-btn" data-nav="/mensajes">←</button><div><h1>${esc(chat.peerName || 'Usuario local')}</h1><small>${esc(chat.postTitle || 'Publicación')}</small></div></div>
+      <div class="chat-topbar">
+        <button class="back-btn" data-nav="/mensajes">←</button>
+        <div><h1>${esc(chat.peerName || 'Usuario local')}</h1><small>${esc(chat.postTitle || 'Publicación')} · ${state.chatMessages.length || 0} mensaje${state.chatMessages.length===1?'':'s'}</small></div>
+        <button type="button" class="chat-refresh-btn" data-refresh-chat>Actualizar</button>
+      </div>
       <div class="chat-feed" id="chatFeed">${state.chatLoading ? '<div class="empty compact-empty"><strong>Cargando...</strong></div>' : ''}${state.chatMessages.map(chatBubble).join('') || (!state.chatLoading ? '<div class="empty compact-empty"><strong>Empieza la conversación</strong></div>' : '')}</div>
       <div class="chat-box"><textarea id="chatText" placeholder="Escribe un mensaje"></textarea><button class="big-button" data-send-chat>Enviar</button></div>
     </section>`);
@@ -4469,9 +4727,10 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function openChatFromConversation(button){
-    state.chat = {postId:button.dataset.post||'', postTitle:button.dataset.title||'Publicación', peerId:button.dataset.peer||'', peerName:button.dataset.name||'Usuario local'};
-    state.chatMessages = [];
-    state.chatLoaded = false;
+    const chat = {postId:button.dataset.post||'', postTitle:button.dataset.title||'Publicación', peerId:button.dataset.peer||'', peerName:button.dataset.name||'Usuario local'};
+    state.chat = chat;
+    state.chatMessages = (state.publicMessages || []).filter(m => chatMatchesMessage(m, chat)).sort((a,b)=>new Date(a.createdAt||0)-new Date(b.createdAt||0));
+    state.chatLoaded = state.chatMessages.length > 0;
     markActiveChatRead();
     nav('/chat');
   }
@@ -4490,6 +4749,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       await savePublicMessage(msg);
       state.messagesLoaded = false;
       await loadChatMessages({silent:true});
+      loadMessagesForInbox({silent:true}).catch(()=>null);
       toast('Mensaje enviado.');
     }catch{
       toast('No se pudo enviar. Revisa conexión.');
@@ -4517,6 +4777,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     setupGalleries();
     document.querySelectorAll('[data-open-chat]').forEach(b=>b.onclick=()=>openChatFromConversation(b));
     document.querySelectorAll('[data-send-chat]').forEach(b=>b.onclick=sendChatMessage);
+    document.querySelectorAll('[data-refresh-chat]').forEach(b=>b.onclick=()=>loadChatMessages({silent:false}));
     document.querySelectorAll('[data-refresh-messages]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();forceRefreshMessages();});
     document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editPost(b.dataset.edit));
     document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deletePost(b.dataset.delete));
