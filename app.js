@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.4-mensajes-inbox-refresh
+/* Conecta Servicios v6.4.5-inbox-directo
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.4-mensajes-inbox-refresh';
+  const VERSION = 'v6.4.5-inbox-directo';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -363,7 +363,7 @@
       profileName: profile().name || '',
       url: location.href,
       serviceWorkerControlled: !!navigator.serviceWorker?.controller,
-      messages: {userId: state.messagesUserId || '', loaded: !!state.messagesLoaded, count: state.messagesLastCount || 0, lastFetchedAt: state.messagesLastFetchedAt || 0, error: state.messagesError || ''},
+      messages: {currentUserId:userId(), userId: state.messagesUserId || '', loaded: !!state.messagesLoaded, count: state.messagesLastCount || 0, lastFetchedAt: state.messagesLastFetchedAt || 0, error: state.messagesError || '', sample:(state.publicMessages||[]).slice(-5)},
       localPosts: localPosts().map(p => ({id:p.id, ownerId:p.ownerId, title:p.title, category:p.category, descriptionLength:String(p.description||'').length, captionLength:postCaptionText(p).length, mediaType:p.mediaType, mediaStatus:p.mediaStatus, cloudStatus:p.cloudStatus, hasMediaUrl:!!p.mediaUrl, mediaError:p.mediaError || ''})).slice(0, 30),
       lastUploadDiagnostic: state.lastUploadDiagnostic || get('cs_v6323_last_upload_diagnostic', null)
     };
@@ -2148,7 +2148,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.4: acciones icon-only y perfil simple */
+      /* v6.4.5: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2180,7 +2180,7 @@
         display:none !important;
       }
 
-      /* v6.4.4-mensajes-inbox-refresh: bloque consolidado de Home/postCard.
+      /* v6.4.5-inbox-directo: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2359,7 +2359,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.4: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.5: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2378,7 +2378,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.4: descripción visible, ...leer separado del texto */
+      /* v6.4.5: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2513,7 +2513,7 @@
         min-height:48px;
       }
 
-      /* v6.4.4-mensajes-inbox-refresh */
+      /* v6.4.5-inbox-directo */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2683,6 +2683,18 @@
         font-weight:800;
         white-space:nowrap;
       }
+
+      .message-debug-mini{
+        display:flex;
+        justify-content:space-between;
+        gap:8px;
+        margin:-6px 0 12px;
+        color:#6b7280;
+      }
+      .message-debug-mini small{
+        font-size:11px;
+      }
+
       .refresh-messages-btn{
         font-size:14px;
         font-weight:900;
@@ -2956,6 +2968,18 @@
         font-weight:800;
         white-space:nowrap;
       }
+
+      .message-debug-mini{
+        display:flex;
+        justify-content:space-between;
+        gap:8px;
+        margin:-6px 0 12px;
+        color:#6b7280;
+      }
+      .message-debug-mini small{
+        font-size:11px;
+      }
+
       .refresh-messages-btn{
         font-size:14px;
         font-weight:900;
@@ -3458,7 +3482,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       history.replaceState({route}, '', routeUrl(route));
     }
     render();
-    if(route === '/mensajes') setTimeout(()=>loadMessagesForInbox({silent:false}), 0);
+    if(route === '/mensajes') setTimeout(()=>forceRefreshMessages(), 0);
     setTimeout(()=>scrollTo({top:0,behavior:'smooth'}),0);
   }
   function setupNavigationHistory(){
@@ -3472,7 +3496,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       state.route = e.state?.route || '/';
       if(state.route !== '/publicar' && !state.publishing) state.editing = null;
       render();
-      if(state.route === '/mensajes') setTimeout(()=>loadMessagesForInbox({silent:false}), 0);
+      if(state.route === '/mensajes') setTimeout(()=>forceRefreshMessages(), 0);
       setTimeout(()=>scrollTo({top:0,behavior:'smooth'}),0);
     });
   }
@@ -3946,7 +3970,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.4: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.5: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -4128,6 +4152,48 @@ ${esc(shortDiagnosticText(diag))}</code>
     }
   }
 
+
+  async function forceRefreshMessages(){
+    const activeUserId = userId();
+    state.messagesLoading = true;
+    state.messagesError = '';
+    render();
+    try{
+      const list = await fetchPublicMessages({userId:activeUserId, t:Date.now(), direct:'1'});
+      trackMessages(list, {initial:false});
+      state.publicMessages = Array.isArray(list) ? list : [];
+      state.messagesLoaded = true;
+      state.messagesUserId = activeUserId;
+      state.messagesLastFetchedAt = Date.now();
+      state.messagesLastCount = state.publicMessages.length;
+      state.messagesError = '';
+      toast(`${state.publicMessages.length} mensajes cargados.`);
+    }catch(error){
+      state.messagesError = `No se pudieron cargar mensajes: ${error?.message || error || 'error desconocido'}`;
+      state.messagesLoaded = false;
+      state.messagesLastCount = 0;
+      toast('No se pudieron cargar mensajes.');
+      console.warn('[Conecta force mensajes]', error);
+    }finally{
+      state.messagesLoading = false;
+      if(state.route === '/mensajes') render();
+    }
+  }
+
+  function messageRawCard(m){
+    const me = userId();
+    const incoming = m.receiverId === me && m.senderId !== me;
+    const peerName = incoming ? (m.senderName || 'Usuario local') : (m.receiverName || 'Usuario local');
+    return `<button class="conversation-card ${incoming ? 'has-unread' : ''}" data-open-chat="1" data-post="${esc(m.postId||'')}" data-peer="${esc(incoming ? m.senderId : m.receiverId)}" data-title="${esc(m.postTitle||'Publicación')}" data-name="${esc(peerName)}">
+      <div class="conversation-avatar">${incoming ? '📩' : '↗️'}</div>
+      <div class="conversation-main">
+        <div class="conversation-line"><strong>${esc(peerName)}</strong><small>${esc(shortDateTime(m.createdAt))}</small></div>
+        <p>${esc(m.postTitle || 'Publicación')} · ${esc(m.text || '')}</p>
+      </div>
+      <span class="conversation-dot"></span>
+    </button>`;
+  }
+
   async function loadChatMessages(options={}){
     if(!state.chat || state.chatLoading) return;
     const activeInput = document.getElementById('chatText');
@@ -4189,8 +4255,11 @@ ${esc(shortDiagnosticText(diag))}</code>
     if(!state.messagesLoading && (!state.messagesLoaded || state.messagesUserId !== activeUserId || stale)){
       loadMessagesForInbox({silent:state.messagesLoaded && state.messagesUserId === activeUserId});
     }
+
     const groups = conversationGroups(state.publicMessages || []);
     const lastFetch = state.messagesLastFetchedAt ? shortTime(state.messagesLastFetchedAt) : 'sin cargar';
+    const rawFallback = (state.publicMessages || []).slice().sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)).map(messageRawCard).join('');
+
     return shell(`<section class="panel messages-panel">
       <h1>Mensajes</h1>
       <p>Aquí aparecen los mensajes recibidos desde tus publicaciones.</p>
@@ -4198,8 +4267,14 @@ ${esc(shortDiagnosticText(diag))}</code>
         <button type="button" class="small-link refresh-messages-btn" data-refresh-messages>Actualizar mensajes</button>
         <small>${state.messagesLoading ? 'Cargando...' : `${state.messagesLastCount || 0} mensajes · ${esc(lastFetch)}`}</small>
       </div>
+      <div class="message-debug-mini">
+        <small>Este celular: <strong>${esc(activeUserId.slice(-10))}</strong></small>
+        <small>API: ${state.messagesError ? 'con error' : (state.messagesLoaded ? 'cargada' : 'pendiente')}</small>
+      </div>
       ${state.messagesError ? `<div class="local-note">${esc(state.messagesError)}</div>` : ''}
-      <div class="list conversation-list">${groups.map(conversationCard).join('') || (!state.messagesLoading ? emptyState('Sin conversaciones','Cuando alguien te escriba, aparecerá aquí.') : '<div class="empty compact-empty"><strong>Cargando...</strong></div>')}</div>
+      <div class="list conversation-list">
+        ${groups.map(conversationCard).join('') || rawFallback || (!state.messagesLoading ? emptyState('Sin conversaciones','Toca Actualizar mensajes. Si Supabase ya muestra mensajes para este userId, aparecerán aquí.') : '<div class="empty compact-empty"><strong>Cargando...</strong></div>')}
+      </div>
     </section>`);
   }
 
@@ -4283,7 +4358,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     setupGalleries();
     document.querySelectorAll('[data-open-chat]').forEach(b=>b.onclick=()=>openChatFromConversation(b));
     document.querySelectorAll('[data-send-chat]').forEach(b=>b.onclick=sendChatMessage);
-    document.querySelectorAll('[data-refresh-messages]').forEach(b=>b.onclick=()=>loadMessagesForInbox({silent:false}));
+    document.querySelectorAll('[data-refresh-messages]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();forceRefreshMessages();});
     document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editPost(b.dataset.edit));
     document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deletePost(b.dataset.delete));
     document.querySelectorAll('[data-close-video]').forEach(b=>b.onclick=closeVideo);
@@ -4311,6 +4386,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('[data-top-tab]').forEach(b=>b.onclick=()=>setTopTab(b.dataset.topTab));
     document.querySelectorAll('[data-clear-search]').forEach(b=>b.onclick=(e)=>{ e.preventDefault(); e.stopPropagation(); if(state.query){ state.query=''; state.searchTyping=true; updateFeedOnly(); setTimeout(()=>{ const i=document.getElementById('searchInput'); i?.focus({preventScroll:true}); try{i?.setSelectionRange(0,0)}catch{} state.searchTyping=false; },80); } else { closeSearchPanel(); } });
     bindDynamicFeedControls();
+    document.querySelectorAll('[data-refresh-messages]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();forceRefreshMessages();});
 
     const picker=document.getElementById('mediaPicker');
     if(picker) picker.onchange=fileChosen;

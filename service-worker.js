@@ -1,4 +1,4 @@
-const CACHE_NAME = 'conecta-servicios-v6-4-4-mensajes-inbox-refresh';
+const CACHE_NAME = 'conecta-servicios-v6-4-5-inbox-directo';
 
 const ASSETS = [
   '/',
@@ -36,7 +36,7 @@ self.addEventListener('fetch', event => {
     url.pathname.endsWith('/index.html') ||
     url.pathname.endsWith('/app.js') ||
     url.pathname.endsWith('/service-worker.js') ||
-    url.search.includes('v=644') ||
+    url.search.includes('v=645') ||
     url.search.includes('v=6.3.41');
 
   if (networkFirst) {
