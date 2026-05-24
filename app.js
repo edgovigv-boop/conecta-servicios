@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.7-mensajes-conversacion-estable
+/* Conecta Servicios v6.4.8-mensajes-layout-fijo
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.7-mensajes-conversacion-estable';
+  const VERSION = 'v6.4.8-mensajes-layout-fijo';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2148,7 +2148,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.7: acciones icon-only y perfil simple */
+      /* v6.4.8: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2180,7 +2180,7 @@
         display:none !important;
       }
 
-      /* v6.4.7-mensajes-conversacion-estable: bloque consolidado de Home/postCard.
+      /* v6.4.8-mensajes-layout-fijo: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2359,7 +2359,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.7: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.8: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2378,7 +2378,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.7: descripción visible, ...leer separado del texto */
+      /* v6.4.8: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2513,7 +2513,7 @@
         min-height:48px;
       }
 
-      /* v6.4.7-mensajes-conversacion-estable */
+      /* v6.4.8-mensajes-layout-fijo */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2774,6 +2774,176 @@
         color:#5b2eea;
         padding:8px 0;
       }
+
+      /* v6.4.8: estabilidad horizontal en Mensajes y Chat */
+      html,
+      body,
+      #app,
+      .app-shell,
+      main,
+      .screen,
+      .panel,
+      .messages-panel,
+      .chat-panel{
+        max-width:100vw !important;
+        overflow-x:hidden !important;
+        box-sizing:border-box !important;
+      }
+
+      body{
+        position:relative;
+        width:100%;
+      }
+
+      .messages-panel,
+      .chat-panel{
+        padding-left:14px !important;
+        padding-right:14px !important;
+      }
+
+      .message-toolbar,
+      .message-debug-mini,
+      .conversation-section,
+      .conversation-list,
+      .visible-message-list,
+      .message-backup-details,
+      .chat-topbar,
+      .chat-feed,
+      .chat-box{
+        width:100% !important;
+        max-width:100% !important;
+        min-width:0 !important;
+        box-sizing:border-box !important;
+        overflow-x:hidden !important;
+      }
+
+      .stable-conversation-card,
+      .conversation-card,
+      .message-visible-card{
+        width:100% !important;
+        max-width:100% !important;
+        min-width:0 !important;
+        box-sizing:border-box !important;
+        overflow:hidden !important;
+        touch-action:pan-y !important;
+      }
+
+      .stable-conversation-card .conversation-main,
+      .conversation-main{
+        min-width:0 !important;
+        max-width:100% !important;
+        overflow:hidden !important;
+      }
+
+      .stable-conversation-card .conversation-line,
+      .conversation-line{
+        min-width:0 !important;
+        max-width:100% !important;
+      }
+
+      .stable-conversation-card strong,
+      .stable-conversation-card em,
+      .stable-conversation-card p,
+      .conversation-main strong,
+      .conversation-main em,
+      .conversation-main p,
+      .message-visible-card strong,
+      .message-visible-card em,
+      .message-visible-card p,
+      .conversation-mini{
+        max-width:100% !important;
+        overflow:hidden !important;
+        text-overflow:ellipsis !important;
+        word-break:break-word !important;
+        overflow-wrap:anywhere !important;
+      }
+
+      .stable-conversation-card p,
+      .conversation-main p{
+        white-space:nowrap !important;
+      }
+
+      .message-visible-card p{
+        white-space:pre-line !important;
+      }
+
+      .conversation-count,
+      .conversation-chevron,
+      .conversation-dot{
+        flex:0 0 auto !important;
+      }
+
+      .chat-topbar{
+        display:grid !important;
+        grid-template-columns:auto minmax(0,1fr) auto !important;
+        align-items:center !important;
+        gap:8px !important;
+      }
+
+      .chat-topbar h1,
+      .chat-topbar small{
+        max-width:100% !important;
+        overflow:hidden !important;
+        text-overflow:ellipsis !important;
+        white-space:nowrap !important;
+      }
+
+      .chat-refresh-btn{
+        white-space:nowrap !important;
+        flex:0 0 auto !important;
+      }
+
+      .chat-box{
+        display:grid !important;
+        grid-template-columns:minmax(0,1fr) auto !important;
+        gap:8px !important;
+        align-items:end !important;
+      }
+
+      .chat-box textarea{
+        min-width:0 !important;
+        max-width:100% !important;
+        box-sizing:border-box !important;
+        resize:none !important;
+      }
+
+      .bubble-row,
+      .bubble{
+        max-width:100% !important;
+        box-sizing:border-box !important;
+      }
+
+      .bubble p{
+        overflow-wrap:anywhere !important;
+        word-break:break-word !important;
+      }
+
+      @media (max-width:420px){
+        .messages-panel,
+        .chat-panel{
+          padding-left:12px !important;
+          padding-right:12px !important;
+        }
+        .message-toolbar{
+          display:grid !important;
+          grid-template-columns:1fr !important;
+          gap:6px !important;
+          align-items:start !important;
+        }
+        .message-toolbar small{
+          white-space:normal !important;
+        }
+        .stable-conversation-card{
+          gap:9px !important;
+          padding:12px !important;
+        }
+        .stable-conversation-card .conversation-avatar{
+          width:42px !important;
+          height:42px !important;
+          min-width:42px !important;
+        }
+      }
+
       .chat-refresh-btn{
         border:1px solid rgba(91,46,234,.16);
         background:#fff;
@@ -3232,6 +3402,176 @@
         color:#5b2eea;
         padding:8px 0;
       }
+
+      /* v6.4.8: estabilidad horizontal en Mensajes y Chat */
+      html,
+      body,
+      #app,
+      .app-shell,
+      main,
+      .screen,
+      .panel,
+      .messages-panel,
+      .chat-panel{
+        max-width:100vw !important;
+        overflow-x:hidden !important;
+        box-sizing:border-box !important;
+      }
+
+      body{
+        position:relative;
+        width:100%;
+      }
+
+      .messages-panel,
+      .chat-panel{
+        padding-left:14px !important;
+        padding-right:14px !important;
+      }
+
+      .message-toolbar,
+      .message-debug-mini,
+      .conversation-section,
+      .conversation-list,
+      .visible-message-list,
+      .message-backup-details,
+      .chat-topbar,
+      .chat-feed,
+      .chat-box{
+        width:100% !important;
+        max-width:100% !important;
+        min-width:0 !important;
+        box-sizing:border-box !important;
+        overflow-x:hidden !important;
+      }
+
+      .stable-conversation-card,
+      .conversation-card,
+      .message-visible-card{
+        width:100% !important;
+        max-width:100% !important;
+        min-width:0 !important;
+        box-sizing:border-box !important;
+        overflow:hidden !important;
+        touch-action:pan-y !important;
+      }
+
+      .stable-conversation-card .conversation-main,
+      .conversation-main{
+        min-width:0 !important;
+        max-width:100% !important;
+        overflow:hidden !important;
+      }
+
+      .stable-conversation-card .conversation-line,
+      .conversation-line{
+        min-width:0 !important;
+        max-width:100% !important;
+      }
+
+      .stable-conversation-card strong,
+      .stable-conversation-card em,
+      .stable-conversation-card p,
+      .conversation-main strong,
+      .conversation-main em,
+      .conversation-main p,
+      .message-visible-card strong,
+      .message-visible-card em,
+      .message-visible-card p,
+      .conversation-mini{
+        max-width:100% !important;
+        overflow:hidden !important;
+        text-overflow:ellipsis !important;
+        word-break:break-word !important;
+        overflow-wrap:anywhere !important;
+      }
+
+      .stable-conversation-card p,
+      .conversation-main p{
+        white-space:nowrap !important;
+      }
+
+      .message-visible-card p{
+        white-space:pre-line !important;
+      }
+
+      .conversation-count,
+      .conversation-chevron,
+      .conversation-dot{
+        flex:0 0 auto !important;
+      }
+
+      .chat-topbar{
+        display:grid !important;
+        grid-template-columns:auto minmax(0,1fr) auto !important;
+        align-items:center !important;
+        gap:8px !important;
+      }
+
+      .chat-topbar h1,
+      .chat-topbar small{
+        max-width:100% !important;
+        overflow:hidden !important;
+        text-overflow:ellipsis !important;
+        white-space:nowrap !important;
+      }
+
+      .chat-refresh-btn{
+        white-space:nowrap !important;
+        flex:0 0 auto !important;
+      }
+
+      .chat-box{
+        display:grid !important;
+        grid-template-columns:minmax(0,1fr) auto !important;
+        gap:8px !important;
+        align-items:end !important;
+      }
+
+      .chat-box textarea{
+        min-width:0 !important;
+        max-width:100% !important;
+        box-sizing:border-box !important;
+        resize:none !important;
+      }
+
+      .bubble-row,
+      .bubble{
+        max-width:100% !important;
+        box-sizing:border-box !important;
+      }
+
+      .bubble p{
+        overflow-wrap:anywhere !important;
+        word-break:break-word !important;
+      }
+
+      @media (max-width:420px){
+        .messages-panel,
+        .chat-panel{
+          padding-left:12px !important;
+          padding-right:12px !important;
+        }
+        .message-toolbar{
+          display:grid !important;
+          grid-template-columns:1fr !important;
+          gap:6px !important;
+          align-items:start !important;
+        }
+        .message-toolbar small{
+          white-space:normal !important;
+        }
+        .stable-conversation-card{
+          gap:9px !important;
+          padding:12px !important;
+        }
+        .stable-conversation-card .conversation-avatar{
+          width:42px !important;
+          height:42px !important;
+          min-width:42px !important;
+        }
+      }
+
       .chat-refresh-btn{
         border:1px solid rgba(91,46,234,.16);
         background:#fff;
@@ -4316,7 +4656,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.7: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.8: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());

@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.7-mensajes-conversacion-estable';
+  const VERSION = 'v6.4.8-mensajes-layout-fijo';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 
