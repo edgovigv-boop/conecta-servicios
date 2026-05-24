@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.5-inbox-directo
+/* Conecta Servicios v6.4.6-inbox-visible
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.5-inbox-directo';
+  const VERSION = 'v6.4.6-inbox-visible';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2148,7 +2148,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.5: acciones icon-only y perfil simple */
+      /* v6.4.6: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2180,7 +2180,7 @@
         display:none !important;
       }
 
-      /* v6.4.5-inbox-directo: bloque consolidado de Home/postCard.
+      /* v6.4.6-inbox-visible: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2359,7 +2359,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.5: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.6: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2378,7 +2378,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.5: descripción visible, ...leer separado del texto */
+      /* v6.4.6: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2513,7 +2513,7 @@
         min-height:48px;
       }
 
-      /* v6.4.5-inbox-directo */
+      /* v6.4.6-inbox-visible */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2682,6 +2682,79 @@
         color:#6b7280;
         font-weight:800;
         white-space:nowrap;
+      }
+
+
+      .visible-message-list{
+        display:flex !important;
+        flex-direction:column !important;
+        gap:12px !important;
+        margin-top:12px !important;
+        padding-bottom:120px !important;
+      }
+      .message-visible-card{
+        display:block !important;
+        width:100% !important;
+        text-align:left !important;
+        border:1px solid rgba(91,46,234,.16) !important;
+        border-radius:22px !important;
+        background:#fff !important;
+        color:#111827 !important;
+        padding:14px !important;
+        box-shadow:0 14px 34px rgba(17,24,39,.08) !important;
+      }
+      .message-visible-card.incoming{
+        border-color:rgba(16,185,129,.24) !important;
+        background:linear-gradient(135deg,#ffffff,#f0fdf4) !important;
+      }
+      .message-visible-card.outgoing{
+        opacity:.82;
+      }
+      .message-visible-head{
+        display:flex !important;
+        justify-content:space-between !important;
+        align-items:center !important;
+        gap:8px !important;
+        margin-bottom:8px !important;
+      }
+      .message-visible-badge{
+        display:inline-flex !important;
+        align-items:center !important;
+        border-radius:999px !important;
+        padding:5px 9px !important;
+        background:rgba(91,46,234,.08) !important;
+        color:#4c1d95 !important;
+        font-size:12px !important;
+        font-weight:900 !important;
+      }
+      .message-visible-card strong{
+        display:block !important;
+        font-size:15px !important;
+        color:#111827 !important;
+        margin-bottom:3px !important;
+      }
+      .message-visible-card em{
+        display:block !important;
+        font-style:normal !important;
+        color:#6b7280 !important;
+        font-size:12px !important;
+        font-weight:800 !important;
+        margin-bottom:8px !important;
+      }
+      .message-visible-card p{
+        color:#111827 !important;
+        font-size:16px !important;
+        line-height:1.35 !important;
+        margin:0 0 12px !important;
+        white-space:pre-line !important;
+      }
+      .reply-visible-btn{
+        border:0 !important;
+        border-radius:999px !important;
+        padding:10px 14px !important;
+        background:#5b2eea !important;
+        color:white !important;
+        font-weight:900 !important;
       }
 
       .message-debug-mini{
@@ -2967,6 +3040,79 @@
         color:#6b7280;
         font-weight:800;
         white-space:nowrap;
+      }
+
+
+      .visible-message-list{
+        display:flex !important;
+        flex-direction:column !important;
+        gap:12px !important;
+        margin-top:12px !important;
+        padding-bottom:120px !important;
+      }
+      .message-visible-card{
+        display:block !important;
+        width:100% !important;
+        text-align:left !important;
+        border:1px solid rgba(91,46,234,.16) !important;
+        border-radius:22px !important;
+        background:#fff !important;
+        color:#111827 !important;
+        padding:14px !important;
+        box-shadow:0 14px 34px rgba(17,24,39,.08) !important;
+      }
+      .message-visible-card.incoming{
+        border-color:rgba(16,185,129,.24) !important;
+        background:linear-gradient(135deg,#ffffff,#f0fdf4) !important;
+      }
+      .message-visible-card.outgoing{
+        opacity:.82;
+      }
+      .message-visible-head{
+        display:flex !important;
+        justify-content:space-between !important;
+        align-items:center !important;
+        gap:8px !important;
+        margin-bottom:8px !important;
+      }
+      .message-visible-badge{
+        display:inline-flex !important;
+        align-items:center !important;
+        border-radius:999px !important;
+        padding:5px 9px !important;
+        background:rgba(91,46,234,.08) !important;
+        color:#4c1d95 !important;
+        font-size:12px !important;
+        font-weight:900 !important;
+      }
+      .message-visible-card strong{
+        display:block !important;
+        font-size:15px !important;
+        color:#111827 !important;
+        margin-bottom:3px !important;
+      }
+      .message-visible-card em{
+        display:block !important;
+        font-style:normal !important;
+        color:#6b7280 !important;
+        font-size:12px !important;
+        font-weight:800 !important;
+        margin-bottom:8px !important;
+      }
+      .message-visible-card p{
+        color:#111827 !important;
+        font-size:16px !important;
+        line-height:1.35 !important;
+        margin:0 0 12px !important;
+        white-space:pre-line !important;
+      }
+      .reply-visible-btn{
+        border:0 !important;
+        border-radius:999px !important;
+        padding:10px 14px !important;
+        background:#5b2eea !important;
+        color:white !important;
+        font-weight:900 !important;
       }
 
       .message-debug-mini{
@@ -3970,7 +4116,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.5: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.6: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -4180,19 +4326,35 @@ ${esc(shortDiagnosticText(diag))}</code>
     }
   }
 
-  function messageRawCard(m){
+  function messageVisibleCard(m){
     const me = userId();
     const incoming = m.receiverId === me && m.senderId !== me;
+    const peerId = incoming ? m.senderId : m.receiverId;
     const peerName = incoming ? (m.senderName || 'Usuario local') : (m.receiverName || 'Usuario local');
-    return `<button class="conversation-card ${incoming ? 'has-unread' : ''}" data-open-chat="1" data-post="${esc(m.postId||'')}" data-peer="${esc(incoming ? m.senderId : m.receiverId)}" data-title="${esc(m.postTitle||'Publicación')}" data-name="${esc(peerName)}">
-      <div class="conversation-avatar">${incoming ? '📩' : '↗️'}</div>
-      <div class="conversation-main">
-        <div class="conversation-line"><strong>${esc(peerName)}</strong><small>${esc(shortDateTime(m.createdAt))}</small></div>
-        <p>${esc(m.postTitle || 'Publicación')} · ${esc(m.text || '')}</p>
+    const direction = incoming ? 'Recibido' : 'Enviado';
+    return `<article class="message-visible-card ${incoming ? 'incoming' : 'outgoing'}">
+      <div class="message-visible-head">
+        <span class="message-visible-badge">${incoming ? '📩' : '↗️'} ${direction}</span>
+        <small>${esc(shortDateTime(m.createdAt))}</small>
       </div>
-      <span class="conversation-dot"></span>
-    </button>`;
+      <strong>${esc(peerName || 'Usuario local')}</strong>
+      <em>${esc(m.postTitle || 'Publicación')}</em>
+      <p>${esc(m.text || '')}</p>
+      <button type="button" class="reply-visible-btn" data-open-chat="1" data-post="${esc(m.postId||'')}" data-peer="${esc(peerId||'')}" data-title="${esc(m.postTitle||'Publicación')}" data-name="${esc(peerName || 'Usuario local')}">Responder</button>
+    </article>`;
   }
+
+  function messageVisibleList(){
+    const me = userId();
+    const list = (state.publicMessages || []).slice().sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+    if(!list.length) return '';
+    const incoming = list.filter(m => m.receiverId === me && m.senderId !== me);
+    const outgoing = list.filter(m => !(m.receiverId === me && m.senderId !== me));
+    const ordered = [...incoming, ...outgoing];
+    return `<div class="visible-message-list">${ordered.map(messageVisibleCard).join('')}</div>`;
+  }
+
+
 
   async function loadChatMessages(options={}){
     if(!state.chat || state.chatLoading) return;
@@ -4256,9 +4418,8 @@ ${esc(shortDiagnosticText(diag))}</code>
       loadMessagesForInbox({silent:state.messagesLoaded && state.messagesUserId === activeUserId});
     }
 
-    const groups = conversationGroups(state.publicMessages || []);
     const lastFetch = state.messagesLastFetchedAt ? shortTime(state.messagesLastFetchedAt) : 'sin cargar';
-    const rawFallback = (state.publicMessages || []).slice().sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)).map(messageRawCard).join('');
+    const visibleList = messageVisibleList();
 
     return shell(`<section class="panel messages-panel">
       <h1>Mensajes</h1>
@@ -4272,9 +4433,7 @@ ${esc(shortDiagnosticText(diag))}</code>
         <small>API: ${state.messagesError ? 'con error' : (state.messagesLoaded ? 'cargada' : 'pendiente')}</small>
       </div>
       ${state.messagesError ? `<div class="local-note">${esc(state.messagesError)}</div>` : ''}
-      <div class="list conversation-list">
-        ${groups.map(conversationCard).join('') || rawFallback || (!state.messagesLoading ? emptyState('Sin conversaciones','Toca Actualizar mensajes. Si Supabase ya muestra mensajes para este userId, aparecerán aquí.') : '<div class="empty compact-empty"><strong>Cargando...</strong></div>')}
-      </div>
+      ${visibleList || (!state.messagesLoading ? emptyState('Sin mensajes visibles','Si dice mensajes cargados pero no se ven, copia el diagnóstico técnico.') : '<div class="empty compact-empty"><strong>Cargando...</strong></div>')}
     </section>`);
   }
 
