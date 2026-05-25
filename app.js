@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.19-multimedia-directa-basica
+/* Conecta Servicios v6.4.20-ajuste-puntitos-multimedia
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.19-multimedia-directa-basica';
+  const VERSION = 'v6.4.20-ajuste-puntitos-multimedia';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2292,7 +2292,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.19: acciones icon-only y perfil simple */
+      /* v6.4.20: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2324,7 +2324,7 @@
         display:none !important;
       }
 
-      /* v6.4.19-multimedia-directa-basica: bloque consolidado de Home/postCard.
+      /* v6.4.20-ajuste-puntitos-multimedia: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2503,7 +2503,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.19: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.20: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2522,7 +2522,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.19: descripción visible, ...leer separado del texto */
+      /* v6.4.20: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2657,7 +2657,7 @@
         min-height:48px;
       }
 
-      /* v6.4.19-multimedia-directa-basica */
+      /* v6.4.20-ajuste-puntitos-multimedia */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2919,7 +2919,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.19: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.20: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3065,7 +3065,7 @@
 
 
 
-      /* v6.4.19: encuadre táctil libre sin controles inferiores */
+      /* v6.4.20: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3112,9 +3112,9 @@
       }
 
 
-      /* v6.4.19: encuadre táctil tipo redes sociales */
+      /* v6.4.20: encuadre táctil tipo redes sociales */
       
-      /* v6.4.19: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.20: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3122,11 +3122,11 @@
 
 
 
-      /* v6.4.19: encuadre directo táctil fino */
+      /* v6.4.20: encuadre directo táctil fino */
 
-      /* v6.4.19: edición directa desde la publicación */
+      /* v6.4.20: edición directa desde la publicación */
 
-      /* v6.4.19: zona/cobertura libre visible */
+      /* v6.4.20: zona/cobertura libre visible */
       .service-area-row{
         display:inline-flex;
         align-items:center;
@@ -3167,7 +3167,58 @@
       }
 
 
-      /* v6.4.19: multimedia directa básica e instrucciones visibles */
+      /* v6.4.20: multimedia directa básica e instrucciones visibles */
+
+      /* v6.4.20: puntitos centrados arriba del usuario */
+      .post-body .gallery-dots,
+      .post-body-gallery-dots{
+        position:relative !important;
+        left:auto !important;
+        right:auto !important;
+        bottom:auto !important;
+        top:auto !important;
+        transform:none !important;
+        z-index:99 !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        width:max-content !important;
+        max-width:calc(100% - 24px) !important;
+        margin:0 auto 9px auto !important;
+        gap:7px !important;
+        padding:7px 11px !important;
+        border-radius:999px !important;
+        background:rgba(255,255,255,.22) !important;
+        border:1px solid rgba(255,255,255,.25) !important;
+        backdrop-filter:blur(8px) !important;
+        box-shadow:0 8px 22px rgba(0,0,0,.16);
+      }
+
+      .post-body .gallery-dot{
+        width:8px !important;
+        height:8px !important;
+        min-width:8px !important;
+        border-radius:999px !important;
+        border:0 !important;
+        background:rgba(255,255,255,.52) !important;
+        padding:0 !important;
+        transition:all .18s ease !important;
+      }
+
+      .post-body .gallery-dot.active{
+        width:24px !important;
+        background:#fff !important;
+      }
+
+      .direct-media-panel > p{
+        display:none !important;
+      }
+
+      .direct-media-head small,
+      .direct-edit-head small{
+        text-align:left !important;
+      }
+
       .direct-media-btn{
         background:#0f766e !important;
         color:#fff !important;
@@ -3483,7 +3534,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.19: encuadre directo desde la publicación */
+      /* v6.4.20: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -3575,7 +3626,7 @@
         display:none !important;
       }
 
-      /* v6.4.19: recuperación de scroll global */
+      /* v6.4.20: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -3777,7 +3828,7 @@
         }
       }
 
-      /* v6.4.19: encuadre editable de multimedia */
+      /* v6.4.20: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4010,7 +4061,7 @@
       }
 
 
-      /* v6.4.19: encuadre editable de multimedia */
+      /* v6.4.20: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4469,7 +4520,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.19: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.20: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -4613,7 +4664,7 @@
       }
 
 
-      /* v6.4.19: encuadre editable de multimedia */
+      /* v6.4.20: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4846,7 +4897,7 @@
       }
 
 
-      /* v6.4.19: encuadre editable de multimedia */
+      /* v6.4.20: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5129,21 +5180,30 @@
     return '';
   }
 
-  function mediaMarkup(post){
+  function galleryImageItems(post){
     const items = Array.isArray(post.mediaItems) ? post.mediaItems.filter(item => item && (item.mediaUrl || item.mediaRef || item.mediaData || item.mediaPreviewUrl)) : [];
-    const imageItems = items.filter(item => String(item.mediaType || post.mediaType || 'image').toLowerCase() !== 'video');
+    return items.filter(item => String(item.mediaType || post.mediaType || 'image').toLowerCase() !== 'video');
+  }
+
+  function galleryDotsMarkup(post){
+    const imageItems = galleryImageItems(post);
+    if(imageItems.length <= 1) return '';
+    const dots = imageItems.map((_, index) => `<button type="button" class="gallery-dot ${index === 0 ? 'active' : ''}" data-gallery-dot="${esc(post.id)}" data-gallery-index="${index}" aria-label="Ver foto ${index+1}"></button>`).join('');
+    return `<div class="gallery-dots post-body-gallery-dots" data-gallery-dots="${esc(post.id)}">${dots}</div>`;
+  }
+
+  function mediaMarkup(post){
+    const imageItems = galleryImageItems(post);
 
     if(imageItems.length > 1){
       const slides = imageItems.map((item, index) => {
         const src = resolveMediaItem(item);
         return src ? `<img class="framed-media" style="${mediaFrameVars(post)}" src="${esc(src)}" alt="${esc(post.title || 'Foto')} ${index+1}" loading="${index ? 'lazy' : 'eager'}">` : '';
       }).join('');
-      const dots = imageItems.map((_, index) => `<button type="button" class="gallery-dot ${index === 0 ? 'active' : ''}" data-gallery-dot="${esc(post.id)}" data-gallery-index="${index}" aria-label="Ver foto ${index+1}"></button>`).join('');
       return `<div class="gallery-stage" data-gallery-stage="${esc(post.id)}">
         <div class="media-carousel" data-gallery="${esc(post.id)}" data-gallery-total="${imageItems.length}">
           ${slides}
         </div>
-        <div class="gallery-dots" data-gallery-dots="${esc(post.id)}">${dots}</div>
       </div>`;
     }
 
@@ -5303,7 +5363,6 @@
         ${hasVideo ? `<button type="button" class="direct-media-main" data-direct-media-pick="${esc(post.id)}" data-direct-media-mode="replace">Reemplazar video</button>` : `<button type="button" class="direct-media-main" data-direct-media-pick="${esc(post.id)}" data-direct-media-mode="add-photos">Agregar fotos</button><button type="button" data-direct-media-pick="${esc(post.id)}" data-direct-media-mode="replace">Cambiar todo</button>`}
         <button type="button" data-direct-media-cancel="${esc(post.id)}">Cerrar</button>
       </div>
-      <p>Por ahora usa varias fotos o un solo video. La mezcla foto + video queda para el carrusel mixto.</p>
     </div>`;
   }
 
@@ -5554,6 +5613,7 @@
         ${directFrameActive ? `<div class="direct-frame-grid" aria-hidden="true"></div><div class="direct-frame-hint">Arrastra · Pellizca tamaño · Doble toque</div><div class="direct-frame-controls"><button type="button" data-direct-frame-save="${esc(post.id)}">${state.directFrameSaving ? 'Guardando...' : 'Guardar'}</button><button type="button" data-direct-frame-cancel="${esc(post.id)}">Cancelar</button></div>` : ''}
       </div>
       <div class="post-body ${expandedDesc ? 'expanded-description-body' : ''}">
+        ${galleryDotsMarkup(post)}
         <div class="owner-row" data-open-store="${esc(post.ownerId)}">${avatarMarkup(postAvatar(post), post.ownerName || 'Usuario local')}<span>${esc(post.ownerName || 'Usuario local')}</span></div>
         ${directEditActive ? directEditMarkup(post) : ''}
         ${directMediaActive ? directMediaMarkup(post) : ''}
@@ -6328,9 +6388,12 @@ ${esc(shortDiagnosticText(diag))}</code>
     if(!gallery) return;
     const id = gallery.dataset.gallery;
     const total = Number(gallery.dataset.galleryTotal || gallery.querySelectorAll('img').length || 1);
-    const index = Math.min(total, Math.max(1, Math.round(gallery.scrollLeft / Math.max(1, gallery.clientWidth)) + 1));
-    document.querySelectorAll(`[data-gallery-dot="${CSS.escape(id)}"]`).forEach((dot, i) => {
+    const width = Math.max(1, gallery.clientWidth);
+    const index = Math.min(total, Math.max(1, Math.round(gallery.scrollLeft / width) + 1));
+    const safe = (window.CSS && CSS.escape) ? CSS.escape(id) : String(id).replace(/["\\]/g, '\\$&');
+    document.querySelectorAll(`[data-gallery-dot="${safe}"]`).forEach((dot, i) => {
       dot.classList.toggle('active', i === index - 1);
+      dot.setAttribute('aria-current', i === index - 1 ? 'true' : 'false');
     });
   }
 
@@ -6346,10 +6409,13 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('.media-carousel').forEach(gallery => {
       if(gallery.dataset.galleryBound === '1') return;
       gallery.dataset.galleryBound = '1';
-      gallery.addEventListener('scroll', () => {
-        clearTimeout(gallery._countTimer);
-        gallery._countTimer = setTimeout(()=>updateGalleryCounter(gallery), 90);
-      }, {passive:true});
+      const refreshDots = () => {
+        if(gallery._raf) cancelAnimationFrame(gallery._raf);
+        gallery._raf = requestAnimationFrame(()=>updateGalleryCounter(gallery));
+      };
+      gallery.addEventListener('scroll', refreshDots, {passive:true});
+      gallery.addEventListener('touchend', () => setTimeout(()=>updateGalleryCounter(gallery), 120), {passive:true});
+      gallery.addEventListener('pointerup', () => setTimeout(()=>updateGalleryCounter(gallery), 120), {passive:true});
       updateGalleryCounter(gallery);
     });
   }
@@ -6513,7 +6579,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.19: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.20: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());

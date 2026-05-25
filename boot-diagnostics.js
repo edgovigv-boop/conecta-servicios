@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.19-multimedia-directa-basica';
+  const VERSION = 'v6.4.20-ajuste-puntitos-multimedia';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 
