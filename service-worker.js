@@ -1,4 +1,4 @@
-const CACHE_NAME = 'conecta-servicios-v6-4-24-carrusel-suave-encuadre';
+const CACHE_NAME = 'conecta-servicios-v6-4-25-carrusel-encuadre-limpio';
 
 const ASSETS = [
   '/',
@@ -36,7 +36,7 @@ self.addEventListener('fetch', event => {
     url.pathname.endsWith('/index.html') ||
     url.pathname.endsWith('/app.js') ||
     url.pathname.endsWith('/service-worker.js') ||
-    url.search.includes('v=6424') ||
+    url.search.includes('v=6425') ||
     url.search.includes('v=6.3.41');
 
   if (networkFirst) {

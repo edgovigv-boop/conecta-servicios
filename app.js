@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.24-carrusel-suave-encuadre
+/* Conecta Servicios v6.4.25-carrusel-encuadre-limpio
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.24-carrusel-suave-encuadre';
+  const VERSION = 'v6.4.25-carrusel-encuadre-limpio';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2028,6 +2028,70 @@
       }
 
       /* v6.3.37: corrección precisa de menú y puntitos */
+
+      /* v6.4.25: puntitos fuera del encuadre y foto única al encuadrar */
+      .direct-frame-active .post-body-gallery-dots,
+      .direct-frame-active .gallery-dots{
+        display:none !important;
+        pointer-events:none !important;
+      }
+
+      .direct-frame-single{
+        width:100% !important;
+        height:100% !important;
+        overflow:hidden !important;
+        background:#050507 !important;
+      }
+
+      .direct-frame-single img{
+        width:100% !important;
+        height:100% !important;
+        display:block !important;
+      }
+
+      .post-body .gallery-dots,
+      .post-body-gallery-dots{
+        top:46px !important;
+        right:46px !important;
+        padding:2px 5px !important;
+        gap:1px !important;
+        opacity:.92 !important;
+        pointer-events:auto !important;
+      }
+
+      .post-body .gallery-dot{
+        width:12px !important;
+        height:12px !important;
+        min-width:12px !important;
+      }
+
+      .post-body .gallery-dot span{
+        width:3px !important;
+        height:3px !important;
+      }
+
+      .post-body .gallery-dot.active span{
+        width:9px !important;
+      }
+
+      .gallery-stage{
+        touch-action:pan-y !important;
+      }
+
+      .gallery-stage.is-swiping-gallery{
+        touch-action:none !important;
+      }
+
+      @media (max-width:420px){
+        .post-body .gallery-dots,
+        .post-body-gallery-dots{
+          top:44px !important;
+          right:38px !important;
+          transform:scale(.86) !important;
+          transform-origin:right top !important;
+        }
+      }
+
       .gallery-stage{
         position:relative !important;
         width:100% !important;
@@ -2294,7 +2358,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.24: acciones icon-only y perfil simple */
+      /* v6.4.25: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2326,7 +2390,7 @@
         display:none !important;
       }
 
-      /* v6.4.24-carrusel-suave-encuadre: bloque consolidado de Home/postCard.
+      /* v6.4.25-carrusel-encuadre-limpio: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2505,7 +2569,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.24: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.25: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2524,7 +2588,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.24: descripción visible, ...leer separado del texto */
+      /* v6.4.25: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2659,7 +2723,7 @@
         min-height:48px;
       }
 
-      /* v6.4.24-carrusel-suave-encuadre */
+      /* v6.4.25-carrusel-encuadre-limpio */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2921,7 +2985,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.24: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.25: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3067,7 +3131,7 @@
 
 
 
-      /* v6.4.24: encuadre táctil libre sin controles inferiores */
+      /* v6.4.25: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3114,9 +3178,9 @@
       }
 
 
-      /* v6.4.24: encuadre táctil tipo redes sociales */
+      /* v6.4.25: encuadre táctil tipo redes sociales */
       
-      /* v6.4.24: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.25: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3124,13 +3188,13 @@
 
 
 
-      /* v6.4.24: encuadre directo táctil fino */
+      /* v6.4.25: encuadre directo táctil fino */
 
-      /* v6.4.24: edición directa desde la publicación */
+      /* v6.4.25: edición directa desde la publicación */
 
-      /* v6.4.24: zona/cobertura libre visible */
+      /* v6.4.25: zona/cobertura libre visible */
 
-      /* v6.4.24: carrusel más suave y encuadre por foto */
+      /* v6.4.25: carrusel más suave y encuadre por foto */
       .gallery-stage{
         touch-action:pan-y !important;
       }
@@ -3187,15 +3251,15 @@
       }
 
 
-      /* v6.4.24: multimedia directa básica e instrucciones visibles */
+      /* v6.4.25: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.24: puntitos centrados arriba del usuario */
+      /* v6.4.25: puntitos centrados arriba del usuario */
 
-      /* v6.4.24: carrusel táctil y edición limpia */
+      /* v6.4.25: carrusel táctil y edición limpia */
 
-      /* v6.4.24: carrusel Android, categoría completa y puntitos pequeños */
+      /* v6.4.25: carrusel Android, categoría completa y puntitos pequeños */
 
-      /* v6.4.24: zona legible, encuadre simple y carrusel por swipe */
+      /* v6.4.25: zona legible, encuadre simple y carrusel por swipe */
       .service-area-row{
         background:rgba(0,0,0,.56) !important;
         color:#fff !important;
@@ -3308,7 +3372,7 @@
       }
 
 
-      /* v6.4.24 final override dentro del CSS */
+      /* v6.4.25 final override dentro del CSS */
       .service-area-row{
         background:rgba(0,0,0,.56)!important;
         color:#fff!important;
@@ -3952,7 +4016,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.24: encuadre directo desde la publicación */
+      /* v6.4.25: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -4044,7 +4108,7 @@
         display:none !important;
       }
 
-      /* v6.4.24: recuperación de scroll global */
+      /* v6.4.25: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -4246,7 +4310,7 @@
         }
       }
 
-      /* v6.4.24: encuadre editable de multimedia */
+      /* v6.4.25: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4479,7 +4543,7 @@
       }
 
 
-      /* v6.4.24: encuadre editable de multimedia */
+      /* v6.4.25: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4938,7 +5002,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.24: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.25: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -5082,7 +5146,7 @@
       }
 
 
-      /* v6.4.24: encuadre editable de multimedia */
+      /* v6.4.25: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5315,7 +5379,7 @@
       }
 
 
-      /* v6.4.24: encuadre editable de multimedia */
+      /* v6.4.25: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5630,6 +5694,12 @@
     const imageItems = galleryImageItems(post);
 
     if(imageItems.length > 1){
+      const active = Math.min(imageItems.length - 1, activeGalleryIndex(post.id));
+      if(state.directFramePostId === post.id){
+        const item = imageItems[active];
+        const src = resolveMediaItem(item);
+        return src ? `<div class="direct-frame-single" data-direct-frame-single="${esc(post.id)}"><img class="framed-media" style="${mediaFrameForItem(post, item)}" src="${esc(src)}" alt="${esc(post.title || 'Foto')} ${active+1}" loading="eager"></div>` : '';
+      }
       const slides = imageItems.map((item, index) => {
         const src = resolveMediaItem(item);
         return src ? `<img class="framed-media" style="${mediaFrameForItem(post, item)}" src="${esc(src)}" alt="${esc(post.title || 'Foto')} ${index+1}" loading="${index ? 'lazy' : 'eager'}">` : '';
@@ -6883,7 +6953,7 @@ ${esc(shortDiagnosticText(diag))}</code>
         const dy = y - swipe.y;
         swipe.lastX = x;
         swipe.lastY = y;
-        if(!swipe.horizontal && Math.abs(dx) > 5 && Math.abs(dx) > Math.abs(dy)){
+        if(!swipe.horizontal && Math.abs(dx) > 3 && Math.abs(dx) > Math.abs(dy) * .85){
           swipe.horizontal = true;
           stage.classList.add('is-swiping-gallery');
         }
@@ -6898,7 +6968,7 @@ ${esc(shortDiagnosticText(diag))}</code>
         if(!swipe) return;
         const dx = swipe.lastX - swipe.x;
         const dy = swipe.lastY - swipe.y;
-        if(swipe.horizontal && Math.abs(dx) > 14 && Math.abs(dx) > Math.abs(dy)){
+        if(swipe.horizontal && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * .75){
           setIndex(swipe.index + (dx < 0 ? 1 : -1), true);
           ev?.preventDefault?.();
           ev?.stopPropagation?.();
@@ -7108,7 +7178,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.24: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.25: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -7625,8 +7695,11 @@ ${esc(shortDiagnosticText(diag))}</code>
     if(!resolveMedia(post)) return toast('Esta publicación no tiene multimedia para encuadrar.');
 
     const gallery = document.querySelector(`[data-gallery="${cssEscape(postId)}"]`);
-    const total = gallery ? Number(gallery.dataset.galleryTotal || gallery.querySelectorAll('img').length || 1) : 1;
-    const current = gallery ? Math.min(total - 1, Math.max(0, Number(gallery.dataset.galleryIndex || Math.round(gallery.scrollLeft / Math.max(1, gallery.clientWidth)) || 0))) : 0;
+    const total = gallery ? Number(gallery.dataset.galleryTotal || gallery.querySelectorAll('img').length || 1) : galleryImageItems(post).length || 1;
+    const fromDataset = gallery ? Number(gallery.dataset.galleryIndex) : Number.NaN;
+    const fromState = Number(state.galleryIndex[String(postId)]);
+    const fromScroll = gallery ? Math.round(gallery.scrollLeft / Math.max(1, gallery.clientWidth)) : 0;
+    const current = Math.min(total - 1, Math.max(0, Number.isFinite(fromDataset) ? fromDataset : (Number.isFinite(fromState) ? fromState : fromScroll)));
 
     state.galleryIndex[String(postId)] = current;
     state.directFrameIndex = current;
@@ -7637,7 +7710,6 @@ ${esc(shortDiagnosticText(diag))}</code>
     state.directFrameSaving = false;
     render();
     setTimeout(() => {
-      goGallery(postId, current);
       const area = document.querySelector(`[data-direct-frame-area="${cssEscape(postId)}"]`);
       area?.scrollIntoView({block:'center', behavior:'smooth'});
     }, 80);
@@ -7782,7 +7854,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
       const end = e => {
         const p = pointers.get(e.pointerId);
-        // v6.4.24: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
+        // v6.4.25: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
         // Se desactiva doble toque para no interferir con el uso normal de la publicación.
 
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
