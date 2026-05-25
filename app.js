@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.10-multimedia-encuadre-tactil
+/* Conecta Servicios v6.4.11-encuadre-tactil-libre
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.10-multimedia-encuadre-tactil';
+  const VERSION = 'v6.4.11-encuadre-tactil-libre';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -61,7 +61,7 @@
     composerMediaMime: '',
     composerMediaItems: [],
     composerDraft: {description:'', zone:'', category:'VENDO'},
-    mediaFrame: {fit:'cover', scale:1, x:50, y:50},
+    mediaFrame: {fit:'contain', scale:1, x:50, y:50},
     cloudReady: false,
     publishing: false,
     syncing: false,
@@ -388,12 +388,12 @@
   }
 
   function cleanMediaFrame(frame={}){
-    const fit = String(frame.fit || frame.mediaFit || 'cover').toLowerCase() === 'contain' ? 'contain' : 'cover';
+    const fit = String(frame.fit || frame.mediaFit || 'contain').toLowerCase() === 'cover' ? 'cover' : 'contain';
     return {
       fit,
-      scale: clampNumber(frame.scale ?? frame.mediaScale, .65, 2.4, 1),
-      x: clampNumber(frame.x ?? frame.mediaX, 0, 100, 50),
-      y: clampNumber(frame.y ?? frame.mediaY, 0, 100, 50)
+      scale: clampNumber(frame.scale ?? frame.mediaScale, .35, 3.2, 1),
+      x: clampNumber(frame.x ?? frame.mediaX, -150, 250, 50),
+      y: clampNumber(frame.y ?? frame.mediaY, -150, 250, 50)
     };
   }
 
@@ -401,20 +401,20 @@
     return cleanMediaFrame({
       fit: post.mediaFit || post.fit,
       scale: post.mediaScale || post.scale,
-      x: post.mediaX || post.x,
-      y: post.mediaY || post.y
+      x: post.mediaX ?? post.x,
+      y: post.mediaY ?? post.y
     });
   }
 
   function mediaFrameVars(postOrFrame={}){
-    const hasPostKeys = postOrFrame && (postOrFrame.mediaFit || postOrFrame.mediaScale || postOrFrame.mediaX || postOrFrame.mediaY);
+    const hasPostKeys = postOrFrame && (postOrFrame.mediaFit || postOrFrame.mediaScale || postOrFrame.mediaX !== undefined || postOrFrame.mediaY !== undefined);
     const f = cleanMediaFrame(hasPostKeys ? mediaFrameFromPost(postOrFrame) : postOrFrame);
-    return `--media-fit:${f.fit};--media-x:${f.x}%;--media-y:${f.y}%;--media-scale:${f.scale};`;
+    return `--media-fit:${f.fit};--media-x:${f.x}%;--media-y:${f.y}%;--media-tx:${f.x - 50}%;--media-ty:${f.y - 50}%;--media-scale:${f.scale};`;
   }
 
   function frameLabel(frame=state.mediaFrame){
     const f = cleanMediaFrame(frame);
-    return `${f.fit === 'contain' ? 'Completo' : 'Lleno'} · ${Math.round(f.scale * 100)}% · X ${Math.round(f.x)} / Y ${Math.round(f.y)}`;
+    return `${f.fit === 'contain' ? 'Completo' : 'Lleno'} · ${Math.round(f.scale * 100)}%`;
   }
 
   function normalizePost(post, source='local'){
@@ -2191,7 +2191,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.10: acciones icon-only y perfil simple */
+      /* v6.4.11: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2223,7 +2223,7 @@
         display:none !important;
       }
 
-      /* v6.4.10-multimedia-encuadre-tactil: bloque consolidado de Home/postCard.
+      /* v6.4.11-encuadre-tactil-libre: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2402,7 +2402,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.10: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.11: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2421,7 +2421,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.10: descripción visible, ...leer separado del texto */
+      /* v6.4.11: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2556,7 +2556,7 @@
         min-height:48px;
       }
 
-      /* v6.4.10-multimedia-encuadre-tactil */
+      /* v6.4.11-encuadre-tactil-libre */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2818,7 +2818,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.10: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.11: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -2963,7 +2963,55 @@
 
 
 
-      /* v6.4.10: encuadre táctil tipo redes sociales */
+
+      /* v6.4.11: encuadre táctil libre sin controles inferiores */
+      .media-frame-editor .frame-mode-row,
+      .media-frame-editor .frame-actions-grid{
+        display:none !important;
+      }
+
+      .media-frame-helper{
+        margin:10px 0 16px;
+        padding:12px 13px;
+        border-radius:20px;
+        background:rgba(91,46,234,.07);
+        border:1px solid rgba(91,46,234,.12);
+      }
+
+      .media-frame-helper div{
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        gap:10px;
+      }
+
+      .media-frame-helper strong{
+        color:#111827;
+        font-size:15px;
+      }
+
+      .media-frame-helper span{
+        color:#5b2eea;
+        font-size:12px;
+        font-weight:900;
+        text-align:right;
+      }
+
+      .media-frame-helper p{
+        margin:8px 0 0;
+        color:#6b7280;
+        line-height:1.35;
+        font-size:12px;
+        font-weight:700;
+      }
+
+      .framed-media,
+      .frame-preview-media{
+        will-change:transform;
+      }
+
+
+      /* v6.4.11: encuadre táctil tipo redes sociales */
       .frame-touch-editor{
         position:relative !important;
         min-height:min(72vh, 620px) !important;
@@ -3054,12 +3102,12 @@
         }
       }
 
-      /* v6.4.10: encuadre editable de multimedia */
+      /* v6.4.11: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
-        object-fit:var(--media-fit, cover) !important;
-        object-position:var(--media-x, 50%) var(--media-y, 50%) !important;
-        transform:scale(var(--media-scale, 1)) !important;
+        object-fit:var(--media-fit, contain) !important;
+        object-position:center center !important;
+        transform:translate3d(var(--media-tx, 0%), var(--media-ty, 0%), 0) scale(var(--media-scale, 1)) !important;
         transform-origin:center center !important;
         transition:object-position .18s ease, transform .18s ease;
       }
@@ -3287,12 +3335,12 @@
       }
 
 
-      /* v6.4.10: encuadre editable de multimedia */
+      /* v6.4.11: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
-        object-fit:var(--media-fit, cover) !important;
-        object-position:var(--media-x, 50%) var(--media-y, 50%) !important;
-        transform:scale(var(--media-scale, 1)) !important;
+        object-fit:var(--media-fit, contain) !important;
+        object-position:center center !important;
+        transform:translate3d(var(--media-tx, 0%), var(--media-ty, 0%), 0) scale(var(--media-scale, 1)) !important;
         transform-origin:center center !important;
         transition:object-position .18s ease, transform .18s ease;
       }
@@ -3746,7 +3794,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.10: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.11: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3890,12 +3938,12 @@
       }
 
 
-      /* v6.4.10: encuadre editable de multimedia */
+      /* v6.4.11: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
-        object-fit:var(--media-fit, cover) !important;
-        object-position:var(--media-x, 50%) var(--media-y, 50%) !important;
-        transform:scale(var(--media-scale, 1)) !important;
+        object-fit:var(--media-fit, contain) !important;
+        object-position:center center !important;
+        transform:translate3d(var(--media-tx, 0%), var(--media-ty, 0%), 0) scale(var(--media-scale, 1)) !important;
         transform-origin:center center !important;
         transition:object-position .18s ease, transform .18s ease;
       }
@@ -4123,12 +4171,12 @@
       }
 
 
-      /* v6.4.10: encuadre editable de multimedia */
+      /* v6.4.11: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
-        object-fit:var(--media-fit, cover) !important;
-        object-position:var(--media-x, 50%) var(--media-y, 50%) !important;
-        transform:scale(var(--media-scale, 1)) !important;
+        object-fit:var(--media-fit, contain) !important;
+        object-position:center center !important;
+        transform:translate3d(var(--media-tx, 0%), var(--media-ty, 0%), 0) scale(var(--media-scale, 1)) !important;
         transform-origin:center center !important;
         transition:object-position .18s ease, transform .18s ease;
       }
@@ -4689,27 +4737,9 @@ ${esc(shortDiagnosticText(diag))}</code>
       ? `<div class="preview-gallery frame-preview-gallery">${previewItems.map((item, idx) => { const src = resolveMediaItem(item); return src ? `<img class="frame-preview-media" style="${mediaFrameVars(frame)}" src="${esc(src)}" alt="Foto ${idx+1}">` : ''; }).join('')}</div><small>${previewItems.length} fotos seleccionadas</small>`
       : (media ? (isVideo ? `<video class="frame-preview-media" style="${mediaFrameVars(frame)}" src="${esc(media)}" controls playsinline preload="metadata"></video>` : `<img class="frame-preview-media" style="${mediaFrameVars(frame)}" src="${esc(media)}" alt="Vista previa">`) : '<div><strong>+ Agregar foto o video</strong><span>Desde tu dispositivo</span></div>');
 
-    const frameControls = media ? `<div class="media-frame-editor">
-      <div class="frame-editor-head">
-        <strong>Encuadre de multimedia</strong>
-        <span data-frame-label>${esc(frameLabel(frame))}</span>
-      </div>
-      <div class="frame-mode-row">
-        <button type="button" class="${frame.fit==='contain'?'active':''}" data-frame-action="fit-contain">Ver completo</button>
-        <button type="button" class="${frame.fit==='cover'?'active':''}" data-frame-action="fit-cover">Llenar pantalla</button>
-      </div>
-      <div class="frame-actions-grid">
-        <button type="button" data-frame-action="zoom-out">− Tamaño</button>
-        <button type="button" data-frame-action="up">↑ Arriba</button>
-        <button type="button" data-frame-action="zoom-in">+ Tamaño</button>
-        <button type="button" data-frame-action="left">← Izquierda</button>
-        <button type="button" data-frame-action="reset">Centrar</button>
-        <button type="button" data-frame-action="right">Derecha →</button>
-        <span></span>
-        <button type="button" data-frame-action="down">↓ Abajo</button>
-        <span></span>
-      </div>
-      <p>Arrastra directamente sobre la imagen/video para moverlo. Pellizca con dos dedos para abrir o cerrar tamaño. Usa “Ver completo” si hay texto o información en los bordes.</p>
+    const frameControls = media ? `<div class="media-frame-helper">
+      <div><strong>Encuadre táctil</strong><span data-frame-label>${esc(frameLabel(frame))}</span></div>
+      <p>Arrastra para mover toda la multimedia. Pellizca para ampliar o reducir. Doble toque cambia entre ver completo y llenar.</p>
     </div>` : '';
 
     return shell(`<section class="composer">
@@ -4720,7 +4750,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       <textarea id="description" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Ejemplo: Vendo tamales hoy&#10;Entrego en zona centro desde las 6 pm.">${esc(draft.description||'')}</textarea>
       <div class="preview-compact frame-preview-box frame-touch-editor" data-frame-touch>
         ${previewMarkup}
-        ${media ? '<div class="frame-safe-grid" aria-hidden="true"></div><div class="frame-touch-hint">Arrastra con un dedo · Pellizca con dos dedos</div>' : ''}
+        ${media ? '<div class="frame-safe-grid" aria-hidden="true"></div><div class="frame-touch-hint">Arrastra · Pellizca · Doble toque</div>' : ''}
       </div>
       ${frameControls}
       <div class="form-grid"><div><label for="zone">Zona o municipio</label><input id="zone" list="zoneList" value="${esc(draft.zone||'')}" placeholder="Ej. Tejupilco"><datalist id="zoneList">${ZONES.map(z=>`<option value="${esc(z)}"></option>`).join('')}</datalist></div><div><label for="category">Categoría</label><select id="category">${CATEGORIES.map(c=>`<option value="${esc(c)}" ${normalizeCategory(draft.category)===c?'selected':''}>${esc(c)}</option>`).join('')}</select></div></div>
@@ -4772,7 +4802,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       setTimeout(()=>scrollTo({top:0,behavior:'smooth'}),0);
     });
   }
-  function clearComposer(){ state.preview=''; state.mediaType='image'; state.editing=null; state.composerId=''; state.composerMediaRef=''; state.composerMediaName=''; state.composerMediaMime=''; state.composerMediaItems=[]; state.composerDraft={description:'',zone:'',category:'VENDO'}; state.mediaFrame={fit:'cover',scale:1,x:50,y:50}; localStorage.removeItem(K.composer); }
+  function clearComposer(){ state.preview=''; state.mediaType='image'; state.editing=null; state.composerId=''; state.composerMediaRef=''; state.composerMediaName=''; state.composerMediaMime=''; state.composerMediaItems=[]; state.composerDraft={description:'',zone:'',category:'VENDO'}; state.mediaFrame={fit:'contain',scale:1,x:50,y:50}; localStorage.removeItem(K.composer); }
   function openPicker(){ if(state.publishing) return toast('Estamos terminando de publicar. Espera un momento.'); ensureComposerId(); document.getElementById('mediaPicker')?.click(); }
 
   function resizeImage(file,maxSide=IMAGE_MAX_SIDE,quality=.82){
@@ -4854,7 +4884,7 @@ ${esc(shortDiagnosticText(diag))}</code>
         state.composerMediaMime = items[0]?.mediaMime || '';
         state.preview = items[0]?.mediaPreviewUrl || '';
         state.editing = null;
-        state.mediaFrame = {fit:'cover', scale:1, x:50, y:50};
+        state.mediaFrame = {fit:'contain', scale:1, x:50, y:50};
         saveComposerDraft();
         nav('/publicar');
         setTimeout(()=>document.getElementById('description')?.focus(),250);
@@ -4884,7 +4914,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       state.composerMediaMime = blob.type || file.type || 'application/octet-stream';
       state.preview = objectUrlFor(ref, blob);
       state.editing = null;
-      state.mediaFrame = {fit:'cover', scale:1, x:50, y:50};
+      state.mediaFrame = {fit:'contain', scale:1, x:50, y:50};
       saveComposerDraft();
       nav('/publicar');
       setTimeout(()=>document.getElementById('description')?.focus(),250);
@@ -4895,17 +4925,17 @@ ${esc(shortDiagnosticText(diag))}</code>
 
   function adjustComposerFrame(action){
     let f = cleanMediaFrame(state.mediaFrame || {});
-    const move = 8;
-    const zoom = .08;
+    const move = 14;
+    const zoom = .10;
     if(action === 'fit-contain') f.fit = 'contain';
     if(action === 'fit-cover') f.fit = 'cover';
-    if(action === 'zoom-in') f.scale = clampNumber(f.scale + zoom, .65, 2.4, 1);
-    if(action === 'zoom-out') f.scale = clampNumber(f.scale - zoom, .65, 2.4, 1);
-    if(action === 'left') f.x = clampNumber(f.x - move, 0, 100, 50);
-    if(action === 'right') f.x = clampNumber(f.x + move, 0, 100, 50);
-    if(action === 'up') f.y = clampNumber(f.y - move, 0, 100, 50);
-    if(action === 'down') f.y = clampNumber(f.y + move, 0, 100, 50);
-    if(action === 'reset') f = {fit:'cover', scale:1, x:50, y:50};
+    if(action === 'zoom-in') f.scale = clampNumber(f.scale + zoom, .35, 3.2, 1);
+    if(action === 'zoom-out') f.scale = clampNumber(f.scale - zoom, .35, 3.2, 1);
+    if(action === 'left') f.x = clampNumber(f.x - move, -150, 250, 50);
+    if(action === 'right') f.x = clampNumber(f.x + move, -150, 250, 50);
+    if(action === 'up') f.y = clampNumber(f.y - move, -150, 250, 50);
+    if(action === 'down') f.y = clampNumber(f.y + move, -150, 250, 50);
+    if(action === 'reset') f = {fit:'contain', scale:1, x:50, y:50};
     state.mediaFrame = cleanMediaFrame(f);
     saveComposerDraft();
     render();
@@ -4917,6 +4947,8 @@ ${esc(shortDiagnosticText(diag))}</code>
       el.style.setProperty('--media-fit', f.fit);
       el.style.setProperty('--media-x', `${f.x}%`);
       el.style.setProperty('--media-y', `${f.y}%`);
+      el.style.setProperty('--media-tx', `${f.x - 50}%`);
+      el.style.setProperty('--media-ty', `${f.y - 50}%`);
       el.style.setProperty('--media-scale', `${f.scale}`);
     });
     const label = document.querySelector('[data-frame-label]');
@@ -4930,6 +4962,9 @@ ${esc(shortDiagnosticText(diag))}</code>
 
     const pointers = new Map();
     let start = null;
+    let lastTapAt = 0;
+    let lastTapX = 0;
+    let lastTapY = 0;
 
     const distance = () => {
       const pts = [...pointers.values()];
@@ -4938,10 +4973,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     };
 
     const begin = () => {
-      start = {
-        frame: cleanMediaFrame(state.mediaFrame || {}),
-        dist: distance()
-      };
+      start = { frame: cleanMediaFrame(state.mediaFrame || {}), dist: distance() };
     };
 
     const updateFromPointers = () => {
@@ -4954,24 +4986,33 @@ ${esc(shortDiagnosticText(diag))}</code>
         const p = pts[0];
         const dx = p.x - p.startX;
         const dy = p.y - p.startY;
-        f.x = clampNumber(start.frame.x - (dx / Math.max(1, rect.width)) * 100, 0, 100, 50);
-        f.y = clampNumber(start.frame.y - (dy / Math.max(1, rect.height)) * 100, 0, 100, 50);
+        f.x = clampNumber(start.frame.x + (dx / Math.max(1, rect.width)) * 120, -150, 250, 50);
+        f.y = clampNumber(start.frame.y + (dy / Math.max(1, rect.height)) * 120, -150, 250, 50);
       }else if(pts.length >= 2){
         const d = distance();
         if(start.dist > 0 && d > 0){
-          f.scale = clampNumber(start.frame.scale * (d / start.dist), .65, 2.4, 1);
+          f.scale = clampNumber(start.frame.scale * (d / start.dist), .35, 3.2, 1);
         }
         const a = pts[0], b = pts[1];
         const startMidX = (a.startX + b.startX) / 2;
         const startMidY = (a.startY + b.startY) / 2;
         const midX = (a.x + b.x) / 2;
         const midY = (a.y + b.y) / 2;
-        f.x = clampNumber(start.frame.x - ((midX - startMidX) / Math.max(1, rect.width)) * 100, 0, 100, 50);
-        f.y = clampNumber(start.frame.y - ((midY - startMidY) / Math.max(1, rect.height)) * 100, 0, 100, 50);
+        f.x = clampNumber(start.frame.x + ((midX - startMidX) / Math.max(1, rect.width)) * 120, -150, 250, 50);
+        f.y = clampNumber(start.frame.y + ((midY - startMidY) / Math.max(1, rect.height)) * 120, -150, 250, 50);
       }
 
       state.mediaFrame = cleanMediaFrame(f);
       applyFramePreviewStyles();
+    };
+
+    const toggleFit = () => {
+      const f = cleanMediaFrame(state.mediaFrame || {});
+      f.fit = f.fit === 'contain' ? 'cover' : 'contain';
+      state.mediaFrame = cleanMediaFrame(f);
+      applyFramePreviewStyles();
+      saveComposerDraft();
+      toast(f.fit === 'contain' ? 'Modo completo.' : 'Modo llenar pantalla.');
     };
 
     box.addEventListener('pointerdown', e => {
@@ -4995,21 +5036,34 @@ ${esc(shortDiagnosticText(diag))}</code>
     }, {passive:false});
 
     const end = e => {
+      const p = pointers.get(e.pointerId);
+      if(p){
+        const moved = Math.hypot((e.clientX || p.x) - p.startX, (e.clientY || p.y) - p.startY);
+        const now = Date.now();
+        const nearLast = Math.hypot((e.clientX || p.x) - lastTapX, (e.clientY || p.y) - lastTapY) < 32;
+        if(moved < 12 && now - lastTapAt < 360 && nearLast){
+          toggleFit();
+          lastTapAt = 0;
+        }else if(moved < 12){
+          lastTapAt = now;
+          lastTapX = e.clientX || p.x;
+          lastTapY = e.clientY || p.y;
+        }
+      }
+
       if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
       if(pointers.size) begin();
-      else{
-        start = null;
-        saveComposerDraft();
-      }
+      else { start = null; saveComposerDraft(); }
     };
 
     box.addEventListener('pointerup', end);
     box.addEventListener('pointercancel', end);
     box.addEventListener('lostpointercapture', end);
+    box.addEventListener('dblclick', e => { e.preventDefault(); toggleFit(); });
 
     box.addEventListener('wheel', e => {
       const f = cleanMediaFrame(state.mediaFrame || {});
-      f.scale = clampNumber(f.scale + (e.deltaY < 0 ? .06 : -.06), .65, 2.4, 1);
+      f.scale = clampNumber(f.scale + (e.deltaY < 0 ? .08 : -.08), .35, 3.2, 1);
       state.mediaFrame = f;
       applyFramePreviewStyles();
       saveComposerDraft();
@@ -5373,7 +5427,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.10: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.11: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'conecta-servicios-v6-4-10-multimedia-encuadre-tactil';
+const CACHE_NAME = 'conecta-servicios-v6-4-11-encuadre-tactil-libre';
 
 const ASSETS = [
   '/',
@@ -36,7 +36,7 @@ self.addEventListener('fetch', event => {
     url.pathname.endsWith('/index.html') ||
     url.pathname.endsWith('/app.js') ||
     url.pathname.endsWith('/service-worker.js') ||
-    url.search.includes('v=6410') ||
+    url.search.includes('v=6411') ||
     url.search.includes('v=6.3.41');
 
   if (networkFirst) {

@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.10-multimedia-encuadre-tactil';
+  const VERSION = 'v6.4.11-encuadre-tactil-libre';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 
