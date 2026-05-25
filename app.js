@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.8-mensajes-layout-fijo
+/* Conecta Servicios v6.4.9-multimedia-encuadre
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.8-mensajes-layout-fijo';
+  const VERSION = 'v6.4.9-multimedia-encuadre';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -61,6 +61,7 @@
     composerMediaMime: '',
     composerMediaItems: [],
     composerDraft: {description:'', zone:'', category:'VENDO'},
+    mediaFrame: {fit:'cover', scale:1, x:50, y:50},
     cloudReady: false,
     publishing: false,
     syncing: false,
@@ -380,6 +381,42 @@
   function isVideoPost(post){ return norm(post?.mediaType) === 'video' || isVideoUrl(post?.mediaUrl || '') || norm(post?.mediaMime).startsWith('video/'); }
   function hasRemoteMedia(post){ return !!String(post?.mediaUrl || '').trim(); }
 
+  function clampNumber(value, min, max, fallback){
+    const n = Number(value);
+    if(!Number.isFinite(n)) return fallback;
+    return Math.min(max, Math.max(min, n));
+  }
+
+  function cleanMediaFrame(frame={}){
+    const fit = String(frame.fit || frame.mediaFit || 'cover').toLowerCase() === 'contain' ? 'contain' : 'cover';
+    return {
+      fit,
+      scale: clampNumber(frame.scale ?? frame.mediaScale, .65, 2.4, 1),
+      x: clampNumber(frame.x ?? frame.mediaX, 0, 100, 50),
+      y: clampNumber(frame.y ?? frame.mediaY, 0, 100, 50)
+    };
+  }
+
+  function mediaFrameFromPost(post={}){
+    return cleanMediaFrame({
+      fit: post.mediaFit || post.fit,
+      scale: post.mediaScale || post.scale,
+      x: post.mediaX || post.x,
+      y: post.mediaY || post.y
+    });
+  }
+
+  function mediaFrameVars(postOrFrame={}){
+    const hasPostKeys = postOrFrame && (postOrFrame.mediaFit || postOrFrame.mediaScale || postOrFrame.mediaX || postOrFrame.mediaY);
+    const f = cleanMediaFrame(hasPostKeys ? mediaFrameFromPost(postOrFrame) : postOrFrame);
+    return `--media-fit:${f.fit};--media-x:${f.x}%;--media-y:${f.y}%;--media-scale:${f.scale};`;
+  }
+
+  function frameLabel(frame=state.mediaFrame){
+    const f = cleanMediaFrame(frame);
+    return `${f.fit === 'contain' ? 'Completo' : 'Lleno'} · ${Math.round(f.scale * 100)}% · X ${Math.round(f.x)} / Y ${Math.round(f.y)}`;
+  }
+
   function normalizePost(post, source='local'){
     if(!post || typeof post !== 'object') return post;
     const mediaUrl = String(post.mediaUrl || '').trim();
@@ -404,6 +441,12 @@
 
     if(isVideoPost(next) && !next.mediaType) next.mediaType = 'video';
     if(!next.mediaType) next.mediaType = mediaUrl ? 'image' : 'image';
+
+    const frame = mediaFrameFromPost(next);
+    next.mediaFit = frame.fit;
+    next.mediaScale = frame.scale;
+    next.mediaX = frame.x;
+    next.mediaY = frame.y;
 
     return next;
   }
@@ -2148,7 +2191,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.8: acciones icon-only y perfil simple */
+      /* v6.4.9: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2180,7 +2223,7 @@
         display:none !important;
       }
 
-      /* v6.4.8-mensajes-layout-fijo: bloque consolidado de Home/postCard.
+      /* v6.4.9-multimedia-encuadre: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2359,7 +2402,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.8: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.9: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2378,7 +2421,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.8: descripción visible, ...leer separado del texto */
+      /* v6.4.9: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2513,7 +2556,7 @@
         min-height:48px;
       }
 
-      /* v6.4.8-mensajes-layout-fijo */
+      /* v6.4.9-multimedia-encuadre */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2775,7 +2818,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.8: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.9: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -2918,6 +2961,110 @@
         word-break:break-word !important;
       }
 
+
+      /* v6.4.9: encuadre editable de multimedia */
+      .framed-media,
+      .frame-preview-media{
+        object-fit:var(--media-fit, cover) !important;
+        object-position:var(--media-x, 50%) var(--media-y, 50%) !important;
+        transform:scale(var(--media-scale, 1)) !important;
+        transform-origin:center center !important;
+        transition:object-position .18s ease, transform .18s ease;
+      }
+
+      .frame-preview-box{
+        overflow:hidden !important;
+        background:#050507 !important;
+      }
+
+      .frame-preview-box img,
+      .frame-preview-box video{
+        width:100% !important;
+        height:280px !important;
+        max-height:280px !important;
+        display:block !important;
+        background:#050507 !important;
+      }
+
+      .frame-preview-gallery{
+        height:280px !important;
+        overflow-x:auto !important;
+        overflow-y:hidden !important;
+        display:flex !important;
+        scroll-snap-type:x mandatory;
+        background:#050507;
+      }
+
+      .frame-preview-gallery img{
+        min-width:100% !important;
+        scroll-snap-align:center;
+      }
+
+      .media-frame-editor{
+        margin:12px 0 16px;
+        padding:13px;
+        border-radius:22px;
+        background:linear-gradient(135deg,rgba(91,46,234,.08),rgba(20,184,166,.08));
+        border:1px solid rgba(91,46,234,.13);
+      }
+
+      .frame-editor-head{
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-start;
+        gap:10px;
+        margin-bottom:10px;
+      }
+
+      .frame-editor-head strong{
+        color:#111827;
+        font-size:15px;
+      }
+
+      .frame-editor-head span{
+        color:#6b7280;
+        font-size:12px;
+        font-weight:900;
+        text-align:right;
+      }
+
+      .frame-mode-row{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:8px;
+        margin-bottom:10px;
+      }
+
+      .frame-mode-row button,
+      .frame-actions-grid button{
+        border:1px solid rgba(91,46,234,.18);
+        background:#fff;
+        color:#111827;
+        border-radius:16px;
+        padding:11px 10px;
+        font-weight:900;
+        min-height:42px;
+      }
+
+      .frame-mode-row button.active{
+        background:#5b2eea;
+        color:#fff;
+        border-color:#5b2eea;
+      }
+
+      .frame-actions-grid{
+        display:grid;
+        grid-template-columns:1fr 1fr 1fr;
+        gap:8px;
+      }
+
+      .media-frame-editor p{
+        margin:10px 0 0;
+        color:#6b7280;
+        font-size:12px;
+        line-height:1.3;
+      }
+
       @media (max-width:420px){
         .messages-panel,
         .chat-panel{
@@ -3045,6 +3192,110 @@
         background:#fff;
         border:1px solid rgba(91,46,234,.16);
         padding:9px 12px;
+      }
+
+
+      /* v6.4.9: encuadre editable de multimedia */
+      .framed-media,
+      .frame-preview-media{
+        object-fit:var(--media-fit, cover) !important;
+        object-position:var(--media-x, 50%) var(--media-y, 50%) !important;
+        transform:scale(var(--media-scale, 1)) !important;
+        transform-origin:center center !important;
+        transition:object-position .18s ease, transform .18s ease;
+      }
+
+      .frame-preview-box{
+        overflow:hidden !important;
+        background:#050507 !important;
+      }
+
+      .frame-preview-box img,
+      .frame-preview-box video{
+        width:100% !important;
+        height:280px !important;
+        max-height:280px !important;
+        display:block !important;
+        background:#050507 !important;
+      }
+
+      .frame-preview-gallery{
+        height:280px !important;
+        overflow-x:auto !important;
+        overflow-y:hidden !important;
+        display:flex !important;
+        scroll-snap-type:x mandatory;
+        background:#050507;
+      }
+
+      .frame-preview-gallery img{
+        min-width:100% !important;
+        scroll-snap-align:center;
+      }
+
+      .media-frame-editor{
+        margin:12px 0 16px;
+        padding:13px;
+        border-radius:22px;
+        background:linear-gradient(135deg,rgba(91,46,234,.08),rgba(20,184,166,.08));
+        border:1px solid rgba(91,46,234,.13);
+      }
+
+      .frame-editor-head{
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-start;
+        gap:10px;
+        margin-bottom:10px;
+      }
+
+      .frame-editor-head strong{
+        color:#111827;
+        font-size:15px;
+      }
+
+      .frame-editor-head span{
+        color:#6b7280;
+        font-size:12px;
+        font-weight:900;
+        text-align:right;
+      }
+
+      .frame-mode-row{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:8px;
+        margin-bottom:10px;
+      }
+
+      .frame-mode-row button,
+      .frame-actions-grid button{
+        border:1px solid rgba(91,46,234,.18);
+        background:#fff;
+        color:#111827;
+        border-radius:16px;
+        padding:11px 10px;
+        font-weight:900;
+        min-height:42px;
+      }
+
+      .frame-mode-row button.active{
+        background:#5b2eea;
+        color:#fff;
+        border-color:#5b2eea;
+      }
+
+      .frame-actions-grid{
+        display:grid;
+        grid-template-columns:1fr 1fr 1fr;
+        gap:8px;
+      }
+
+      .media-frame-editor p{
+        margin:10px 0 0;
+        color:#6b7280;
+        font-size:12px;
+        line-height:1.3;
       }
 
       @media (max-width:420px){
@@ -3403,7 +3654,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.8: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.9: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3546,6 +3797,110 @@
         word-break:break-word !important;
       }
 
+
+      /* v6.4.9: encuadre editable de multimedia */
+      .framed-media,
+      .frame-preview-media{
+        object-fit:var(--media-fit, cover) !important;
+        object-position:var(--media-x, 50%) var(--media-y, 50%) !important;
+        transform:scale(var(--media-scale, 1)) !important;
+        transform-origin:center center !important;
+        transition:object-position .18s ease, transform .18s ease;
+      }
+
+      .frame-preview-box{
+        overflow:hidden !important;
+        background:#050507 !important;
+      }
+
+      .frame-preview-box img,
+      .frame-preview-box video{
+        width:100% !important;
+        height:280px !important;
+        max-height:280px !important;
+        display:block !important;
+        background:#050507 !important;
+      }
+
+      .frame-preview-gallery{
+        height:280px !important;
+        overflow-x:auto !important;
+        overflow-y:hidden !important;
+        display:flex !important;
+        scroll-snap-type:x mandatory;
+        background:#050507;
+      }
+
+      .frame-preview-gallery img{
+        min-width:100% !important;
+        scroll-snap-align:center;
+      }
+
+      .media-frame-editor{
+        margin:12px 0 16px;
+        padding:13px;
+        border-radius:22px;
+        background:linear-gradient(135deg,rgba(91,46,234,.08),rgba(20,184,166,.08));
+        border:1px solid rgba(91,46,234,.13);
+      }
+
+      .frame-editor-head{
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-start;
+        gap:10px;
+        margin-bottom:10px;
+      }
+
+      .frame-editor-head strong{
+        color:#111827;
+        font-size:15px;
+      }
+
+      .frame-editor-head span{
+        color:#6b7280;
+        font-size:12px;
+        font-weight:900;
+        text-align:right;
+      }
+
+      .frame-mode-row{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:8px;
+        margin-bottom:10px;
+      }
+
+      .frame-mode-row button,
+      .frame-actions-grid button{
+        border:1px solid rgba(91,46,234,.18);
+        background:#fff;
+        color:#111827;
+        border-radius:16px;
+        padding:11px 10px;
+        font-weight:900;
+        min-height:42px;
+      }
+
+      .frame-mode-row button.active{
+        background:#5b2eea;
+        color:#fff;
+        border-color:#5b2eea;
+      }
+
+      .frame-actions-grid{
+        display:grid;
+        grid-template-columns:1fr 1fr 1fr;
+        gap:8px;
+      }
+
+      .media-frame-editor p{
+        margin:10px 0 0;
+        color:#6b7280;
+        font-size:12px;
+        line-height:1.3;
+      }
+
       @media (max-width:420px){
         .messages-panel,
         .chat-panel{
@@ -3673,6 +4028,110 @@
         background:#fff;
         border:1px solid rgba(91,46,234,.16);
         padding:9px 12px;
+      }
+
+
+      /* v6.4.9: encuadre editable de multimedia */
+      .framed-media,
+      .frame-preview-media{
+        object-fit:var(--media-fit, cover) !important;
+        object-position:var(--media-x, 50%) var(--media-y, 50%) !important;
+        transform:scale(var(--media-scale, 1)) !important;
+        transform-origin:center center !important;
+        transition:object-position .18s ease, transform .18s ease;
+      }
+
+      .frame-preview-box{
+        overflow:hidden !important;
+        background:#050507 !important;
+      }
+
+      .frame-preview-box img,
+      .frame-preview-box video{
+        width:100% !important;
+        height:280px !important;
+        max-height:280px !important;
+        display:block !important;
+        background:#050507 !important;
+      }
+
+      .frame-preview-gallery{
+        height:280px !important;
+        overflow-x:auto !important;
+        overflow-y:hidden !important;
+        display:flex !important;
+        scroll-snap-type:x mandatory;
+        background:#050507;
+      }
+
+      .frame-preview-gallery img{
+        min-width:100% !important;
+        scroll-snap-align:center;
+      }
+
+      .media-frame-editor{
+        margin:12px 0 16px;
+        padding:13px;
+        border-radius:22px;
+        background:linear-gradient(135deg,rgba(91,46,234,.08),rgba(20,184,166,.08));
+        border:1px solid rgba(91,46,234,.13);
+      }
+
+      .frame-editor-head{
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-start;
+        gap:10px;
+        margin-bottom:10px;
+      }
+
+      .frame-editor-head strong{
+        color:#111827;
+        font-size:15px;
+      }
+
+      .frame-editor-head span{
+        color:#6b7280;
+        font-size:12px;
+        font-weight:900;
+        text-align:right;
+      }
+
+      .frame-mode-row{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:8px;
+        margin-bottom:10px;
+      }
+
+      .frame-mode-row button,
+      .frame-actions-grid button{
+        border:1px solid rgba(91,46,234,.18);
+        background:#fff;
+        color:#111827;
+        border-radius:16px;
+        padding:11px 10px;
+        font-weight:900;
+        min-height:42px;
+      }
+
+      .frame-mode-row button.active{
+        background:#5b2eea;
+        color:#fff;
+        border-color:#5b2eea;
+      }
+
+      .frame-actions-grid{
+        display:grid;
+        grid-template-columns:1fr 1fr 1fr;
+        gap:8px;
+      }
+
+      .media-frame-editor p{
+        margin:10px 0 0;
+        color:#6b7280;
+        font-size:12px;
+        line-height:1.3;
       }
 
       @media (max-width:420px){
@@ -3851,7 +4310,7 @@
     if(imageItems.length > 1){
       const slides = imageItems.map((item, index) => {
         const src = resolveMediaItem(item);
-        return src ? `<img src="${esc(src)}" alt="${esc(post.title || 'Foto')} ${index+1}" loading="${index ? 'lazy' : 'eager'}">` : '';
+        return src ? `<img class="framed-media" style="${mediaFrameVars(post)}" src="${esc(src)}" alt="${esc(post.title || 'Foto')} ${index+1}" loading="${index ? 'lazy' : 'eager'}">` : '';
       }).join('');
       const dots = imageItems.map((_, index) => `<button type="button" class="gallery-dot ${index === 0 ? 'active' : ''}" data-gallery-dot="${esc(post.id)}" data-gallery-index="${index}" aria-label="Ver foto ${index+1}"></button>`).join('');
       return `<div class="gallery-stage" data-gallery-stage="${esc(post.id)}">
@@ -3866,7 +4325,7 @@
     if(isVideoPost(post)){
       if(post.mediaUrl){
         return `<div class="video-inline-wrap clean-video" data-video-wrap="${esc(post.id)}">
-          <video class="feed-video-player" src="${esc(post.mediaUrl)}" autoplay muted loop playsinline webkit-playsinline preload="auto" data-open-video="${esc(post.id)}" data-video-id="${esc(post.id)}"></video>
+          <video class="feed-video-player framed-media" style="${mediaFrameVars(post)}" src="${esc(post.mediaUrl)}" autoplay muted loop playsinline webkit-playsinline preload="auto" data-open-video="${esc(post.id)}" data-video-id="${esc(post.id)}"></video>
           <button class="sound-toggle" type="button" data-toggle-video-sound="${esc(post.id)}" aria-label="Activar sonido">🔇</button>
         </div>`;
       }
@@ -3880,7 +4339,7 @@
       </div>`;
     }
 
-    if(media) return `<img src="${esc(media)}" alt="${esc(post.title || 'Publicación')}">`;
+    if(media) return `<img class="framed-media" style="${mediaFrameVars(post)}" src="${esc(media)}" alt="${esc(post.title || 'Publicación')}">`;
     return '<div class="no-media">Conecta Servicios</div>';
   }
 
@@ -4104,7 +4563,8 @@ ${esc(shortDiagnosticText(diag))}</code>
       mediaName: state.composerMediaName,
       mediaMime: state.composerMediaMime,
       mediaType: state.mediaType,
-      mediaItems: state.composerMediaItems || []
+      mediaItems: state.composerMediaItems || [],
+      mediaFrame: cleanMediaFrame(state.mediaFrame || {})
     });
   }
 
@@ -4118,6 +4578,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     state.composerMediaMime = saved.mediaMime || '';
     state.mediaType = saved.mediaType || state.mediaType || 'image';
     state.composerMediaItems = Array.isArray(saved.mediaItems) ? saved.mediaItems : [];
+    state.mediaFrame = cleanMediaFrame(saved.mediaFrame || state.mediaFrame || {});
   }
 
   function composerPage(){
@@ -4129,18 +4590,47 @@ ${esc(shortDiagnosticText(diag))}</code>
     const previewItems = state.composerMediaItems?.length ? state.composerMediaItems : (post?.mediaItems || []);
     const media = state.preview || post?.mediaUrl || resolveMedia(post || {mediaRef:state.composerMediaRef});
     const isVideo = (state.mediaType || post?.mediaType) === 'video';
+    const frame = cleanMediaFrame(state.mediaFrame || mediaFrameFromPost(post || {}));
+    state.mediaFrame = frame;
+
     const previewMarkup = previewItems?.length > 1
-      ? `<div class="preview-gallery">${previewItems.map((item, idx) => { const src = resolveMediaItem(item); return src ? `<img src="${esc(src)}" alt="Foto ${idx+1}">` : ''; }).join('')}</div><small>${previewItems.length} fotos seleccionadas</small>`
-      : (media ? (isVideo ? `<video src="${esc(media)}" controls playsinline preload="metadata"></video>` : `<img src="${esc(media)}" alt="Vista previa">`) : '<div><strong>+ Agregar foto o video</strong><span>Desde tu dispositivo</span></div>');
+      ? `<div class="preview-gallery frame-preview-gallery">${previewItems.map((item, idx) => { const src = resolveMediaItem(item); return src ? `<img class="frame-preview-media" style="${mediaFrameVars(frame)}" src="${esc(src)}" alt="Foto ${idx+1}">` : ''; }).join('')}</div><small>${previewItems.length} fotos seleccionadas</small>`
+      : (media ? (isVideo ? `<video class="frame-preview-media" style="${mediaFrameVars(frame)}" src="${esc(media)}" controls playsinline preload="metadata"></video>` : `<img class="frame-preview-media" style="${mediaFrameVars(frame)}" src="${esc(media)}" alt="Vista previa">`) : '<div><strong>+ Agregar foto o video</strong><span>Desde tu dispositivo</span></div>');
+
+    const frameControls = media ? `<div class="media-frame-editor">
+      <div class="frame-editor-head">
+        <strong>Encuadre de multimedia</strong>
+        <span>${esc(frameLabel(frame))}</span>
+      </div>
+      <div class="frame-mode-row">
+        <button type="button" class="${frame.fit==='contain'?'active':''}" data-frame-action="fit-contain">Ver completo</button>
+        <button type="button" class="${frame.fit==='cover'?'active':''}" data-frame-action="fit-cover">Llenar pantalla</button>
+      </div>
+      <div class="frame-actions-grid">
+        <button type="button" data-frame-action="zoom-out">− Tamaño</button>
+        <button type="button" data-frame-action="up">↑ Arriba</button>
+        <button type="button" data-frame-action="zoom-in">+ Tamaño</button>
+        <button type="button" data-frame-action="left">← Izquierda</button>
+        <button type="button" data-frame-action="reset">Centrar</button>
+        <button type="button" data-frame-action="right">Derecha →</button>
+        <span></span>
+        <button type="button" data-frame-action="down">↓ Abajo</button>
+        <span></span>
+      </div>
+      <p>Usa “Ver completo” cuando el video tenga texto, precios o información importante en los bordes.</p>
+    </div>` : '';
+
     return shell(`<section class="composer">
       <button class="back-btn" data-nav="/">← Volver</button>
       <h1>${state.editing?'Editar publicación':'Nueva publicación'}</h1>
       <p>Escribe aquí. Puedes elegir una foto, varias fotos o un video corto.</p>
       <label for="description">Descripción</label>
       <textarea id="description" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Ejemplo: Vendo tamales hoy&#10;Entrego en zona centro desde las 6 pm.">${esc(draft.description||'')}</textarea>
-      <div class="preview-compact" data-pick>${previewMarkup}</div>
+      <div class="preview-compact frame-preview-box" data-pick>${previewMarkup}</div>
+      ${frameControls}
       <div class="form-grid"><div><label for="zone">Zona o municipio</label><input id="zone" list="zoneList" value="${esc(draft.zone||'')}" placeholder="Ej. Tejupilco"><datalist id="zoneList">${ZONES.map(z=>`<option value="${esc(z)}"></option>`).join('')}</datalist></div><div><label for="category">Categoría</label><select id="category">${CATEGORIES.map(c=>`<option value="${esc(c)}" ${normalizeCategory(draft.category)===c?'selected':''}>${esc(c)}</option>`).join('')}</select></div></div>
       <button class="big-button ${state.publishing?'publishing':''}" data-publish ${state.publishing?'disabled':''}>${state.publishing?'PUBLICANDO...':'PUBLICAR'}</button>
+      <div class="local-note">Tip: si el video tiene texto, usa “Ver completo” antes de guardar.</div>
     </section>`);
   }
 
@@ -4186,7 +4676,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       setTimeout(()=>scrollTo({top:0,behavior:'smooth'}),0);
     });
   }
-  function clearComposer(){ state.preview=''; state.mediaType='image'; state.editing=null; state.composerId=''; state.composerMediaRef=''; state.composerMediaName=''; state.composerMediaMime=''; state.composerMediaItems=[]; state.composerDraft={description:'',zone:'',category:'VENDO'}; localStorage.removeItem(K.composer); }
+  function clearComposer(){ state.preview=''; state.mediaType='image'; state.editing=null; state.composerId=''; state.composerMediaRef=''; state.composerMediaName=''; state.composerMediaMime=''; state.composerMediaItems=[]; state.composerDraft={description:'',zone:'',category:'VENDO'}; state.mediaFrame={fit:'cover',scale:1,x:50,y:50}; localStorage.removeItem(K.composer); }
   function openPicker(){ if(state.publishing) return toast('Estamos terminando de publicar. Espera un momento.'); ensureComposerId(); document.getElementById('mediaPicker')?.click(); }
 
   function resizeImage(file,maxSide=IMAGE_MAX_SIDE,quality=.82){
@@ -4268,6 +4758,7 @@ ${esc(shortDiagnosticText(diag))}</code>
         state.composerMediaMime = items[0]?.mediaMime || '';
         state.preview = items[0]?.mediaPreviewUrl || '';
         state.editing = null;
+        state.mediaFrame = {fit:'cover', scale:1, x:50, y:50};
         saveComposerDraft();
         nav('/publicar');
         setTimeout(()=>document.getElementById('description')?.focus(),250);
@@ -4297,12 +4788,31 @@ ${esc(shortDiagnosticText(diag))}</code>
       state.composerMediaMime = blob.type || file.type || 'application/octet-stream';
       state.preview = objectUrlFor(ref, blob);
       state.editing = null;
+      state.mediaFrame = {fit:'cover', scale:1, x:50, y:50};
       saveComposerDraft();
       nav('/publicar');
       setTimeout(()=>document.getElementById('description')?.focus(),250);
     }catch{
       toast('No se pudo abrir el archivo. Prueba con otro.');
     }
+  }
+
+  function adjustComposerFrame(action){
+    let f = cleanMediaFrame(state.mediaFrame || {});
+    const move = 8;
+    const zoom = .08;
+    if(action === 'fit-contain') f.fit = 'contain';
+    if(action === 'fit-cover') f.fit = 'cover';
+    if(action === 'zoom-in') f.scale = clampNumber(f.scale + zoom, .65, 2.4, 1);
+    if(action === 'zoom-out') f.scale = clampNumber(f.scale - zoom, .65, 2.4, 1);
+    if(action === 'left') f.x = clampNumber(f.x - move, 0, 100, 50);
+    if(action === 'right') f.x = clampNumber(f.x + move, 0, 100, 50);
+    if(action === 'up') f.y = clampNumber(f.y - move, 0, 100, 50);
+    if(action === 'down') f.y = clampNumber(f.y + move, 0, 100, 50);
+    if(action === 'reset') f = {fit:'cover', scale:1, x:50, y:50};
+    state.mediaFrame = cleanMediaFrame(f);
+    saveComposerDraft();
+    render();
   }
 
   function collectForm(){
@@ -4345,6 +4855,10 @@ ${esc(shortDiagnosticText(diag))}</code>
       mediaMime: state.composerMediaMime || old?.mediaMime || '',
       mediaName: state.composerMediaName || old?.mediaName || '',
       mediaStatus: (state.composerMediaRef || state.composerMediaItems?.some(item => item.mediaRef && !item.mediaUrl)) ? 'pendiente' : '',
+      mediaFit: cleanMediaFrame(state.mediaFrame || old || {}).fit,
+      mediaScale: cleanMediaFrame(state.mediaFrame || old || {}).scale,
+      mediaX: cleanMediaFrame(state.mediaFrame || old || {}).x,
+      mediaY: cleanMediaFrame(state.mediaFrame || old || {}).y,
       status:'activa',
       reactions: old?.reactions || 0,
       createdAt: old?.createdAt || now,
@@ -4439,6 +4953,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     state.composerMediaName = post.mediaName || '';
     state.composerMediaMime = post.mediaMime || '';
     state.composerDraft = {description:post.description||'', zone:post.zone||'', category:normalizeCategory(post.category)};
+    state.mediaFrame = mediaFrameFromPost(post);
     saveComposerDraft();
     nav('/publicar');
   }
@@ -4656,7 +5171,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.8: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.9: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -5131,6 +5646,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{state.filter=b.dataset.filter;state.topTab='';state.query='';nav('/', {replace:true});});
     document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=openPicker);
     document.querySelectorAll('[data-publish]').forEach(b=>b.onclick=publish);
+    document.querySelectorAll('[data-frame-action]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();adjustComposerFrame(b.dataset.frameAction);});
     document.querySelectorAll('[data-save-profile]').forEach(b=>b.onclick=saveProfile);
     document.querySelectorAll('[data-pick-profile-photo]').forEach(b=>b.onclick=openProfilePhotoPicker);
     const profilePhotoInput=document.getElementById('profilePhotoInput');

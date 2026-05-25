@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.8-mensajes-layout-fijo';
+  const VERSION = 'v6.4.9-multimedia-encuadre';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 
