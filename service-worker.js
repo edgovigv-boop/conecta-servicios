@@ -1,4 +1,4 @@
-const CACHE_NAME = 'conecta-servicios-v6.4.29-recupera-identidad-perfil-mensajes';
+const CACHE_NAME = 'conecta-servicios-v6-4-30-restaura-app-visible';
 
 const ASSETS = [
   '/',
@@ -36,7 +36,7 @@ self.addEventListener('fetch', event => {
     url.pathname.endsWith('/index.html') ||
     url.pathname.endsWith('/app.js') ||
     url.pathname.endsWith('/service-worker.js') ||
-    url.search.includes('v=6429') ||
+    url.search.includes('v=6430') ||
     url.search.includes('v=6.3.41');
 
   if (networkFirst) {

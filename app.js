@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.29-recupera-identidad-perfil-mensajes
+/* Conecta Servicios v6.4.30-restaura-app-visible
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.29-recupera-identidad-perfil-mensajes';
+  const VERSION = 'v6.4.30-restaura-app-visible';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -21,8 +21,6 @@
   const K = {
     posts: 'cs_v634_posts',
     user: 'cs_v634_user',
-    userBackup: 'conecta_user_backup_v1',
-    userBackup2: 'cs_user_backup_v1',
     follows: 'cs_v634_follows',
     profile: 'cs_v634_profile',
     profileBackup: 'conecta_profile_backup_v1',
@@ -114,64 +112,7 @@
   };
   const norm = v => String(v || '').trim().toLowerCase();
 
-  function isLikelyUserId(value=''){
-    return /^u-\d+-[a-z0-9]+/i.test(String(value || '').trim());
-  }
-
-  function saveUserIdEverywhere(id){
-    if(!isLikelyUserId(id)) return '';
-    localStorage.setItem(K.user, id);
-    try { localStorage.setItem(K.userBackup, id); } catch {}
-    try { localStorage.setItem(K.userBackup2, id); } catch {}
-    try { localStorage.setItem('conecta_user_id_backup', id); } catch {}
-    return id;
-  }
-
-  function recoverUserIdFromPosts(){
-    try{
-      const posts = get(K.posts, []);
-      const score = new Map();
-      posts.forEach(p => {
-        if(!p || !isLikelyUserId(p.ownerId)) return;
-        let points = 1;
-        if(!isDefaultProfileName?.(p.ownerName || '')) points += 8;
-        if(String(p.ownerAvatar || '').trim()) points += 8;
-        if(String(p.cloudStatus || '').toLowerCase() === 'publica') points += 1;
-        score.set(p.ownerId, (score.get(p.ownerId) || 0) + points);
-      });
-      const best = [...score.entries()].sort((a,b)=>b[1]-a[1])[0];
-      return best?.[0] || '';
-    }catch{
-      return '';
-    }
-  }
-
-  function userId(){
-    const current = localStorage.getItem(K.user);
-    const backups = [
-      current,
-      localStorage.getItem(K.userBackup),
-      localStorage.getItem(K.userBackup2),
-      localStorage.getItem('conecta_user_id_backup'),
-      recoverUserIdFromPosts()
-    ].filter(isLikelyUserId);
-
-    let id = backups[0];
-    if(!id){
-      id = uid('u');
-    }
-
-    // Si el usuario actual parece nuevo/vacío pero hay un dueño previo con perfil real,
-    // recupera ese dueño para que vuelvan Perfil, Mensajes y publicaciones propias.
-    const recovered = recoverUserIdFromPosts();
-    const localPosts = get(K.posts, []);
-    const currentHasPersonalPosts = localPosts.some(p => p && p.ownerId === current && (!isDefaultProfileName?.(p.ownerName || '') || String(p.ownerAvatar || '').trim()));
-    if(recovered && current && recovered !== current && !currentHasPersonalPosts){
-      id = recovered;
-    }
-
-    return saveUserIdEverywhere(id);
-  }
+  function userId(){ let id=localStorage.getItem(K.user); if(!id){ id=uid('u'); localStorage.setItem(K.user,id); } return id; }
 
   function isDefaultProfileName(name=''){
     const n = norm(name);
@@ -214,23 +155,10 @@
   function profileFromOwnPosts(){
     try{
       const id = userId();
-      const allPosts = (Array.isArray(state.posts) && state.posts.length ? state.posts : get(K.posts, []));
-      let candidates = allPosts
+      const candidates = (Array.isArray(state.posts) && state.posts.length ? state.posts : get(K.posts, []))
         .filter(p => p && p.ownerId === id)
         .filter(p => !isDefaultProfileName(p.ownerName) || String(p.ownerAvatar || '').trim())
         .sort((a,b)=>new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
-
-      if(!candidates.length){
-        const recoveredId = recoverUserIdFromPosts();
-        if(recoveredId && recoveredId !== id){
-          saveUserIdEverywhere(recoveredId);
-          candidates = allPosts
-            .filter(p => p && p.ownerId === recoveredId)
-            .filter(p => !isDefaultProfileName(p.ownerName) || String(p.ownerAvatar || '').trim())
-            .sort((a,b)=>new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
-        }
-      }
-
       const hit = candidates[0];
       if(!hit) return null;
       return normalizeProfile({name: hit.ownerName || 'Usuario local', avatarData: hit.ownerAvatar || ''});
@@ -481,9 +409,6 @@
     toast('Limpiando caché local...');
     try{
       const keepUser = localStorage.getItem(K.user);
-      const keepUserBackup = localStorage.getItem(K.userBackup);
-      const keepUserBackup2 = localStorage.getItem(K.userBackup2);
-      const keepUserBackup3 = localStorage.getItem('conecta_user_id_backup');
       const keepProfile = localStorage.getItem(K.profile);
       const keepProfileBackup = localStorage.getItem(K.profileBackup);
       const keepProfileBackup2 = localStorage.getItem(K.profileBackup2);
@@ -507,9 +432,6 @@
       });
 
       if(keepUser) localStorage.setItem(K.user, keepUser);
-      if(keepUserBackup) localStorage.setItem(K.userBackup, keepUserBackup);
-      if(keepUserBackup2) localStorage.setItem(K.userBackup2, keepUserBackup2);
-      if(keepUserBackup3) localStorage.setItem('conecta_user_id_backup', keepUserBackup3);
       if(keepProfile) localStorage.setItem(K.profile, keepProfile);
       if(keepProfileBackup) localStorage.setItem(K.profileBackup, keepProfileBackup);
       if(keepProfileBackup2) localStorage.setItem(K.profileBackup2, keepProfileBackup2);
@@ -531,7 +453,6 @@
       version: VERSION,
       bootVersion: window.CONNECTA_BOOT_VERSION || '',
       userId: userId(),
-      recoveredUserIdCandidate: recoverUserIdFromPosts(),
       profileName: profile().name || '',
       profileHasPhoto: !!profile().avatarData,
       profileBackup: {hasBackup: !!profileFromBackups(), hasOwnPostRecovery: !!profileFromOwnPosts()}, 
@@ -2057,35 +1978,6 @@
         height:46px !important;
         right:14px !important;
       }
-
-      /* v6.4.29: rescate visible de Perfil y Mensajes */
-      .rescue-shortcuts{
-        position:fixed;
-        top:calc(env(safe-area-inset-top) + 86px);
-        right:10px;
-        z-index:9999;
-        display:flex;
-        gap:6px;
-        pointer-events:auto;
-      }
-      .rescue-shortcuts button{
-        border:1px solid rgba(255,255,255,.22);
-        border-radius:999px;
-        padding:8px 10px;
-        background:rgba(0,0,0,.50);
-        color:#fff;
-        font-weight:900;
-        font-size:12px;
-        box-shadow:0 8px 20px rgba(0,0,0,.20);
-        backdrop-filter:blur(10px);
-      }
-      .bottom-nav{
-        display:flex !important;
-        visibility:visible !important;
-        opacity:1 !important;
-        z-index:9998 !important;
-      }
-
       .bottom-nav{
         left:26px !important;
         right:26px !important;
@@ -2137,7 +2029,7 @@
 
       /* v6.3.37: corrección precisa de menú y puntitos */
 
-      /* v6.4.29: puntitos fuera del encuadre y foto única al encuadrar */
+      /* v6.4.30: puntitos fuera del encuadre y foto única al encuadrar */
       .direct-frame-active .post-body-gallery-dots,
       .direct-frame-active .gallery-dots{
         display:none !important;
@@ -2145,7 +2037,7 @@
       }
 
 
-      /* v6.4.29: encuadre independiente por foto */
+      /* v6.4.30: encuadre independiente por foto */
       .direct-frame-active .direct-frame-hint{
         max-width:calc(100% - 44px) !important;
       }
@@ -2476,7 +2368,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.29: acciones icon-only y perfil simple */
+      /* v6.4.30: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2508,7 +2400,7 @@
         display:none !important;
       }
 
-      /* v6.4.29-recupera-identidad-perfil-mensajes: bloque consolidado de Home/postCard.
+      /* v6.4.30-restaura-app-visible: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2687,7 +2579,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.29: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.30: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2706,7 +2598,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.29: descripción visible, ...leer separado del texto */
+      /* v6.4.30: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2841,7 +2733,7 @@
         min-height:48px;
       }
 
-      /* v6.4.29-recupera-identidad-perfil-mensajes */
+      /* v6.4.30-restaura-app-visible */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -3103,7 +2995,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.29: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.30: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3249,7 +3141,7 @@
 
 
 
-      /* v6.4.29: encuadre táctil libre sin controles inferiores */
+      /* v6.4.30: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3296,9 +3188,9 @@
       }
 
 
-      /* v6.4.29: encuadre táctil tipo redes sociales */
+      /* v6.4.30: encuadre táctil tipo redes sociales */
       
-      /* v6.4.29: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.30: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3306,13 +3198,13 @@
 
 
 
-      /* v6.4.29: encuadre directo táctil fino */
+      /* v6.4.30: encuadre directo táctil fino */
 
-      /* v6.4.29: edición directa desde la publicación */
+      /* v6.4.30: edición directa desde la publicación */
 
-      /* v6.4.29: zona/cobertura libre visible */
+      /* v6.4.30: zona/cobertura libre visible */
 
-      /* v6.4.29: carrusel más suave y encuadre por foto */
+      /* v6.4.30: carrusel más suave y encuadre por foto */
       .gallery-stage{
         touch-action:pan-y !important;
       }
@@ -3369,15 +3261,15 @@
       }
 
 
-      /* v6.4.29: multimedia directa básica e instrucciones visibles */
+      /* v6.4.30: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.29: puntitos centrados arriba del usuario */
+      /* v6.4.30: puntitos centrados arriba del usuario */
 
-      /* v6.4.29: carrusel táctil y edición limpia */
+      /* v6.4.30: carrusel táctil y edición limpia */
 
-      /* v6.4.29: carrusel Android, categoría completa y puntitos pequeños */
+      /* v6.4.30: carrusel Android, categoría completa y puntitos pequeños */
 
-      /* v6.4.29: zona legible, encuadre simple y carrusel por swipe */
+      /* v6.4.30: zona legible, encuadre simple y carrusel por swipe */
       .service-area-row{
         background:rgba(0,0,0,.56) !important;
         color:#fff !important;
@@ -3490,7 +3382,7 @@
       }
 
 
-      /* v6.4.29 final override dentro del CSS */
+      /* v6.4.30 final override dentro del CSS */
       .service-area-row{
         background:rgba(0,0,0,.56)!important;
         color:#fff!important;
@@ -4134,7 +4026,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.29: encuadre directo desde la publicación */
+      /* v6.4.30: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -4226,7 +4118,7 @@
         display:none !important;
       }
 
-      /* v6.4.29: recuperación de scroll global */
+      /* v6.4.30: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -4428,7 +4320,7 @@
         }
       }
 
-      /* v6.4.29: encuadre editable de multimedia */
+      /* v6.4.30: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4661,7 +4553,7 @@
       }
 
 
-      /* v6.4.29: encuadre editable de multimedia */
+      /* v6.4.30: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5120,7 +5012,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.29: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.30: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -5264,7 +5156,7 @@
       }
 
 
-      /* v6.4.29: encuadre editable de multimedia */
+      /* v6.4.30: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5497,7 +5389,7 @@
       }
 
 
-      /* v6.4.29: encuadre editable de multimedia */
+      /* v6.4.30: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5636,10 +5528,6 @@
 
   function shell(content){
     return `
-      <div class="rescue-shortcuts" aria-label="Accesos rápidos">
-        <button type="button" data-nav="/mensajes">✉️ Mensajes</button>
-        <button type="button" data-nav="/perfil">👤 Perfil</button>
-      </div>
       <main class="app-page"><div class="top-space"></div>${content}</main>
       <nav class="bottom-nav">
         <button class="nav-item ${state.route==='/'?'active':''}" data-nav="/"><span class="nav-icon">🏠</span><small>Inicio</small></button>
@@ -6544,15 +6432,20 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function render(){
-    injectRootStyles();
-    const routes = {'/':homePage, '/tienda':storePage, '/siguiendo':followingPage, '/mensajes':messagesPage, '/perfil':profilePage, '/confianza':confidencePage, '/publicar':composerPage, '/chat':chatPage};
-    app.innerHTML = (routes[state.route] || homePage)();
-    bind();
-    if(state.route === '/chat') scrollChatToBottom('auto');
-    setupInternalVideos();
-    setupGalleries();
-    setupDirectFrameEditors();
-    if(state.route === '/publicar') setupFrameTouchEditor();
+    try{
+      injectRootStyles();
+      const routes = {'/':homePage, '/tienda':storePage, '/siguiendo':followingPage, '/mensajes':messagesPage, '/perfil':profilePage, '/confianza':confidencePage, '/publicar':composerPage, '/chat':chatPage};
+      app.innerHTML = (routes[state.route] || homePage)();
+      bind();
+      if(state.route === '/chat') scrollChatToBottom('auto');
+      setupInternalVideos();
+      setupGalleries();
+      setupDirectFrameEditors();
+      if(state.route === '/publicar') setupFrameTouchEditor();
+    }catch(error){
+      console.error('[Conecta] Error de render', error);
+      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6430 o recarga.</p><button class="big-button" onclick="location.href='/?v=6430'">Recargar app</button></section></main>`;
+    }
   }
 
   function routeUrl(route){
@@ -7322,7 +7215,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.29: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.30: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -8013,7 +7906,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
       const end = e => {
         const p = pointers.get(e.pointerId);
-        // v6.4.29: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
+        // v6.4.30: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
         // Se desactiva doble toque para no interferir con el uso normal de la publicación.
 
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
@@ -8208,8 +8101,6 @@ ${esc(shortDiagnosticText(diag))}</code>
   async function init(){
     injectRootStyles();
     await refreshOldCaches();
-    userId();
-    profile();
     loadKnownMessageIds();
     loadReadMessageIds();
     document.addEventListener('pointerdown', enableMessageFeedback, {once:true});
