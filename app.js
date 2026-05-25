@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.27-layout-zona-puntitos
+/* Conecta Servicios v6.4.28-rescate-estable
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.27-layout-zona-puntitos';
+  const VERSION = 'v6.4.28-rescate-estable';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2029,7 +2029,7 @@
 
       /* v6.3.37: corrección precisa de menú y puntitos */
 
-      /* v6.4.27: puntitos fuera del encuadre y foto única al encuadrar */
+      /* v6.4.28: puntitos fuera del encuadre y foto única al encuadrar */
       .direct-frame-active .post-body-gallery-dots,
       .direct-frame-active .gallery-dots{
         display:none !important;
@@ -2037,160 +2037,7 @@
       }
 
 
-      /* v6.4.27: encuadre independiente por foto */
-
-      /* v6.4.27: layout pedido en imagen - zona arriba y puntitos laterales */
-      .media-area{
-        position:relative !important;
-      }
-
-      .service-area-media-chip{
-        position:absolute !important;
-        top:142px !important;
-        left:152px !important;
-        right:18px !important;
-        z-index:26 !important;
-        display:inline-flex !important;
-        align-items:center !important;
-        gap:5px !important;
-        width:max-content !important;
-        max-width:calc(100% - 174px) !important;
-        padding:8px 12px !important;
-        border-radius:999px !important;
-        background:rgba(0,0,0,.54) !important;
-        border:1px solid rgba(255,255,255,.24) !important;
-        color:#fff !important;
-        font-size:13px !important;
-        font-weight:900 !important;
-        line-height:1.15 !important;
-        text-shadow:0 2px 8px rgba(0,0,0,.75) !important;
-        box-shadow:0 8px 22px rgba(0,0,0,.18) !important;
-        white-space:nowrap !important;
-        overflow:hidden !important;
-        text-overflow:ellipsis !important;
-      }
-
-      .service-area-media-chip span{
-        opacity:.95;
-      }
-
-      .service-area-media-chip strong{
-        min-width:0 !important;
-        overflow:hidden !important;
-        text-overflow:ellipsis !important;
-        white-space:nowrap !important;
-        color:#fff !important;
-      }
-
-      .media-area > .gallery-dots,
-      .media-area > .post-body-gallery-dots{
-        position:absolute !important;
-        top:44% !important;
-        right:18px !important;
-        left:auto !important;
-        bottom:auto !important;
-        z-index:28 !important;
-        transform:translateY(-50%) scale(.82) !important;
-        transform-origin:right center !important;
-        display:flex !important;
-        align-items:center !important;
-        justify-content:center !important;
-        width:auto !important;
-        max-width:56px !important;
-        margin:0 !important;
-        padding:2px 5px !important;
-        gap:1px !important;
-        border-radius:999px !important;
-        background:rgba(0,0,0,.30) !important;
-        border:1px solid rgba(255,255,255,.18) !important;
-        backdrop-filter:blur(8px) !important;
-        box-shadow:0 6px 18px rgba(0,0,0,.16) !important;
-        pointer-events:auto !important;
-      }
-
-      .media-area > .gallery-dots .gallery-dot,
-      .media-area > .post-body-gallery-dots .gallery-dot{
-        width:12px !important;
-        height:12px !important;
-        min-width:12px !important;
-        padding:0 !important;
-        border:0 !important;
-        background:transparent !important;
-        display:flex !important;
-        align-items:center !important;
-        justify-content:center !important;
-      }
-
-      .media-area > .gallery-dots .gallery-dot span,
-      .media-area > .post-body-gallery-dots .gallery-dot span{
-        width:3px !important;
-        height:3px !important;
-        border-radius:999px !important;
-        background:rgba(255,255,255,.58) !important;
-        display:block !important;
-      }
-
-      .media-area > .gallery-dots .gallery-dot.active,
-      .media-area > .post-body-gallery-dots .gallery-dot.active{
-        background:transparent !important;
-        width:12px !important;
-      }
-
-      .media-area > .gallery-dots .gallery-dot.active span,
-      .media-area > .post-body-gallery-dots .gallery-dot.active span{
-        width:9px !important;
-        background:#fff !important;
-      }
-
-      .direct-frame-active .service-area-media-chip,
-      .direct-frame-active .media-area > .gallery-dots,
-      .direct-frame-active .media-area > .post-body-gallery-dots{
-        display:none !important;
-        pointer-events:none !important;
-      }
-
-      /* Ya no usamos la zona dentro del bloque de información */
-      .post-body > .service-area-row{
-        display:none !important;
-      }
-
-      @media (max-width:420px){
-        .service-area-media-chip{
-          top:140px !important;
-          left:150px !important;
-          right:14px !important;
-          max-width:calc(100% - 164px) !important;
-          font-size:12px !important;
-          padding:8px 10px !important;
-        }
-
-        .media-area > .gallery-dots,
-        .media-area > .post-body-gallery-dots{
-          top:45% !important;
-          right:12px !important;
-          transform:translateY(-50%) scale(.78) !important;
-        }
-      }
-
-
-      /* v6.4.27 final: prioridad sobre reglas anteriores de puntitos */
-      .media-area > .post-body-gallery-dots{
-        position:absolute !important;
-        top:44% !important;
-        right:18px !important;
-        left:auto !important;
-        bottom:auto !important;
-        margin:0 !important;
-        transform:translateY(-50%) scale(.82) !important;
-      }
-      @media (max-width:420px){
-        .media-area > .post-body-gallery-dots{
-          top:45% !important;
-          right:12px !important;
-          transform:translateY(-50%) scale(.78) !important;
-        }
-      }
-
+      /* v6.4.28: encuadre independiente por foto */
       .direct-frame-active .direct-frame-hint{
         max-width:calc(100% - 44px) !important;
       }
@@ -2521,7 +2368,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.27: acciones icon-only y perfil simple */
+      /* v6.4.28: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2553,7 +2400,7 @@
         display:none !important;
       }
 
-      /* v6.4.27-layout-zona-puntitos: bloque consolidado de Home/postCard.
+      /* v6.4.28-rescate-estable: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2732,7 +2579,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.27: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.28: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2751,7 +2598,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.27: descripción visible, ...leer separado del texto */
+      /* v6.4.28: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2886,7 +2733,7 @@
         min-height:48px;
       }
 
-      /* v6.4.27-layout-zona-puntitos */
+      /* v6.4.28-rescate-estable */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -3148,7 +2995,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.27: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.28: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3294,7 +3141,7 @@
 
 
 
-      /* v6.4.27: encuadre táctil libre sin controles inferiores */
+      /* v6.4.28: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3341,9 +3188,9 @@
       }
 
 
-      /* v6.4.27: encuadre táctil tipo redes sociales */
+      /* v6.4.28: encuadre táctil tipo redes sociales */
       
-      /* v6.4.27: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.28: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3351,13 +3198,13 @@
 
 
 
-      /* v6.4.27: encuadre directo táctil fino */
+      /* v6.4.28: encuadre directo táctil fino */
 
-      /* v6.4.27: edición directa desde la publicación */
+      /* v6.4.28: edición directa desde la publicación */
 
-      /* v6.4.27: zona/cobertura libre visible */
+      /* v6.4.28: zona/cobertura libre visible */
 
-      /* v6.4.27: carrusel más suave y encuadre por foto */
+      /* v6.4.28: carrusel más suave y encuadre por foto */
       .gallery-stage{
         touch-action:pan-y !important;
       }
@@ -3414,15 +3261,15 @@
       }
 
 
-      /* v6.4.27: multimedia directa básica e instrucciones visibles */
+      /* v6.4.28: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.27: puntitos centrados arriba del usuario */
+      /* v6.4.28: puntitos centrados arriba del usuario */
 
-      /* v6.4.27: carrusel táctil y edición limpia */
+      /* v6.4.28: carrusel táctil y edición limpia */
 
-      /* v6.4.27: carrusel Android, categoría completa y puntitos pequeños */
+      /* v6.4.28: carrusel Android, categoría completa y puntitos pequeños */
 
-      /* v6.4.27: zona legible, encuadre simple y carrusel por swipe */
+      /* v6.4.28: zona legible, encuadre simple y carrusel por swipe */
       .service-area-row{
         background:rgba(0,0,0,.56) !important;
         color:#fff !important;
@@ -3535,7 +3382,7 @@
       }
 
 
-      /* v6.4.27 final override dentro del CSS */
+      /* v6.4.28 final override dentro del CSS */
       .service-area-row{
         background:rgba(0,0,0,.56)!important;
         color:#fff!important;
@@ -4179,7 +4026,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.27: encuadre directo desde la publicación */
+      /* v6.4.28: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -4271,7 +4118,7 @@
         display:none !important;
       }
 
-      /* v6.4.27: recuperación de scroll global */
+      /* v6.4.28: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -4473,7 +4320,7 @@
         }
       }
 
-      /* v6.4.27: encuadre editable de multimedia */
+      /* v6.4.28: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4706,7 +4553,7 @@
       }
 
 
-      /* v6.4.27: encuadre editable de multimedia */
+      /* v6.4.28: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5165,7 +5012,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.27: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.28: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -5309,7 +5156,7 @@
       }
 
 
-      /* v6.4.27: encuadre editable de multimedia */
+      /* v6.4.28: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5542,7 +5389,7 @@
       }
 
 
-      /* v6.4.27: encuadre editable de multimedia */
+      /* v6.4.28: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -6296,15 +6143,15 @@
         ${mediaMarkup(post)}
         ${pending ? '<div class="media-pending">Video en proceso. La publicación ya está visible.</div>' : ''}
         <div class="media-top"><span class="chip ${categoryClass(post.category)}">${esc(normalizeCategory(post.category))}</span></div>
-        ${serviceAreaText(post) ? `<div class="service-area-media-chip">📍 <span>Atiende en:</span> <strong>${esc(serviceAreaText(post))}</strong></div>` : ''}
-        ${galleryDotsMarkup(post)}
         ${isVideoPost(post) && post.mediaUrl ? `<button class="sound-toggle-card" type="button" data-toggle-video-sound="${esc(post.id)}" aria-label="Activar sonido">🔇</button>` : ''}
         ${directFrameActive ? `<div class="direct-frame-grid" aria-hidden="true"></div><div class="direct-frame-hint">Encuadre de esta foto · Pellizca tamaño</div><div class="direct-frame-controls"><button type="button" data-direct-frame-save="${esc(post.id)}">${state.directFrameSaving ? 'Guardando...' : 'Guardar'}</button><button type="button" data-direct-frame-cancel="${esc(post.id)}">Cancelar</button></div>` : ''}
       </div>
       <div class="post-body ${expandedDesc ? 'expanded-description-body' : ''}">
+        ${galleryDotsMarkup(post)}
         <div class="owner-row" data-open-store="${esc(post.ownerId)}">${avatarMarkup(postAvatar(post), post.ownerName || 'Usuario local')}<span>${esc(post.ownerName || 'Usuario local')}</span></div>
         ${directEditActive ? directEditMarkup(post) : ''}
         ${directMediaActive ? directMediaMarkup(post) : ''}
+        ${serviceAreaText(post) ? `<div class="service-area-row">📍 Atiende en: <strong>${esc(serviceAreaText(post))}</strong></div>` : ''}
         <h2>${esc(post.title || 'Publicación')}</h2>
         ${descriptionMarkup(post)}
         <div class="post-meta"><span>${new Date(post.createdAt || Date.now()).toLocaleDateString('es-MX')}</span></div>
@@ -7363,7 +7210,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.27: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.28: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -8054,7 +7901,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
       const end = e => {
         const p = pointers.get(e.pointerId);
-        // v6.4.27: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
+        // v6.4.28: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
         // Se desactiva doble toque para no interferir con el uso normal de la publicación.
 
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
