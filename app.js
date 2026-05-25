@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.20-ajuste-puntitos-multimedia
+/* Conecta Servicios v6.4.21-carrusel-edicion-limpia
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.20-ajuste-puntitos-multimedia';
+  const VERSION = 'v6.4.21-carrusel-edicion-limpia';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2292,7 +2292,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.20: acciones icon-only y perfil simple */
+      /* v6.4.21: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2324,7 +2324,7 @@
         display:none !important;
       }
 
-      /* v6.4.20-ajuste-puntitos-multimedia: bloque consolidado de Home/postCard.
+      /* v6.4.21-carrusel-edicion-limpia: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2503,7 +2503,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.20: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.21: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2522,7 +2522,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.20: descripción visible, ...leer separado del texto */
+      /* v6.4.21: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2657,7 +2657,7 @@
         min-height:48px;
       }
 
-      /* v6.4.20-ajuste-puntitos-multimedia */
+      /* v6.4.21-carrusel-edicion-limpia */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2919,7 +2919,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.20: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.21: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3065,7 +3065,7 @@
 
 
 
-      /* v6.4.20: encuadre táctil libre sin controles inferiores */
+      /* v6.4.21: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3112,9 +3112,9 @@
       }
 
 
-      /* v6.4.20: encuadre táctil tipo redes sociales */
+      /* v6.4.21: encuadre táctil tipo redes sociales */
       
-      /* v6.4.20: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.21: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3122,11 +3122,11 @@
 
 
 
-      /* v6.4.20: encuadre directo táctil fino */
+      /* v6.4.21: encuadre directo táctil fino */
 
-      /* v6.4.20: edición directa desde la publicación */
+      /* v6.4.21: edición directa desde la publicación */
 
-      /* v6.4.20: zona/cobertura libre visible */
+      /* v6.4.21: zona/cobertura libre visible */
       .service-area-row{
         display:inline-flex;
         align-items:center;
@@ -3167,9 +3167,87 @@
       }
 
 
-      /* v6.4.20: multimedia directa básica e instrucciones visibles */
+      /* v6.4.21: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.20: puntitos centrados arriba del usuario */
+      /* v6.4.21: puntitos centrados arriba del usuario */
+
+      /* v6.4.21: carrusel táctil y edición limpia */
+      .gallery-stage,
+      .gallery-stage .media-carousel,
+      .media-carousel{
+        pointer-events:auto !important;
+      }
+
+      .gallery-stage .media-carousel,
+      .media-carousel{
+        touch-action:pan-y !important;
+        overscroll-behavior-x:contain !important;
+        cursor:grab;
+        -webkit-overflow-scrolling:touch !important;
+        scroll-behavior:smooth;
+      }
+
+      .media-carousel.is-dragging-gallery{
+        cursor:grabbing;
+        scroll-snap-type:none !important;
+      }
+
+      .media-carousel img{
+        pointer-events:none !important;
+        user-select:none !important;
+        -webkit-user-drag:none !important;
+      }
+
+      .post-body .gallery-dots,
+      .post-body-gallery-dots{
+        margin:0 42px 10px auto !important;
+        justify-content:center !important;
+        background:rgba(0,0,0,.38) !important;
+        border:1px solid rgba(255,255,255,.28) !important;
+      }
+
+      .direct-edit-head.compact{
+        margin-bottom:8px !important;
+      }
+
+      .direct-edit-head.compact strong{
+        color:#fff !important;
+        text-shadow:0 2px 10px rgba(0,0,0,.65);
+      }
+
+      .direct-edit-panel label{
+        color:#fff !important;
+        display:inline-block !important;
+        background:rgba(0,0,0,.42);
+        border:1px solid rgba(255,255,255,.18);
+        border-radius:999px;
+        padding:5px 10px;
+        margin:10px 0 6px !important;
+        text-shadow:0 2px 8px rgba(0,0,0,.65);
+        font-size:13px !important;
+      }
+
+      .direct-edit-panel > p,
+      .direct-zone-help,
+      .direct-edit-head small{
+        display:none !important;
+      }
+
+      .direct-edit-panel input,
+      .direct-edit-panel textarea,
+      .direct-edit-panel select{
+        background:rgba(255,255,255,.96) !important;
+        color:#111827 !important;
+        border:2px solid rgba(255,255,255,.72) !important;
+      }
+
+      @media (max-width:420px){
+        .post-body .gallery-dots,
+        .post-body-gallery-dots{
+          margin-right:28px !important;
+        }
+      }
+
       .post-body .gallery-dots,
       .post-body-gallery-dots{
         position:relative !important;
@@ -3208,6 +3286,12 @@
       .post-body .gallery-dot.active{
         width:24px !important;
         background:#fff !important;
+      }
+
+      .post-body .gallery-dots,
+      .post-body-gallery-dots{
+        margin:0 42px 10px auto !important;
+        background:rgba(0,0,0,.38) !important;
       }
 
       .direct-media-panel > p{
@@ -3534,7 +3618,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.20: encuadre directo desde la publicación */
+      /* v6.4.21: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -3626,7 +3710,7 @@
         display:none !important;
       }
 
-      /* v6.4.20: recuperación de scroll global */
+      /* v6.4.21: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -3828,7 +3912,7 @@
         }
       }
 
-      /* v6.4.20: encuadre editable de multimedia */
+      /* v6.4.21: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4061,7 +4145,7 @@
       }
 
 
-      /* v6.4.20: encuadre editable de multimedia */
+      /* v6.4.21: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4520,7 +4604,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.20: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.21: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -4664,7 +4748,7 @@
       }
 
 
-      /* v6.4.20: encuadre editable de multimedia */
+      /* v6.4.21: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4897,7 +4981,7 @@
       }
 
 
-      /* v6.4.20: encuadre editable de multimedia */
+      /* v6.4.21: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5189,7 +5273,7 @@
     const imageItems = galleryImageItems(post);
     if(imageItems.length <= 1) return '';
     const dots = imageItems.map((_, index) => `<button type="button" class="gallery-dot ${index === 0 ? 'active' : ''}" data-gallery-dot="${esc(post.id)}" data-gallery-index="${index}" aria-label="Ver foto ${index+1}"></button>`).join('');
-    return `<div class="gallery-dots post-body-gallery-dots" data-gallery-dots="${esc(post.id)}">${dots}</div>`;
+    return `<div class="gallery-dots post-body-gallery-dots" data-gallery-dots="${esc(post.id)}" aria-label="Fotos de la publicación">${dots}</div>`;
   }
 
   function mediaMarkup(post){
@@ -5232,9 +5316,8 @@
   function directEditMarkup(post){
     const category = normalizeCategory(post.category);
     return `<form class="direct-edit-panel" data-direct-edit-panel="${esc(post.id)}">
-      <div class="direct-edit-head">
+      <div class="direct-edit-head compact">
         <strong>Editar publicación</strong>
-        <small>Edita aquí mismo: título, descripción, cobertura y categoría.</small>
       </div>
       <label>Título</label>
       <input id="directTitle-${esc(post.id)}" data-direct-edit-title="${esc(post.id)}" value="${esc(post.title || '')}" placeholder="Título de la publicación">
@@ -5244,7 +5327,6 @@
         <div>
           <label>Zona / cobertura</label>
           <input id="directZone-${esc(post.id)}" data-direct-edit-zone="${esc(post.id)}" value="${esc(serviceAreaText(post) || '')}" placeholder="Ej. Toluca y sus alrededores / En línea mundial" autocomplete="off">
-          <small class="direct-zone-help">Campo libre: puedes escribir municipio, zona, alrededores, Todo México, en línea o mundial.</small>
         </div>
         <div>
           <label>Categoría</label>
@@ -5257,7 +5339,7 @@
         <button type="button" class="direct-save-btn" data-direct-edit-save="${esc(post.id)}">${state.directEditSaving ? 'Guardando...' : 'Guardar cambios'}</button>
         <button type="button" class="direct-cancel-btn" data-direct-edit-cancel="${esc(post.id)}">Cancelar</button>
       </div>
-      <p>Tip: usa la zona como cobertura real: “Toluca y sus alrededores”, “Todo México” o “En línea mundial”.</p>
+
     </form>`;
   }
 
@@ -6409,13 +6491,64 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('.media-carousel').forEach(gallery => {
       if(gallery.dataset.galleryBound === '1') return;
       gallery.dataset.galleryBound = '1';
+
       const refreshDots = () => {
         if(gallery._raf) cancelAnimationFrame(gallery._raf);
         gallery._raf = requestAnimationFrame(()=>updateGalleryCounter(gallery));
       };
+
+      let drag = null;
+
+      gallery.addEventListener('pointerdown', e => {
+        if(e.target.closest('button')) return;
+        drag = {
+          id: e.pointerId,
+          x: e.clientX,
+          y: e.clientY,
+          left: gallery.scrollLeft,
+          moved: false,
+          horizontal: false
+        };
+        try { gallery.setPointerCapture?.(e.pointerId); } catch {}
+      }, {passive:true});
+
+      gallery.addEventListener('pointermove', e => {
+        if(!drag || drag.id !== e.pointerId) return;
+        const dx = e.clientX - drag.x;
+        const dy = e.clientY - drag.y;
+        if(!drag.horizontal && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) + 4){
+          drag.horizontal = true;
+          gallery.classList.add('is-dragging-gallery');
+        }
+        if(drag.horizontal){
+          drag.moved = true;
+          gallery.scrollLeft = drag.left - dx;
+          refreshDots();
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }, {passive:false});
+
+      const finish = e => {
+        if(!drag || drag.id !== e.pointerId) return;
+        if(drag.horizontal){
+          const width = Math.max(1, gallery.clientWidth);
+          const index = Math.round(gallery.scrollLeft / width);
+          gallery.scrollTo({left:index * width, behavior:'smooth'});
+          setTimeout(()=>updateGalleryCounter(gallery), 180);
+          e.preventDefault?.();
+          e.stopPropagation?.();
+        }
+        gallery.classList.remove('is-dragging-gallery');
+        drag = null;
+      };
+
+      gallery.addEventListener('pointerup', finish, {passive:false});
+      gallery.addEventListener('pointercancel', finish, {passive:false});
+      gallery.addEventListener('lostpointercapture', () => { gallery.classList.remove('is-dragging-gallery'); drag = null; });
+
       gallery.addEventListener('scroll', refreshDots, {passive:true});
       gallery.addEventListener('touchend', () => setTimeout(()=>updateGalleryCounter(gallery), 120), {passive:true});
-      gallery.addEventListener('pointerup', () => setTimeout(()=>updateGalleryCounter(gallery), 120), {passive:true});
       updateGalleryCounter(gallery);
     });
   }
@@ -6579,7 +6712,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.20: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.21: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());

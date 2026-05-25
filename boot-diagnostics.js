@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.20-ajuste-puntitos-multimedia';
+  const VERSION = 'v6.4.21-carrusel-edicion-limpia';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 
