@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.11-encuadre-tactil-libre
+/* Conecta Servicios v6.4.12-encuadre-compacto
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.11-encuadre-tactil-libre';
+  const VERSION = 'v6.4.12-encuadre-compacto';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -24,6 +24,7 @@
     follows: 'cs_v634_follows',
     profile: 'cs_v634_profile',
     composer: 'cs_v634_composer',
+    editingId: 'cs_v6412_editing_id',
     seenMessages: 'cs_v639_seen_messages',
     readMessages: 'cs_v6310_read_messages',
     deletedPosts: 'cs_v6322_deleted_posts',
@@ -2191,7 +2192,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.11: acciones icon-only y perfil simple */
+      /* v6.4.12: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2223,7 +2224,7 @@
         display:none !important;
       }
 
-      /* v6.4.11-encuadre-tactil-libre: bloque consolidado de Home/postCard.
+      /* v6.4.12-encuadre-compacto: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2402,7 +2403,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.11: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.12: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2421,7 +2422,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.11: descripción visible, ...leer separado del texto */
+      /* v6.4.12: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2556,7 +2557,7 @@
         min-height:48px;
       }
 
-      /* v6.4.11-encuadre-tactil-libre */
+      /* v6.4.12-encuadre-compacto */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2818,7 +2819,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.11: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.12: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -2964,7 +2965,7 @@
 
 
 
-      /* v6.4.11: encuadre táctil libre sin controles inferiores */
+      /* v6.4.12: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3011,8 +3012,85 @@
       }
 
 
-      /* v6.4.11: encuadre táctil tipo redes sociales */
+      /* v6.4.12: encuadre táctil tipo redes sociales */
+      
+      /* v6.4.12: editor de encuadre compacto, acorde a la publicación */
+      html,
+      body{
+        overscroll-behavior-y:contain;
+      }
+
+      .composer{
+        overscroll-behavior-y:contain !important;
+        padding-bottom:120px !important;
+      }
+
       .frame-touch-editor{
+        width:min(100%, 390px) !important;
+        height:auto !important;
+        min-height:0 !important;
+        max-height:none !important;
+        aspect-ratio:4 / 5 !important;
+        margin:10px auto 12px !important;
+        border-radius:24px !important;
+      }
+
+      .frame-touch-editor::before{
+        border-radius:22px !important;
+        border-width:2px !important;
+      }
+
+      .frame-safe-grid{
+        inset:0 !important;
+        border-radius:22px !important;
+        opacity:.48 !important;
+        background:
+          linear-gradient(to right, transparent 33.2%, rgba(255,255,255,.38) 33.33%, transparent 33.55%, transparent 66.2%, rgba(255,255,255,.38) 66.33%, transparent 66.55%),
+          linear-gradient(to bottom, transparent 33.2%, rgba(255,255,255,.38) 33.33%, transparent 33.55%, transparent 66.2%, rgba(255,255,255,.38) 66.33%, transparent 66.55%) !important;
+      }
+
+      .frame-touch-hint{
+        font-size:11px !important;
+        padding:7px 10px !important;
+        bottom:10px !important;
+        opacity:.92 !important;
+      }
+
+      .media-frame-helper{
+        width:min(100%, 390px) !important;
+        margin:8px auto 14px !important;
+      }
+
+      .media-frame-helper p{
+        font-size:11px !important;
+      }
+
+      .frame-touch-editor .frame-preview-gallery,
+      .frame-touch-editor .frame-preview-media,
+      .frame-touch-editor img,
+      .frame-touch-editor video{
+        height:100% !important;
+        max-height:100% !important;
+      }
+
+      @media (max-width:420px){
+        .frame-touch-editor{
+          width:calc(100vw - 42px) !important;
+          aspect-ratio:4 / 5 !important;
+          height:auto !important;
+          min-height:0 !important;
+          margin-left:auto !important;
+          margin-right:auto !important;
+        }
+        .media-frame-helper{
+          width:calc(100vw - 42px) !important;
+        }
+        .frame-touch-hint{
+          max-width:calc(100% - 22px) !important;
+        }
+      }
+
+.frame-touch-editor{
         position:relative !important;
         min-height:min(72vh, 620px) !important;
         height:min(72vh, 620px) !important;
@@ -3102,7 +3180,7 @@
         }
       }
 
-      /* v6.4.11: encuadre editable de multimedia */
+      /* v6.4.12: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -3335,7 +3413,7 @@
       }
 
 
-      /* v6.4.11: encuadre editable de multimedia */
+      /* v6.4.12: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -3794,7 +3872,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.11: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.12: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3938,7 +4016,7 @@
       }
 
 
-      /* v6.4.11: encuadre editable de multimedia */
+      /* v6.4.12: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4171,7 +4249,7 @@
       }
 
 
-      /* v6.4.11: encuadre editable de multimedia */
+      /* v6.4.12: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4724,6 +4802,23 @@ ${esc(shortDiagnosticText(diag))}</code>
   function composerPage(){
     loadComposerDraft();
     ensureComposerId();
+    if(!state.editing){
+      const savedEditingId = localStorage.getItem(K.editingId);
+      if(savedEditingId){
+        const recovered = state.posts.find(p => String(p.id) === String(savedEditingId));
+        if(recovered && recovered.ownerId === userId()){
+          state.editing = {...recovered};
+          state.composerId = recovered.id;
+          state.preview = resolveMedia(recovered);
+          state.mediaType = recovered.mediaType || 'image';
+          state.composerMediaRef = recovered.mediaRef || '';
+          state.composerMediaName = recovered.mediaName || '';
+          state.composerMediaMime = recovered.mediaMime || '';
+          state.composerMediaItems = Array.isArray(recovered.mediaItems) ? recovered.mediaItems : [];
+          state.mediaFrame = mediaFrameFromPost(recovered);
+        }
+      }
+    }
     const post = state.editing || null;
     if(post) state.composerDraft = {description:post.description||'', zone:post.zone||'', category:normalizeCategory(post.category)};
     const draft = state.composerDraft;
@@ -4739,7 +4834,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
     const frameControls = media ? `<div class="media-frame-helper">
       <div><strong>Encuadre táctil</strong><span data-frame-label>${esc(frameLabel(frame))}</span></div>
-      <p>Arrastra para mover toda la multimedia. Pellizca para ampliar o reducir. Doble toque cambia entre ver completo y llenar.</p>
+      <p>El recuadro representa cómo se verá en la publicación. Arrastra para acomodar, pellizca para ampliar/reducir. Desliza fuera del recuadro para bajar la página.</p>
     </div>` : '';
 
     return shell(`<section class="composer">
@@ -4750,7 +4845,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       <textarea id="description" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Ejemplo: Vendo tamales hoy&#10;Entrego en zona centro desde las 6 pm.">${esc(draft.description||'')}</textarea>
       <div class="preview-compact frame-preview-box frame-touch-editor" data-frame-touch>
         ${previewMarkup}
-        ${media ? '<div class="frame-safe-grid" aria-hidden="true"></div><div class="frame-touch-hint">Arrastra · Pellizca · Doble toque</div>' : ''}
+        ${media ? '<div class="frame-safe-grid" aria-hidden="true"></div><div class="frame-touch-hint">Arrastra / Pellizca</div>' : ''}
       </div>
       ${frameControls}
       <div class="form-grid"><div><label for="zone">Zona o municipio</label><input id="zone" list="zoneList" value="${esc(draft.zone||'')}" placeholder="Ej. Tejupilco"><datalist id="zoneList">${ZONES.map(z=>`<option value="${esc(z)}"></option>`).join('')}</datalist></div><div><label for="category">Categoría</label><select id="category">${CATEGORIES.map(c=>`<option value="${esc(c)}" ${normalizeCategory(draft.category)===c?'selected':''}>${esc(c)}</option>`).join('')}</select></div></div>
@@ -4802,7 +4897,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       setTimeout(()=>scrollTo({top:0,behavior:'smooth'}),0);
     });
   }
-  function clearComposer(){ state.preview=''; state.mediaType='image'; state.editing=null; state.composerId=''; state.composerMediaRef=''; state.composerMediaName=''; state.composerMediaMime=''; state.composerMediaItems=[]; state.composerDraft={description:'',zone:'',category:'VENDO'}; state.mediaFrame={fit:'contain',scale:1,x:50,y:50}; localStorage.removeItem(K.composer); }
+  function clearComposer(){ state.preview=''; state.mediaType='image'; state.editing=null; state.composerId=''; state.composerMediaRef=''; state.composerMediaName=''; state.composerMediaMime=''; state.composerMediaItems=[]; state.composerDraft={description:'',zone:'',category:'VENDO'}; state.mediaFrame={fit:'contain',scale:1,x:50,y:50}; localStorage.removeItem(K.composer); localStorage.removeItem(K.editingId); }
   function openPicker(){ if(state.publishing) return toast('Estamos terminando de publicar. Espera un momento.'); ensureComposerId(); document.getElementById('mediaPicker')?.click(); }
 
   function resizeImage(file,maxSide=IMAGE_MAX_SIDE,quality=.82){
@@ -5156,7 +5251,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       toast('Tu publicación se guardó en este dispositivo. Revisa conexión e intenta de nuevo.');
     }
 
-    if(firstSync) clearComposer();
+    if(firstSync) localStorage.removeItem(K.editingId); clearComposer();
     state.publishing = false;
     await syncFromCloud({render:false});
     render();
@@ -5210,6 +5305,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     state.composerMediaMime = post.mediaMime || '';
     state.composerDraft = {description:post.description||'', zone:post.zone||'', category:normalizeCategory(post.category)};
     state.mediaFrame = mediaFrameFromPost(post);
+    localStorage.setItem(K.editingId, post.id);
     saveComposerDraft();
     nav('/publicar');
   }
@@ -5427,7 +5523,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.11: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.12: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
