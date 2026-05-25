@@ -1,4 +1,4 @@
-const CACHE_NAME = 'conecta-servicios-v6-4-16-edicion-directa-publicacion';
+const CACHE_NAME = 'conecta-servicios-v6-4-18-perfil-persistente';
 
 const ASSETS = [
   '/',
@@ -36,7 +36,7 @@ self.addEventListener('fetch', event => {
     url.pathname.endsWith('/index.html') ||
     url.pathname.endsWith('/app.js') ||
     url.pathname.endsWith('/service-worker.js') ||
-    url.search.includes('v=6416') ||
+    url.search.includes('v=6418') ||
     url.search.includes('v=6.3.41');
 
   if (networkFirst) {

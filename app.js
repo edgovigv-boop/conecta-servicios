@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.16-edicion-directa-publicacion
+/* Conecta Servicios v6.4.18-perfil-persistente
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.16-edicion-directa-publicacion';
+  const VERSION = 'v6.4.18-perfil-persistente';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -23,6 +23,8 @@
     user: 'cs_v634_user',
     follows: 'cs_v634_follows',
     profile: 'cs_v634_profile',
+    profileBackup: 'conecta_profile_backup_v1',
+    profileBackup2: 'cs_profile_backup_v1',
     composer: 'cs_v634_composer',
     editingId: 'cs_v6412_editing_id',
     seenMessages: 'cs_v639_seen_messages',
@@ -106,7 +108,78 @@
   const norm = v => String(v || '').trim().toLowerCase();
 
   function userId(){ let id=localStorage.getItem(K.user); if(!id){ id=uid('u'); localStorage.setItem(K.user,id); } return id; }
-  function profile(){ const saved=get(K.profile,null); if(saved) return {...saved, avatarData:saved.avatarData||''}; const fresh={name:'Usuario local', avatarData:''}; set(K.profile,fresh); return fresh; }
+
+  function isDefaultProfileName(name=''){
+    const n = norm(name);
+    return !n || n === 'usuario local' || n === 'tu nombre o marca';
+  }
+
+  function isPersonalProfile(prof={}){
+    return !!(prof && (!isDefaultProfileName(prof.name) || String(prof.avatarData || '').trim()));
+  }
+
+  function normalizeProfile(prof={}){
+    return {
+      name: String(prof.name || '').trim() || 'Usuario local',
+      avatarData: String(prof.avatarData || prof.avatar || '').trim(),
+      updatedAt: prof.updatedAt || new Date().toISOString()
+    };
+  }
+
+  function saveProfileEverywhere(prof={}){
+    const clean = normalizeProfile(prof);
+    set(K.profile, clean);
+    // Respaldos no versionados: deben sobrevivir a actualizaciones normales.
+    try { localStorage.setItem(K.profileBackup, JSON.stringify(clean)); } catch {}
+    try { localStorage.setItem(K.profileBackup2, JSON.stringify(clean)); } catch {}
+    try { localStorage.setItem('conecta_profile_name_backup', clean.name || ''); } catch {}
+    try { if(clean.avatarData) localStorage.setItem('conecta_profile_avatar_backup', clean.avatarData); } catch {}
+    return clean;
+  }
+
+  function profileFromBackups(){
+    const candidates = [
+      get(K.profileBackup, null),
+      get(K.profileBackup2, null),
+      get(K.profile, null),
+      {name: localStorage.getItem('conecta_profile_name_backup') || '', avatarData: localStorage.getItem('conecta_profile_avatar_backup') || ''}
+    ].map(normalizeProfile);
+    return candidates.find(isPersonalProfile) || null;
+  }
+
+  function profileFromOwnPosts(){
+    try{
+      const id = userId();
+      const candidates = (Array.isArray(state.posts) && state.posts.length ? state.posts : get(K.posts, []))
+        .filter(p => p && p.ownerId === id)
+        .filter(p => !isDefaultProfileName(p.ownerName) || String(p.ownerAvatar || '').trim())
+        .sort((a,b)=>new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
+      const hit = candidates[0];
+      if(!hit) return null;
+      return normalizeProfile({name: hit.ownerName || 'Usuario local', avatarData: hit.ownerAvatar || ''});
+    }catch{
+      return null;
+    }
+  }
+
+  function profile(){
+    const saved = normalizeProfile(get(K.profile, null) || {});
+    if(isPersonalProfile(saved)){
+      saveProfileEverywhere(saved);
+      return saved;
+    }
+
+    const recovered = profileFromBackups() || profileFromOwnPosts();
+    if(recovered && isPersonalProfile(recovered)){
+      saveProfileEverywhere(recovered);
+      return recovered;
+    }
+
+    const fresh = {name:'Usuario local', avatarData:'', updatedAt:new Date().toISOString()};
+    set(K.profile, fresh);
+    return fresh;
+  }
+
   function follows(){ return get(K.follows,[]); }
   const PILOT_MUNICIPALITIES = [
     {name:'Tejupilco', lat:18.905, lon:-100.153},
@@ -332,6 +405,10 @@
     try{
       const keepUser = localStorage.getItem(K.user);
       const keepProfile = localStorage.getItem(K.profile);
+      const keepProfileBackup = localStorage.getItem(K.profileBackup);
+      const keepProfileBackup2 = localStorage.getItem(K.profileBackup2);
+      const keepProfileNameBackup = localStorage.getItem('conecta_profile_name_backup');
+      const keepProfileAvatarBackup = localStorage.getItem('conecta_profile_avatar_backup');
       const keepFollows = localStorage.getItem(K.follows);
       const keepRead = localStorage.getItem(K.readMessages);
 
@@ -351,6 +428,10 @@
 
       if(keepUser) localStorage.setItem(K.user, keepUser);
       if(keepProfile) localStorage.setItem(K.profile, keepProfile);
+      if(keepProfileBackup) localStorage.setItem(K.profileBackup, keepProfileBackup);
+      if(keepProfileBackup2) localStorage.setItem(K.profileBackup2, keepProfileBackup2);
+      if(keepProfileNameBackup) localStorage.setItem('conecta_profile_name_backup', keepProfileNameBackup);
+      if(keepProfileAvatarBackup) localStorage.setItem('conecta_profile_avatar_backup', keepProfileAvatarBackup);
       if(keepFollows) localStorage.setItem(K.follows, keepFollows);
       if(keepRead) localStorage.setItem(K.readMessages, keepRead);
 
@@ -368,6 +449,8 @@
       bootVersion: window.CONNECTA_BOOT_VERSION || '',
       userId: userId(),
       profileName: profile().name || '',
+      profileHasPhoto: !!profile().avatarData,
+      profileBackup: {hasBackup: !!profileFromBackups(), hasOwnPostRecovery: !!profileFromOwnPosts()}, 
       url: location.href,
       serviceWorkerControlled: !!navigator.serviceWorker?.controller,
       messages: {currentUserId:userId(), userId: state.messagesUserId || '', loaded: !!state.messagesLoaded, count: state.messagesLastCount || 0, lastFetchedAt: state.messagesLastFetchedAt || 0, error: state.messagesError || '', sample:(state.publicMessages||[]).slice(-5)},
@@ -453,6 +536,7 @@
     next.mediaScale = frame.scale;
     next.mediaX = frame.x;
     next.mediaY = frame.y;
+    next.serviceArea = String(next.serviceArea || next.coverageArea || next.zone || '').trim();
 
     return next;
   }
@@ -577,7 +661,9 @@
         let chosen = chooseBetterPost(lp, rp);
         if(chosen.ownerId === userId()){
           const prof = profile();
-          chosen = {...chosen, ownerName: prof.name || chosen.ownerName || 'Usuario local', ownerAvatar: prof.avatarData || chosen.ownerAvatar || ''};
+          if(isPersonalProfile(prof)){
+            chosen = {...chosen, ownerName: prof.name || chosen.ownerName || 'Usuario local', ownerAvatar: prof.avatarData || chosen.ownerAvatar || ''};
+          }
         }
         merged.push(chosen);
         usedRemoteIds.add(String(rp.id));
@@ -599,7 +685,9 @@
       if(merged.some(p => String(p.id) === String(rp.id))) return;
       if(rp.ownerId === userId()){
         const prof = profile();
-        rp = {...rp, ownerName: prof.name || rp.ownerName || 'Usuario local', ownerAvatar: prof.avatarData || rp.ownerAvatar || ''};
+        if(isPersonalProfile(prof)){
+          rp = {...rp, ownerName: prof.name || rp.ownerName || 'Usuario local', ownerAvatar: prof.avatarData || rp.ownerAvatar || ''};
+        }
       }
       merged.push(rp);
     });
@@ -646,6 +734,7 @@
       post.title,
       post.description,
       post.zone,
+      post.serviceArea,
       post.category,
       post.ownerName,
       post.mediaName
@@ -660,8 +749,11 @@
         if(q) return true;
         if(state.topTab === 'tienda') return normalizeCategory(p.category) === 'VENDO';
         if(state.topTab === 'municipio'){
-          const municipio = norm(municipioLabel());
-          return !municipio || municipio === 'tu zona' ? true : norm(p.zone) === municipio || norm(p.zone) === 'todo méxico';
+          const municipio = normalizeSearchText(municipioLabel());
+          const zona = normalizeSearchText(serviceAreaText(p) || p.zone);
+          return !municipio || municipio === 'tu zona'
+            ? true
+            : zona === municipio || zona.includes(municipio) || isWideServiceArea(zona);
         }
         return state.filter === 'ALL' || normalizeCategory(p.category) === state.filter;
       })
@@ -2197,7 +2289,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.16: acciones icon-only y perfil simple */
+      /* v6.4.18: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2229,7 +2321,7 @@
         display:none !important;
       }
 
-      /* v6.4.16-edicion-directa-publicacion: bloque consolidado de Home/postCard.
+      /* v6.4.18-perfil-persistente: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2408,7 +2500,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.16: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.18: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2427,7 +2519,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.16: descripción visible, ...leer separado del texto */
+      /* v6.4.18: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2562,7 +2654,7 @@
         min-height:48px;
       }
 
-      /* v6.4.16-edicion-directa-publicacion */
+      /* v6.4.18-perfil-persistente */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2824,7 +2916,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.16: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.18: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -2970,7 +3062,7 @@
 
 
 
-      /* v6.4.16: encuadre táctil libre sin controles inferiores */
+      /* v6.4.18: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3017,9 +3109,9 @@
       }
 
 
-      /* v6.4.16: encuadre táctil tipo redes sociales */
+      /* v6.4.18: encuadre táctil tipo redes sociales */
       
-      /* v6.4.16: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.18: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3027,9 +3119,50 @@
 
 
 
-      /* v6.4.16: encuadre directo táctil fino */
+      /* v6.4.18: encuadre directo táctil fino */
 
-      /* v6.4.16: edición directa desde la publicación */
+      /* v6.4.18: edición directa desde la publicación */
+
+      /* v6.4.18: zona/cobertura libre visible */
+      .service-area-row{
+        display:inline-flex;
+        align-items:center;
+        gap:5px;
+        width:auto;
+        max-width:100%;
+        margin:8px 0 7px;
+        padding:7px 11px;
+        border-radius:999px;
+        background:rgba(91,46,234,.10);
+        color:#4c1d95;
+        border:1px solid rgba(91,46,234,.14);
+        font-size:12px;
+        font-weight:900;
+        line-height:1.2;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+
+      .service-area-row strong{
+        min-width:0;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+      }
+
+      .direct-zone-help{
+        display:block;
+        margin-top:6px;
+        color:#6b7280;
+        font-size:11px;
+        font-weight:800;
+        line-height:1.25;
+      }
+
+      .direct-edit-panel input[data-direct-edit-zone]{
+        border-color:rgba(91,46,234,.26);
+      }
+
       .direct-edit-btn{
         background:#111827 !important;
         color:#fff !important;
@@ -3186,7 +3319,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.16: encuadre directo desde la publicación */
+      /* v6.4.18: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -3278,7 +3411,7 @@
         display:none !important;
       }
 
-      /* v6.4.16: recuperación de scroll global */
+      /* v6.4.18: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -3480,7 +3613,7 @@
         }
       }
 
-      /* v6.4.16: encuadre editable de multimedia */
+      /* v6.4.18: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -3713,7 +3846,7 @@
       }
 
 
-      /* v6.4.16: encuadre editable de multimedia */
+      /* v6.4.18: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4172,7 +4305,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.16: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.18: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -4316,7 +4449,7 @@
       }
 
 
-      /* v6.4.16: encuadre editable de multimedia */
+      /* v6.4.18: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4549,7 +4682,7 @@
       }
 
 
-      /* v6.4.16: encuadre editable de multimedia */
+      /* v6.4.18: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4735,6 +4868,16 @@
   }
   function feedMarkup(){ const posts=filteredPosts(); return posts.map(postCard).join('') || emptyState('No encontré publicaciones','Prueba otra búsqueda o publica algo con el botón +.'); }
   function updateFeedOnly(){ const feed=document.getElementById('feed'); if(feed) feed.innerHTML=feedMarkup(); const title=document.getElementById('feedTitle'); if(title) title.innerHTML=feedTitleMarkup(); bindDynamicFeedControls(); setupInternalVideos(); setupGalleries(); }
+  function serviceAreaText(post){
+    return String(post?.serviceArea || post?.coverageArea || post?.zone || '').trim();
+  }
+
+  function isWideServiceArea(value){
+    const z = normalizeSearchText(value);
+    if(!z) return false;
+    return ['todo mexico','todo el pais','nacional','mundial','mundo','global','online','en linea','virtual','remoto','a distancia','alrededores'].some(k => z.includes(k));
+  }
+
   function categoryClass(cat){ return `chip-${normalizeCategory(cat).toLowerCase()}`; }
   function isFollowing(ownerId){ return follows().includes(ownerId); }
   function shortDescription(text, max=118){
@@ -4874,9 +5017,9 @@
       <textarea id="directDescription-${esc(post.id)}" data-direct-edit-description="${esc(post.id)}" rows="5" placeholder="Describe lo que vendes, ofreces o necesitas">${esc(post.description || '')}</textarea>
       <div class="direct-edit-grid">
         <div>
-          <label>Zona / municipio</label>
-          <input id="directZone-${esc(post.id)}" data-direct-edit-zone="${esc(post.id)}" list="zoneListDirect-${esc(post.id)}" value="${esc(post.zone || '')}" placeholder="Ej. Calimaya">
-          <datalist id="zoneListDirect-${esc(post.id)}">${ZONES.map(z=>`<option value="${esc(z)}"></option>`).join('')}</datalist>
+          <label>Zona / cobertura</label>
+          <input id="directZone-${esc(post.id)}" data-direct-edit-zone="${esc(post.id)}" value="${esc(serviceAreaText(post) || '')}" placeholder="Ej. Toluca y sus alrededores / En línea mundial" autocomplete="off">
+          <small class="direct-zone-help">Campo libre: puedes escribir municipio, zona, alrededores, Todo México, en línea o mundial.</small>
         </div>
         <div>
           <label>Categoría</label>
@@ -4889,7 +5032,7 @@
         <button type="button" class="direct-save-btn" data-direct-edit-save="${esc(post.id)}">${state.directEditSaving ? 'Guardando...' : 'Guardar cambios'}</button>
         <button type="button" class="direct-cancel-btn" data-direct-edit-cancel="${esc(post.id)}">Cancelar</button>
       </div>
-      <p>Tip: el título puede ser corto; la descripción puede tener más detalle.</p>
+      <p>Tip: usa la zona como cobertura real: “Toluca y sus alrededores”, “Todo México” o “En línea mundial”.</p>
     </form>`;
   }
 
@@ -4936,6 +5079,7 @@
       title: nextTitle,
       description: form.description || post.description || nextTitle,
       zone: form.zone,
+      serviceArea: form.zone,
       category: form.category,
       updatedAt: new Date().toISOString(),
       cloudStatus: post.cloudStatus || 'publica'
@@ -4964,13 +5108,14 @@
       <div class="media-area ${directFrameActive ? 'direct-frame-area-active' : ''}" ${directFrameActive ? `data-direct-frame-area="${esc(post.id)}"` : ''}>
         ${mediaMarkup(post)}
         ${pending ? '<div class="media-pending">Video en proceso. La publicación ya está visible.</div>' : ''}
-        <div class="media-top"><span class="chip ${categoryClass(post.category)}">${esc(normalizeCategory(post.category))}</span><span class="chip">📍 ${esc(post.zone || 'Zona')}</span></div>
+        <div class="media-top"><span class="chip ${categoryClass(post.category)}">${esc(normalizeCategory(post.category))}</span></div>
         ${isVideoPost(post) && post.mediaUrl ? `<button class="sound-toggle-card" type="button" data-toggle-video-sound="${esc(post.id)}" aria-label="Activar sonido">🔇</button>` : ''}
         ${directFrameActive ? `<div class="direct-frame-grid" aria-hidden="true"></div><div class="direct-frame-hint">Arrastra · Pellizca tamaño · Doble toque</div><div class="direct-frame-controls"><button type="button" data-direct-frame-save="${esc(post.id)}">${state.directFrameSaving ? 'Guardando...' : 'Guardar'}</button><button type="button" data-direct-frame-cancel="${esc(post.id)}">Cancelar</button></div>` : ''}
       </div>
       <div class="post-body ${expandedDesc ? 'expanded-description-body' : ''}">
         <div class="owner-row" data-open-store="${esc(post.ownerId)}">${avatarMarkup(postAvatar(post), post.ownerName || 'Usuario local')}<span>${esc(post.ownerName || 'Usuario local')}</span></div>
         ${directEditActive ? directEditMarkup(post) : ''}
+        ${serviceAreaText(post) ? `<div class="service-area-row">📍 Atiende en: <strong>${esc(serviceAreaText(post))}</strong></div>` : ''}
         <h2>${esc(post.title || 'Publicación')}</h2>
         ${descriptionMarkup(post)}
         <div class="post-meta"><span>${new Date(post.createdAt || Date.now()).toLocaleDateString('es-MX')}</span></div>
@@ -5594,6 +5739,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       title: titleFrom(form.description),
       description: form.description,
       zone: form.zone,
+      serviceArea: form.zone,
       category: form.category,
       mediaUrl: old?.mediaUrl || '',
       mediaItems: state.composerMediaItems?.length ? state.composerMediaItems : (old?.mediaItems || []),
@@ -5904,8 +6050,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   function saveProfile(){
     const current = profile();
     const name=document.getElementById('profileName')?.value.trim()||'Usuario local';
-    const nextProfile = {...current, name};
-    set(K.profile,nextProfile);
+    const nextProfile = saveProfileEverywhere({...current, name, updatedAt:new Date().toISOString()});
     applyProfileToOwnPosts(nextProfile);
     state.profileEditing=false;
     toast('Perfil guardado y aplicado a tus publicaciones.');
@@ -5913,6 +6058,9 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToOwnPosts(prof=profile()){
+    prof = normalizeProfile(prof);
+    if(!isPersonalProfile(prof)) return;
+    saveProfileEverywhere(prof);
     const mine = state.posts.filter(p => p.ownerId === userId());
     if(!mine.length) return;
     const now = new Date().toISOString();
@@ -5922,7 +6070,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.16: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.18: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -5958,8 +6106,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       const avatarData = await blobToDataURL(resized);
       const current = profile();
       const name = document.getElementById('profileName')?.value.trim() || current.name || 'Usuario local';
-      const nextProfile = {...current, name, avatarData};
-      set(K.profile, nextProfile);
+      const nextProfile = saveProfileEverywhere({...current, name, avatarData, updatedAt:new Date().toISOString()});
       applyProfileToOwnPosts(nextProfile);
       toast('Foto de perfil guardada y aplicada a tus publicaciones propias.');
       render();
