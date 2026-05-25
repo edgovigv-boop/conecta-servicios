@@ -1,4 +1,4 @@
-const CACHE_NAME = 'conecta-servicios-v6-4-32-recupera-layout-seguro';
+const CACHE_NAME = 'conecta-servicios-v6-4-33-recupera-menu-herramientas';
 
 const ASSETS = [
   '/',
@@ -36,7 +36,7 @@ self.addEventListener('fetch', event => {
     url.pathname.endsWith('/index.html') ||
     url.pathname.endsWith('/app.js') ||
     url.pathname.endsWith('/service-worker.js') ||
-    url.search.includes('v=6432') ||
+    url.search.includes('v=6433') ||
     url.search.includes('v=6.3.41');
 
   if (networkFirst) {

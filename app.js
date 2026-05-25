@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.32-recupera-layout-seguro
+/* Conecta Servicios v6.4.33-recupera-menu-herramientas
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.32-recupera-layout-seguro';
+  const VERSION = 'v6.4.33-recupera-menu-herramientas';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2081,7 +2081,7 @@
 
       /* v6.3.37: corrección precisa de menú y puntitos */
 
-      /* v6.4.32: puntitos fuera del encuadre y foto única al encuadrar */
+      /* v6.4.33: puntitos fuera del encuadre y foto única al encuadrar */
       .direct-frame-active .post-body-gallery-dots,
       .direct-frame-active .gallery-dots{
         display:none !important;
@@ -2089,7 +2089,7 @@
       }
 
 
-      /* v6.4.32: encuadre independiente por foto */
+      /* v6.4.33: encuadre independiente por foto */
       .direct-frame-active .direct-frame-hint{
         max-width:calc(100% - 44px) !important;
       }
@@ -2420,7 +2420,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.32: acciones icon-only y perfil simple */
+      /* v6.4.33: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2452,7 +2452,7 @@
         display:none !important;
       }
 
-      /* v6.4.32-recupera-layout-seguro: bloque consolidado de Home/postCard.
+      /* v6.4.33-recupera-menu-herramientas: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2631,7 +2631,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.32: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.33: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2650,7 +2650,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.32: descripción visible, ...leer separado del texto */
+      /* v6.4.33: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2785,7 +2785,7 @@
         min-height:48px;
       }
 
-      /* v6.4.32-recupera-layout-seguro */
+      /* v6.4.33-recupera-menu-herramientas */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -3047,7 +3047,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.32: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.33: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3193,7 +3193,7 @@
 
 
 
-      /* v6.4.32: encuadre táctil libre sin controles inferiores */
+      /* v6.4.33: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3240,9 +3240,9 @@
       }
 
 
-      /* v6.4.32: encuadre táctil tipo redes sociales */
+      /* v6.4.33: encuadre táctil tipo redes sociales */
       
-      /* v6.4.32: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.33: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3250,13 +3250,13 @@
 
 
 
-      /* v6.4.32: encuadre directo táctil fino */
+      /* v6.4.33: encuadre directo táctil fino */
 
-      /* v6.4.32: edición directa desde la publicación */
+      /* v6.4.33: edición directa desde la publicación */
 
-      /* v6.4.32: zona/cobertura libre visible */
+      /* v6.4.33: zona/cobertura libre visible */
 
-      /* v6.4.32: carrusel más suave y encuadre por foto */
+      /* v6.4.33: carrusel más suave y encuadre por foto */
       .gallery-stage{
         touch-action:pan-y !important;
       }
@@ -3313,15 +3313,15 @@
       }
 
 
-      /* v6.4.32: multimedia directa básica e instrucciones visibles */
+      /* v6.4.33: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.32: puntitos centrados arriba del usuario */
+      /* v6.4.33: puntitos centrados arriba del usuario */
 
-      /* v6.4.32: carrusel táctil y edición limpia */
+      /* v6.4.33: carrusel táctil y edición limpia */
 
-      /* v6.4.32: carrusel Android, categoría completa y puntitos pequeños */
+      /* v6.4.33: carrusel Android, categoría completa y puntitos pequeños */
 
-      /* v6.4.32: zona legible, encuadre simple y carrusel por swipe */
+      /* v6.4.33: zona legible, encuadre simple y carrusel por swipe */
       .service-area-row{
         background:rgba(0,0,0,.56) !important;
         color:#fff !important;
@@ -3434,7 +3434,7 @@
       }
 
 
-      /* v6.4.32 final override dentro del CSS */
+      /* v6.4.33 final override dentro del CSS */
       .service-area-row{
         background:rgba(0,0,0,.56)!important;
         color:#fff!important;
@@ -4078,7 +4078,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.32: encuadre directo desde la publicación */
+      /* v6.4.33: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -4170,7 +4170,7 @@
         display:none !important;
       }
 
-      /* v6.4.32: recuperación de scroll global */
+      /* v6.4.33: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -4372,7 +4372,7 @@
         }
       }
 
-      /* v6.4.32: encuadre editable de multimedia */
+      /* v6.4.33: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4605,7 +4605,7 @@
       }
 
 
-      /* v6.4.32: encuadre editable de multimedia */
+      /* v6.4.33: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5064,7 +5064,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.32: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.33: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -5208,7 +5208,7 @@
       }
 
 
-      /* v6.4.32: encuadre editable de multimedia */
+      /* v6.4.33: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5441,7 +5441,7 @@
       }
 
 
-      /* v6.4.32: encuadre editable de multimedia */
+      /* v6.4.33: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5561,7 +5561,7 @@
       .diag-copy{background:#e0e7ff;color:#3730a3;}
     
 
-      /* v6.4.32: recuperación segura de layout visual sin tocar mensajes */
+      /* v6.4.33: recuperación segura de layout visual sin tocar mensajes */
       .post-card{
         position:relative !important;
         overflow:hidden !important;
@@ -5688,6 +5688,90 @@
           right:10px !important;
           transform:translateY(-50%) scale(.72) !important;
         }
+      }
+
+
+
+      /* v6.4.33: recupera menú de herramientas del dueño */
+      .manage-row{
+        display:flex !important;
+        visibility:visible !important;
+        opacity:1 !important;
+        position:relative !important;
+        z-index:140 !important;
+        pointer-events:auto !important;
+        width:100% !important;
+        max-width:100% !important;
+        box-sizing:border-box !important;
+        gap:7px !important;
+        overflow-x:auto !important;
+        overflow-y:hidden !important;
+        flex-wrap:nowrap !important;
+        padding:8px 2px 2px !important;
+        margin-top:10px !important;
+        -webkit-overflow-scrolling:touch !important;
+        scrollbar-width:none !important;
+      }
+
+      .manage-row::-webkit-scrollbar{
+        display:none !important;
+      }
+
+      .manage-row::before{
+        content:"Herramientas";
+        flex:0 0 auto;
+        align-self:center;
+        padding:7px 9px;
+        border-radius:999px;
+        background:rgba(255,255,255,.18);
+        color:#fff;
+        font-size:11px;
+        font-weight:900;
+        border:1px solid rgba(255,255,255,.20);
+      }
+
+      .manage-row button{
+        flex:0 0 auto !important;
+        display:inline-flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        min-height:36px !important;
+        white-space:nowrap !important;
+        border-radius:999px !important;
+        border:1px solid rgba(255,255,255,.26) !important;
+        background:rgba(255,255,255,.22) !important;
+        color:#fff !important;
+        font-weight:900 !important;
+        font-size:12px !important;
+        padding:8px 11px !important;
+        box-shadow:0 8px 20px rgba(0,0,0,.16) !important;
+        backdrop-filter:blur(10px) !important;
+      }
+
+      .manage-row .frame-direct-btn{
+        background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
+      }
+
+      .manage-row .direct-edit-btn{
+        background:#111827 !important;
+      }
+
+      .manage-row .direct-media-btn{
+        background:#0f766e !important;
+      }
+
+      .manage-row .danger{
+        background:rgba(185,28,28,.88) !important;
+      }
+
+      .direct-edit-panel,
+      .direct-media-panel{
+        position:relative !important;
+        z-index:145 !important;
+        display:block !important;
+        visibility:visible !important;
+        opacity:1 !important;
+        pointer-events:auto !important;
       }
 
 `;
@@ -5972,7 +6056,7 @@
 
   function startDirectEdit(postId){
     const post = state.posts.find(p => String(p.id) === String(postId));
-    if(!post || post.ownerId !== userId()) return toast('Solo puedes editar tus publicaciones.');
+    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes editar tus publicaciones.');
     state.directFramePostId = '';
     state.directMediaPostId = '';
     state.directEditPostId = String(postId);
@@ -6003,7 +6087,7 @@
 
   async function saveDirectEdit(postId){
     const post = state.posts.find(p => String(p.id) === String(postId));
-    if(!post || post.ownerId !== userId()) return toast('Solo puedes guardar tus publicaciones.');
+    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes guardar tus publicaciones.');
     const form = readDirectEditForm(postId);
     if(!form.title && !form.description) return toast('Agrega título o descripción.');
     if(!form.zone) return toast('Agrega zona o municipio.');
@@ -6077,7 +6161,7 @@
 
   function startDirectMedia(postId){
     const post = state.posts.find(p => String(p.id) === String(postId));
-    if(!post || post.ownerId !== userId()) return toast('Solo puedes cambiar multimedia de tus publicaciones.');
+    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes cambiar multimedia de tus publicaciones.');
     state.directFramePostId = '';
     state.directEditPostId = '';
     state.directMediaPostId = String(postId);
@@ -6097,7 +6181,7 @@
 
   function pickDirectMedia(postId, mode='replace'){
     const post = state.posts.find(p => String(p.id) === String(postId));
-    if(!post || post.ownerId !== userId()) return toast('Solo puedes cambiar multimedia de tus publicaciones.');
+    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes cambiar multimedia de tus publicaciones.');
     state.directMediaPostId = String(postId);
     state.directMediaMode = mode;
     const picker = document.getElementById('directMediaPicker');
@@ -6244,7 +6328,7 @@
 
     const postId = state.directMediaPostId;
     const post = state.posts.find(p => String(p.id) === String(postId));
-    if(!post || post.ownerId !== userId()) return toast('Solo puedes cambiar multimedia de tus publicaciones.');
+    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes cambiar multimedia de tus publicaciones.');
 
     try{
       state.directMediaSaving = true;
@@ -6288,7 +6372,7 @@
 
   function removeDirectMediaItem(postId, index){
     const post = state.posts.find(p => String(p.id) === String(postId));
-    if(!post || post.ownerId !== userId()) return toast('Solo puedes cambiar multimedia de tus publicaciones.');
+    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes cambiar multimedia de tus publicaciones.');
     const items = directMediaItemsForPost(post).filter(item => String(item.mediaType || 'image').toLowerCase() !== 'video');
     if(items.length <= 1) return toast('Deja al menos una foto o usa Cambiar todo.');
     const nextItems = items.filter((_, i) => i !== Number(index));
@@ -6314,7 +6398,7 @@
 
   function postCard(post){
     post = normalizePost(post);
-    const own = post.ownerId === userId();
+    const own = isMeId(post.ownerId);
     const pending = isVideoPost(post) && !post.mediaUrl;
     const expandedDesc = isDescriptionExpanded(post.id);
     const canFrameDirect = own && !pending && !!resolveMedia(post);
@@ -6627,7 +6711,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       if(state.route === '/publicar') setupFrameTouchEditor();
     }catch(error){
       console.error('[Conecta] Error de render', error);
-      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6432 o recarga.</p><button class="big-button" onclick="location.href='/?v=6432'">Recargar app</button></section></main>`;
+      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6433 o recarga.</p><button class="big-button" onclick="location.href='/?v=6433'">Recargar app</button></section></main>`;
     }
   }
 
@@ -7065,7 +7149,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     state.directFramePostId = '';
     state.directMediaPostId = '';
     const post = state.posts.find(x=>x.id===id);
-    if(!post || post.ownerId !== userId()) return toast('Solo puedes editar tus publicaciones.');
+    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes editar tus publicaciones.');
     state.editing = {...post};
     state.composerId = post.id;
     state.preview = resolveMedia(post);
@@ -7082,7 +7166,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
   async function deletePost(id){
     const post = state.posts.find(x=>x.id===id);
-    if(!post || post.ownerId !== userId()) return toast('Solo puedes borrar tus publicaciones.');
+    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes borrar tus publicaciones.');
     if(!confirm('¿Borrar esta publicación?')) return;
 
     const tombstone = normalizePost({...post, status:'eliminada', cloudStatus:'publica', deletedAt:new Date().toISOString(), updatedAt:new Date().toISOString()});
@@ -7398,7 +7482,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.32: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.33: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -7793,7 +7877,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   function openChat(postId){
     const p = state.posts.find(x=>x.id===postId);
     if(!p) return;
-    if(p.ownerId === userId()){
+    if(isMeId(p.ownerId)){
       toast('Esta publicación es tuya. Revisa Mensajes para responder.');
       nav('/mensajes');
       return;
@@ -7924,7 +8008,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
   function startDirectFrame(postId){
     const post = state.posts.find(p => String(p.id) === String(postId));
-    if(!post || post.ownerId !== userId()) return toast('Solo puedes encuadrar tus publicaciones.');
+    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes encuadrar tus publicaciones.');
     if(!resolveMedia(post)) return toast('Esta publicación no tiene multimedia para encuadrar.');
 
     const gallery = document.querySelector(`[data-gallery="${cssEscape(postId)}"]`);
@@ -7961,7 +8045,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
   async function saveDirectFrame(postId){
     const post = state.posts.find(p => String(p.id) === String(postId));
-    if(!post || post.ownerId !== userId()) return toast('Solo puedes guardar tus publicaciones.');
+    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes guardar tus publicaciones.');
     state.directFrameSaving = true;
     render();
     const updated = normalizePost({...post, updatedAt:new Date().toISOString(), cloudStatus: post.cloudStatus || 'publica'});
@@ -8087,7 +8171,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
       const end = e => {
         const p = pointers.get(e.pointerId);
-        // v6.4.32: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
+        // v6.4.33: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
         // Se desactiva doble toque para no interferir con el uso normal de la publicación.
 
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
