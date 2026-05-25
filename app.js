@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.36-layout-movil-inversionistas
+/* Conecta Servicios v6.4.37-restaura-layout-estable
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.36-layout-movil-inversionistas';
+  const VERSION = 'v6.4.37-restaura-layout-estable';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2081,7 +2081,7 @@
 
       /* v6.3.37: corrección precisa de menú y puntitos */
 
-      /* v6.4.36: puntitos fuera del encuadre y foto única al encuadrar */
+      /* v6.4.37: puntitos fuera del encuadre y foto única al encuadrar */
       .direct-frame-active .post-body-gallery-dots,
       .direct-frame-active .gallery-dots{
         display:none !important;
@@ -2089,7 +2089,7 @@
       }
 
 
-      /* v6.4.36: encuadre independiente por foto */
+      /* v6.4.37: encuadre independiente por foto */
       .direct-frame-active .direct-frame-hint{
         max-width:calc(100% - 44px) !important;
       }
@@ -2420,7 +2420,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.36: acciones icon-only y perfil simple */
+      /* v6.4.37: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2452,7 +2452,7 @@
         display:none !important;
       }
 
-      /* v6.4.36-layout-movil-inversionistas: bloque consolidado de Home/postCard.
+      /* v6.4.37-restaura-layout-estable: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2631,7 +2631,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.36: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.37: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2650,7 +2650,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.36: descripción visible, ...leer separado del texto */
+      /* v6.4.37: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2785,7 +2785,7 @@
         min-height:48px;
       }
 
-      /* v6.4.36-layout-movil-inversionistas */
+      /* v6.4.37-restaura-layout-estable */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -3047,7 +3047,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.36: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.37: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3193,7 +3193,7 @@
 
 
 
-      /* v6.4.36: encuadre táctil libre sin controles inferiores */
+      /* v6.4.37: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3240,9 +3240,9 @@
       }
 
 
-      /* v6.4.36: encuadre táctil tipo redes sociales */
+      /* v6.4.37: encuadre táctil tipo redes sociales */
       
-      /* v6.4.36: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.37: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3250,13 +3250,13 @@
 
 
 
-      /* v6.4.36: encuadre directo táctil fino */
+      /* v6.4.37: encuadre directo táctil fino */
 
-      /* v6.4.36: edición directa desde la publicación */
+      /* v6.4.37: edición directa desde la publicación */
 
-      /* v6.4.36: zona/cobertura libre visible */
+      /* v6.4.37: zona/cobertura libre visible */
 
-      /* v6.4.36: carrusel más suave y encuadre por foto */
+      /* v6.4.37: carrusel más suave y encuadre por foto */
       .gallery-stage{
         touch-action:pan-y !important;
       }
@@ -3313,15 +3313,15 @@
       }
 
 
-      /* v6.4.36: multimedia directa básica e instrucciones visibles */
+      /* v6.4.37: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.36: puntitos centrados arriba del usuario */
+      /* v6.4.37: puntitos centrados arriba del usuario */
 
-      /* v6.4.36: carrusel táctil y edición limpia */
+      /* v6.4.37: carrusel táctil y edición limpia */
 
-      /* v6.4.36: carrusel Android, categoría completa y puntitos pequeños */
+      /* v6.4.37: carrusel Android, categoría completa y puntitos pequeños */
 
-      /* v6.4.36: zona legible, encuadre simple y carrusel por swipe */
+      /* v6.4.37: zona legible, encuadre simple y carrusel por swipe */
       .service-area-row{
         background:rgba(0,0,0,.56) !important;
         color:#fff !important;
@@ -3434,7 +3434,7 @@
       }
 
 
-      /* v6.4.36 final override dentro del CSS */
+      /* v6.4.37 final override dentro del CSS */
       .service-area-row{
         background:rgba(0,0,0,.56)!important;
         color:#fff!important;
@@ -4078,7 +4078,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.36: encuadre directo desde la publicación */
+      /* v6.4.37: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -4170,7 +4170,7 @@
         display:none !important;
       }
 
-      /* v6.4.36: recuperación de scroll global */
+      /* v6.4.37: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -4372,7 +4372,7 @@
         }
       }
 
-      /* v6.4.36: encuadre editable de multimedia */
+      /* v6.4.37: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4605,7 +4605,7 @@
       }
 
 
-      /* v6.4.36: encuadre editable de multimedia */
+      /* v6.4.37: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5064,7 +5064,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.36: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.37: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -5208,7 +5208,7 @@
       }
 
 
-      /* v6.4.36: encuadre editable de multimedia */
+      /* v6.4.37: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5441,7 +5441,7 @@
       }
 
 
-      /* v6.4.36: encuadre editable de multimedia */
+      /* v6.4.37: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5561,7 +5561,7 @@
       .diag-copy{background:#e0e7ff;color:#3730a3;}
     
 
-      /* v6.4.36: recuperación segura de layout visual sin tocar mensajes */
+      /* v6.4.37: recuperación segura de layout visual sin tocar mensajes */
       .post-card{
         position:relative !important;
         overflow:hidden !important;
@@ -5692,7 +5692,7 @@
 
 
 
-      /* v6.4.36: recupera menú de herramientas del dueño */
+      /* v6.4.37: recupera menú de herramientas del dueño */
       .manage-row{
         display:flex !important;
         visibility:visible !important;
@@ -5776,7 +5776,7 @@
 
 
 
-      /* v6.4.36: Herramientas ya no aparece como botón falso */
+      /* v6.4.37: Herramientas ya no aparece como botón falso */
       .manage-row::before{
         content:none !important;
         display:none !important;
@@ -5806,7 +5806,7 @@
 
 
 
-      /* v6.4.36: ajuste de altura del feed para que no se sienta largo */
+      /* v6.4.37: ajuste de altura del feed para que no se sienta largo */
       :root{
         --conecta-feed-height: calc(100dvh - env(safe-area-inset-bottom) - 96px);
       }
@@ -5908,29 +5908,23 @@
 
 
 
-      /* v6.4.36: capa final experta de layout móvil estable para demo/inversionistas.
-         Solo CSS. No toca mensajes, perfil, identidad, APIs, Supabase ni Storage. */
+      /* v6.4.37: restauración estable de layout móvil.
+         Cambio deliberadamente conservador: solo CSS al final.
+         No toca mensajes, perfil, identidad, APIs, Supabase ni Storage. */
+
       :root{
-        --cs-feed-reserve: calc(env(safe-area-inset-bottom) + 74px);
-        --cs-card-h: calc(100dvh - var(--cs-feed-reserve));
-        --cs-card-max: 760px;
+        --cs-bottom-ui: calc(env(safe-area-inset-bottom) + 86px);
+        --cs-card-height: 100dvh;
       }
 
       @supports (height: 100svh){
-        :root{
-          --cs-card-h: calc(100svh - var(--cs-feed-reserve));
-        }
+        :root{ --cs-card-height: 100svh; }
       }
 
       html,
       body{
-        min-height:100%;
-        overscroll-behavior-y:contain;
-      }
-
-      .app-page{
-        min-height:100dvh !important;
-        padding-bottom:0 !important;
+        min-height:100% !important;
+        background:#050507 !important;
       }
 
       .top-space{
@@ -5941,23 +5935,22 @@
       .feed{
         display:block !important;
         gap:0 !important;
-        padding:0 0 calc(env(safe-area-inset-bottom) + 76px) 0 !important;
         margin:0 !important;
-        scroll-snap-type:y mandatory;
+        padding:0 0 var(--cs-bottom-ui) 0 !important;
+        scroll-snap-type:none !important;
+        overflow:visible !important;
       }
 
       .feed > .post-card{
         position:relative !important;
-        height:min(var(--cs-card-max), var(--cs-card-h)) !important;
-        min-height:min(var(--cs-card-max), var(--cs-card-h)) !important;
-        max-height:min(var(--cs-card-max), var(--cs-card-h)) !important;
+        height:var(--cs-card-height) !important;
+        min-height:var(--cs-card-height) !important;
+        max-height:var(--cs-card-height) !important;
         margin:0 !important;
         padding:0 !important;
         border-radius:0 !important;
         overflow:hidden !important;
         background:#050507 !important;
-        scroll-snap-align:start;
-        scroll-snap-stop:always;
         box-shadow:none !important;
       }
 
@@ -5975,9 +5968,9 @@
       .feed > .post-card .media-carousel img,
       .feed > .post-card .direct-frame-single,
       .feed > .post-card .direct-frame-single img{
-        height:min(var(--cs-card-max), var(--cs-card-h)) !important;
-        min-height:min(var(--cs-card-max), var(--cs-card-h)) !important;
-        max-height:min(var(--cs-card-max), var(--cs-card-h)) !important;
+        height:var(--cs-card-height) !important;
+        min-height:var(--cs-card-height) !important;
+        max-height:var(--cs-card-height) !important;
         width:100% !important;
         border-radius:0 !important;
       }
@@ -5993,42 +5986,42 @@
         right:0 !important;
         bottom:0 !important;
         z-index:72 !important;
-        color:#fff !important;
         box-sizing:border-box !important;
-        padding:68px 82px calc(env(safe-area-inset-bottom) + 66px) 16px !important;
-        max-height:58% !important;
+        color:#fff !important;
+        padding:70px 82px var(--cs-bottom-ui) 16px !important;
+        max-height:62% !important;
         min-height:0 !important;
         overflow:hidden !important;
         border-radius:0 !important;
-        background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.58) 24%,rgba(0,0,0,.86)) !important;
+        background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.58) 24%,rgba(0,0,0,.88)) !important;
         box-shadow:none !important;
         backdrop-filter:none !important;
         pointer-events:auto !important;
       }
 
       .feed > .post-card.description-open .post-body{
-        max-height:74% !important;
+        max-height:76% !important;
         overflow-y:auto !important;
         -webkit-overflow-scrolling:touch !important;
         padding-right:18px !important;
-        background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.70) 18%,rgba(0,0,0,.92)) !important;
+        background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.70) 18%,rgba(0,0,0,.94)) !important;
       }
 
       .feed > .post-card.direct-edit-active,
       .feed > .post-card.direct-media-active{
-        height:min(var(--cs-card-max), var(--cs-card-h)) !important;
-        min-height:min(var(--cs-card-max), var(--cs-card-h)) !important;
-        max-height:min(var(--cs-card-max), var(--cs-card-h)) !important;
+        height:var(--cs-card-height) !important;
+        min-height:var(--cs-card-height) !important;
+        max-height:var(--cs-card-height) !important;
         overflow:hidden !important;
       }
 
       .feed > .post-card.direct-edit-active .post-body,
       .feed > .post-card.direct-media-active .post-body{
-        max-height:78% !important;
+        max-height:80% !important;
         overflow-y:auto !important;
         -webkit-overflow-scrolling:touch !important;
-        padding:58px 14px calc(env(safe-area-inset-bottom) + 70px) 14px !important;
-        background:linear-gradient(180deg,rgba(0,0,0,.14),rgba(0,0,0,.72) 18%,rgba(0,0,0,.94)) !important;
+        padding:58px 14px var(--cs-bottom-ui) 14px !important;
+        background:linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,.74) 18%,rgba(0,0,0,.95)) !important;
       }
 
       .feed > .post-card.direct-frame-active .post-body{
@@ -6066,12 +6059,39 @@
         margin-top:7px !important;
         padding-top:4px !important;
         padding-bottom:0 !important;
+        position:relative !important;
+        top:auto !important;
+        left:auto !important;
+        right:auto !important;
+        bottom:auto !important;
       }
 
       .feed > .post-card .manage-row button{
         min-height:32px !important;
         padding:7px 10px !important;
         font-size:12px !important;
+      }
+
+      .post-card .service-area-row{
+        position:absolute !important;
+        top:136px !important;
+        left:150px !important;
+        right:18px !important;
+        z-index:64 !important;
+        max-width:calc(100% - 168px) !important;
+        pointer-events:none !important;
+      }
+
+      .post-card .post-body-gallery-dots,
+      .post-card .gallery-dots{
+        z-index:65 !important;
+      }
+
+      .direct-frame-active .service-area-row,
+      .direct-frame-active .post-body-gallery-dots,
+      .direct-frame-active .gallery-dots{
+        display:none !important;
+        pointer-events:none !important;
       }
 
       .bottom-nav{
@@ -6091,20 +6111,12 @@
         transform:translateY(-10px) !important;
       }
 
-      .sound-toggle,
-      .sound-toggle-card{
-        z-index:90 !important;
-      }
-
       @media (max-height:700px){
-        :root{
-          --cs-feed-reserve: calc(env(safe-area-inset-bottom) + 64px);
-          --cs-card-max: 700px;
-        }
+        :root{ --cs-bottom-ui: calc(env(safe-area-inset-bottom) + 74px); }
 
         .feed > .post-card .post-body{
-          padding:54px 78px calc(env(safe-area-inset-bottom) + 56px) 14px !important;
-          max-height:56% !important;
+          padding:56px 78px var(--cs-bottom-ui) 14px !important;
+          max-height:58% !important;
         }
 
         .feed > .post-card .post-body h2{
@@ -7078,7 +7090,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       if(state.route === '/publicar') setupFrameTouchEditor();
     }catch(error){
       console.error('[Conecta] Error de render', error);
-      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6436 o recarga.</p><button class="big-button" onclick="location.href='/?v=6436'">Recargar app</button></section></main>`;
+      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6437 o recarga.</p><button class="big-button" onclick="location.href='/?v=6437'">Recargar app</button></section></main>`;
     }
   }
 
@@ -7849,7 +7861,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.36: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.37: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -8551,7 +8563,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
       const end = e => {
         const p = pointers.get(e.pointerId);
-        // v6.4.36: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
+        // v6.4.37: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
         // Se desactiva doble toque para no interferir con el uso normal de la publicación.
 
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);

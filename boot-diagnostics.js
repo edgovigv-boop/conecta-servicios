@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.36-layout-movil-inversionistas';
+  const VERSION = 'v6.4.37-restaura-layout-estable';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 
