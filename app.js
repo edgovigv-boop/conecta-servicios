@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.39-rescate-demo-layout
+/* Conecta Servicios v6.4.41-layout-limpio-estable
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.39-rescate-demo-layout';
+  const VERSION = 'v6.4.41-layout-limpio-estable';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2081,7 +2081,7 @@
 
       /* v6.3.37: corrección precisa de menú y puntitos */
 
-      /* v6.4.39: puntitos fuera del encuadre y foto única al encuadrar */
+      /* v6.4.41: puntitos fuera del encuadre y foto única al encuadrar */
       .direct-frame-active .post-body-gallery-dots,
       .direct-frame-active .gallery-dots{
         display:none !important;
@@ -2089,7 +2089,7 @@
       }
 
 
-      /* v6.4.39: encuadre independiente por foto */
+      /* v6.4.41: encuadre independiente por foto */
       .direct-frame-active .direct-frame-hint{
         max-width:calc(100% - 44px) !important;
       }
@@ -2420,7 +2420,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.39: acciones icon-only y perfil simple */
+      /* v6.4.41: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2452,7 +2452,7 @@
         display:none !important;
       }
 
-      /* v6.4.39-rescate-demo-layout: bloque consolidado de Home/postCard.
+      /* v6.4.41-layout-limpio-estable: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2631,7 +2631,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.39: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.41: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2650,7 +2650,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.39: descripción visible, ...leer separado del texto */
+      /* v6.4.41: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2785,7 +2785,7 @@
         min-height:48px;
       }
 
-      /* v6.4.39-rescate-demo-layout */
+      /* v6.4.41-layout-limpio-estable */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -3047,7 +3047,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.39: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.41: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3193,7 +3193,7 @@
 
 
 
-      /* v6.4.39: encuadre táctil libre sin controles inferiores */
+      /* v6.4.41: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3240,9 +3240,9 @@
       }
 
 
-      /* v6.4.39: encuadre táctil tipo redes sociales */
+      /* v6.4.41: encuadre táctil tipo redes sociales */
       
-      /* v6.4.39: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.41: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3250,13 +3250,13 @@
 
 
 
-      /* v6.4.39: encuadre directo táctil fino */
+      /* v6.4.41: encuadre directo táctil fino */
 
-      /* v6.4.39: edición directa desde la publicación */
+      /* v6.4.41: edición directa desde la publicación */
 
-      /* v6.4.39: zona/cobertura libre visible */
+      /* v6.4.41: zona/cobertura libre visible */
 
-      /* v6.4.39: carrusel más suave y encuadre por foto */
+      /* v6.4.41: carrusel más suave y encuadre por foto */
       .gallery-stage{
         touch-action:pan-y !important;
       }
@@ -3313,15 +3313,15 @@
       }
 
 
-      /* v6.4.39: multimedia directa básica e instrucciones visibles */
+      /* v6.4.41: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.39: puntitos centrados arriba del usuario */
+      /* v6.4.41: puntitos centrados arriba del usuario */
 
-      /* v6.4.39: carrusel táctil y edición limpia */
+      /* v6.4.41: carrusel táctil y edición limpia */
 
-      /* v6.4.39: carrusel Android, categoría completa y puntitos pequeños */
+      /* v6.4.41: carrusel Android, categoría completa y puntitos pequeños */
 
-      /* v6.4.39: zona legible, encuadre simple y carrusel por swipe */
+      /* v6.4.41: zona legible, encuadre simple y carrusel por swipe */
       .service-area-row{
         background:rgba(0,0,0,.56) !important;
         color:#fff !important;
@@ -3434,7 +3434,7 @@
       }
 
 
-      /* v6.4.39 final override dentro del CSS */
+      /* v6.4.41 final override dentro del CSS */
       .service-area-row{
         background:rgba(0,0,0,.56)!important;
         color:#fff!important;
@@ -4078,7 +4078,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.39: encuadre directo desde la publicación */
+      /* v6.4.41: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -4170,7 +4170,7 @@
         display:none !important;
       }
 
-      /* v6.4.39: recuperación de scroll global */
+      /* v6.4.41: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -4372,7 +4372,7 @@
         }
       }
 
-      /* v6.4.39: encuadre editable de multimedia */
+      /* v6.4.41: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4605,7 +4605,7 @@
       }
 
 
-      /* v6.4.39: encuadre editable de multimedia */
+      /* v6.4.41: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5064,7 +5064,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.39: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.41: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -5208,7 +5208,7 @@
       }
 
 
-      /* v6.4.39: encuadre editable de multimedia */
+      /* v6.4.41: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5441,7 +5441,7 @@
       }
 
 
-      /* v6.4.39: encuadre editable de multimedia */
+      /* v6.4.41: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5561,154 +5561,282 @@
       .diag-copy{background:#e0e7ff;color:#3730a3;}
     
 
-      /* v6.4.39: recuperación segura de layout visual sin tocar mensajes */
-      .post-card{
+
+
+      /* v6.4.41-layout-limpio-estable
+         Layout móvil consolidado.
+         Este bloque reemplaza las capas visuales conflictivas del feed.
+         No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
+
+      :root{
+        --cs-safe-bottom: env(safe-area-inset-bottom);
+        --cs-nav-height: 72px;
+        --cs-post-height: 100dvh;
+        --cs-post-info-bottom: calc(var(--cs-safe-bottom) + 82px);
+      }
+
+      @supports (height: 100svh){
+        :root{
+          --cs-post-height: 100svh;
+        }
+      }
+
+      html,
+      body{
+        width:100% !important;
+        min-height:100% !important;
+        margin:0 !important;
+        padding:0 !important;
+        overflow-x:hidden !important;
+        background:#050507 !important;
+      }
+
+      .app-page,
+      main.app-page{
+        width:100% !important;
+        max-width:none !important;
+        min-height:100dvh !important;
+        margin:0 !important;
+        padding:0 !important;
+        overflow-x:hidden !important;
+        background:#050507 !important;
+      }
+
+      .top-space{
+        height:0 !important;
+        min-height:0 !important;
+      }
+
+      .feed-title{
+        display:none !important;
+      }
+
+      .feed,
+      .store-feed{
+        width:100% !important;
+        max-width:none !important;
+        margin:0 !important;
+        padding:0 0 calc(var(--cs-safe-bottom) + 84px) 0 !important;
+        display:block !important;
+        gap:0 !important;
+        background:#050507 !important;
+        overflow-x:hidden !important;
+        scroll-snap-type:none !important;
+      }
+
+      .feed > .post-card,
+      .store-feed > .post-card{
         position:relative !important;
+        display:block !important;
+        width:100% !important;
+        max-width:none !important;
+        height:var(--cs-post-height) !important;
+        min-height:var(--cs-post-height) !important;
+        max-height:var(--cs-post-height) !important;
+        margin:0 !important;
+        padding:0 !important;
+        border:0 !important;
+        border-radius:0 !important;
         overflow:hidden !important;
+        background:#050507 !important;
+        box-shadow:none !important;
+      }
+
+      .feed > .post-card + .post-card,
+      .store-feed > .post-card + .post-card{
+        margin-top:0 !important;
+      }
+
+      .post-card .media-area{
+        position:absolute !important;
+        inset:0 !important;
+        z-index:1 !important;
+        width:100% !important;
+        height:100% !important;
+        min-height:100% !important;
+        max-height:100% !important;
+        overflow:hidden !important;
+        border-radius:0 !important;
+        background:#050507 !important;
+      }
+
+      .post-card .media-area > img,
+      .post-card .media-area .framed-media,
+      .post-card .media-area .no-media,
+      .post-card .video-inline-wrap,
+      .post-card .video-inline-wrap video,
+      .post-card .media-area video.feed-video-player,
+      .post-card .media-carousel,
+      .post-card .media-carousel img,
+      .post-card .direct-frame-single,
+      .post-card .direct-frame-single img{
+        width:100% !important;
+        min-width:100% !important;
+        max-width:100% !important;
+        height:100% !important;
+        min-height:100% !important;
+        max-height:100% !important;
+        border-radius:0 !important;
+        background:#050507 !important;
+      }
+
+      .post-card .media-area .no-media{
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+      }
+
+      .post-card:not(.direct-frame-active) .media-area > img,
+      .post-card:not(.direct-frame-active) .media-carousel img{
+        object-fit:cover !important;
+        object-position:center center !important;
       }
 
       .post-card .post-body{
-        position:static !important;
+        position:absolute !important;
+        left:0 !important;
+        right:0 !important;
+        bottom:0 !important;
+        z-index:80 !important;
+        box-sizing:border-box !important;
+        color:#fff !important;
+        min-height:0 !important;
+        max-height:68% !important;
+        overflow:hidden !important;
+        border-radius:0 !important;
+        padding:64px 16px var(--cs-post-info-bottom) 16px !important;
+        background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.58) 24%,rgba(0,0,0,.92)) !important;
+        box-shadow:none !important;
+        backdrop-filter:none !important;
+        pointer-events:auto !important;
       }
 
-      .post-card .service-area-row{
-        position:absolute !important;
-        top:136px !important;
-        left:150px !important;
-        right:18px !important;
-        z-index:64 !important;
-        display:inline-flex !important;
-        align-items:center !important;
-        gap:5px !important;
-        width:max-content !important;
-        max-width:calc(100% - 168px) !important;
-        margin:0 !important;
-        padding:8px 11px !important;
-        border-radius:999px !important;
-        background:rgba(0,0,0,.56) !important;
+      .post-card.description-open .post-body{
+        max-height:80% !important;
+        overflow-y:auto !important;
+        -webkit-overflow-scrolling:touch !important;
+        padding-right:18px !important;
+        background:linear-gradient(180deg,rgba(0,0,0,.10),rgba(0,0,0,.72) 18%,rgba(0,0,0,.96)) !important;
+      }
+
+      .post-card.direct-edit-active .post-body,
+      .post-card.direct-media-active .post-body{
+        max-height:84% !important;
+        overflow-y:auto !important;
+        -webkit-overflow-scrolling:touch !important;
+        padding:56px 14px var(--cs-post-info-bottom) 14px !important;
+        background:linear-gradient(180deg,rgba(0,0,0,.16),rgba(0,0,0,.78) 18%,rgba(0,0,0,.97)) !important;
+      }
+
+      .post-card.direct-frame-active .post-body{
+        display:none !important;
+      }
+
+      .owner-row{
+        margin-bottom:5px !important;
+      }
+
+      .post-body h2{
         color:#fff !important;
-        border:1px solid rgba(255,255,255,.24) !important;
+        font-size:18px !important;
+        line-height:1.12 !important;
+        margin:0 0 5px !important;
+        text-shadow:0 2px 14px rgba(0,0,0,.48) !important;
+      }
+
+      .post-description-short,
+      .post-description-collapsed,
+      .post-description-expanded,
+      .post-body p{
+        color:rgba(255,255,255,.95) !important;
+        font-size:13px !important;
+        line-height:1.25 !important;
+      }
+
+      .post-meta{
+        margin-top:4px !important;
+        font-size:11px !important;
+      }
+
+      .service-area-row{
+        position:relative !important;
+        left:auto !important;
+        right:auto !important;
+        top:auto !important;
+        bottom:auto !important;
+        z-index:1 !important;
+        display:inline-flex !important;
+        width:auto !important;
+        max-width:100% !important;
+        margin:3px 0 6px !important;
+        padding:6px 10px !important;
+        border-radius:999px !important;
+        background:rgba(0,0,0,.42) !important;
+        border:1px solid rgba(255,255,255,.18) !important;
+        color:#fff !important;
         font-size:12px !important;
         font-weight:900 !important;
-        line-height:1.12 !important;
-        text-shadow:0 2px 8px rgba(0,0,0,.75) !important;
-        box-shadow:0 8px 22px rgba(0,0,0,.18) !important;
         white-space:nowrap !important;
         overflow:hidden !important;
         text-overflow:ellipsis !important;
         pointer-events:none !important;
       }
 
-      .post-card .service-area-row strong{
+      .service-area-row strong{
         color:#fff !important;
         min-width:0 !important;
         overflow:hidden !important;
         text-overflow:ellipsis !important;
-        white-space:nowrap !important;
       }
 
-      .post-card .post-body-gallery-dots,
-      .post-card .gallery-dots{
-        position:absolute !important;
-        top:45% !important;
-        right:14px !important;
-        left:auto !important;
-        bottom:auto !important;
-        z-index:65 !important;
-        transform:translateY(-50%) scale(.78) !important;
-        transform-origin:right center !important;
-        margin:0 !important;
-        display:flex !important;
-        align-items:center !important;
-        justify-content:center !important;
-        width:auto !important;
-        max-width:54px !important;
-        padding:2px 5px !important;
-        gap:1px !important;
+      .post-action-row{
+        display:grid !important;
+        grid-template-columns:repeat(3, minmax(0,1fr)) !important;
+        gap:7px !important;
+        width:100% !important;
+        margin-top:8px !important;
+      }
+
+      .post-action-row button{
+        min-height:36px !important;
+        padding:7px 8px !important;
         border-radius:999px !important;
-        background:rgba(0,0,0,.28) !important;
-        border:1px solid rgba(255,255,255,.18) !important;
-        backdrop-filter:blur(8px) !important;
-        box-shadow:0 6px 18px rgba(0,0,0,.16) !important;
-        pointer-events:none !important;
+        background:rgba(255,255,255,.22) !important;
+        border:1px solid rgba(255,255,255,.26) !important;
+        color:#fff !important;
+        font-weight:900 !important;
+        font-size:12px !important;
       }
 
-      .post-card .gallery-dot{
-        width:12px !important;
-        height:12px !important;
-        min-width:12px !important;
-        padding:0 !important;
-        border:0 !important;
-        background:transparent !important;
-        display:flex !important;
-        align-items:center !important;
-        justify-content:center !important;
-        pointer-events:auto !important;
-      }
-
-      .post-card .gallery-dot span{
-        width:3px !important;
-        height:3px !important;
-        border-radius:999px !important;
-        background:rgba(255,255,255,.58) !important;
-        display:block !important;
-        transition:all .16s ease !important;
-      }
-
-      .post-card .gallery-dot.active{
-        width:12px !important;
-        background:transparent !important;
-      }
-
-      .post-card .gallery-dot.active span{
-        width:9px !important;
-        background:#fff !important;
-      }
-
-      .direct-frame-active .service-area-row,
-      .direct-frame-active .post-body-gallery-dots,
-      .direct-frame-active .gallery-dots{
+      .post-action-row .audio-row-btn{
         display:none !important;
+      }
+
+      .sound-toggle,
+      .sound-toggle-card{
+        display:none !important;
+        visibility:hidden !important;
+        opacity:0 !important;
         pointer-events:none !important;
       }
 
-      @media (max-width:420px){
-        .post-card .service-area-row{
-          top:134px !important;
-          left:146px !important;
-          right:12px !important;
-          max-width:calc(100% - 158px) !important;
-          font-size:11px !important;
-          padding:7px 9px !important;
-        }
-
-        .post-card .post-body-gallery-dots,
-        .post-card .gallery-dots{
-          top:46% !important;
-          right:10px !important;
-          transform:translateY(-50%) scale(.72) !important;
-        }
-      }
-
-
-
-      /* v6.4.39: recupera menú de herramientas del dueño */
       .manage-row{
-        display:flex !important;
-        visibility:visible !important;
-        opacity:1 !important;
         position:relative !important;
-        z-index:140 !important;
-        pointer-events:auto !important;
+        left:auto !important;
+        right:auto !important;
+        top:auto !important;
+        bottom:auto !important;
+        z-index:120 !important;
+        display:flex !important;
+        flex-wrap:nowrap !important;
+        overflow-x:auto !important;
+        overflow-y:hidden !important;
+        gap:7px !important;
         width:100% !important;
         max-width:100% !important;
         box-sizing:border-box !important;
-        gap:7px !important;
-        overflow-x:auto !important;
-        overflow-y:hidden !important;
-        flex-wrap:nowrap !important;
-        padding:8px 2px 2px !important;
-        margin-top:10px !important;
+        margin-top:7px !important;
+        padding:4px 0 0 !important;
         -webkit-overflow-scrolling:touch !important;
         scrollbar-width:none !important;
       }
@@ -5718,16 +5846,8 @@
       }
 
       .manage-row::before{
-        content:"Herramientas";
-        flex:0 0 auto;
-        align-self:center;
-        padding:7px 9px;
-        border-radius:999px;
-        background:rgba(255,255,255,.18);
-        color:#fff;
-        font-size:11px;
-        font-weight:900;
-        border:1px solid rgba(255,255,255,.20);
+        content:none !important;
+        display:none !important;
       }
 
       .manage-row button{
@@ -5735,7 +5855,7 @@
         display:inline-flex !important;
         align-items:center !important;
         justify-content:center !important;
-        min-height:36px !important;
+        min-height:34px !important;
         white-space:nowrap !important;
         border-radius:999px !important;
         border:1px solid rgba(255,255,255,.26) !important;
@@ -5743,7 +5863,7 @@
         color:#fff !important;
         font-weight:900 !important;
         font-size:12px !important;
-        padding:8px 11px !important;
+        padding:7px 10px !important;
         box-shadow:0 8px 20px rgba(0,0,0,.16) !important;
         backdrop-filter:blur(10px) !important;
       }
@@ -5774,288 +5894,14 @@
         pointer-events:auto !important;
       }
 
-
-
-      /* v6.4.39: Herramientas ya no aparece como botón falso */
-      .manage-row::before{
-        content:none !important;
-        display:none !important;
-      }
-
       .direct-save-btn,
       .direct-frame-controls button:first-child{
         background:#16a34a !important;
         color:#fff !important;
       }
 
-      .direct-frame-controls button{
-        min-width:126px !important;
-      }
-
-      @media (max-width:420px){
-        .direct-frame-controls{
-          gap:8px !important;
-        }
-        .direct-frame-controls button{
-          min-width:0 !important;
-          flex:1 !important;
-          padding-left:10px !important;
-          padding-right:10px !important;
-        }
-      }
-
-
-
-      /* v6.4.39 RESCATE DEMO: layout móvil estable, sin tocar lógica.
-         Objetivo: que la demo se vea profesional HOY.
-         No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
-
-      :root{
-        --demo-card-h: 100dvh;
-        --demo-bottom-space: calc(env(safe-area-inset-bottom) + 112px);
-      }
-      @supports (height: 100svh){
-        :root{ --demo-card-h: 100svh; }
-      }
-
-      html, body{
-        margin:0 !important;
-        padding:0 !important;
-        width:100% !important;
-        min-height:100% !important;
-        background:#050507 !important;
-        overflow-x:hidden !important;
-      }
-
-      .app-page,
-      main.app-page{
-        margin:0 !important;
-        padding:0 !important;
-        width:100% !important;
-        max-width:none !important;
-        min-height:100dvh !important;
-        background:#050507 !important;
-        overflow-x:hidden !important;
-      }
-
-      .top-space{
-        height:0 !important;
-        min-height:0 !important;
-      }
-
-      .feed,
-      .store-feed{
-        display:block !important;
-        width:100% !important;
-        max-width:none !important;
-        margin:0 !important;
-        padding:0 0 var(--demo-bottom-space) 0 !important;
-        gap:0 !important;
-        background:#050507 !important;
-        overflow-x:hidden !important;
-        scroll-snap-type:none !important;
-      }
-
-      .feed-title{
-        display:none !important;
-      }
-
-      .feed > .post-card,
-      .store-feed > .post-card{
-        position:relative !important;
-        display:block !important;
-        width:100% !important;
-        max-width:none !important;
-        height:var(--demo-card-h) !important;
-        min-height:var(--demo-card-h) !important;
-        max-height:var(--demo-card-h) !important;
-        margin:0 !important;
-        padding:0 !important;
-        border-radius:0 !important;
-        border:0 !important;
-        overflow:hidden !important;
-        background:#050507 !important;
-        box-shadow:none !important;
-      }
-
-      .feed > .post-card + .post-card,
-      .store-feed > .post-card + .post-card{
-        margin-top:0 !important;
-      }
-
-      .post-card .media-area{
-        position:absolute !important;
-        inset:0 !important;
-        width:100% !important;
-        height:100% !important;
-        min-height:100% !important;
-        max-height:100% !important;
-        border-radius:0 !important;
-        overflow:hidden !important;
-        background:#050507 !important;
-        z-index:1 !important;
-      }
-
-      .post-card .media-area > img,
-      .post-card .media-area .framed-media,
-      .post-card .media-area .no-media,
-      .post-card .video-inline-wrap,
-      .post-card .video-inline-wrap video,
-      .post-card .media-area video.feed-video-player,
-      .post-card .media-carousel,
-      .post-card .media-carousel img,
-      .post-card .direct-frame-single,
-      .post-card .direct-frame-single img{
-        width:100% !important;
-        height:100% !important;
-        min-width:100% !important;
-        min-height:100% !important;
-        max-width:100% !important;
-        max-height:100% !important;
-        border-radius:0 !important;
-        background:#050507 !important;
-      }
-
-      /* En vista normal, priorizamos que no haya franjas negras ni tarjetas cortadas para la demo. */
-      .post-card:not(.direct-frame-active) .media-area .framed-media,
-      .post-card:not(.direct-frame-active) .media-carousel img,
-      .post-card:not(.direct-frame-active) .media-area > img{
-        object-fit:cover !important;
-        object-position:center center !important;
-        transform:none !important;
-      }
-
-      .post-card .post-body{
-        position:absolute !important;
-        left:0 !important;
-        right:0 !important;
-        bottom:0 !important;
-        z-index:80 !important;
-        box-sizing:border-box !important;
-        color:#fff !important;
-        padding:72px 84px var(--demo-bottom-space) 16px !important;
-        max-height:66% !important;
-        min-height:0 !important;
-        overflow:hidden !important;
-        border-radius:0 !important;
-        background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.58) 24%,rgba(0,0,0,.90)) !important;
-        box-shadow:none !important;
-        backdrop-filter:none !important;
-        pointer-events:auto !important;
-      }
-
-      .post-card.description-open .post-body{
-        max-height:78% !important;
-        overflow-y:auto !important;
-        -webkit-overflow-scrolling:touch !important;
-        padding-right:18px !important;
-        background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.70) 18%,rgba(0,0,0,.95)) !important;
-      }
-
-      .post-card.direct-edit-active .post-body,
-      .post-card.direct-media-active .post-body{
-        max-height:82% !important;
-        overflow-y:auto !important;
-        -webkit-overflow-scrolling:touch !important;
-        padding:60px 14px var(--demo-bottom-space) 14px !important;
-        background:linear-gradient(180deg,rgba(0,0,0,.16),rgba(0,0,0,.76) 18%,rgba(0,0,0,.96)) !important;
-      }
-
-      .post-card.direct-frame-active .post-body{
-        display:none !important;
-      }
-
-      .owner-row{
-        margin-bottom:5px !important;
-      }
-
-      .post-body h2{
-        font-size:18px !important;
-        line-height:1.12 !important;
-        margin:0 0 5px !important;
-        color:#fff !important;
-      }
-
-      .post-description-short,
-      .post-description-collapsed,
-      .post-description-expanded,
-      .post-body p{
-        font-size:13px !important;
-        line-height:1.25 !important;
-        color:rgba(255,255,255,.94) !important;
-      }
-
-      .post-meta{
-        margin-top:4px !important;
-        font-size:11px !important;
-      }
-
-      .post-action-row{
-        display:grid !important;
-        grid-template-columns:repeat(3, minmax(0,1fr)) !important;
-        gap:7px !important;
-        width:100% !important;
-        margin-top:8px !important;
-      }
-
-      .post-action-row button{
-        min-height:34px !important;
-        padding:7px 8px !important;
-        border-radius:999px !important;
-      }
-
-      /* Evita duplicidad visual de audio en la fila inferior: queda el botón flotante de audio. */
-      .post-action-row .audio-row-btn{
-        display:none !important;
-      }
-
-      .manage-row{
-        position:relative !important;
-        left:auto !important;
-        right:auto !important;
-        top:auto !important;
-        bottom:auto !important;
-        z-index:120 !important;
-        display:flex !important;
-        flex-wrap:nowrap !important;
-        overflow-x:auto !important;
-        gap:7px !important;
-        width:100% !important;
-        margin-top:7px !important;
-        padding:4px 0 0 !important;
-        scrollbar-width:none !important;
-      }
-      .manage-row::-webkit-scrollbar{display:none !important;}
-      .manage-row::before{content:none !important;display:none !important;}
-
-      .manage-row button{
-        flex:0 0 auto !important;
-        min-height:32px !important;
-        padding:7px 10px !important;
-        font-size:12px !important;
-        border-radius:999px !important;
-      }
-
       .media-top{
         z-index:90 !important;
-      }
-
-      .service-area-row{
-        position:absolute !important;
-        top:136px !important;
-        left:150px !important;
-        right:16px !important;
-        z-index:92 !important;
-        width:max-content !important;
-        max-width:calc(100% - 166px) !important;
-        pointer-events:none !important;
-        color:#fff !important;
-        background:rgba(0,0,0,.54) !important;
-        border:1px solid rgba(255,255,255,.22) !important;
-      }
-
-      .service-area-row strong{
-        color:#fff !important;
       }
 
       .gallery-dots,
@@ -6067,11 +5913,7 @@
       .direct-frame-active .post-body-gallery-dots,
       .direct-frame-active .gallery-dots{
         display:none !important;
-      }
-
-      .sound-toggle,
-      .sound-toggle-card{
-        z-index:95 !important;
+        pointer-events:none !important;
       }
 
       .bottom-nav{
@@ -6108,12 +5950,13 @@
 
       @media (max-height:720px){
         :root{
-          --demo-bottom-space: calc(env(safe-area-inset-bottom) + 98px);
+          --cs-nav-height:66px;
+          --cs-post-info-bottom:calc(var(--cs-safe-bottom) + 74px);
         }
 
         .post-card .post-body{
-          padding:58px 78px var(--demo-bottom-space) 14px !important;
-          max-height:64% !important;
+          padding-top:54px !important;
+          max-height:66% !important;
         }
 
         .post-body h2{
@@ -7089,7 +6932,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       if(state.route === '/publicar') setupFrameTouchEditor();
     }catch(error){
       console.error('[Conecta] Error de render', error);
-      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6439 o recarga.</p><button class="big-button" onclick="location.href='/?v=6439'">Recargar app</button></section></main>`;
+      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6441 o recarga.</p><button class="big-button" onclick="location.href='/?v=6441'">Recargar app</button></section></main>`;
     }
   }
 
@@ -7860,7 +7703,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.39: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.41: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -8562,7 +8405,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
       const end = e => {
         const p = pointers.get(e.pointerId);
-        // v6.4.39: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
+        // v6.4.41: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
         // Se desactiva doble toque para no interferir con el uso normal de la publicación.
 
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
