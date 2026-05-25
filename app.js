@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.22-carrusel-categoria-puntitos
+/* Conecta Servicios v6.4.23-carrusel-zona-encuadre
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.22-carrusel-categoria-puntitos';
+  const VERSION = 'v6.4.23-carrusel-zona-encuadre';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2292,7 +2292,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.22: acciones icon-only y perfil simple */
+      /* v6.4.23: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2324,7 +2324,7 @@
         display:none !important;
       }
 
-      /* v6.4.22-carrusel-categoria-puntitos: bloque consolidado de Home/postCard.
+      /* v6.4.23-carrusel-zona-encuadre: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2503,7 +2503,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.22: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.23: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2522,7 +2522,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.22: descripción visible, ...leer separado del texto */
+      /* v6.4.23: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2657,7 +2657,7 @@
         min-height:48px;
       }
 
-      /* v6.4.22-carrusel-categoria-puntitos */
+      /* v6.4.23-carrusel-zona-encuadre */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2919,7 +2919,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.22: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.23: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3065,7 +3065,7 @@
 
 
 
-      /* v6.4.22: encuadre táctil libre sin controles inferiores */
+      /* v6.4.23: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3112,9 +3112,9 @@
       }
 
 
-      /* v6.4.22: encuadre táctil tipo redes sociales */
+      /* v6.4.23: encuadre táctil tipo redes sociales */
       
-      /* v6.4.22: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.23: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3122,11 +3122,11 @@
 
 
 
-      /* v6.4.22: encuadre directo táctil fino */
+      /* v6.4.23: encuadre directo táctil fino */
 
-      /* v6.4.22: edición directa desde la publicación */
+      /* v6.4.23: edición directa desde la publicación */
 
-      /* v6.4.22: zona/cobertura libre visible */
+      /* v6.4.23: zona/cobertura libre visible */
       .service-area-row{
         display:inline-flex;
         align-items:center;
@@ -3167,13 +3167,188 @@
       }
 
 
-      /* v6.4.22: multimedia directa básica e instrucciones visibles */
+      /* v6.4.23: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.22: puntitos centrados arriba del usuario */
+      /* v6.4.23: puntitos centrados arriba del usuario */
 
-      /* v6.4.22: carrusel táctil y edición limpia */
+      /* v6.4.23: carrusel táctil y edición limpia */
 
-      /* v6.4.22: carrusel Android, categoría completa y puntitos pequeños */
+      /* v6.4.23: carrusel Android, categoría completa y puntitos pequeños */
+
+      /* v6.4.23: zona legible, encuadre simple y carrusel por swipe */
+      .service-area-row{
+        background:rgba(0,0,0,.56) !important;
+        color:#fff !important;
+        border:1px solid rgba(255,255,255,.24) !important;
+        text-shadow:0 2px 8px rgba(0,0,0,.70) !important;
+        box-shadow:0 8px 22px rgba(0,0,0,.18) !important;
+      }
+
+      .service-area-row strong{
+        color:#fff !important;
+      }
+
+      .media-top{
+        left:18px !important;
+        right:auto !important;
+        width:auto !important;
+        max-width:220px !important;
+        min-width:74px !important;
+        overflow:visible !important;
+        justify-content:flex-start !important;
+      }
+
+      .media-top .chip{
+        display:inline-flex !important;
+        width:auto !important;
+        max-width:none !important;
+        min-width:74px !important;
+        white-space:nowrap !important;
+        overflow:visible !important;
+        text-overflow:clip !important;
+        justify-content:center !important;
+        color:#fff !important;
+      }
+
+      .direct-frame-hint{
+        font-size:12px !important;
+      }
+
+      .gallery-stage,
+      .gallery-stage .media-carousel,
+      .media-carousel{
+        pointer-events:auto !important;
+        touch-action:pan-y !important;
+        overscroll-behavior-x:contain !important;
+        -webkit-overflow-scrolling:touch !important;
+      }
+
+      .gallery-stage{
+        cursor:grab;
+      }
+
+      .gallery-stage.is-swiping-gallery{
+        cursor:grabbing;
+      }
+
+      .media-carousel{
+        overflow-x:hidden !important;
+        overflow-y:hidden !important;
+        scroll-behavior:smooth !important;
+      }
+
+      .media-carousel img{
+        pointer-events:none !important;
+        user-select:none !important;
+        -webkit-user-drag:none !important;
+      }
+
+      .post-body .gallery-dots,
+      .post-body-gallery-dots{
+        position:absolute !important;
+        top:10px !important;
+        right:72px !important;
+        left:auto !important;
+        bottom:auto !important;
+        margin:0 !important;
+        padding:3px 5px !important;
+        gap:2px !important;
+        max-width:58px !important;
+        background:rgba(0,0,0,.30) !important;
+        border:1px solid rgba(255,255,255,.18) !important;
+        transform:none !important;
+      }
+
+      .post-body .gallery-dot{
+        width:13px !important;
+        height:13px !important;
+        min-width:13px !important;
+        padding:0 !important;
+        background:transparent !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+      }
+
+      .post-body .gallery-dot span{
+        width:3.5px !important;
+        height:3.5px !important;
+        border-radius:999px !important;
+        background:rgba(255,255,255,.55) !important;
+      }
+
+      .post-body .gallery-dot.active{
+        width:13px !important;
+        background:transparent !important;
+      }
+
+      .post-body .gallery-dot.active span{
+        width:10px !important;
+        background:#fff !important;
+      }
+
+
+      /* v6.4.23 final override dentro del CSS */
+      .service-area-row{
+        background:rgba(0,0,0,.56)!important;
+        color:#fff!important;
+        border-color:rgba(255,255,255,.24)!important;
+        text-shadow:0 2px 8px rgba(0,0,0,.7)!important;
+      }
+      .service-area-row strong{color:#fff!important;}
+      .media-top .chip{
+        min-width:74px!important;
+        max-width:none!important;
+        overflow:visible!important;
+        text-overflow:clip!important;
+        white-space:nowrap!important;
+      }
+      .post-body .gallery-dots,
+      .post-body-gallery-dots{
+        position:absolute!important;
+        top:10px!important;
+        right:72px!important;
+        left:auto!important;
+        bottom:auto!important;
+        margin:0!important;
+        padding:3px 5px!important;
+        gap:2px!important;
+        max-width:58px!important;
+        background:rgba(0,0,0,.30)!important;
+        transform:none!important;
+      }
+      .post-body .gallery-dot{
+        width:13px!important;
+        height:13px!important;
+        min-width:13px!important;
+        background:transparent!important;
+      }
+      .post-body .gallery-dot span{
+        width:3.5px!important;
+        height:3.5px!important;
+        border-radius:999px!important;
+        background:rgba(255,255,255,.55)!important;
+        display:block!important;
+      }
+      .post-body .gallery-dot.active{
+        width:13px!important;
+        background:transparent!important;
+      }
+      .post-body .gallery-dot.active span{
+        width:10px!important;
+        background:#fff!important;
+      }
+
+      @media (max-width:420px){
+        .post-body .gallery-dots,
+        .post-body-gallery-dots{
+          right:64px !important;
+          top:9px !important;
+          transform:scale(.88) !important;
+          transform-origin:right top !important;
+        }
+      }
+
       .media-top{
         left:18px !important;
         right:auto !important;
@@ -3757,7 +3932,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.22: encuadre directo desde la publicación */
+      /* v6.4.23: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -3849,7 +4024,7 @@
         display:none !important;
       }
 
-      /* v6.4.22: recuperación de scroll global */
+      /* v6.4.23: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -4051,7 +4226,7 @@
         }
       }
 
-      /* v6.4.22: encuadre editable de multimedia */
+      /* v6.4.23: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4284,7 +4459,7 @@
       }
 
 
-      /* v6.4.22: encuadre editable de multimedia */
+      /* v6.4.23: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4743,7 +4918,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.22: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.23: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -4887,7 +5062,7 @@
       }
 
 
-      /* v6.4.22: encuadre editable de multimedia */
+      /* v6.4.23: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5120,7 +5295,7 @@
       }
 
 
-      /* v6.4.22: encuadre editable de multimedia */
+      /* v6.4.23: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5831,7 +6006,7 @@
         ${pending ? '<div class="media-pending">Video en proceso. La publicación ya está visible.</div>' : ''}
         <div class="media-top"><span class="chip ${categoryClass(post.category)}">${esc(normalizeCategory(post.category))}</span></div>
         ${isVideoPost(post) && post.mediaUrl ? `<button class="sound-toggle-card" type="button" data-toggle-video-sound="${esc(post.id)}" aria-label="Activar sonido">🔇</button>` : ''}
-        ${directFrameActive ? `<div class="direct-frame-grid" aria-hidden="true"></div><div class="direct-frame-hint">Arrastra · Pellizca tamaño · Doble toque</div><div class="direct-frame-controls"><button type="button" data-direct-frame-save="${esc(post.id)}">${state.directFrameSaving ? 'Guardando...' : 'Guardar'}</button><button type="button" data-direct-frame-cancel="${esc(post.id)}">Cancelar</button></div>` : ''}
+        ${directFrameActive ? `<div class="direct-frame-grid" aria-hidden="true"></div><div class="direct-frame-hint">Un dedo mueve · Pellizca tamaño</div><div class="direct-frame-controls"><button type="button" data-direct-frame-save="${esc(post.id)}">${state.directFrameSaving ? 'Guardando...' : 'Guardar'}</button><button type="button" data-direct-frame-cancel="${esc(post.id)}">Cancelar</button></div>` : ''}
       </div>
       <div class="post-body ${expandedDesc ? 'expanded-description-body' : ''}">
         ${galleryDotsMarkup(post)}
@@ -6610,11 +6785,14 @@ ${esc(shortDiagnosticText(diag))}</code>
     const id = gallery.dataset.gallery;
     const total = Number(gallery.dataset.galleryTotal || gallery.querySelectorAll('img').length || 1);
     const width = Math.max(1, gallery.clientWidth);
-    const index = Math.min(total, Math.max(1, Math.round(gallery.scrollLeft / width) + 1));
+    const scrollIndex = Math.min(total - 1, Math.max(0, Math.round(gallery.scrollLeft / width)));
+    const saved = Number(gallery.dataset.galleryIndex);
+    const index = Number.isFinite(saved) ? Math.min(total - 1, Math.max(0, saved)) : scrollIndex;
+    gallery.dataset.galleryIndex = String(index);
     const safe = (window.CSS && CSS.escape) ? CSS.escape(id) : String(id).replace(/["\\]/g, '\\$&');
     document.querySelectorAll(`[data-gallery-dot="${safe}"]`).forEach((dot, i) => {
-      dot.classList.toggle('active', i === index - 1);
-      dot.setAttribute('aria-current', i === index - 1 ? 'true' : 'false');
+      dot.classList.toggle('active', i === index);
+      dot.setAttribute('aria-current', i === index ? 'true' : 'false');
     });
   }
 
@@ -6622,9 +6800,12 @@ ${esc(shortDiagnosticText(diag))}</code>
     const safeId = (window.CSS && CSS.escape) ? CSS.escape(id) : String(id).replace(/["\\]/g, '\\$&');
     const gallery = document.querySelector(`[data-gallery="${safeId}"]`);
     if(!gallery) return;
-    const target = Number(index || 0) * Math.max(1, gallery.clientWidth);
+    const total = Number(gallery.dataset.galleryTotal || gallery.querySelectorAll('img').length || 1);
+    const nextIndex = Math.min(total - 1, Math.max(0, Number(index || 0)));
+    const target = nextIndex * Math.max(1, gallery.clientWidth);
+    gallery.dataset.galleryIndex = String(nextIndex);
     gallery.scrollTo({left: target, behavior:'smooth'});
-    setTimeout(()=>{ gallery.scrollLeft = target; updateGalleryCounter(gallery); }, 260);
+    setTimeout(()=>{ gallery.scrollLeft = target; updateGalleryCounter(gallery); }, 180);
   }
 
   function setupGalleries(){
@@ -6632,95 +6813,105 @@ ${esc(shortDiagnosticText(diag))}</code>
       if(gallery.dataset.galleryBound === '1') return;
       gallery.dataset.galleryBound = '1';
 
+      const id = gallery.dataset.gallery;
+      const stage = gallery.closest('.gallery-stage') || gallery;
+
+      const total = () => Number(gallery.dataset.galleryTotal || gallery.querySelectorAll('img').length || 1);
+      const currentIndex = () => {
+        const saved = Number(gallery.dataset.galleryIndex);
+        if(Number.isFinite(saved)) return Math.min(total() - 1, Math.max(0, saved));
+        return Math.min(total() - 1, Math.max(0, Math.round(gallery.scrollLeft / Math.max(1, gallery.clientWidth))));
+      };
+      const setIndex = (index, smooth=true) => {
+        const next = Math.min(total() - 1, Math.max(0, Number(index || 0)));
+        gallery.dataset.galleryIndex = String(next);
+        const target = next * Math.max(1, gallery.clientWidth);
+        gallery.scrollTo({left: target, behavior:smooth ? 'smooth' : 'auto'});
+        setTimeout(()=>{ gallery.scrollLeft = target; updateGalleryCounter(gallery); }, smooth ? 180 : 20);
+      };
       const refreshDots = () => {
         if(gallery._raf) cancelAnimationFrame(gallery._raf);
         gallery._raf = requestAnimationFrame(()=>updateGalleryCounter(gallery));
       };
 
-      const snapToNearest = () => {
-        const width = Math.max(1, gallery.clientWidth);
-        const index = Math.round(gallery.scrollLeft / width);
-        gallery.scrollTo({left:index * width, behavior:'smooth'});
-        setTimeout(()=>updateGalleryCounter(gallery), 160);
+      gallery.addEventListener('scroll', refreshDots, {passive:true});
+
+      let swipe = null;
+      const beginSwipe = (x,y) => {
+        swipe = {x,y,lastX:x,lastY:y,horizontal:false,moved:false};
       };
-
-      let drag = null;
-
-      gallery.addEventListener('pointerdown', e => {
-        if(e.target.closest('button')) return;
-        drag = {
-          id: e.pointerId,
-          x: e.clientX,
-          y: e.clientY,
-          left: gallery.scrollLeft,
-          horizontal: false
-        };
-        try { gallery.setPointerCapture?.(e.pointerId); } catch {}
-      }, {passive:true});
-
-      gallery.addEventListener('pointermove', e => {
-        if(!drag || drag.id !== e.pointerId) return;
-        const dx = e.clientX - drag.x;
-        const dy = e.clientY - drag.y;
-        if(!drag.horizontal && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)){
-          drag.horizontal = true;
-          gallery.classList.add('is-dragging-gallery');
+      const moveSwipe = (x,y,ev) => {
+        if(!swipe) return;
+        const dx = x - swipe.x;
+        const dy = y - swipe.y;
+        swipe.lastX = x;
+        swipe.lastY = y;
+        if(!swipe.horizontal && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) + 3){
+          swipe.horizontal = true;
+          stage.classList.add('is-swiping-gallery');
         }
-        if(drag.horizontal){
-          gallery.scrollLeft = drag.left - dx;
+        if(swipe.horizontal){
+          swipe.moved = true;
+          // Desplazamiento visual mientras el dedo se mueve.
+          gallery.scrollLeft = currentIndex() * Math.max(1, gallery.clientWidth) - dx;
           refreshDots();
-          e.preventDefault();
-          e.stopPropagation();
+          ev?.preventDefault?.();
+          ev?.stopPropagation?.();
         }
-      }, {passive:false});
-
-      const finishPointer = e => {
-        if(!drag || drag.id !== e.pointerId) return;
-        if(drag.horizontal){
-          snapToNearest();
-          e.preventDefault?.();
-          e.stopPropagation?.();
+      };
+      const endSwipe = (ev) => {
+        if(!swipe) return;
+        const dx = swipe.lastX - swipe.x;
+        const dy = swipe.lastY - swipe.y;
+        if(swipe.horizontal && Math.abs(dx) > 34 && Math.abs(dx) > Math.abs(dy)){
+          // dedo hacia izquierda = siguiente foto; dedo hacia derecha = anterior
+          setIndex(currentIndex() + (dx < 0 ? 1 : -1), true);
+          ev?.preventDefault?.();
+          ev?.stopPropagation?.();
+        }else if(swipe.horizontal){
+          setIndex(currentIndex(), true);
         }
-        gallery.classList.remove('is-dragging-gallery');
-        drag = null;
+        stage.classList.remove('is-swiping-gallery');
+        swipe = null;
       };
 
-      gallery.addEventListener('pointerup', finishPointer, {passive:false});
-      gallery.addEventListener('pointercancel', finishPointer, {passive:false});
-      gallery.addEventListener('lostpointercapture', () => { gallery.classList.remove('is-dragging-gallery'); drag = null; });
-
-      // Respaldo real para Android/Brave cuando el carrusel no entrega pointermove confiable.
-      let touchDrag = null;
-      gallery.addEventListener('touchstart', e => {
+      stage.addEventListener('touchstart', e => {
+        if(state.directFramePostId) return;
         if(!e.touches || !e.touches.length) return;
         const t = e.touches[0];
-        touchDrag = {x:t.clientX, y:t.clientY, left:gallery.scrollLeft, horizontal:false};
+        beginSwipe(t.clientX, t.clientY);
       }, {passive:true});
 
-      gallery.addEventListener('touchmove', e => {
-        if(!touchDrag || !e.touches || !e.touches.length) return;
+      stage.addEventListener('touchmove', e => {
+        if(state.directFramePostId) return;
+        if(!swipe || !e.touches || !e.touches.length) return;
         const t = e.touches[0];
-        const dx = t.clientX - touchDrag.x;
-        const dy = t.clientY - touchDrag.y;
-        if(!touchDrag.horizontal && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)){
-          touchDrag.horizontal = true;
-          gallery.classList.add('is-dragging-gallery');
-        }
-        if(touchDrag.horizontal){
-          gallery.scrollLeft = touchDrag.left - dx;
-          refreshDots();
-          e.preventDefault();
-          e.stopPropagation();
-        }
+        moveSwipe(t.clientX, t.clientY, e);
       }, {passive:false});
 
-      gallery.addEventListener('touchend', e => {
-        if(touchDrag?.horizontal) snapToNearest();
-        gallery.classList.remove('is-dragging-gallery');
-        touchDrag = null;
+      stage.addEventListener('touchend', e => endSwipe(e), {passive:false});
+      stage.addEventListener('touchcancel', e => endSwipe(e), {passive:false});
+
+      stage.addEventListener('pointerdown', e => {
+        if(state.directFramePostId) return;
+        if(e.pointerType === 'touch') return; // touch usa eventos touch reales arriba
+        beginSwipe(e.clientX, e.clientY);
       }, {passive:true});
 
-      gallery.addEventListener('scroll', refreshDots, {passive:true});
+      stage.addEventListener('pointermove', e => {
+        if(state.directFramePostId || !swipe || e.pointerType === 'touch') return;
+        moveSwipe(e.clientX, e.clientY, e);
+      }, {passive:false});
+
+      stage.addEventListener('pointerup', e => {
+        if(e.pointerType === 'touch') return;
+        endSwipe(e);
+      }, {passive:false});
+      stage.addEventListener('pointercancel', e => {
+        if(e.pointerType === 'touch') return;
+        endSwipe(e);
+      }, {passive:false});
+
       updateGalleryCounter(gallery);
     });
   }
@@ -6884,7 +7075,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.22: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.23: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -7515,19 +7706,8 @@ ${esc(shortDiagnosticText(diag))}</code>
 
       const end = e => {
         const p = pointers.get(e.pointerId);
-        if(p){
-          const moved = Math.hypot((e.clientX || p.x) - p.startX, (e.clientY || p.y) - p.startY);
-          const now = Date.now();
-          const nearLast = Math.hypot((e.clientX || p.x) - lastTapX, (e.clientY || p.y) - lastTapY) < 32;
-          if(moved < 12 && now - lastTapAt < 360 && nearLast){
-            toggleFit();
-            lastTapAt = 0;
-          }else if(moved < 12){
-            lastTapAt = now;
-            lastTapX = e.clientX || p.x;
-            lastTapY = e.clientY || p.y;
-          }
-        }
+        // v6.4.23: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
+        // Se desactiva doble toque para no interferir con el uso normal de la publicación.
 
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
         if(pointers.size){
