@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.23-carrusel-zona-encuadre';
+  const VERSION = 'v6.4.24-carrusel-suave-encuadre';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 
