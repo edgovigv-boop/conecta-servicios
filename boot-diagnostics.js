@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.31-mensajes-por-identidad-publicacion';
+  const VERSION = 'v6.4.32-recupera-layout-seguro';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 
