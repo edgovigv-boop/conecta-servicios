@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.30-restaura-app-visible
+/* Conecta Servicios v6.4.31-mensajes-por-identidad-publicacion
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.30-restaura-app-visible';
+  const VERSION = 'v6.4.31-mensajes-por-identidad-publicacion';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -183,6 +183,58 @@
     const fresh = {name:'Usuario local', avatarData:'', updatedAt:new Date().toISOString()};
     set(K.profile, fresh);
     return fresh;
+  }
+
+  function identityAliases(){
+    const ids = new Set();
+    const add = id => {
+      id = String(id || '').trim();
+      if(id) ids.add(id);
+    };
+    add(userId());
+    try { add(localStorage.getItem(K.user)); } catch {}
+    try { add(localStorage.getItem('conecta_user_id_backup')); } catch {}
+
+    const prof = profile();
+    const sameProfile = p => {
+      if(!p) return false;
+      const nameMatch = prof.name && !isDefaultProfileName(prof.name) && String(p.ownerName || '').trim() === String(prof.name || '').trim();
+      const avatarMatch = prof.avatarData && String(p.ownerAvatar || '').trim() === String(prof.avatarData || '').trim();
+      return !!(nameMatch || avatarMatch);
+    };
+
+    try{
+      (Array.isArray(state.posts) && state.posts.length ? state.posts : get(K.posts, [])).forEach(p => {
+        if(!p || !p.ownerId) return;
+        if(p.ownerId === userId() || sameProfile(p)) add(p.ownerId);
+      });
+    }catch{}
+
+    return [...ids];
+  }
+
+  function isMeId(id){
+    return identityAliases().includes(String(id || '').trim());
+  }
+
+  async function fetchMessagesForIdentity(params={}){
+    const aliases = identityAliases();
+    const map = new Map();
+    let lastError = null;
+
+    for(const id of aliases){
+      try{
+        const list = await fetchPublicMessages({...params, userId:id, t:Date.now()});
+        (Array.isArray(list) ? list : []).forEach(m => {
+          if(m && m.id) map.set(m.id, m);
+        });
+      }catch(error){
+        lastError = error;
+      }
+    }
+
+    if(!map.size && lastError) throw lastError;
+    return [...map.values()].sort((a,b)=>new Date(a.createdAt||0)-new Date(b.createdAt||0));
   }
 
   function follows(){ return get(K.follows,[]); }
@@ -2029,7 +2081,7 @@
 
       /* v6.3.37: corrección precisa de menú y puntitos */
 
-      /* v6.4.30: puntitos fuera del encuadre y foto única al encuadrar */
+      /* v6.4.31: puntitos fuera del encuadre y foto única al encuadrar */
       .direct-frame-active .post-body-gallery-dots,
       .direct-frame-active .gallery-dots{
         display:none !important;
@@ -2037,7 +2089,7 @@
       }
 
 
-      /* v6.4.30: encuadre independiente por foto */
+      /* v6.4.31: encuadre independiente por foto */
       .direct-frame-active .direct-frame-hint{
         max-width:calc(100% - 44px) !important;
       }
@@ -2368,7 +2420,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.30: acciones icon-only y perfil simple */
+      /* v6.4.31: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2400,7 +2452,7 @@
         display:none !important;
       }
 
-      /* v6.4.30-restaura-app-visible: bloque consolidado de Home/postCard.
+      /* v6.4.31-mensajes-por-identidad-publicacion: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2579,7 +2631,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.30: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.31: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2598,7 +2650,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.30: descripción visible, ...leer separado del texto */
+      /* v6.4.31: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2733,7 +2785,7 @@
         min-height:48px;
       }
 
-      /* v6.4.30-restaura-app-visible */
+      /* v6.4.31-mensajes-por-identidad-publicacion */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2995,7 +3047,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.30: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.31: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3141,7 +3193,7 @@
 
 
 
-      /* v6.4.30: encuadre táctil libre sin controles inferiores */
+      /* v6.4.31: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3188,9 +3240,9 @@
       }
 
 
-      /* v6.4.30: encuadre táctil tipo redes sociales */
+      /* v6.4.31: encuadre táctil tipo redes sociales */
       
-      /* v6.4.30: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.31: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3198,13 +3250,13 @@
 
 
 
-      /* v6.4.30: encuadre directo táctil fino */
+      /* v6.4.31: encuadre directo táctil fino */
 
-      /* v6.4.30: edición directa desde la publicación */
+      /* v6.4.31: edición directa desde la publicación */
 
-      /* v6.4.30: zona/cobertura libre visible */
+      /* v6.4.31: zona/cobertura libre visible */
 
-      /* v6.4.30: carrusel más suave y encuadre por foto */
+      /* v6.4.31: carrusel más suave y encuadre por foto */
       .gallery-stage{
         touch-action:pan-y !important;
       }
@@ -3261,15 +3313,15 @@
       }
 
 
-      /* v6.4.30: multimedia directa básica e instrucciones visibles */
+      /* v6.4.31: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.30: puntitos centrados arriba del usuario */
+      /* v6.4.31: puntitos centrados arriba del usuario */
 
-      /* v6.4.30: carrusel táctil y edición limpia */
+      /* v6.4.31: carrusel táctil y edición limpia */
 
-      /* v6.4.30: carrusel Android, categoría completa y puntitos pequeños */
+      /* v6.4.31: carrusel Android, categoría completa y puntitos pequeños */
 
-      /* v6.4.30: zona legible, encuadre simple y carrusel por swipe */
+      /* v6.4.31: zona legible, encuadre simple y carrusel por swipe */
       .service-area-row{
         background:rgba(0,0,0,.56) !important;
         color:#fff !important;
@@ -3382,7 +3434,7 @@
       }
 
 
-      /* v6.4.30 final override dentro del CSS */
+      /* v6.4.31 final override dentro del CSS */
       .service-area-row{
         background:rgba(0,0,0,.56)!important;
         color:#fff!important;
@@ -4026,7 +4078,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.30: encuadre directo desde la publicación */
+      /* v6.4.31: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -4118,7 +4170,7 @@
         display:none !important;
       }
 
-      /* v6.4.30: recuperación de scroll global */
+      /* v6.4.31: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -4320,7 +4372,7 @@
         }
       }
 
-      /* v6.4.30: encuadre editable de multimedia */
+      /* v6.4.31: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4553,7 +4605,7 @@
       }
 
 
-      /* v6.4.30: encuadre editable de multimedia */
+      /* v6.4.31: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5012,7 +5064,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.30: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.31: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -5156,7 +5208,7 @@
       }
 
 
-      /* v6.4.30: encuadre editable de multimedia */
+      /* v6.4.31: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5389,7 +5441,7 @@
       }
 
 
-      /* v6.4.30: encuadre editable de multimedia */
+      /* v6.4.31: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -6444,7 +6496,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       if(state.route === '/publicar') setupFrameTouchEditor();
     }catch(error){
       console.error('[Conecta] Error de render', error);
-      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6430 o recarga.</p><button class="big-button" onclick="location.href='/?v=6430'">Recargar app</button></section></main>`;
+      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6431 o recarga.</p><button class="big-button" onclick="location.href='/?v=6431'">Recargar app</button></section></main>`;
     }
   }
 
@@ -7215,7 +7267,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.30: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.31: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -7309,7 +7361,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     (list||[]).forEach(m => {
       if(!m || !m.id) return;
       if(!state.knownMessageIds.has(m.id)){
-        if(!initial && m.senderId !== userId()) fresh.push(m);
+        if(!initial && !isMeId(m.senderId)) fresh.push(m);
         state.knownMessageIds.add(m.id);
       }
     });
@@ -7324,7 +7376,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   function markMessagesRead(list){
     let changed = false;
     (list||[]).forEach(m => {
-      if(m && m.id && m.senderId !== userId() && !state.readMessageIds.has(m.id)){
+      if(m && m.id && !isMeId(m.senderId) && !state.readMessageIds.has(m.id)){
         state.readMessageIds.add(m.id);
         changed = true;
       }
@@ -7335,9 +7387,8 @@ ${esc(shortDiagnosticText(diag))}</code>
 
   function chatMatchesMessage(m, chat=state.chat){
     if(!m || !chat) return false;
-    const me = userId();
     return (m.postId||'') === (chat.postId||'') &&
-      ((m.senderId === me && m.receiverId === chat.peerId) || (m.senderId === chat.peerId && m.receiverId === me));
+      ((isMeId(m.senderId) && m.receiverId === chat.peerId) || (m.senderId === chat.peerId && isMeId(m.receiverId)));
   }
 
   function markActiveChatRead(){
@@ -7370,7 +7421,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     state.messagesLoading = !options.silent;
     state.messagesError = '';
     try{
-      const list = await fetchPublicMessages({userId:activeUserId, t:Date.now()});
+      const list = await fetchMessagesForIdentity({});
       const previous = JSON.stringify(state.publicMessages || []);
       const previousUnread = unreadCount();
       trackMessages(list, {initial:!state.messagesLoaded || state.messagesUserId !== activeUserId});
@@ -7403,7 +7454,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     state.messagesError = '';
     render();
     try{
-      const list = await fetchPublicMessages({userId:activeUserId, t:Date.now(), direct:'1'});
+      const list = await fetchMessagesForIdentity({direct:'1'});
       trackMessages(list, {initial:false});
       state.publicMessages = Array.isArray(list) ? list : [];
       state.messagesLoaded = true;
@@ -7461,7 +7512,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     if(options.silent && isTyping) return;
     state.chatLoading = !options.silent;
     try{
-      const list = await fetchPublicMessages({userId:userId(), postId:state.chat.postId, peerId:state.chat.peerId});
+      const list = await fetchMessagesForIdentity({postId:state.chat.postId, peerId:state.chat.peerId});
       const previous = JSON.stringify(state.chatMessages || []);
       trackMessages(list, {initial:!state.chatLoaded});
       state.chatMessages = list;
@@ -7477,14 +7528,13 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function conversationGroups(list){
-    const me = userId();
     const map = new Map();
 
     (list || []).forEach(m => {
       if(!m || !m.id) return;
 
-      const incoming = m.receiverId === me && m.senderId !== me;
-      const outgoing = m.senderId === me && m.receiverId !== me;
+      const incoming = isMeId(m.receiverId) && !isMeId(m.senderId);
+      const outgoing = isMeId(m.senderId) && !isMeId(m.receiverId);
       if(!incoming && !outgoing) return;
 
       const peerId = incoming ? m.senderId : m.receiverId;
@@ -7580,7 +7630,7 @@ ${esc(shortDiagnosticText(diag))}</code>
         <small>${state.messagesLoading ? 'Cargando...' : `${state.messagesLastCount || 0} mensajes · ${esc(lastFetch)}`}</small>
       </div>
       <div class="message-debug-mini">
-        <small>Este celular: <strong>${esc(activeUserId.slice(-10))}</strong></small>
+        <small>Este celular: <strong>${esc(activeUserId.slice(-10))}</strong> · IDs: ${identityAliases().length}</small>
         <small>API: ${state.messagesError ? 'con error' : (state.messagesLoaded ? 'cargada' : 'pendiente')}</small>
       </div>
       ${state.messagesError ? `<div class="local-note">${esc(state.messagesError)}</div>` : ''}
@@ -7590,7 +7640,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function chatBubble(m){
-    const mine = m.senderId === userId();
+    const mine = isMeId(m.senderId);
     return `<div class="bubble-row ${mine?'mine':'theirs'}"><div class="bubble"><p>${esc(m.text || '')}</p><small>${esc(shortTime(m.createdAt || Date.now()))}${mine?' ✓':''}</small></div></div>`;
   }
 
@@ -7906,7 +7956,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
       const end = e => {
         const p = pointers.get(e.pointerId);
-        // v6.4.30: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
+        // v6.4.31: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
         // Se desactiva doble toque para no interferir con el uso normal de la publicación.
 
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
