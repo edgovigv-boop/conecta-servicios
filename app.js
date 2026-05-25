@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.14-encuadre-directo
+/* Conecta Servicios v6.4.15-encuadre-directo-tactil-fino
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.14-encuadre-directo';
+  const VERSION = 'v6.4.15-encuadre-directo-tactil-fino';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -395,9 +395,9 @@
     const fit = String(frame.fit || frame.mediaFit || 'contain').toLowerCase() === 'cover' ? 'cover' : 'contain';
     return {
       fit,
-      scale: clampNumber(frame.scale ?? frame.mediaScale, .35, 3.2, 1),
-      x: clampNumber(frame.x ?? frame.mediaX, -150, 250, 50),
-      y: clampNumber(frame.y ?? frame.mediaY, -150, 250, 50)
+      scale: clampNumber(frame.scale ?? frame.mediaScale, .25, 4.0, 1),
+      x: clampNumber(frame.x ?? frame.mediaX, -180, 280, 50),
+      y: clampNumber(frame.y ?? frame.mediaY, -180, 280, 50)
     };
   }
 
@@ -2195,7 +2195,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.14: acciones icon-only y perfil simple */
+      /* v6.4.15: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2227,7 +2227,7 @@
         display:none !important;
       }
 
-      /* v6.4.14-encuadre-directo: bloque consolidado de Home/postCard.
+      /* v6.4.15-encuadre-directo-tactil-fino: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2406,7 +2406,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.14: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.15: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2425,7 +2425,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.14: descripción visible, ...leer separado del texto */
+      /* v6.4.15: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2560,7 +2560,7 @@
         min-height:48px;
       }
 
-      /* v6.4.14-encuadre-directo */
+      /* v6.4.15-encuadre-directo-tactil-fino */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2822,7 +2822,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.14: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.15: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -2968,7 +2968,7 @@
 
 
 
-      /* v6.4.14: encuadre táctil libre sin controles inferiores */
+      /* v6.4.15: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3015,16 +3015,46 @@
       }
 
 
-      /* v6.4.14: encuadre táctil tipo redes sociales */
+      /* v6.4.15: encuadre táctil tipo redes sociales */
       
-      /* v6.4.14: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.15: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
 
 
 
-      /* v6.4.14: encuadre directo desde la publicación */
+
+      /* v6.4.15: encuadre directo táctil fino */
+      .direct-frame-area-active .framed-media,
+      .direct-frame-area-active video,
+      .direct-frame-area-active img{
+        pointer-events:none !important;
+        will-change:transform !important;
+      }
+
+      .direct-frame-area-active.direct-frame-touching::before{
+        border-color:#ffffff !important;
+        box-shadow:inset 0 0 0 1px rgba(0,0,0,.42), 0 0 0 4px rgba(91,46,234,.24) !important;
+      }
+
+      .direct-frame-controls{
+        bottom:calc(18px + env(safe-area-inset-bottom)) !important;
+      }
+
+      .direct-frame-hint{
+        top:calc(env(safe-area-inset-top) + 68px) !important;
+        max-width:calc(100% - 30px);
+        text-align:center;
+        white-space:normal !important;
+        line-height:1.15;
+      }
+
+      .direct-frame-active .media-carousel{
+        pointer-events:none !important;
+      }
+
+      /* v6.4.15: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -3116,7 +3146,7 @@
         display:none !important;
       }
 
-      /* v6.4.14: recuperación de scroll global */
+      /* v6.4.15: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -3318,7 +3348,7 @@
         }
       }
 
-      /* v6.4.14: encuadre editable de multimedia */
+      /* v6.4.15: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -3551,7 +3581,7 @@
       }
 
 
-      /* v6.4.14: encuadre editable de multimedia */
+      /* v6.4.15: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4010,7 +4040,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.14: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.15: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -4154,7 +4184,7 @@
       }
 
 
-      /* v6.4.14: encuadre editable de multimedia */
+      /* v6.4.15: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4387,7 +4417,7 @@
       }
 
 
-      /* v6.4.14: encuadre editable de multimedia */
+      /* v6.4.15: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4712,7 +4742,7 @@
         ${pending ? '<div class="media-pending">Video en proceso. La publicación ya está visible.</div>' : ''}
         <div class="media-top"><span class="chip ${categoryClass(post.category)}">${esc(normalizeCategory(post.category))}</span><span class="chip">📍 ${esc(post.zone || 'Zona')}</span></div>
         ${isVideoPost(post) && post.mediaUrl ? `<button class="sound-toggle-card" type="button" data-toggle-video-sound="${esc(post.id)}" aria-label="Activar sonido">🔇</button>` : ''}
-        ${directFrameActive ? `<div class="direct-frame-grid" aria-hidden="true"></div><div class="direct-frame-hint">Arrastra · Pellizca · Doble toque</div><div class="direct-frame-controls"><button type="button" data-direct-frame-save="${esc(post.id)}">${state.directFrameSaving ? 'Guardando...' : 'Guardar'}</button><button type="button" data-direct-frame-cancel="${esc(post.id)}">Cancelar</button></div>` : ''}
+        ${directFrameActive ? `<div class="direct-frame-grid" aria-hidden="true"></div><div class="direct-frame-hint">Arrastra · Pellizca tamaño · Doble toque</div><div class="direct-frame-controls"><button type="button" data-direct-frame-save="${esc(post.id)}">${state.directFrameSaving ? 'Guardando...' : 'Guardar'}</button><button type="button" data-direct-frame-cancel="${esc(post.id)}">Cancelar</button></div>` : ''}
       </div>
       <div class="post-body ${expandedDesc ? 'expanded-description-body' : ''}">
         <div class="owner-row" data-open-store="${esc(post.ownerId)}">${avatarMarkup(postAvatar(post), post.ownerName || 'Usuario local')}<span>${esc(post.ownerName || 'Usuario local')}</span></div>
@@ -5665,7 +5695,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.14: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.15: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -6193,37 +6223,70 @@ ${esc(shortDiagnosticText(diag))}</code>
       let lastTapAt = 0;
       let lastTapX = 0;
       let lastTapY = 0;
+      let raf = 0;
 
       const post = () => state.posts.find(p => String(p.id) === String(postId));
+      const areaSize = () => {
+        const rect = area.getBoundingClientRect();
+        return {rect, w:Math.max(1, rect.width), h:Math.max(1, rect.height)};
+      };
       const distance = () => {
         const pts = [...pointers.values()];
         if(pts.length < 2) return 0;
         return Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
       };
-      const begin = () => { start = {frame: postFrameData(post() || {}), dist: distance()}; };
+      const midpoint = (pts) => {
+        if(pts.length >= 2) return {x:(pts[0].x + pts[1].x)/2, y:(pts[0].y + pts[1].y)/2};
+        return pts[0] || {x:0,y:0};
+      };
+      const startMidpoint = (pts) => {
+        if(pts.length >= 2) return {x:(pts[0].startX + pts[1].startX)/2, y:(pts[0].startY + pts[1].startY)/2};
+        return pts[0] ? {x:pts[0].startX, y:pts[0].startY} : {x:0,y:0};
+      };
+      const begin = () => {
+        const pts = [...pointers.values()];
+        start = {
+          frame: postFrameData(post() || {}),
+          dist: distance(),
+          mid: midpoint(pts),
+          startMid: startMidpoint(pts)
+        };
+      };
+      const apply = (frame) => {
+        const f = cleanMediaFrame(frame);
+        if(raf) cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => updatePostFrameLocal(postId, f, {save:false}));
+      };
       const update = () => {
         if(!start || !pointers.size) return;
-        const rect = area.getBoundingClientRect();
+        const {w,h} = areaSize();
         const pts = [...pointers.values()];
         let f = cleanMediaFrame(start.frame);
+
         if(pts.length === 1){
           const p = pts[0];
           const dx = p.x - p.startX;
           const dy = p.y - p.startY;
-          f.x = clampNumber(start.frame.x + (dx / Math.max(1, rect.width)) * 120, -150, 250, 50);
-          f.y = clampNumber(start.frame.y + (dy / Math.max(1, rect.height)) * 120, -150, 250, 50);
+          // Movimiento directo y sensible: la multimedia sigue el dedo.
+          f.x = clampNumber(start.frame.x + (dx / w) * 135, -180, 280, 50);
+          f.y = clampNumber(start.frame.y + (dy / h) * 135, -180, 280, 50);
         }else if(pts.length >= 2){
           const d = distance();
-          if(start.dist > 0 && d > 0) f.scale = clampNumber(start.frame.scale * (d / start.dist), .35, 3.2, 1);
-          const a = pts[0], b = pts[1];
-          const startMidX = (a.startX + b.startX) / 2;
-          const startMidY = (a.startY + b.startY) / 2;
-          const midX = (a.x + b.x) / 2;
-          const midY = (a.y + b.y) / 2;
-          f.x = clampNumber(start.frame.x + ((midX - startMidX) / Math.max(1, rect.width)) * 120, -150, 250, 50);
-          f.y = clampNumber(start.frame.y + ((midY - startMidY) / Math.max(1, rect.height)) * 120, -150, 250, 50);
+          const currentMid = midpoint(pts);
+          const originalMid = start.startMid || start.mid || currentMid;
+
+          if(start.dist > 0 && d > 0){
+            // Curva ligeramente más sensible para que se note claramente ampliar/reducir.
+            const ratio = d / start.dist;
+            const adjusted = Math.pow(ratio, 1.08);
+            f.scale = clampNumber(start.frame.scale * adjusted, .25, 4.0, 1);
+          }
+
+          f.x = clampNumber(start.frame.x + ((currentMid.x - originalMid.x) / w) * 135, -180, 280, 50);
+          f.y = clampNumber(start.frame.y + ((currentMid.y - originalMid.y) / h) * 135, -180, 280, 50);
         }
-        updatePostFrameLocal(postId, f, {save:false});
+
+        apply(f);
       };
 
       const toggleFit = () => {
@@ -6233,12 +6296,18 @@ ${esc(shortDiagnosticText(diag))}</code>
         toast(current.fit === 'contain' ? 'Modo completo.' : 'Modo llenar pantalla.');
       };
 
-      area.addEventListener('pointerdown', e => {
-        if(state.directFramePostId !== String(postId)) return;
-        if(e.target.closest('button')) return;
+      const addPointer = (e) => {
+        if(state.directFramePostId !== String(postId)) return false;
+        if(e.target.closest('button')) return false;
         pointers.set(e.pointerId, {x:e.clientX, y:e.clientY, startX:e.clientX, startY:e.clientY});
-        area.setPointerCapture?.(e.pointerId);
+        try { area.setPointerCapture?.(e.pointerId); } catch {}
         begin();
+        return true;
+      };
+
+      area.addEventListener('pointerdown', e => {
+        if(!addPointer(e)) return;
+        area.classList.add('direct-frame-touching');
         e.preventDefault();
         e.stopPropagation();
       }, {passive:false});
@@ -6269,10 +6338,15 @@ ${esc(shortDiagnosticText(diag))}</code>
             lastTapY = e.clientY || p.y;
           }
         }
+
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
-        if(pointers.size) begin();
-        else {
+        if(pointers.size){
+          // Cuando queda otro dedo activo, reinicia referencia para que no salte.
+          [...pointers.values()].forEach(pt => { pt.startX = pt.x; pt.startY = pt.y; });
+          begin();
+        }else{
           start = null;
+          area.classList.remove('direct-frame-touching');
           updatePostFrameLocal(postId, postFrameData(post() || {}), {save:true, touchUpdatedAt:false});
         }
       };
@@ -6280,6 +6354,54 @@ ${esc(shortDiagnosticText(diag))}</code>
       area.addEventListener('pointerup', end);
       area.addEventListener('pointercancel', end);
       area.addEventListener('lostpointercapture', end);
+
+      // Respaldo para navegadores que reportan mal el segundo pointer.
+      let touchStart = null;
+      area.addEventListener('touchstart', e => {
+        if(state.directFramePostId !== String(postId)) return;
+        if(e.target.closest('button')) return;
+        if(window.PointerEvent && pointers.size) return;
+        const touches = [...e.touches].map(t => ({x:t.clientX, y:t.clientY, startX:t.clientX, startY:t.clientY}));
+        if(!touches.length) return;
+        touchStart = {frame:postFrameData(post() || {}), touches};
+        e.preventDefault();
+        e.stopPropagation();
+      }, {passive:false});
+
+      area.addEventListener('touchmove', e => {
+        if(state.directFramePostId !== String(postId) || !touchStart) return;
+        if(window.PointerEvent && pointers.size) return;
+        const touches = [...e.touches].map(t => ({x:t.clientX, y:t.clientY}));
+        if(!touches.length) return;
+        const {w,h} = areaSize();
+        let f = cleanMediaFrame(touchStart.frame);
+        if(touches.length === 1 && touchStart.touches.length === 1){
+          const s = touchStart.touches[0], t = touches[0];
+          f.x = clampNumber(touchStart.frame.x + ((t.x - s.x) / w) * 135, -180, 280, 50);
+          f.y = clampNumber(touchStart.frame.y + ((t.y - s.y) / h) * 135, -180, 280, 50);
+        }else if(touches.length >= 2 && touchStart.touches.length >= 2){
+          const s0 = touchStart.touches[0], s1 = touchStart.touches[1], t0 = touches[0], t1 = touches[1];
+          const startDist = Math.hypot(s0.x - s1.x, s0.y - s1.y);
+          const currentDist = Math.hypot(t0.x - t1.x, t0.y - t1.y);
+          if(startDist > 0 && currentDist > 0){
+            f.scale = clampNumber(touchStart.frame.scale * Math.pow(currentDist / startDist, 1.08), .25, 4.0, 1);
+          }
+          const startMid = {x:(s0.x+s1.x)/2, y:(s0.y+s1.y)/2};
+          const currentMid = {x:(t0.x+t1.x)/2, y:(t0.y+t1.y)/2};
+          f.x = clampNumber(touchStart.frame.x + ((currentMid.x - startMid.x) / w) * 135, -180, 280, 50);
+          f.y = clampNumber(touchStart.frame.y + ((currentMid.y - startMid.y) / h) * 135, -180, 280, 50);
+        }
+        apply(f);
+        e.preventDefault();
+        e.stopPropagation();
+      }, {passive:false});
+
+      area.addEventListener('touchend', () => {
+        if(touchStart){
+          touchStart = null;
+          updatePostFrameLocal(postId, postFrameData(post() || {}), {save:true, touchUpdatedAt:false});
+        }
+      }, {passive:true});
     });
   }
 
