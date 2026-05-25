@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.13-scroll-fix
+/* Conecta Servicios v6.4.14-encuadre-directo
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.13-scroll-fix';
+  const VERSION = 'v6.4.14-encuadre-directo';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -88,7 +88,10 @@
     runtimeDiagnostic: null,
     audioCtx: null,
     profileEditing: false,
-    expandedDescriptions: new Set()
+    expandedDescriptions: new Set(),
+    directFramePostId: '',
+    directFrameOriginal: null,
+    directFrameSaving: false
   };
 
   const esc = (v='') => String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -2192,7 +2195,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.13: acciones icon-only y perfil simple */
+      /* v6.4.14: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2224,7 +2227,7 @@
         display:none !important;
       }
 
-      /* v6.4.13-scroll-fix: bloque consolidado de Home/postCard.
+      /* v6.4.14-encuadre-directo: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2403,7 +2406,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.13: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.14: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2422,7 +2425,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.13: descripción visible, ...leer separado del texto */
+      /* v6.4.14: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2557,7 +2560,7 @@
         min-height:48px;
       }
 
-      /* v6.4.13-scroll-fix */
+      /* v6.4.14-encuadre-directo */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2819,7 +2822,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.13: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.14: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -2965,7 +2968,7 @@
 
 
 
-      /* v6.4.13: encuadre táctil libre sin controles inferiores */
+      /* v6.4.14: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3012,15 +3015,108 @@
       }
 
 
-      /* v6.4.13: encuadre táctil tipo redes sociales */
+      /* v6.4.14: encuadre táctil tipo redes sociales */
       
-      /* v6.4.13: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.14: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
 
 
-      /* v6.4.13: recuperación de scroll global */
+
+      /* v6.4.14: encuadre directo desde la publicación */
+      .frame-direct-btn{
+        background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
+        color:#fff !important;
+        border:0 !important;
+        font-weight:900 !important;
+      }
+
+      .post-card.direct-frame-active{
+        outline:3px solid rgba(91,46,234,.45);
+        outline-offset:2px;
+      }
+
+      .direct-frame-area-active{
+        touch-action:none !important;
+        cursor:grab;
+        overflow:hidden !important;
+        position:relative !important;
+      }
+
+      .direct-frame-area-active:active{
+        cursor:grabbing;
+      }
+
+      .direct-frame-area-active::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        z-index:19;
+        pointer-events:none;
+        border:2px solid rgba(255,255,255,.86);
+        box-shadow:inset 0 0 0 1px rgba(0,0,0,.32);
+      }
+
+      .direct-frame-grid{
+        position:absolute;
+        inset:0;
+        z-index:20;
+        pointer-events:none;
+        background:
+          linear-gradient(to right, transparent 33.2%, rgba(255,255,255,.42) 33.33%, transparent 33.55%, transparent 66.2%, rgba(255,255,255,.42) 66.33%, transparent 66.55%),
+          linear-gradient(to bottom, transparent 33.2%, rgba(255,255,255,.42) 33.33%, transparent 33.55%, transparent 66.2%, rgba(255,255,255,.42) 66.33%, transparent 66.55%);
+      }
+
+      .direct-frame-hint{
+        position:absolute;
+        left:50%;
+        top:72px;
+        transform:translateX(-50%);
+        z-index:22;
+        pointer-events:none;
+        padding:8px 12px;
+        border-radius:999px;
+        background:rgba(0,0,0,.62);
+        color:#fff;
+        font-size:12px;
+        font-weight:900;
+        white-space:nowrap;
+      }
+
+      .direct-frame-controls{
+        position:absolute;
+        left:14px;
+        right:14px;
+        bottom:18px;
+        z-index:23;
+        display:flex;
+        gap:10px;
+        justify-content:center;
+        pointer-events:auto;
+      }
+
+      .direct-frame-controls button{
+        border:0;
+        border-radius:999px;
+        padding:11px 15px;
+        font-weight:900;
+        background:rgba(255,255,255,.94);
+        color:#111827;
+        box-shadow:0 10px 24px rgba(0,0,0,.20);
+      }
+
+      .direct-frame-controls button:first-child{
+        background:#5b2eea;
+        color:#fff;
+      }
+
+      .direct-frame-active .sound-toggle,
+      .direct-frame-active .sound-toggle-card{
+        display:none !important;
+      }
+
+      /* v6.4.14: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -3222,7 +3318,7 @@
         }
       }
 
-      /* v6.4.13: encuadre editable de multimedia */
+      /* v6.4.14: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -3455,7 +3551,7 @@
       }
 
 
-      /* v6.4.13: encuadre editable de multimedia */
+      /* v6.4.14: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -3914,7 +4010,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.13: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.14: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -4058,7 +4154,7 @@
       }
 
 
-      /* v6.4.13: encuadre editable de multimedia */
+      /* v6.4.14: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4291,7 +4387,7 @@
       }
 
 
-      /* v6.4.13: encuadre editable de multimedia */
+      /* v6.4.14: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4608,12 +4704,15 @@
     const own = post.ownerId === userId();
     const pending = isVideoPost(post) && !post.mediaUrl;
     const expandedDesc = isDescriptionExpanded(post.id);
-    return `<article class="post-card ${expandedDesc ? 'description-open' : ''}">
-      <div class="media-area">
+    const canFrameDirect = own && !pending && !!resolveMedia(post);
+    const directFrameActive = state.directFramePostId === post.id;
+    return `<article class="post-card ${expandedDesc ? 'description-open' : ''} ${directFrameActive ? 'direct-frame-active' : ''}">
+      <div class="media-area ${directFrameActive ? 'direct-frame-area-active' : ''}" ${directFrameActive ? `data-direct-frame-area="${esc(post.id)}"` : ''}>
         ${mediaMarkup(post)}
         ${pending ? '<div class="media-pending">Video en proceso. La publicación ya está visible.</div>' : ''}
         <div class="media-top"><span class="chip ${categoryClass(post.category)}">${esc(normalizeCategory(post.category))}</span><span class="chip">📍 ${esc(post.zone || 'Zona')}</span></div>
         ${isVideoPost(post) && post.mediaUrl ? `<button class="sound-toggle-card" type="button" data-toggle-video-sound="${esc(post.id)}" aria-label="Activar sonido">🔇</button>` : ''}
+        ${directFrameActive ? `<div class="direct-frame-grid" aria-hidden="true"></div><div class="direct-frame-hint">Arrastra · Pellizca · Doble toque</div><div class="direct-frame-controls"><button type="button" data-direct-frame-save="${esc(post.id)}">${state.directFrameSaving ? 'Guardando...' : 'Guardar'}</button><button type="button" data-direct-frame-cancel="${esc(post.id)}">Cancelar</button></div>` : ''}
       </div>
       <div class="post-body ${expandedDesc ? 'expanded-description-body' : ''}">
         <div class="owner-row" data-open-store="${esc(post.ownerId)}">${avatarMarkup(postAvatar(post), post.ownerName || 'Usuario local')}<span>${esc(post.ownerName || 'Usuario local')}</span></div>
@@ -4627,7 +4726,7 @@
           ${isVideoPost(post) && post.mediaUrl ? `<button type="button" class="icon-only-action audio-row-btn" data-toggle-video-sound="${esc(post.id)}" aria-label="Audio" title="Audio">🔇</button>` : ''}
         </div>
         ${statusLabel(post)}
-        ${own ? `<div class="manage-row">${post.cloudStatus==='local'||post.mediaStatus==='pendiente'||post.mediaStatus==='error'?`<button class="retry" data-retry="${esc(post.id)}">Reintentar</button>`:''}<button data-edit="${esc(post.id)}">Editar</button><button class="danger" data-delete="${esc(post.id)}">Borrar</button></div>` : ''}
+        ${own ? `<div class="manage-row">${post.cloudStatus==='local'||post.mediaStatus==='pendiente'||post.mediaStatus==='error'?`<button class="retry" data-retry="${esc(post.id)}">Reintentar</button>`:''}${canFrameDirect ? `<button class="frame-direct-btn" data-direct-frame-start="${esc(post.id)}">${directFrameActive ? 'Encuadrando...' : 'Encuadrar aquí'}</button>` : ''}<button data-edit="${esc(post.id)}">Editar</button><button class="danger" data-delete="${esc(post.id)}">Borrar</button></div>` : ''}
         ${post.cloudStatus==='local' ? '<div class="local-note">Tu publicación se guardó en este dispositivo. Revisa tu conexión e intenta de nuevo.</div>' : ''}
       </div>
     </article>`;
@@ -4904,6 +5003,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     if(state.route === '/chat') scrollChatToBottom('auto');
     setupInternalVideos();
     setupGalleries();
+    setupDirectFrameEditors();
     if(state.route === '/publicar') setupFrameTouchEditor();
   }
 
@@ -5565,7 +5665,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.13: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.14: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -6005,6 +6105,184 @@ ${esc(shortDiagnosticText(diag))}</code>
     }
   }
 
+  function cssEscape(value){
+    try { return CSS.escape(String(value)); } catch { return String(value).replace(/["\\]/g, '\\$&'); }
+  }
+
+  function postFrameData(post){
+    const f = mediaFrameFromPost(post || {});
+    return {fit:f.fit, scale:f.scale, x:f.x, y:f.y};
+  }
+
+  function applyPostFrameToDom(postId, frame){
+    const f = cleanMediaFrame(frame || {});
+    document.querySelectorAll(`[data-direct-frame-area="${cssEscape(postId)}"] .framed-media`).forEach(el => {
+      el.style.setProperty('--media-fit', f.fit);
+      el.style.setProperty('--media-x', `${f.x}%`);
+      el.style.setProperty('--media-y', `${f.y}%`);
+      el.style.setProperty('--media-tx', `${f.x - 50}%`);
+      el.style.setProperty('--media-ty', `${f.y - 50}%`);
+      el.style.setProperty('--media-scale', `${f.scale}`);
+    });
+  }
+
+  function updatePostFrameLocal(postId, frame, options={}){
+    const f = cleanMediaFrame(frame || {});
+    const now = new Date().toISOString();
+    const nextPosts = state.posts.map(p => String(p.id) === String(postId) ? normalizePost({
+      ...p,
+      mediaFit:f.fit,
+      mediaScale:f.scale,
+      mediaX:f.x,
+      mediaY:f.y,
+      updatedAt: options.touchUpdatedAt === false ? p.updatedAt : now
+    }) : p);
+    state.posts = nextPosts;
+    if(options.save !== false) set(K.posts, nextPosts.map(stripForLocal));
+    applyPostFrameToDom(postId, f);
+    return nextPosts.find(p => String(p.id) === String(postId));
+  }
+
+  function startDirectFrame(postId){
+    const post = state.posts.find(p => String(p.id) === String(postId));
+    if(!post || post.ownerId !== userId()) return toast('Solo puedes encuadrar tus publicaciones.');
+    if(!resolveMedia(post)) return toast('Esta publicación no tiene multimedia para encuadrar.');
+    state.directFramePostId = String(postId);
+    state.directFrameOriginal = postFrameData(post);
+    state.directFrameSaving = false;
+    render();
+    setTimeout(() => {
+      const area = document.querySelector(`[data-direct-frame-area="${cssEscape(postId)}"]`);
+      area?.scrollIntoView({block:'center', behavior:'smooth'});
+    }, 80);
+    toast('Arrastra o pellizca sobre la publicación.');
+  }
+
+  function cancelDirectFrame(postId){
+    if(state.directFrameOriginal && String(state.directFramePostId) === String(postId)){
+      updatePostFrameLocal(postId, state.directFrameOriginal, {save:true, touchUpdatedAt:false});
+    }
+    state.directFramePostId = '';
+    state.directFrameOriginal = null;
+    state.directFrameSaving = false;
+    render();
+  }
+
+  async function saveDirectFrame(postId){
+    const post = state.posts.find(p => String(p.id) === String(postId));
+    if(!post || post.ownerId !== userId()) return toast('Solo puedes guardar tus publicaciones.');
+    state.directFrameSaving = true;
+    render();
+    const updated = normalizePost({...post, updatedAt:new Date().toISOString(), cloudStatus: post.cloudStatus || 'publica'});
+    saveLocalPosts(state.posts.map(p => String(p.id) === String(postId) ? updated : p));
+    const ok = await syncPost(updated);
+    state.directFramePostId = '';
+    state.directFrameOriginal = null;
+    state.directFrameSaving = false;
+    render();
+    toast(ok ? 'Encuadre guardado.' : 'Encuadre guardado localmente. Revisa conexión.');
+  }
+
+  function setupDirectFrameEditors(){
+    document.querySelectorAll('[data-direct-frame-area]').forEach(area => {
+      if(area.dataset.directFrameReady === '1') return;
+      area.dataset.directFrameReady = '1';
+      const postId = area.dataset.directFrameArea;
+      const pointers = new Map();
+      let start = null;
+      let lastTapAt = 0;
+      let lastTapX = 0;
+      let lastTapY = 0;
+
+      const post = () => state.posts.find(p => String(p.id) === String(postId));
+      const distance = () => {
+        const pts = [...pointers.values()];
+        if(pts.length < 2) return 0;
+        return Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      };
+      const begin = () => { start = {frame: postFrameData(post() || {}), dist: distance()}; };
+      const update = () => {
+        if(!start || !pointers.size) return;
+        const rect = area.getBoundingClientRect();
+        const pts = [...pointers.values()];
+        let f = cleanMediaFrame(start.frame);
+        if(pts.length === 1){
+          const p = pts[0];
+          const dx = p.x - p.startX;
+          const dy = p.y - p.startY;
+          f.x = clampNumber(start.frame.x + (dx / Math.max(1, rect.width)) * 120, -150, 250, 50);
+          f.y = clampNumber(start.frame.y + (dy / Math.max(1, rect.height)) * 120, -150, 250, 50);
+        }else if(pts.length >= 2){
+          const d = distance();
+          if(start.dist > 0 && d > 0) f.scale = clampNumber(start.frame.scale * (d / start.dist), .35, 3.2, 1);
+          const a = pts[0], b = pts[1];
+          const startMidX = (a.startX + b.startX) / 2;
+          const startMidY = (a.startY + b.startY) / 2;
+          const midX = (a.x + b.x) / 2;
+          const midY = (a.y + b.y) / 2;
+          f.x = clampNumber(start.frame.x + ((midX - startMidX) / Math.max(1, rect.width)) * 120, -150, 250, 50);
+          f.y = clampNumber(start.frame.y + ((midY - startMidY) / Math.max(1, rect.height)) * 120, -150, 250, 50);
+        }
+        updatePostFrameLocal(postId, f, {save:false});
+      };
+
+      const toggleFit = () => {
+        const current = postFrameData(post() || {});
+        current.fit = current.fit === 'contain' ? 'cover' : 'contain';
+        updatePostFrameLocal(postId, current, {save:false});
+        toast(current.fit === 'contain' ? 'Modo completo.' : 'Modo llenar pantalla.');
+      };
+
+      area.addEventListener('pointerdown', e => {
+        if(state.directFramePostId !== String(postId)) return;
+        if(e.target.closest('button')) return;
+        pointers.set(e.pointerId, {x:e.clientX, y:e.clientY, startX:e.clientX, startY:e.clientY});
+        area.setPointerCapture?.(e.pointerId);
+        begin();
+        e.preventDefault();
+        e.stopPropagation();
+      }, {passive:false});
+
+      area.addEventListener('pointermove', e => {
+        if(!pointers.has(e.pointerId)) return;
+        const p = pointers.get(e.pointerId);
+        p.x = e.clientX;
+        p.y = e.clientY;
+        pointers.set(e.pointerId, p);
+        update();
+        e.preventDefault();
+        e.stopPropagation();
+      }, {passive:false});
+
+      const end = e => {
+        const p = pointers.get(e.pointerId);
+        if(p){
+          const moved = Math.hypot((e.clientX || p.x) - p.startX, (e.clientY || p.y) - p.startY);
+          const now = Date.now();
+          const nearLast = Math.hypot((e.clientX || p.x) - lastTapX, (e.clientY || p.y) - lastTapY) < 32;
+          if(moved < 12 && now - lastTapAt < 360 && nearLast){
+            toggleFit();
+            lastTapAt = 0;
+          }else if(moved < 12){
+            lastTapAt = now;
+            lastTapX = e.clientX || p.x;
+            lastTapY = e.clientY || p.y;
+          }
+        }
+        if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
+        if(pointers.size) begin();
+        else {
+          start = null;
+          updatePostFrameLocal(postId, postFrameData(post() || {}), {save:true, touchUpdatedAt:false});
+        }
+      };
+
+      area.addEventListener('pointerup', end);
+      area.addEventListener('pointercancel', end);
+      area.addEventListener('lostpointercapture', end);
+    });
+  }
+
   function bindDynamicFeedControls(){
     document.querySelectorAll('[data-clear]').forEach(b=>b.onclick=clearFilters);
     document.querySelectorAll('[data-retry]').forEach(b=>b.onclick=()=>retryPost(b.dataset.retry));
@@ -6012,7 +6290,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>sharePost(b.dataset.share));
     document.querySelectorAll('[data-follow]').forEach(b=>b.onclick=()=>toggleFollow(b.dataset.follow));
     document.querySelectorAll('[data-message]').forEach(b=>b.onclick=()=>openChat(b.dataset.message));
-    document.querySelectorAll('[data-open-video]').forEach(el=>el.onclick=()=>openVideo(el.dataset.openVideo));
+    document.querySelectorAll('[data-open-video]').forEach(el=>el.onclick=(e)=>{ if(state.directFramePostId === el.dataset.openVideo){e.preventDefault();e.stopPropagation();return;} openVideo(el.dataset.openVideo); });
     document.querySelectorAll('[data-reload-video]').forEach(el=>el.onclick=()=>reloadVideo(el.dataset.reloadVideo));
     document.querySelectorAll('[data-toggle-video-sound]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();toggleVideoSound(el.dataset.toggleVideoSound);});
     document.querySelectorAll('[data-gallery-dot]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();goGallery(el.dataset.galleryDot, el.dataset.galleryIndex);});
@@ -6028,6 +6306,10 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('[data-send-chat]').forEach(b=>b.onclick=sendChatMessage);
     document.querySelectorAll('[data-refresh-chat]').forEach(b=>b.onclick=()=>loadChatMessages({silent:false}));
     document.querySelectorAll('[data-refresh-messages]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();forceRefreshMessages();});
+    document.querySelectorAll('[data-direct-frame-start]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();startDirectFrame(b.dataset.directFrameStart);});
+    document.querySelectorAll('[data-direct-frame-save]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();saveDirectFrame(b.dataset.directFrameSave);});
+    document.querySelectorAll('[data-direct-frame-cancel]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();cancelDirectFrame(b.dataset.directFrameCancel);});
+    setupDirectFrameEditors();
     document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editPost(b.dataset.edit));
     document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deletePost(b.dataset.delete));
     document.querySelectorAll('[data-close-video]').forEach(b=>b.onclick=closeVideo);
