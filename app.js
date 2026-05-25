@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.18-perfil-persistente
+/* Conecta Servicios v6.4.19-multimedia-directa-basica
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.18-perfil-persistente';
+  const VERSION = 'v6.4.19-multimedia-directa-basica';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -95,7 +95,10 @@
     directFrameOriginal: null,
     directFrameSaving: false,
     directEditPostId: '',
-    directEditSaving: false
+    directEditSaving: false,
+    directMediaPostId: '',
+    directMediaMode: '',
+    directMediaSaving: false
   };
 
   const esc = (v='') => String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -2289,7 +2292,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.18: acciones icon-only y perfil simple */
+      /* v6.4.19: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2321,7 +2324,7 @@
         display:none !important;
       }
 
-      /* v6.4.18-perfil-persistente: bloque consolidado de Home/postCard.
+      /* v6.4.19-multimedia-directa-basica: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2500,7 +2503,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.18: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.19: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2519,7 +2522,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.18: descripción visible, ...leer separado del texto */
+      /* v6.4.19: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2654,7 +2657,7 @@
         min-height:48px;
       }
 
-      /* v6.4.18-perfil-persistente */
+      /* v6.4.19-multimedia-directa-basica */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2916,7 +2919,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.18: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.19: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3062,7 +3065,7 @@
 
 
 
-      /* v6.4.18: encuadre táctil libre sin controles inferiores */
+      /* v6.4.19: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3109,9 +3112,9 @@
       }
 
 
-      /* v6.4.18: encuadre táctil tipo redes sociales */
+      /* v6.4.19: encuadre táctil tipo redes sociales */
       
-      /* v6.4.18: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.19: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3119,11 +3122,11 @@
 
 
 
-      /* v6.4.18: encuadre directo táctil fino */
+      /* v6.4.19: encuadre directo táctil fino */
 
-      /* v6.4.18: edición directa desde la publicación */
+      /* v6.4.19: edición directa desde la publicación */
 
-      /* v6.4.18: zona/cobertura libre visible */
+      /* v6.4.19: zona/cobertura libre visible */
       .service-area-row{
         display:inline-flex;
         align-items:center;
@@ -3161,6 +3164,167 @@
 
       .direct-edit-panel input[data-direct-edit-zone]{
         border-color:rgba(91,46,234,.26);
+      }
+
+
+      /* v6.4.19: multimedia directa básica e instrucciones visibles */
+      .direct-media-btn{
+        background:#0f766e !important;
+        color:#fff !important;
+        border:0 !important;
+        font-weight:900 !important;
+      }
+
+      .direct-media-panel{
+        display:block;
+        width:100%;
+        box-sizing:border-box;
+        margin:12px 0 14px;
+        padding:14px;
+        border-radius:24px;
+        background:linear-gradient(135deg,rgba(15,118,110,.10),rgba(91,46,234,.08));
+        border:1px solid rgba(15,118,110,.18);
+        box-shadow:0 12px 28px rgba(17,24,39,.08);
+      }
+
+      .direct-media-head{
+        display:flex;
+        justify-content:space-between;
+        gap:10px;
+        align-items:flex-start;
+        margin-bottom:12px;
+      }
+
+      .direct-media-head strong{
+        color:#111827;
+        font-size:16px;
+      }
+
+      .direct-media-head small,
+      .direct-edit-head small{
+        color:#374151 !important;
+        font-size:12px !important;
+        font-weight:900 !important;
+        line-height:1.25 !important;
+        background:rgba(255,255,255,.72);
+        padding:6px 9px;
+        border-radius:12px;
+        text-align:right;
+      }
+
+      .direct-media-list{
+        display:grid;
+        grid-template-columns:repeat(3, minmax(0,1fr));
+        gap:9px;
+        margin:10px 0 12px;
+      }
+
+      .direct-media-thumb{
+        min-width:0;
+        border-radius:16px;
+        background:#fff;
+        border:1px solid rgba(17,24,39,.10);
+        padding:7px;
+        text-align:center;
+      }
+
+      .direct-media-thumb img{
+        width:100%;
+        aspect-ratio:1/1;
+        object-fit:cover;
+        border-radius:12px;
+        display:block;
+      }
+
+      .direct-media-video,
+      .direct-media-thumb > span{
+        width:100%;
+        aspect-ratio:1/1;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        border-radius:12px;
+        background:#111827;
+        color:#fff;
+        font-size:28px;
+      }
+
+      .direct-media-thumb small{
+        display:block;
+        margin:5px 0;
+        color:#374151;
+        font-size:11px;
+        font-weight:900;
+      }
+
+      .direct-media-thumb button{
+        border:0;
+        border-radius:999px;
+        padding:6px 8px;
+        background:#fee2e2;
+        color:#991b1b;
+        font-size:11px;
+        font-weight:900;
+      }
+
+      .direct-media-empty{
+        border-radius:16px;
+        background:#fff;
+        border:1px dashed rgba(17,24,39,.16);
+        padding:12px;
+        color:#6b7280;
+        font-weight:800;
+      }
+
+      .direct-media-actions{
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+        justify-content:flex-end;
+        margin-top:12px;
+      }
+
+      .direct-media-actions button{
+        border:0;
+        border-radius:999px;
+        padding:11px 14px;
+        font-weight:900;
+        background:#fff;
+        color:#111827;
+        border:1px solid rgba(17,24,39,.12);
+      }
+
+      .direct-media-actions .direct-media-main{
+        background:#0f766e;
+        color:#fff;
+        border-color:#0f766e;
+      }
+
+      .direct-media-panel p,
+      .direct-edit-panel p,
+      .media-frame-helper p{
+        color:#374151 !important;
+        font-size:13px !important;
+        font-weight:900 !important;
+        line-height:1.35 !important;
+        background:rgba(255,255,255,.70);
+        border-radius:14px;
+        padding:8px 10px;
+      }
+
+      input[data-direct-edit-zone],
+      #zone{
+        appearance:textfield !important;
+        -webkit-appearance:none !important;
+      }
+
+      @media (max-width:420px){
+        .direct-media-list{
+          grid-template-columns:repeat(2, minmax(0,1fr));
+        }
+        .direct-media-actions button{
+          flex:1 1 auto;
+        }
       }
 
       .direct-edit-btn{
@@ -3319,7 +3483,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.18: encuadre directo desde la publicación */
+      /* v6.4.19: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -3411,7 +3575,7 @@
         display:none !important;
       }
 
-      /* v6.4.18: recuperación de scroll global */
+      /* v6.4.19: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -3613,7 +3777,7 @@
         }
       }
 
-      /* v6.4.18: encuadre editable de multimedia */
+      /* v6.4.19: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -3846,7 +4010,7 @@
       }
 
 
-      /* v6.4.18: encuadre editable de multimedia */
+      /* v6.4.19: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4305,7 +4469,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.18: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.19: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -4449,7 +4613,7 @@
       }
 
 
-      /* v6.4.18: encuadre editable de multimedia */
+      /* v6.4.19: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4682,7 +4846,7 @@
       }
 
 
-      /* v6.4.18: encuadre editable de multimedia */
+      /* v6.4.19: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4830,6 +4994,7 @@
         <button class="nav-item ${state.route==='/perfil'?'active':''}" data-nav="/perfil"><span class="nav-icon">👤</span><small>Perfil</small></button>
       </nav>
       <input id="mediaPicker" type="file" accept="image/*,video/*" multiple hidden>
+      <input id="directMediaPicker" type="file" accept="image/*,video/*" multiple hidden>
       ${videoViewerMarkup()}
     `;
   }
@@ -5009,7 +5174,7 @@
     return `<form class="direct-edit-panel" data-direct-edit-panel="${esc(post.id)}">
       <div class="direct-edit-head">
         <strong>Editar publicación</strong>
-        <small>Cambios rápidos sin salir del Home</small>
+        <small>Edita aquí mismo: título, descripción, cobertura y categoría.</small>
       </div>
       <label>Título</label>
       <input id="directTitle-${esc(post.id)}" data-direct-edit-title="${esc(post.id)}" value="${esc(post.title || '')}" placeholder="Título de la publicación">
@@ -5040,6 +5205,7 @@
     const post = state.posts.find(p => String(p.id) === String(postId));
     if(!post || post.ownerId !== userId()) return toast('Solo puedes editar tus publicaciones.');
     state.directFramePostId = '';
+    state.directMediaPostId = '';
     state.directEditPostId = String(postId);
     state.directEditSaving = false;
     render();
@@ -5096,6 +5262,280 @@
     toast(ok ? 'Publicación actualizada.' : 'Cambios guardados localmente. Revisa conexión.');
   }
 
+  function directMediaItemsForPost(post){
+    const items = Array.isArray(post.mediaItems) ? post.mediaItems.filter(item => item && (item.mediaUrl || item.mediaRef || item.mediaData || item.mediaPreviewUrl)) : [];
+    if(items.length) return items;
+    const media = resolveMedia(post);
+    if(!media && !post.mediaRef) return [];
+    return [{
+      mediaUrl: post.mediaUrl || '',
+      mediaRef: post.mediaRef || '',
+      mediaData: post.mediaData || '',
+      mediaPreviewUrl: post.mediaPreviewUrl || media || '',
+      mediaName: post.mediaName || 'multimedia',
+      mediaMime: post.mediaMime || '',
+      mediaType: isVideoPost(post) ? 'video' : 'image'
+    }];
+  }
+
+  function directMediaMarkup(post){
+    const items = directMediaItemsForPost(post);
+    const hasVideo = isVideoPost(post);
+    const active = state.directMediaPostId === post.id;
+    if(!active) return '';
+    const itemList = items.length ? `<div class="direct-media-list">${items.map((item, index) => {
+      const src = resolveMediaItem(item);
+      const type = String(item.mediaType || post.mediaType || 'image').toLowerCase();
+      return `<div class="direct-media-thumb">
+        ${type === 'video' ? '<span class="direct-media-video">🎬</span>' : (src ? `<img src="${esc(src)}" alt="Foto ${index+1}">` : '<span>🖼️</span>')}
+        <small>${type === 'video' ? 'Video' : `Foto ${index+1}`}</small>
+        ${items.length > 1 && type !== 'video' ? `<button type="button" data-direct-media-remove="${esc(post.id)}" data-direct-media-index="${index}">Quitar</button>` : ''}
+      </div>`;
+    }).join('')}</div>` : '<div class="direct-media-empty">Sin multimedia visible.</div>';
+
+    return `<div class="direct-media-panel" data-direct-media-panel="${esc(post.id)}">
+      <div class="direct-media-head">
+        <strong>Multimedia</strong>
+        <small>Cambia video o agrega fotos sin salir del Home.</small>
+      </div>
+      ${itemList}
+      <div class="direct-media-actions">
+        ${hasVideo ? `<button type="button" class="direct-media-main" data-direct-media-pick="${esc(post.id)}" data-direct-media-mode="replace">Reemplazar video</button>` : `<button type="button" class="direct-media-main" data-direct-media-pick="${esc(post.id)}" data-direct-media-mode="add-photos">Agregar fotos</button><button type="button" data-direct-media-pick="${esc(post.id)}" data-direct-media-mode="replace">Cambiar todo</button>`}
+        <button type="button" data-direct-media-cancel="${esc(post.id)}">Cerrar</button>
+      </div>
+      <p>Por ahora usa varias fotos o un solo video. La mezcla foto + video queda para el carrusel mixto.</p>
+    </div>`;
+  }
+
+  function startDirectMedia(postId){
+    const post = state.posts.find(p => String(p.id) === String(postId));
+    if(!post || post.ownerId !== userId()) return toast('Solo puedes cambiar multimedia de tus publicaciones.');
+    state.directFramePostId = '';
+    state.directEditPostId = '';
+    state.directMediaPostId = String(postId);
+    state.directMediaMode = '';
+    state.directMediaSaving = false;
+    render();
+    setTimeout(() => document.querySelector(`[data-direct-media-panel="${cssEscape(postId)}"]`)?.scrollIntoView({block:'center', behavior:'smooth'}), 80);
+  }
+
+  function cancelDirectMedia(postId){
+    if(state.directMediaPostId !== String(postId)) return;
+    state.directMediaPostId = '';
+    state.directMediaMode = '';
+    state.directMediaSaving = false;
+    render();
+  }
+
+  function pickDirectMedia(postId, mode='replace'){
+    const post = state.posts.find(p => String(p.id) === String(postId));
+    if(!post || post.ownerId !== userId()) return toast('Solo puedes cambiar multimedia de tus publicaciones.');
+    state.directMediaPostId = String(postId);
+    state.directMediaMode = mode;
+    const picker = document.getElementById('directMediaPicker');
+    if(!picker) return toast('No se encontró el selector de multimedia.');
+    picker.value = '';
+    picker.multiple = mode !== 'replace' || !isVideoPost(post);
+    picker.click();
+  }
+
+  async function prepareDirectMediaFiles(postId, files, mode='replace', post=null){
+    const list = [...files];
+    if(!list.length) return null;
+
+    const hasVideo = list.some(file => file.type.startsWith('video/'));
+    if(hasVideo && list.length > 1) throw new Error('Por ahora puedes elegir varias fotos o un solo video.');
+    if(mode === 'add-photos' && hasVideo) throw new Error('Para agregar, selecciona solo fotos. Para video usa Cambiar todo.');
+    if(hasVideo && mode !== 'replace') throw new Error('El video reemplaza la multimedia actual.');
+
+    if(list.length > 1){
+      const images = list.filter(file => file.type.startsWith('image/'));
+      if(images.length !== list.length) throw new Error('Para varias imágenes, selecciona solo fotos.');
+      const items = [];
+      for(let i=0; i<images.length; i++){
+        const file = images[i];
+        if(file.size > MAX_IMAGE_MB * 1024 * 1024) throw new Error(`Una imagen pesa demasiado. Máximo: ${MAX_IMAGE_MB} MB.`);
+        const blob = await resizeImage(file).catch(()=>file);
+        const ref = `direct-media-${postId}-${Date.now()}-${i}`;
+        await saveMediaBlob(ref, blob);
+        items.push({
+          mediaRef: ref,
+          mediaName: file.name || `foto-${i+1}.jpg`,
+          mediaMime: blob.type || file.type || 'image/jpeg',
+          mediaType: 'image',
+          mediaPreviewUrl: objectUrlFor(ref, blob)
+        });
+      }
+      return {kind:'gallery', items};
+    }
+
+    const file = list[0];
+    const isVideo = file.type.startsWith('video/');
+    const maxMb = isVideo ? MAX_VIDEO_MB : MAX_IMAGE_MB;
+    if(file.size > maxMb * 1024 * 1024) throw new Error(isVideo ? `El video pesa más de ${maxMb} MB.` : `La imagen pesa demasiado. Máximo: ${maxMb} MB.`);
+
+    if(isVideo){
+      toast('Revisando duración del video...');
+      const duration = await readVideoDuration(file);
+      if(duration && duration > MAX_VIDEO_SECONDS + 1) throw new Error('El video dura más de 10 minutos.');
+    }
+
+    const kind = isVideo ? 'video' : 'image';
+    let blob = file;
+    if(kind === 'image') blob = await resizeImage(file).catch(()=>file);
+    const ref = `direct-media-${postId}-${Date.now()}`;
+    await saveMediaBlob(ref, blob);
+    const item = {
+      mediaRef: ref,
+      mediaName: file.name || `${kind}.bin`,
+      mediaMime: blob.type || file.type || 'application/octet-stream',
+      mediaType: kind,
+      mediaPreviewUrl: objectUrlFor(ref, blob)
+    };
+    return {kind, item};
+  }
+
+  function mergeDirectMedia(post, prepared, mode){
+    let mediaItems = [];
+    let mediaType = 'image';
+    let mediaRef = '';
+    let mediaName = '';
+    let mediaMime = '';
+    let mediaPreviewUrl = '';
+    let mediaUrl = '';
+
+    if(mode === 'add-photos'){
+      const current = directMediaItemsForPost(post).filter(item => String(item.mediaType || 'image').toLowerCase() !== 'video');
+      const currentItems = current.map(item => ({...item, mediaType:'image'}));
+      const newItems = prepared.kind === 'gallery' ? prepared.items : [prepared.item];
+      mediaItems = [...currentItems, ...newItems].slice(0, 10);
+      mediaType = 'image';
+      mediaRef = mediaItems[0]?.mediaRef || '';
+      mediaName = mediaItems[0]?.mediaName || '';
+      mediaMime = mediaItems[0]?.mediaMime || '';
+      mediaPreviewUrl = mediaItems[0]?.mediaPreviewUrl || '';
+      mediaUrl = '';
+    }else if(prepared.kind === 'video'){
+      mediaItems = [];
+      mediaType = 'video';
+      mediaRef = prepared.item.mediaRef;
+      mediaName = prepared.item.mediaName;
+      mediaMime = prepared.item.mediaMime;
+      mediaPreviewUrl = prepared.item.mediaPreviewUrl;
+      mediaUrl = '';
+    }else if(prepared.kind === 'gallery'){
+      mediaItems = prepared.items;
+      mediaType = 'image';
+      mediaRef = mediaItems[0]?.mediaRef || '';
+      mediaName = mediaItems[0]?.mediaName || '';
+      mediaMime = mediaItems[0]?.mediaMime || '';
+      mediaPreviewUrl = mediaItems[0]?.mediaPreviewUrl || '';
+      mediaUrl = '';
+    }else{
+      mediaItems = [];
+      mediaType = 'image';
+      mediaRef = prepared.item.mediaRef;
+      mediaName = prepared.item.mediaName;
+      mediaMime = prepared.item.mediaMime;
+      mediaPreviewUrl = prepared.item.mediaPreviewUrl;
+      mediaUrl = '';
+    }
+
+    return normalizePost({
+      ...post,
+      mediaItems,
+      mediaType,
+      mediaRef,
+      mediaName,
+      mediaMime,
+      mediaPreviewUrl,
+      mediaUrl,
+      mediaStatus:'pendiente',
+      mediaPending:true,
+      cloudStatus:'subiendo',
+      mediaFit:'contain',
+      mediaScale:1,
+      mediaX:50,
+      mediaY:50,
+      updatedAt:new Date().toISOString()
+    });
+  }
+
+  async function directMediaChosen(event){
+    const files = [...(event.target.files || [])];
+    event.target.value = '';
+    if(!files.length || !state.directMediaPostId) return;
+
+    const postId = state.directMediaPostId;
+    const post = state.posts.find(p => String(p.id) === String(postId));
+    if(!post || post.ownerId !== userId()) return toast('Solo puedes cambiar multimedia de tus publicaciones.');
+
+    try{
+      state.directMediaSaving = true;
+      toast('Preparando multimedia...');
+      const prepared = await prepareDirectMediaFiles(postId, files, state.directMediaMode || 'replace', post);
+      if(!prepared) return;
+
+      let updated = mergeDirectMedia(post, prepared, state.directMediaMode || 'replace');
+      saveLocalPosts(state.posts.map(p => String(p.id) === String(postId) ? updated : p));
+      render();
+
+      const firstSync = await syncPost({...updated, cloudStatus:'publica', mediaStatus:'pendiente', updatedAt:new Date().toISOString()});
+      updated = normalizePost({...updated, cloudStatus:firstSync ? 'publica' : 'local', updatedAt:new Date().toISOString()});
+      saveLocalPosts(state.posts.map(p => String(p.id) === String(postId) ? updated : p));
+      render();
+
+      if(firstSync){
+        toast('Subiendo multimedia...');
+        const uploaded = await uploadMediaToCloud(updated).catch(()=>({ok:false, post:updated}));
+        if(uploaded.ok){
+          updated = normalizePost({...uploaded.post, cloudStatus:'publica', mediaStatus:'', mediaPending:false, updatedAt:new Date().toISOString()}, 'remote');
+          await syncPost(updated);
+          saveLocalPosts(state.posts.map(p => String(p.id) === String(postId) ? updated : p));
+          toast('Multimedia actualizada.');
+        }else{
+          updated = normalizePost({...updated, cloudStatus:'publica', mediaStatus:'error', mediaError:uploaded.detail || 'No se pudo subir multimedia', updatedAt:new Date().toISOString()});
+          saveLocalPosts(state.posts.map(p => String(p.id) === String(postId) ? updated : p));
+          toast('No se pudo subir multimedia. Toca Reintentar.');
+        }
+      }else{
+        toast('Guardado localmente. Revisa conexión.');
+      }
+    }catch(error){
+      toast(error?.message || 'No se pudo abrir el archivo.');
+    }finally{
+      state.directMediaSaving = false;
+      state.directMediaMode = '';
+      render();
+    }
+  }
+
+  function removeDirectMediaItem(postId, index){
+    const post = state.posts.find(p => String(p.id) === String(postId));
+    if(!post || post.ownerId !== userId()) return toast('Solo puedes cambiar multimedia de tus publicaciones.');
+    const items = directMediaItemsForPost(post).filter(item => String(item.mediaType || 'image').toLowerCase() !== 'video');
+    if(items.length <= 1) return toast('Deja al menos una foto o usa Cambiar todo.');
+    const nextItems = items.filter((_, i) => i !== Number(index));
+    const first = nextItems[0] || {};
+    const updated = normalizePost({
+      ...post,
+      mediaItems: nextItems,
+      mediaType:'image',
+      mediaUrl:first.mediaUrl || '',
+      mediaRef:first.mediaRef || '',
+      mediaName:first.mediaName || '',
+      mediaMime:first.mediaMime || '',
+      mediaPreviewUrl:first.mediaPreviewUrl || '',
+      mediaStatus:'',
+      mediaPending:false,
+      updatedAt:new Date().toISOString()
+    });
+    saveLocalPosts(state.posts.map(p => String(p.id) === String(postId) ? updated : p));
+    syncPost(updated).catch(()=>null);
+    render();
+    toast('Foto quitada.');
+  }
+
   function postCard(post){
     post = normalizePost(post);
     const own = post.ownerId === userId();
@@ -5104,7 +5544,8 @@
     const canFrameDirect = own && !pending && !!resolveMedia(post);
     const directFrameActive = state.directFramePostId === post.id;
     const directEditActive = state.directEditPostId === post.id;
-    return `<article class="post-card ${expandedDesc ? 'description-open' : ''} ${directFrameActive ? 'direct-frame-active' : ''} ${directEditActive ? 'direct-edit-active' : ''}">
+    const directMediaActive = state.directMediaPostId === post.id;
+    return `<article class="post-card ${expandedDesc ? 'description-open' : ''} ${directFrameActive ? 'direct-frame-active' : ''} ${directEditActive ? 'direct-edit-active' : ''} ${directMediaActive ? 'direct-media-active' : ''}">
       <div class="media-area ${directFrameActive ? 'direct-frame-area-active' : ''}" ${directFrameActive ? `data-direct-frame-area="${esc(post.id)}"` : ''}>
         ${mediaMarkup(post)}
         ${pending ? '<div class="media-pending">Video en proceso. La publicación ya está visible.</div>' : ''}
@@ -5115,6 +5556,7 @@
       <div class="post-body ${expandedDesc ? 'expanded-description-body' : ''}">
         <div class="owner-row" data-open-store="${esc(post.ownerId)}">${avatarMarkup(postAvatar(post), post.ownerName || 'Usuario local')}<span>${esc(post.ownerName || 'Usuario local')}</span></div>
         ${directEditActive ? directEditMarkup(post) : ''}
+        ${directMediaActive ? directMediaMarkup(post) : ''}
         ${serviceAreaText(post) ? `<div class="service-area-row">📍 Atiende en: <strong>${esc(serviceAreaText(post))}</strong></div>` : ''}
         <h2>${esc(post.title || 'Publicación')}</h2>
         ${descriptionMarkup(post)}
@@ -5126,7 +5568,7 @@
           ${isVideoPost(post) && post.mediaUrl ? `<button type="button" class="icon-only-action audio-row-btn" data-toggle-video-sound="${esc(post.id)}" aria-label="Audio" title="Audio">🔇</button>` : ''}
         </div>
         ${statusLabel(post)}
-        ${own ? `<div class="manage-row">${post.cloudStatus==='local'||post.mediaStatus==='pendiente'||post.mediaStatus==='error'?`<button class="retry" data-retry="${esc(post.id)}">Reintentar</button>`:''}${canFrameDirect ? `<button class="frame-direct-btn" data-direct-frame-start="${esc(post.id)}">${directFrameActive ? 'Encuadrando...' : 'Encuadrar aquí'}</button>` : ''}<button class="direct-edit-btn" data-direct-edit-start="${esc(post.id)}">${directEditActive ? 'Editando...' : 'Editar aquí'}</button><button data-edit="${esc(post.id)}">Completo</button><button class="danger" data-delete="${esc(post.id)}">Borrar</button></div>` : ''}
+        ${own ? `<div class="manage-row">${post.cloudStatus==='local'||post.mediaStatus==='pendiente'||post.mediaStatus==='error'?`<button class="retry" data-retry="${esc(post.id)}">Reintentar</button>`:''}${canFrameDirect ? `<button class="frame-direct-btn" data-direct-frame-start="${esc(post.id)}">${directFrameActive ? 'Encuadrando...' : 'Encuadrar aquí'}</button>` : ''}<button class="direct-edit-btn" data-direct-edit-start="${esc(post.id)}">${directEditActive ? 'Editando...' : 'Editar aquí'}</button><button class="direct-media-btn" data-direct-media-start="${esc(post.id)}">${directMediaActive ? 'Multimedia...' : 'Multimedia'}</button><button data-edit="${esc(post.id)}">Completo</button><button class="danger" data-delete="${esc(post.id)}">Borrar</button></div>` : ''}
         ${post.cloudStatus==='local' ? '<div class="local-note">Tu publicación se guardó en este dispositivo. Revisa tu conexión e intenta de nuevo.</div>' : ''}
       </div>
     </article>`;
@@ -5389,7 +5831,7 @@ ${esc(shortDiagnosticText(diag))}</code>
         ${media ? '<div class="frame-safe-grid" aria-hidden="true"></div><div class="frame-touch-hint">Arrastra / Pellizca</div>' : ''}
       </div>
       ${frameControls}
-      <div class="form-grid"><div><label for="zone">Zona o municipio</label><input id="zone" list="zoneList" value="${esc(draft.zone||'')}" placeholder="Ej. Tejupilco"><datalist id="zoneList">${ZONES.map(z=>`<option value="${esc(z)}"></option>`).join('')}</datalist></div><div><label for="category">Categoría</label><select id="category">${CATEGORIES.map(c=>`<option value="${esc(c)}" ${normalizeCategory(draft.category)===c?'selected':''}>${esc(c)}</option>`).join('')}</select></div></div>
+      <div class="form-grid"><div><label for="zone">Zona / cobertura</label><input id="zone" value="${esc(draft.zone||'')}" placeholder="Ej. Toluca y sus alrededores / En línea mundial" autocomplete="off"></div><div><label for="category">Categoría</label><select id="category">${CATEGORIES.map(c=>`<option value="${esc(c)}" ${normalizeCategory(draft.category)===c?'selected':''}>${esc(c)}</option>`).join('')}</select></div></div>
       <button class="big-button ${state.publishing?'publishing':''}" data-publish ${state.publishing?'disabled':''}>${state.publishing?'PUBLICANDO...':'PUBLICAR'}</button>
       <div class="local-note">Tip: si el video tiene texto, usa “Ver completo” antes de guardar.</div>
     </section>`);
@@ -5839,6 +6281,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   function editPost(id){
     state.directEditPostId = '';
     state.directFramePostId = '';
+    state.directMediaPostId = '';
     const post = state.posts.find(x=>x.id===id);
     if(!post || post.ownerId !== userId()) return toast('Solo puedes editar tus publicaciones.');
     state.editing = {...post};
@@ -6070,7 +6513,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.18: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.19: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -6552,6 +6995,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     if(!post || post.ownerId !== userId()) return toast('Solo puedes encuadrar tus publicaciones.');
     if(!resolveMedia(post)) return toast('Esta publicación no tiene multimedia para encuadrar.');
     state.directEditPostId = '';
+    state.directMediaPostId = '';
     state.directFramePostId = String(postId);
     state.directFrameOriginal = postFrameData(post);
     state.directFrameSaving = false;
@@ -6807,6 +7251,15 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('[data-direct-frame-save]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();saveDirectFrame(b.dataset.directFrameSave);});
     document.querySelectorAll('[data-direct-frame-cancel]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();cancelDirectFrame(b.dataset.directFrameCancel);});
     setupDirectFrameEditors();
+    document.querySelectorAll('[data-direct-media-start]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();startDirectMedia(b.dataset.directMediaStart);});
+    document.querySelectorAll('[data-direct-media-pick]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();pickDirectMedia(b.dataset.directMediaPick, b.dataset.directMediaMode || 'replace');});
+    document.querySelectorAll('[data-direct-media-cancel]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();cancelDirectMedia(b.dataset.directMediaCancel);});
+    document.querySelectorAll('[data-direct-media-remove]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();removeDirectMediaItem(b.dataset.directMediaRemove, b.dataset.directMediaIndex);});
+    document.querySelectorAll('[data-direct-media-panel]').forEach(panel=>{
+      panel.onclick=e=>e.stopPropagation();
+      panel.onpointerdown=e=>e.stopPropagation();
+      panel.ontouchstart=e=>e.stopPropagation();
+    });
     document.querySelectorAll('[data-direct-edit-start]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();startDirectEdit(b.dataset.directEditStart);});
     document.querySelectorAll('[data-direct-edit-save]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();saveDirectEdit(b.dataset.directEditSave);});
     document.querySelectorAll('[data-direct-edit-cancel]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();cancelDirectEdit(b.dataset.directEditCancel);});
@@ -6847,6 +7300,8 @@ ${esc(shortDiagnosticText(diag))}</code>
 
     const picker=document.getElementById('mediaPicker');
     if(picker) picker.onchange=fileChosen;
+    const directPicker=document.getElementById('directMediaPicker');
+    if(directPicker) directPicker.onchange=directMediaChosen;
 
     const search=document.getElementById('searchInput');
     if(search){
