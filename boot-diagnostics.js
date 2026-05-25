@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.12-encuadre-compacto';
+  const VERSION = 'v6.4.13-scroll-fix';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 

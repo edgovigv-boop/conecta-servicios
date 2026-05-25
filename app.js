@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.12-encuadre-compacto
+/* Conecta Servicios v6.4.13-scroll-fix
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.12-encuadre-compacto';
+  const VERSION = 'v6.4.13-scroll-fix';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2192,7 +2192,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.12: acciones icon-only y perfil simple */
+      /* v6.4.13: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2224,7 +2224,7 @@
         display:none !important;
       }
 
-      /* v6.4.12-encuadre-compacto: bloque consolidado de Home/postCard.
+      /* v6.4.13-scroll-fix: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2403,7 +2403,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.12: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.13: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2422,7 +2422,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.12: descripción visible, ...leer separado del texto */
+      /* v6.4.13: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2557,7 +2557,7 @@
         min-height:48px;
       }
 
-      /* v6.4.12-encuadre-compacto */
+      /* v6.4.13-scroll-fix */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2819,7 +2819,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.12: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.13: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -2965,7 +2965,7 @@
 
 
 
-      /* v6.4.12: encuadre táctil libre sin controles inferiores */
+      /* v6.4.13: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3012,24 +3012,66 @@
       }
 
 
-      /* v6.4.12: encuadre táctil tipo redes sociales */
+      /* v6.4.13: encuadre táctil tipo redes sociales */
       
-      /* v6.4.12: editor de encuadre compacto, acorde a la publicación */
-      html,
-      body{
-        overscroll-behavior-y:contain;
+      /* v6.4.13: editor de encuadre compacto, acorde a la publicación */
+      .composer{
+        padding-bottom:120px !important;
       }
 
-      .composer{
-        overscroll-behavior-y:contain !important;
-        padding-bottom:120px !important;
+
+      /* v6.4.13: recuperación de scroll global */
+      html,
+      body{
+        overflow-x:hidden !important;
+        overflow-y:auto !important;
+        height:auto !important;
+        min-height:100% !important;
+        position:relative !important;
+        touch-action:pan-y !important;
+        overscroll-behavior-y:auto !important;
+        -webkit-overflow-scrolling:touch !important;
+      }
+
+      #app,
+      .app-shell,
+      main,
+      .screen{
+        overflow-y:visible !important;
+        height:auto !important;
+        min-height:100dvh !important;
+        max-height:none !important;
+        touch-action:pan-y !important;
+        overscroll-behavior-y:auto !important;
+        -webkit-overflow-scrolling:touch !important;
+      }
+
+      .panel,
+      .composer,
+      .messages-panel,
+      .chat-panel,
+      .profile-panel,
+      .store-panel,
+      .following-panel,
+      .owner-directory{
+        overflow-y:visible !important;
+        height:auto !important;
+        max-height:none !important;
+        touch-action:pan-y !important;
+        overscroll-behavior-y:auto !important;
+        -webkit-overflow-scrolling:touch !important;
+      }
+
+      .frame-touch-editor{
+        touch-action:none !important;
+        overscroll-behavior:contain !important;
       }
 
       .frame-touch-editor{
         width:min(100%, 390px) !important;
         height:auto !important;
         min-height:0 !important;
-        max-height:none !important;
+        max-height:58vh !important;
         aspect-ratio:4 / 5 !important;
         margin:10px auto 12px !important;
         border-radius:24px !important;
@@ -3180,7 +3222,7 @@
         }
       }
 
-      /* v6.4.12: encuadre editable de multimedia */
+      /* v6.4.13: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -3413,7 +3455,7 @@
       }
 
 
-      /* v6.4.12: encuadre editable de multimedia */
+      /* v6.4.13: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -3872,7 +3914,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.12: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.13: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -4016,7 +4058,7 @@
       }
 
 
-      /* v6.4.12: encuadre editable de multimedia */
+      /* v6.4.13: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4249,7 +4291,7 @@
       }
 
 
-      /* v6.4.12: encuadre editable de multimedia */
+      /* v6.4.13: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5523,7 +5565,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.12: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.13: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
