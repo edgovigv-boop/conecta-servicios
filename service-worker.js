@@ -1,4 +1,4 @@
-const CACHE_NAME = 'conecta-servicios-v6-4-21-carrusel-edicion-limpia';
+const CACHE_NAME = 'conecta-servicios-v6-4-22-carrusel-categoria-puntitos';
 
 const ASSETS = [
   '/',
@@ -36,7 +36,7 @@ self.addEventListener('fetch', event => {
     url.pathname.endsWith('/index.html') ||
     url.pathname.endsWith('/app.js') ||
     url.pathname.endsWith('/service-worker.js') ||
-    url.search.includes('v=6421') ||
+    url.search.includes('v=6422') ||
     url.search.includes('v=6.3.41');
 
   if (networkFirst) {

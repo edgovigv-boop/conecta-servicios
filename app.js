@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.21-carrusel-edicion-limpia
+/* Conecta Servicios v6.4.22-carrusel-categoria-puntitos
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.21-carrusel-edicion-limpia';
+  const VERSION = 'v6.4.22-carrusel-categoria-puntitos';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2292,7 +2292,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.21: acciones icon-only y perfil simple */
+      /* v6.4.22: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2324,7 +2324,7 @@
         display:none !important;
       }
 
-      /* v6.4.21-carrusel-edicion-limpia: bloque consolidado de Home/postCard.
+      /* v6.4.22-carrusel-categoria-puntitos: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2503,7 +2503,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.21: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.22: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2522,7 +2522,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.21: descripción visible, ...leer separado del texto */
+      /* v6.4.22: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2657,7 +2657,7 @@
         min-height:48px;
       }
 
-      /* v6.4.21-carrusel-edicion-limpia */
+      /* v6.4.22-carrusel-categoria-puntitos */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2919,7 +2919,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.21: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.22: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3065,7 +3065,7 @@
 
 
 
-      /* v6.4.21: encuadre táctil libre sin controles inferiores */
+      /* v6.4.22: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3112,9 +3112,9 @@
       }
 
 
-      /* v6.4.21: encuadre táctil tipo redes sociales */
+      /* v6.4.22: encuadre táctil tipo redes sociales */
       
-      /* v6.4.21: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.22: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3122,11 +3122,11 @@
 
 
 
-      /* v6.4.21: encuadre directo táctil fino */
+      /* v6.4.22: encuadre directo táctil fino */
 
-      /* v6.4.21: edición directa desde la publicación */
+      /* v6.4.22: edición directa desde la publicación */
 
-      /* v6.4.21: zona/cobertura libre visible */
+      /* v6.4.22: zona/cobertura libre visible */
       .service-area-row{
         display:inline-flex;
         align-items:center;
@@ -3167,11 +3167,131 @@
       }
 
 
-      /* v6.4.21: multimedia directa básica e instrucciones visibles */
+      /* v6.4.22: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.21: puntitos centrados arriba del usuario */
+      /* v6.4.22: puntitos centrados arriba del usuario */
 
-      /* v6.4.21: carrusel táctil y edición limpia */
+      /* v6.4.22: carrusel táctil y edición limpia */
+
+      /* v6.4.22: carrusel Android, categoría completa y puntitos pequeños */
+      .media-top{
+        left:18px !important;
+        right:auto !important;
+        width:auto !important;
+        max-width:none !important;
+        overflow:visible !important;
+      }
+
+      .media-top .chip{
+        width:auto !important;
+        max-width:none !important;
+        min-width:max-content !important;
+        white-space:nowrap !important;
+        overflow:visible !important;
+        text-overflow:clip !important;
+        font-size:13px !important;
+        letter-spacing:.2px !important;
+        padding:8px 12px !important;
+      }
+
+      .gallery-stage,
+      .gallery-stage .media-carousel,
+      .media-carousel{
+        pointer-events:auto !important;
+        touch-action:pan-x !important;
+        overscroll-behavior-x:contain !important;
+        -webkit-overflow-scrolling:touch !important;
+      }
+
+      .gallery-stage .media-carousel,
+      .media-carousel{
+        overflow-x:scroll !important;
+        overflow-y:hidden !important;
+        scroll-snap-type:x mandatory !important;
+        scroll-behavior:smooth !important;
+        cursor:grab;
+      }
+
+      .media-carousel.is-dragging-gallery{
+        cursor:grabbing;
+        scroll-snap-type:none !important;
+      }
+
+      .media-carousel img{
+        flex:0 0 100% !important;
+        min-width:100% !important;
+        max-width:100% !important;
+        pointer-events:none !important;
+        user-select:none !important;
+        -webkit-user-drag:none !important;
+        scroll-snap-align:center !important;
+      }
+
+      .post-body{
+        position:relative !important;
+      }
+
+      .post-body .gallery-dots,
+      .post-body-gallery-dots{
+        position:absolute !important;
+        top:15px !important;
+        right:58px !important;
+        left:auto !important;
+        bottom:auto !important;
+        transform:none !important;
+        margin:0 !important;
+        z-index:130 !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        gap:3px !important;
+        padding:4px 6px !important;
+        border-radius:999px !important;
+        background:rgba(0,0,0,.28) !important;
+        border:1px solid rgba(255,255,255,.20) !important;
+        backdrop-filter:blur(8px) !important;
+        box-shadow:0 6px 18px rgba(0,0,0,.18) !important;
+        width:auto !important;
+        max-width:72px !important;
+      }
+
+      .post-body .gallery-dot{
+        width:15px !important;
+        height:15px !important;
+        min-width:15px !important;
+        padding:0 !important;
+        border:0 !important;
+        border-radius:999px !important;
+        background:transparent !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+      }
+
+      .post-body .gallery-dot span{
+        width:4px !important;
+        height:4px !important;
+        border-radius:999px !important;
+        background:rgba(255,255,255,.58) !important;
+        display:block !important;
+        transition:all .18s ease !important;
+      }
+
+      .post-body .gallery-dot.active span{
+        width:13px !important;
+        background:#fff !important;
+      }
+
+      @media (max-width:420px){
+        .post-body .gallery-dots,
+        .post-body-gallery-dots{
+          top:14px !important;
+          right:48px !important;
+          transform:scale(.92) !important;
+          transform-origin:right top !important;
+        }
+      }
+
       .gallery-stage,
       .gallery-stage .media-carousel,
       .media-carousel{
@@ -3284,14 +3404,33 @@
       }
 
       .post-body .gallery-dot.active{
-        width:24px !important;
+        width:15px !important;
+        background:transparent !important;
+      }
+      .post-body .gallery-dot span{
+        width:4px !important;
+        height:4px !important;
+        border-radius:999px !important;
+        background:rgba(255,255,255,.58) !important;
+        display:block !important;
+      }
+      .post-body .gallery-dot.active span{
+        width:13px !important;
         background:#fff !important;
       }
 
       .post-body .gallery-dots,
       .post-body-gallery-dots{
-        margin:0 42px 10px auto !important;
-        background:rgba(0,0,0,.38) !important;
+        position:absolute !important;
+        top:15px !important;
+        right:58px !important;
+        left:auto !important;
+        bottom:auto !important;
+        margin:0 !important;
+        gap:3px !important;
+        padding:4px 6px !important;
+        background:rgba(0,0,0,.28) !important;
+        transform:none !important;
       }
 
       .direct-media-panel > p{
@@ -3618,7 +3757,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.21: encuadre directo desde la publicación */
+      /* v6.4.22: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -3710,7 +3849,7 @@
         display:none !important;
       }
 
-      /* v6.4.21: recuperación de scroll global */
+      /* v6.4.22: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -3912,7 +4051,7 @@
         }
       }
 
-      /* v6.4.21: encuadre editable de multimedia */
+      /* v6.4.22: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4145,7 +4284,7 @@
       }
 
 
-      /* v6.4.21: encuadre editable de multimedia */
+      /* v6.4.22: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4604,7 +4743,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.21: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.22: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -4748,7 +4887,7 @@
       }
 
 
-      /* v6.4.21: encuadre editable de multimedia */
+      /* v6.4.22: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4981,7 +5120,7 @@
       }
 
 
-      /* v6.4.21: encuadre editable de multimedia */
+      /* v6.4.22: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5272,7 +5411,7 @@
   function galleryDotsMarkup(post){
     const imageItems = galleryImageItems(post);
     if(imageItems.length <= 1) return '';
-    const dots = imageItems.map((_, index) => `<button type="button" class="gallery-dot ${index === 0 ? 'active' : ''}" data-gallery-dot="${esc(post.id)}" data-gallery-index="${index}" aria-label="Ver foto ${index+1}"></button>`).join('');
+    const dots = imageItems.map((_, index) => `<button type="button" class="gallery-dot ${index === 0 ? 'active' : ''}" data-gallery-dot="${esc(post.id)}" data-gallery-index="${index}" aria-label="Ver foto ${index+1}"><span></span></button>`).join('');
     return `<div class="gallery-dots post-body-gallery-dots" data-gallery-dots="${esc(post.id)}" aria-label="Fotos de la publicación">${dots}</div>`;
   }
 
@@ -6483,8 +6622,9 @@ ${esc(shortDiagnosticText(diag))}</code>
     const safeId = (window.CSS && CSS.escape) ? CSS.escape(id) : String(id).replace(/["\\]/g, '\\$&');
     const gallery = document.querySelector(`[data-gallery="${safeId}"]`);
     if(!gallery) return;
-    gallery.scrollTo({left: Number(index || 0) * gallery.clientWidth, behavior:'smooth'});
-    setTimeout(()=>updateGalleryCounter(gallery), 320);
+    const target = Number(index || 0) * Math.max(1, gallery.clientWidth);
+    gallery.scrollTo({left: target, behavior:'smooth'});
+    setTimeout(()=>{ gallery.scrollLeft = target; updateGalleryCounter(gallery); }, 260);
   }
 
   function setupGalleries(){
@@ -6497,6 +6637,13 @@ ${esc(shortDiagnosticText(diag))}</code>
         gallery._raf = requestAnimationFrame(()=>updateGalleryCounter(gallery));
       };
 
+      const snapToNearest = () => {
+        const width = Math.max(1, gallery.clientWidth);
+        const index = Math.round(gallery.scrollLeft / width);
+        gallery.scrollTo({left:index * width, behavior:'smooth'});
+        setTimeout(()=>updateGalleryCounter(gallery), 160);
+      };
+
       let drag = null;
 
       gallery.addEventListener('pointerdown', e => {
@@ -6506,7 +6653,6 @@ ${esc(shortDiagnosticText(diag))}</code>
           x: e.clientX,
           y: e.clientY,
           left: gallery.scrollLeft,
-          moved: false,
           horizontal: false
         };
         try { gallery.setPointerCapture?.(e.pointerId); } catch {}
@@ -6516,12 +6662,11 @@ ${esc(shortDiagnosticText(diag))}</code>
         if(!drag || drag.id !== e.pointerId) return;
         const dx = e.clientX - drag.x;
         const dy = e.clientY - drag.y;
-        if(!drag.horizontal && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) + 4){
+        if(!drag.horizontal && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)){
           drag.horizontal = true;
           gallery.classList.add('is-dragging-gallery');
         }
         if(drag.horizontal){
-          drag.moved = true;
           gallery.scrollLeft = drag.left - dx;
           refreshDots();
           e.preventDefault();
@@ -6529,13 +6674,10 @@ ${esc(shortDiagnosticText(diag))}</code>
         }
       }, {passive:false});
 
-      const finish = e => {
+      const finishPointer = e => {
         if(!drag || drag.id !== e.pointerId) return;
         if(drag.horizontal){
-          const width = Math.max(1, gallery.clientWidth);
-          const index = Math.round(gallery.scrollLeft / width);
-          gallery.scrollTo({left:index * width, behavior:'smooth'});
-          setTimeout(()=>updateGalleryCounter(gallery), 180);
+          snapToNearest();
           e.preventDefault?.();
           e.stopPropagation?.();
         }
@@ -6543,12 +6685,42 @@ ${esc(shortDiagnosticText(diag))}</code>
         drag = null;
       };
 
-      gallery.addEventListener('pointerup', finish, {passive:false});
-      gallery.addEventListener('pointercancel', finish, {passive:false});
+      gallery.addEventListener('pointerup', finishPointer, {passive:false});
+      gallery.addEventListener('pointercancel', finishPointer, {passive:false});
       gallery.addEventListener('lostpointercapture', () => { gallery.classList.remove('is-dragging-gallery'); drag = null; });
 
+      // Respaldo real para Android/Brave cuando el carrusel no entrega pointermove confiable.
+      let touchDrag = null;
+      gallery.addEventListener('touchstart', e => {
+        if(!e.touches || !e.touches.length) return;
+        const t = e.touches[0];
+        touchDrag = {x:t.clientX, y:t.clientY, left:gallery.scrollLeft, horizontal:false};
+      }, {passive:true});
+
+      gallery.addEventListener('touchmove', e => {
+        if(!touchDrag || !e.touches || !e.touches.length) return;
+        const t = e.touches[0];
+        const dx = t.clientX - touchDrag.x;
+        const dy = t.clientY - touchDrag.y;
+        if(!touchDrag.horizontal && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)){
+          touchDrag.horizontal = true;
+          gallery.classList.add('is-dragging-gallery');
+        }
+        if(touchDrag.horizontal){
+          gallery.scrollLeft = touchDrag.left - dx;
+          refreshDots();
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }, {passive:false});
+
+      gallery.addEventListener('touchend', e => {
+        if(touchDrag?.horizontal) snapToNearest();
+        gallery.classList.remove('is-dragging-gallery');
+        touchDrag = null;
+      }, {passive:true});
+
       gallery.addEventListener('scroll', refreshDots, {passive:true});
-      gallery.addEventListener('touchend', () => setTimeout(()=>updateGalleryCounter(gallery), 120), {passive:true});
       updateGalleryCounter(gallery);
     });
   }
@@ -6712,7 +6884,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.21: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.22: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
