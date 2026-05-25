@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.9-multimedia-encuadre
+/* Conecta Servicios v6.4.10-multimedia-encuadre-tactil
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.9-multimedia-encuadre';
+  const VERSION = 'v6.4.10-multimedia-encuadre-tactil';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2191,7 +2191,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.9: acciones icon-only y perfil simple */
+      /* v6.4.10: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2223,7 +2223,7 @@
         display:none !important;
       }
 
-      /* v6.4.9-multimedia-encuadre: bloque consolidado de Home/postCard.
+      /* v6.4.10-multimedia-encuadre-tactil: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2402,7 +2402,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.9: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.10: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2421,7 +2421,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.9: descripción visible, ...leer separado del texto */
+      /* v6.4.10: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2556,7 +2556,7 @@
         min-height:48px;
       }
 
-      /* v6.4.9-multimedia-encuadre */
+      /* v6.4.10-multimedia-encuadre-tactil */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2818,7 +2818,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.9: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.10: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -2962,7 +2962,99 @@
       }
 
 
-      /* v6.4.9: encuadre editable de multimedia */
+
+      /* v6.4.10: encuadre táctil tipo redes sociales */
+      .frame-touch-editor{
+        position:relative !important;
+        min-height:min(72vh, 620px) !important;
+        height:min(72vh, 620px) !important;
+        border-radius:28px !important;
+        overflow:hidden !important;
+        background:#050507 !important;
+        touch-action:none !important;
+        user-select:none !important;
+        -webkit-user-select:none !important;
+        cursor:grab;
+      }
+
+      .frame-touch-editor:active{
+        cursor:grabbing;
+      }
+
+      .frame-touch-editor::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        z-index:4;
+        pointer-events:none;
+        border:2px solid rgba(255,255,255,.82);
+        border-radius:24px;
+        box-shadow:inset 0 0 0 1px rgba(0,0,0,.28);
+      }
+
+      .frame-safe-grid{
+        position:absolute;
+        inset:0;
+        z-index:5;
+        pointer-events:none;
+        background:
+          linear-gradient(to right, transparent 33.1%, rgba(255,255,255,.45) 33.3%, transparent 33.6%, transparent 66.1%, rgba(255,255,255,.45) 66.3%, transparent 66.6%),
+          linear-gradient(to bottom, transparent 33.1%, rgba(255,255,255,.45) 33.3%, transparent 33.6%, transparent 66.1%, rgba(255,255,255,.45) 66.3%, transparent 66.6%);
+        opacity:.72;
+      }
+
+      .frame-touch-hint{
+        position:absolute;
+        left:50%;
+        bottom:14px;
+        transform:translateX(-50%);
+        z-index:6;
+        pointer-events:none;
+        padding:8px 12px;
+        border-radius:999px;
+        background:rgba(0,0,0,.62);
+        color:#fff;
+        font-size:12px;
+        font-weight:900;
+        text-align:center;
+        white-space:nowrap;
+      }
+
+      .frame-touch-editor .frame-preview-gallery,
+      .frame-touch-editor .frame-preview-media,
+      .frame-touch-editor img,
+      .frame-touch-editor video{
+        width:100% !important;
+        height:100% !important;
+        max-height:none !important;
+      }
+
+      .frame-touch-editor .frame-preview-gallery{
+        min-height:100% !important;
+        height:100% !important;
+      }
+
+      .frame-touch-editor .frame-preview-gallery img{
+        min-width:100% !important;
+        height:100% !important;
+      }
+
+      @media (max-width:420px){
+        .frame-touch-editor{
+          min-height:64vh !important;
+          height:64vh !important;
+          border-radius:24px !important;
+        }
+        .frame-touch-hint{
+          bottom:10px;
+          font-size:11px;
+          max-width:calc(100% - 34px);
+          white-space:normal;
+          line-height:1.15;
+        }
+      }
+
+      /* v6.4.10: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, cover) !important;
@@ -3195,7 +3287,7 @@
       }
 
 
-      /* v6.4.9: encuadre editable de multimedia */
+      /* v6.4.10: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, cover) !important;
@@ -3654,7 +3746,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.9: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.10: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3798,7 +3890,7 @@
       }
 
 
-      /* v6.4.9: encuadre editable de multimedia */
+      /* v6.4.10: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, cover) !important;
@@ -4031,7 +4123,7 @@
       }
 
 
-      /* v6.4.9: encuadre editable de multimedia */
+      /* v6.4.10: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, cover) !important;
@@ -4600,7 +4692,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     const frameControls = media ? `<div class="media-frame-editor">
       <div class="frame-editor-head">
         <strong>Encuadre de multimedia</strong>
-        <span>${esc(frameLabel(frame))}</span>
+        <span data-frame-label>${esc(frameLabel(frame))}</span>
       </div>
       <div class="frame-mode-row">
         <button type="button" class="${frame.fit==='contain'?'active':''}" data-frame-action="fit-contain">Ver completo</button>
@@ -4617,7 +4709,7 @@ ${esc(shortDiagnosticText(diag))}</code>
         <button type="button" data-frame-action="down">↓ Abajo</button>
         <span></span>
       </div>
-      <p>Usa “Ver completo” cuando el video tenga texto, precios o información importante en los bordes.</p>
+      <p>Arrastra directamente sobre la imagen/video para moverlo. Pellizca con dos dedos para abrir o cerrar tamaño. Usa “Ver completo” si hay texto o información en los bordes.</p>
     </div>` : '';
 
     return shell(`<section class="composer">
@@ -4626,7 +4718,10 @@ ${esc(shortDiagnosticText(diag))}</code>
       <p>Escribe aquí. Puedes elegir una foto, varias fotos o un video corto.</p>
       <label for="description">Descripción</label>
       <textarea id="description" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Ejemplo: Vendo tamales hoy&#10;Entrego en zona centro desde las 6 pm.">${esc(draft.description||'')}</textarea>
-      <div class="preview-compact frame-preview-box" data-pick>${previewMarkup}</div>
+      <div class="preview-compact frame-preview-box frame-touch-editor" data-frame-touch>
+        ${previewMarkup}
+        ${media ? '<div class="frame-safe-grid" aria-hidden="true"></div><div class="frame-touch-hint">Arrastra con un dedo · Pellizca con dos dedos</div>' : ''}
+      </div>
       ${frameControls}
       <div class="form-grid"><div><label for="zone">Zona o municipio</label><input id="zone" list="zoneList" value="${esc(draft.zone||'')}" placeholder="Ej. Tejupilco"><datalist id="zoneList">${ZONES.map(z=>`<option value="${esc(z)}"></option>`).join('')}</datalist></div><div><label for="category">Categoría</label><select id="category">${CATEGORIES.map(c=>`<option value="${esc(c)}" ${normalizeCategory(draft.category)===c?'selected':''}>${esc(c)}</option>`).join('')}</select></div></div>
       <button class="big-button ${state.publishing?'publishing':''}" data-publish ${state.publishing?'disabled':''}>${state.publishing?'PUBLICANDO...':'PUBLICAR'}</button>
@@ -4642,6 +4737,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     if(state.route === '/chat') scrollChatToBottom('auto');
     setupInternalVideos();
     setupGalleries();
+    if(state.route === '/publicar') setupFrameTouchEditor();
   }
 
   function routeUrl(route){
@@ -4813,6 +4909,112 @@ ${esc(shortDiagnosticText(diag))}</code>
     state.mediaFrame = cleanMediaFrame(f);
     saveComposerDraft();
     render();
+  }
+
+  function applyFramePreviewStyles(){
+    const f = cleanMediaFrame(state.mediaFrame || {});
+    document.querySelectorAll('.frame-preview-media').forEach(el => {
+      el.style.setProperty('--media-fit', f.fit);
+      el.style.setProperty('--media-x', `${f.x}%`);
+      el.style.setProperty('--media-y', `${f.y}%`);
+      el.style.setProperty('--media-scale', `${f.scale}`);
+    });
+    const label = document.querySelector('[data-frame-label]');
+    if(label) label.textContent = frameLabel(f);
+  }
+
+  function setupFrameTouchEditor(){
+    const box = document.querySelector('[data-frame-touch]');
+    if(!box || box.dataset.touchReady === '1') return;
+    box.dataset.touchReady = '1';
+
+    const pointers = new Map();
+    let start = null;
+
+    const distance = () => {
+      const pts = [...pointers.values()];
+      if(pts.length < 2) return 0;
+      return Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    };
+
+    const begin = () => {
+      start = {
+        frame: cleanMediaFrame(state.mediaFrame || {}),
+        dist: distance()
+      };
+    };
+
+    const updateFromPointers = () => {
+      if(!start || !pointers.size) return;
+      const rect = box.getBoundingClientRect();
+      let f = cleanMediaFrame(state.mediaFrame || {});
+      const pts = [...pointers.values()];
+
+      if(pts.length === 1){
+        const p = pts[0];
+        const dx = p.x - p.startX;
+        const dy = p.y - p.startY;
+        f.x = clampNumber(start.frame.x - (dx / Math.max(1, rect.width)) * 100, 0, 100, 50);
+        f.y = clampNumber(start.frame.y - (dy / Math.max(1, rect.height)) * 100, 0, 100, 50);
+      }else if(pts.length >= 2){
+        const d = distance();
+        if(start.dist > 0 && d > 0){
+          f.scale = clampNumber(start.frame.scale * (d / start.dist), .65, 2.4, 1);
+        }
+        const a = pts[0], b = pts[1];
+        const startMidX = (a.startX + b.startX) / 2;
+        const startMidY = (a.startY + b.startY) / 2;
+        const midX = (a.x + b.x) / 2;
+        const midY = (a.y + b.y) / 2;
+        f.x = clampNumber(start.frame.x - ((midX - startMidX) / Math.max(1, rect.width)) * 100, 0, 100, 50);
+        f.y = clampNumber(start.frame.y - ((midY - startMidY) / Math.max(1, rect.height)) * 100, 0, 100, 50);
+      }
+
+      state.mediaFrame = cleanMediaFrame(f);
+      applyFramePreviewStyles();
+    };
+
+    box.addEventListener('pointerdown', e => {
+      if(e.target.closest('button, input, textarea, select')) return;
+      pointers.set(e.pointerId, {x:e.clientX, y:e.clientY, startX:e.clientX, startY:e.clientY});
+      box.setPointerCapture?.(e.pointerId);
+      begin();
+      e.preventDefault();
+      e.stopPropagation();
+    }, {passive:false});
+
+    box.addEventListener('pointermove', e => {
+      if(!pointers.has(e.pointerId)) return;
+      const p = pointers.get(e.pointerId);
+      p.x = e.clientX;
+      p.y = e.clientY;
+      pointers.set(e.pointerId, p);
+      updateFromPointers();
+      e.preventDefault();
+      e.stopPropagation();
+    }, {passive:false});
+
+    const end = e => {
+      if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
+      if(pointers.size) begin();
+      else{
+        start = null;
+        saveComposerDraft();
+      }
+    };
+
+    box.addEventListener('pointerup', end);
+    box.addEventListener('pointercancel', end);
+    box.addEventListener('lostpointercapture', end);
+
+    box.addEventListener('wheel', e => {
+      const f = cleanMediaFrame(state.mediaFrame || {});
+      f.scale = clampNumber(f.scale + (e.deltaY < 0 ? .06 : -.06), .65, 2.4, 1);
+      state.mediaFrame = f;
+      applyFramePreviewStyles();
+      saveComposerDraft();
+      e.preventDefault();
+    }, {passive:false});
   }
 
   function collectForm(){
@@ -5171,7 +5373,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.9: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.10: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
