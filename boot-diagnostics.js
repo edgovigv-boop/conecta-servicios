@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.15-encuadre-directo-tactil-fino';
+  const VERSION = 'v6.4.16-edicion-directa-publicacion';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 

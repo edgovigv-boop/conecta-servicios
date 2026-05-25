@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.15-encuadre-directo-tactil-fino
+/* Conecta Servicios v6.4.16-edicion-directa-publicacion
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.15-encuadre-directo-tactil-fino';
+  const VERSION = 'v6.4.16-edicion-directa-publicacion';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -91,7 +91,9 @@
     expandedDescriptions: new Set(),
     directFramePostId: '',
     directFrameOriginal: null,
-    directFrameSaving: false
+    directFrameSaving: false,
+    directEditPostId: '',
+    directEditSaving: false
   };
 
   const esc = (v='') => String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -2195,7 +2197,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.15: acciones icon-only y perfil simple */
+      /* v6.4.16: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2227,7 +2229,7 @@
         display:none !important;
       }
 
-      /* v6.4.15-encuadre-directo-tactil-fino: bloque consolidado de Home/postCard.
+      /* v6.4.16-edicion-directa-publicacion: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2406,7 +2408,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.15: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.16: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2425,7 +2427,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.15: descripción visible, ...leer separado del texto */
+      /* v6.4.16: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2560,7 +2562,7 @@
         min-height:48px;
       }
 
-      /* v6.4.15-encuadre-directo-tactil-fino */
+      /* v6.4.16-edicion-directa-publicacion */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -2822,7 +2824,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.15: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.16: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -2968,7 +2970,7 @@
 
 
 
-      /* v6.4.15: encuadre táctil libre sin controles inferiores */
+      /* v6.4.16: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3015,9 +3017,9 @@
       }
 
 
-      /* v6.4.15: encuadre táctil tipo redes sociales */
+      /* v6.4.16: encuadre táctil tipo redes sociales */
       
-      /* v6.4.15: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.16: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3025,7 +3027,137 @@
 
 
 
-      /* v6.4.15: encuadre directo táctil fino */
+      /* v6.4.16: encuadre directo táctil fino */
+
+      /* v6.4.16: edición directa desde la publicación */
+      .direct-edit-btn{
+        background:#111827 !important;
+        color:#fff !important;
+        border:0 !important;
+        font-weight:900 !important;
+      }
+
+      .direct-edit-active .post-body > h2,
+      .direct-edit-active .post-description-short,
+      .direct-edit-active .post-description-collapsed,
+      .direct-edit-active .post-description-expanded,
+      .direct-edit-active .post-meta,
+      .direct-edit-active .post-action-row,
+      .direct-edit-active .status-chip{
+        display:none !important;
+      }
+
+      .direct-edit-panel{
+        display:block;
+        width:100%;
+        box-sizing:border-box;
+        margin:12px 0 14px;
+        padding:14px;
+        border-radius:24px;
+        background:linear-gradient(135deg,rgba(91,46,234,.08),rgba(20,184,166,.08));
+        border:1px solid rgba(91,46,234,.16);
+        box-shadow:0 12px 28px rgba(17,24,39,.08);
+      }
+
+      .direct-edit-head{
+        display:flex;
+        justify-content:space-between;
+        gap:10px;
+        align-items:flex-start;
+        margin-bottom:12px;
+      }
+
+      .direct-edit-head strong{
+        color:#111827;
+        font-size:16px;
+      }
+
+      .direct-edit-head small{
+        color:#6b7280;
+        font-size:11px;
+        font-weight:800;
+        text-align:right;
+      }
+
+      .direct-edit-panel label{
+        display:block;
+        margin:10px 0 5px;
+        color:#374151;
+        font-size:12px;
+        font-weight:900;
+      }
+
+      .direct-edit-panel input,
+      .direct-edit-panel textarea,
+      .direct-edit-panel select{
+        width:100%;
+        box-sizing:border-box;
+        border:1px solid rgba(17,24,39,.12);
+        border-radius:16px;
+        background:#fff;
+        color:#111827;
+        padding:11px 12px;
+        font-size:15px;
+        font-weight:700;
+        outline:none;
+      }
+
+      .direct-edit-panel textarea{
+        min-height:118px;
+        resize:vertical;
+        line-height:1.35;
+      }
+
+      .direct-edit-grid{
+        display:grid;
+        grid-template-columns:1fr 132px;
+        gap:10px;
+      }
+
+      .direct-edit-actions{
+        display:flex;
+        gap:10px;
+        justify-content:flex-end;
+        margin-top:12px;
+      }
+
+      .direct-edit-actions button{
+        border:0;
+        border-radius:999px;
+        padding:11px 14px;
+        font-weight:900;
+      }
+
+      .direct-save-btn{
+        background:#5b2eea;
+        color:#fff;
+      }
+
+      .direct-cancel-btn{
+        background:#fff;
+        color:#111827;
+        border:1px solid rgba(17,24,39,.12) !important;
+      }
+
+      .direct-edit-panel p{
+        margin:10px 0 0;
+        color:#6b7280;
+        font-size:12px;
+        font-weight:700;
+      }
+
+      @media (max-width:420px){
+        .direct-edit-grid{
+          grid-template-columns:1fr;
+        }
+        .direct-edit-actions{
+          justify-content:stretch;
+        }
+        .direct-edit-actions button{
+          flex:1;
+        }
+      }
+
       .direct-frame-area-active .framed-media,
       .direct-frame-area-active video,
       .direct-frame-area-active img{
@@ -3054,7 +3186,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.15: encuadre directo desde la publicación */
+      /* v6.4.16: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -3146,7 +3278,7 @@
         display:none !important;
       }
 
-      /* v6.4.15: recuperación de scroll global */
+      /* v6.4.16: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -3348,7 +3480,7 @@
         }
       }
 
-      /* v6.4.15: encuadre editable de multimedia */
+      /* v6.4.16: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -3581,7 +3713,7 @@
       }
 
 
-      /* v6.4.15: encuadre editable de multimedia */
+      /* v6.4.16: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4040,7 +4172,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.15: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.16: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -4184,7 +4316,7 @@
       }
 
 
-      /* v6.4.15: encuadre editable de multimedia */
+      /* v6.4.16: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4417,7 +4549,7 @@
       }
 
 
-      /* v6.4.15: encuadre editable de multimedia */
+      /* v6.4.16: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4729,6 +4861,97 @@
     return '<div class="no-media">Conecta Servicios</div>';
   }
 
+  function directEditMarkup(post){
+    const category = normalizeCategory(post.category);
+    return `<form class="direct-edit-panel" data-direct-edit-panel="${esc(post.id)}">
+      <div class="direct-edit-head">
+        <strong>Editar publicación</strong>
+        <small>Cambios rápidos sin salir del Home</small>
+      </div>
+      <label>Título</label>
+      <input id="directTitle-${esc(post.id)}" data-direct-edit-title="${esc(post.id)}" value="${esc(post.title || '')}" placeholder="Título de la publicación">
+      <label>Descripción</label>
+      <textarea id="directDescription-${esc(post.id)}" data-direct-edit-description="${esc(post.id)}" rows="5" placeholder="Describe lo que vendes, ofreces o necesitas">${esc(post.description || '')}</textarea>
+      <div class="direct-edit-grid">
+        <div>
+          <label>Zona / municipio</label>
+          <input id="directZone-${esc(post.id)}" data-direct-edit-zone="${esc(post.id)}" list="zoneListDirect-${esc(post.id)}" value="${esc(post.zone || '')}" placeholder="Ej. Calimaya">
+          <datalist id="zoneListDirect-${esc(post.id)}">${ZONES.map(z=>`<option value="${esc(z)}"></option>`).join('')}</datalist>
+        </div>
+        <div>
+          <label>Categoría</label>
+          <select id="directCategory-${esc(post.id)}" data-direct-edit-category="${esc(post.id)}">
+            ${CATEGORIES.map(c=>`<option value="${esc(c)}" ${category===c?'selected':''}>${esc(c)}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="direct-edit-actions">
+        <button type="button" class="direct-save-btn" data-direct-edit-save="${esc(post.id)}">${state.directEditSaving ? 'Guardando...' : 'Guardar cambios'}</button>
+        <button type="button" class="direct-cancel-btn" data-direct-edit-cancel="${esc(post.id)}">Cancelar</button>
+      </div>
+      <p>Tip: el título puede ser corto; la descripción puede tener más detalle.</p>
+    </form>`;
+  }
+
+  function startDirectEdit(postId){
+    const post = state.posts.find(p => String(p.id) === String(postId));
+    if(!post || post.ownerId !== userId()) return toast('Solo puedes editar tus publicaciones.');
+    state.directFramePostId = '';
+    state.directEditPostId = String(postId);
+    state.directEditSaving = false;
+    render();
+    setTimeout(() => {
+      const panel = document.querySelector(`[data-direct-edit-panel="${cssEscape(postId)}"]`);
+      panel?.scrollIntoView({block:'center', behavior:'smooth'});
+      document.querySelector(`[data-direct-edit-title="${cssEscape(postId)}"]`)?.focus({preventScroll:true});
+    }, 100);
+  }
+
+  function cancelDirectEdit(postId){
+    if(state.directEditPostId !== String(postId)) return;
+    state.directEditPostId = '';
+    state.directEditSaving = false;
+    render();
+  }
+
+  function readDirectEditForm(postId){
+    const id = cssEscape(postId);
+    const title = document.querySelector(`[data-direct-edit-title="${id}"]`)?.value.trim() || '';
+    const description = document.querySelector(`[data-direct-edit-description="${id}"]`)?.value.trim() || '';
+    const zone = document.querySelector(`[data-direct-edit-zone="${id}"]`)?.value.trim() || '';
+    const category = normalizeCategory(document.querySelector(`[data-direct-edit-category="${id}"]`)?.value || 'VENDO');
+    return {title, description, zone, category};
+  }
+
+  async function saveDirectEdit(postId){
+    const post = state.posts.find(p => String(p.id) === String(postId));
+    if(!post || post.ownerId !== userId()) return toast('Solo puedes guardar tus publicaciones.');
+    const form = readDirectEditForm(postId);
+    if(!form.title && !form.description) return toast('Agrega título o descripción.');
+    if(!form.zone) return toast('Agrega zona o municipio.');
+
+    const nextTitle = (form.title || titleFrom(form.description)).slice(0, 90);
+    const updated = normalizePost({
+      ...post,
+      title: nextTitle,
+      description: form.description || post.description || nextTitle,
+      zone: form.zone,
+      category: form.category,
+      updatedAt: new Date().toISOString(),
+      cloudStatus: post.cloudStatus || 'publica'
+    });
+
+    state.directEditSaving = true;
+    saveLocalPosts(state.posts.map(p => String(p.id) === String(postId) ? updated : p));
+    render();
+
+    const ok = await syncPost(updated);
+    state.directEditPostId = '';
+    state.directEditSaving = false;
+    render();
+    toast(ok ? 'Publicación actualizada.' : 'Cambios guardados localmente. Revisa conexión.');
+  }
+
   function postCard(post){
     post = normalizePost(post);
     const own = post.ownerId === userId();
@@ -4736,7 +4959,8 @@
     const expandedDesc = isDescriptionExpanded(post.id);
     const canFrameDirect = own && !pending && !!resolveMedia(post);
     const directFrameActive = state.directFramePostId === post.id;
-    return `<article class="post-card ${expandedDesc ? 'description-open' : ''} ${directFrameActive ? 'direct-frame-active' : ''}">
+    const directEditActive = state.directEditPostId === post.id;
+    return `<article class="post-card ${expandedDesc ? 'description-open' : ''} ${directFrameActive ? 'direct-frame-active' : ''} ${directEditActive ? 'direct-edit-active' : ''}">
       <div class="media-area ${directFrameActive ? 'direct-frame-area-active' : ''}" ${directFrameActive ? `data-direct-frame-area="${esc(post.id)}"` : ''}>
         ${mediaMarkup(post)}
         ${pending ? '<div class="media-pending">Video en proceso. La publicación ya está visible.</div>' : ''}
@@ -4746,6 +4970,7 @@
       </div>
       <div class="post-body ${expandedDesc ? 'expanded-description-body' : ''}">
         <div class="owner-row" data-open-store="${esc(post.ownerId)}">${avatarMarkup(postAvatar(post), post.ownerName || 'Usuario local')}<span>${esc(post.ownerName || 'Usuario local')}</span></div>
+        ${directEditActive ? directEditMarkup(post) : ''}
         <h2>${esc(post.title || 'Publicación')}</h2>
         ${descriptionMarkup(post)}
         <div class="post-meta"><span>${new Date(post.createdAt || Date.now()).toLocaleDateString('es-MX')}</span></div>
@@ -4756,7 +4981,7 @@
           ${isVideoPost(post) && post.mediaUrl ? `<button type="button" class="icon-only-action audio-row-btn" data-toggle-video-sound="${esc(post.id)}" aria-label="Audio" title="Audio">🔇</button>` : ''}
         </div>
         ${statusLabel(post)}
-        ${own ? `<div class="manage-row">${post.cloudStatus==='local'||post.mediaStatus==='pendiente'||post.mediaStatus==='error'?`<button class="retry" data-retry="${esc(post.id)}">Reintentar</button>`:''}${canFrameDirect ? `<button class="frame-direct-btn" data-direct-frame-start="${esc(post.id)}">${directFrameActive ? 'Encuadrando...' : 'Encuadrar aquí'}</button>` : ''}<button data-edit="${esc(post.id)}">Editar</button><button class="danger" data-delete="${esc(post.id)}">Borrar</button></div>` : ''}
+        ${own ? `<div class="manage-row">${post.cloudStatus==='local'||post.mediaStatus==='pendiente'||post.mediaStatus==='error'?`<button class="retry" data-retry="${esc(post.id)}">Reintentar</button>`:''}${canFrameDirect ? `<button class="frame-direct-btn" data-direct-frame-start="${esc(post.id)}">${directFrameActive ? 'Encuadrando...' : 'Encuadrar aquí'}</button>` : ''}<button class="direct-edit-btn" data-direct-edit-start="${esc(post.id)}">${directEditActive ? 'Editando...' : 'Editar aquí'}</button><button data-edit="${esc(post.id)}">Completo</button><button class="danger" data-delete="${esc(post.id)}">Borrar</button></div>` : ''}
         ${post.cloudStatus==='local' ? '<div class="local-note">Tu publicación se guardó en este dispositivo. Revisa tu conexión e intenta de nuevo.</div>' : ''}
       </div>
     </article>`;
@@ -5466,6 +5691,8 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function editPost(id){
+    state.directEditPostId = '';
+    state.directFramePostId = '';
     const post = state.posts.find(x=>x.id===id);
     if(!post || post.ownerId !== userId()) return toast('Solo puedes editar tus publicaciones.');
     state.editing = {...post};
@@ -5695,7 +5922,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.15: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.16: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -6177,6 +6404,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     const post = state.posts.find(p => String(p.id) === String(postId));
     if(!post || post.ownerId !== userId()) return toast('Solo puedes encuadrar tus publicaciones.');
     if(!resolveMedia(post)) return toast('Esta publicación no tiene multimedia para encuadrar.');
+    state.directEditPostId = '';
     state.directFramePostId = String(postId);
     state.directFrameOriginal = postFrameData(post);
     state.directFrameSaving = false;
@@ -6432,6 +6660,14 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('[data-direct-frame-save]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();saveDirectFrame(b.dataset.directFrameSave);});
     document.querySelectorAll('[data-direct-frame-cancel]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();cancelDirectFrame(b.dataset.directFrameCancel);});
     setupDirectFrameEditors();
+    document.querySelectorAll('[data-direct-edit-start]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();startDirectEdit(b.dataset.directEditStart);});
+    document.querySelectorAll('[data-direct-edit-save]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();saveDirectEdit(b.dataset.directEditSave);});
+    document.querySelectorAll('[data-direct-edit-cancel]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();cancelDirectEdit(b.dataset.directEditCancel);});
+    document.querySelectorAll('[data-direct-edit-panel]').forEach(panel=>{
+      panel.onclick=e=>e.stopPropagation();
+      panel.onpointerdown=e=>e.stopPropagation();
+      panel.ontouchstart=e=>e.stopPropagation();
+    });
     document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editPost(b.dataset.edit));
     document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deletePost(b.dataset.delete));
     document.querySelectorAll('[data-close-video]').forEach(b=>b.onclick=closeVideo);
