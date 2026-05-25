@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.37-restaura-layout-estable
+/* Conecta Servicios v6.4.39-rescate-demo-layout
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.37-restaura-layout-estable';
+  const VERSION = 'v6.4.39-rescate-demo-layout';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2081,7 +2081,7 @@
 
       /* v6.3.37: corrección precisa de menú y puntitos */
 
-      /* v6.4.37: puntitos fuera del encuadre y foto única al encuadrar */
+      /* v6.4.39: puntitos fuera del encuadre y foto única al encuadrar */
       .direct-frame-active .post-body-gallery-dots,
       .direct-frame-active .gallery-dots{
         display:none !important;
@@ -2089,7 +2089,7 @@
       }
 
 
-      /* v6.4.37: encuadre independiente por foto */
+      /* v6.4.39: encuadre independiente por foto */
       .direct-frame-active .direct-frame-hint{
         max-width:calc(100% - 44px) !important;
       }
@@ -2420,7 +2420,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.37: acciones icon-only y perfil simple */
+      /* v6.4.39: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2452,7 +2452,7 @@
         display:none !important;
       }
 
-      /* v6.4.37-restaura-layout-estable: bloque consolidado de Home/postCard.
+      /* v6.4.39-rescate-demo-layout: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2631,7 +2631,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.37: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.39: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2650,7 +2650,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.37: descripción visible, ...leer separado del texto */
+      /* v6.4.39: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2785,7 +2785,7 @@
         min-height:48px;
       }
 
-      /* v6.4.37-restaura-layout-estable */
+      /* v6.4.39-rescate-demo-layout */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -3047,7 +3047,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.37: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.39: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3193,7 +3193,7 @@
 
 
 
-      /* v6.4.37: encuadre táctil libre sin controles inferiores */
+      /* v6.4.39: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3240,9 +3240,9 @@
       }
 
 
-      /* v6.4.37: encuadre táctil tipo redes sociales */
+      /* v6.4.39: encuadre táctil tipo redes sociales */
       
-      /* v6.4.37: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.39: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3250,13 +3250,13 @@
 
 
 
-      /* v6.4.37: encuadre directo táctil fino */
+      /* v6.4.39: encuadre directo táctil fino */
 
-      /* v6.4.37: edición directa desde la publicación */
+      /* v6.4.39: edición directa desde la publicación */
 
-      /* v6.4.37: zona/cobertura libre visible */
+      /* v6.4.39: zona/cobertura libre visible */
 
-      /* v6.4.37: carrusel más suave y encuadre por foto */
+      /* v6.4.39: carrusel más suave y encuadre por foto */
       .gallery-stage{
         touch-action:pan-y !important;
       }
@@ -3313,15 +3313,15 @@
       }
 
 
-      /* v6.4.37: multimedia directa básica e instrucciones visibles */
+      /* v6.4.39: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.37: puntitos centrados arriba del usuario */
+      /* v6.4.39: puntitos centrados arriba del usuario */
 
-      /* v6.4.37: carrusel táctil y edición limpia */
+      /* v6.4.39: carrusel táctil y edición limpia */
 
-      /* v6.4.37: carrusel Android, categoría completa y puntitos pequeños */
+      /* v6.4.39: carrusel Android, categoría completa y puntitos pequeños */
 
-      /* v6.4.37: zona legible, encuadre simple y carrusel por swipe */
+      /* v6.4.39: zona legible, encuadre simple y carrusel por swipe */
       .service-area-row{
         background:rgba(0,0,0,.56) !important;
         color:#fff !important;
@@ -3434,7 +3434,7 @@
       }
 
 
-      /* v6.4.37 final override dentro del CSS */
+      /* v6.4.39 final override dentro del CSS */
       .service-area-row{
         background:rgba(0,0,0,.56)!important;
         color:#fff!important;
@@ -4078,7 +4078,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.37: encuadre directo desde la publicación */
+      /* v6.4.39: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -4170,7 +4170,7 @@
         display:none !important;
       }
 
-      /* v6.4.37: recuperación de scroll global */
+      /* v6.4.39: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -4372,7 +4372,7 @@
         }
       }
 
-      /* v6.4.37: encuadre editable de multimedia */
+      /* v6.4.39: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4605,7 +4605,7 @@
       }
 
 
-      /* v6.4.37: encuadre editable de multimedia */
+      /* v6.4.39: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5064,7 +5064,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.37: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.39: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -5208,7 +5208,7 @@
       }
 
 
-      /* v6.4.37: encuadre editable de multimedia */
+      /* v6.4.39: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5441,7 +5441,7 @@
       }
 
 
-      /* v6.4.37: encuadre editable de multimedia */
+      /* v6.4.39: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5561,7 +5561,7 @@
       .diag-copy{background:#e0e7ff;color:#3730a3;}
     
 
-      /* v6.4.37: recuperación segura de layout visual sin tocar mensajes */
+      /* v6.4.39: recuperación segura de layout visual sin tocar mensajes */
       .post-card{
         position:relative !important;
         overflow:hidden !important;
@@ -5692,7 +5692,7 @@
 
 
 
-      /* v6.4.37: recupera menú de herramientas del dueño */
+      /* v6.4.39: recupera menú de herramientas del dueño */
       .manage-row{
         display:flex !important;
         visibility:visible !important;
@@ -5776,7 +5776,7 @@
 
 
 
-      /* v6.4.37: Herramientas ya no aparece como botón falso */
+      /* v6.4.39: Herramientas ya no aparece como botón falso */
       .manage-row::before{
         content:none !important;
         display:none !important;
@@ -5806,125 +5806,36 @@
 
 
 
-      /* v6.4.37: ajuste de altura del feed para que no se sienta largo */
-      :root{
-        --conecta-feed-height: calc(100dvh - env(safe-area-inset-bottom) - 96px);
-      }
-
-      @supports not (height: 100dvh){
-        :root{
-          --conecta-feed-height: calc(100vh - env(safe-area-inset-bottom) - 96px);
-        }
-      }
-
-      .feed{
-        gap:0 !important;
-        padding-bottom:calc(env(safe-area-inset-bottom) + 88px) !important;
-      }
-
-      .feed > .post-card{
-        height:var(--conecta-feed-height) !important;
-        min-height:var(--conecta-feed-height) !important;
-        max-height:var(--conecta-feed-height) !important;
-        margin:0 0 8px !important;
-        overflow:hidden !important;
-        scroll-margin-top:0 !important;
-      }
-
-      .feed > .post-card .media-area,
-      .feed > .post-card .media-area img,
-      .feed > .post-card .media-area .no-media,
-      .feed > .post-card .video-inline-wrap,
-      .feed > .post-card .video-inline-wrap video,
-      .feed > .post-card .media-area video.feed-video-player,
-      .feed > .post-card .media-carousel,
-      .feed > .post-card .media-carousel img,
-      .feed > .post-card .direct-frame-single,
-      .feed > .post-card .direct-frame-single img{
-        height:var(--conecta-feed-height) !important;
-        min-height:var(--conecta-feed-height) !important;
-        max-height:var(--conecta-feed-height) !important;
-      }
-
-      .feed > .post-card.direct-edit-active,
-      .feed > .post-card.direct-media-active{
-        height:auto !important;
-        max-height:none !important;
-        min-height:var(--conecta-feed-height) !important;
-        overflow:visible !important;
-      }
-
-      .feed > .post-card.direct-edit-active .media-area,
-      .feed > .post-card.direct-media-active .media-area{
-        max-height:var(--conecta-feed-height) !important;
-      }
-
-      .feed > .post-card .post-body{
-        padding-top:44px !important;
-        padding-bottom:calc(env(safe-area-inset-bottom) + 76px) !important;
-      }
-
-      .feed > .post-card .post-action-row{
-        margin-top:8px !important;
-      }
-
-      .feed > .post-card .manage-row{
-        margin-top:6px !important;
-      }
-
-      .bottom-nav{
-        height:64px !important;
-        min-height:64px !important;
-        bottom:calc(env(safe-area-inset-bottom) + 7px) !important;
-      }
-
-      .nav-plus{
-        width:54px !important;
-        height:54px !important;
-        min-width:54px !important;
-      }
-
-      @media (max-height:700px){
-        :root{
-          --conecta-feed-height: calc(100dvh - env(safe-area-inset-bottom) - 82px);
-        }
-
-        .feed > .post-card .post-body{
-          padding-top:38px !important;
-          padding-bottom:calc(env(safe-area-inset-bottom) + 68px) !important;
-        }
-
-        .post-body h2{
-          font-size:16px !important;
-        }
-
-        .post-action-row button,
-        .manage-row button{
-          min-height:32px !important;
-          padding-top:6px !important;
-          padding-bottom:6px !important;
-        }
-      }
-
-
-
-      /* v6.4.37: restauración estable de layout móvil.
-         Cambio deliberadamente conservador: solo CSS al final.
-         No toca mensajes, perfil, identidad, APIs, Supabase ni Storage. */
+      /* v6.4.39 RESCATE DEMO: layout móvil estable, sin tocar lógica.
+         Objetivo: que la demo se vea profesional HOY.
+         No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
 
       :root{
-        --cs-bottom-ui: calc(env(safe-area-inset-bottom) + 86px);
-        --cs-card-height: 100dvh;
+        --demo-card-h: 100dvh;
+        --demo-bottom-space: calc(env(safe-area-inset-bottom) + 112px);
       }
-
       @supports (height: 100svh){
-        :root{ --cs-card-height: 100svh; }
+        :root{ --demo-card-h: 100svh; }
       }
 
-      html,
-      body{
+      html, body{
+        margin:0 !important;
+        padding:0 !important;
+        width:100% !important;
         min-height:100% !important;
         background:#050507 !important;
+        overflow-x:hidden !important;
+      }
+
+      .app-page,
+      main.app-page{
+        margin:0 !important;
+        padding:0 !important;
+        width:100% !important;
+        max-width:none !important;
+        min-height:100dvh !important;
+        background:#050507 !important;
+        overflow-x:hidden !important;
       }
 
       .top-space{
@@ -5932,211 +5843,299 @@
         min-height:0 !important;
       }
 
-      .feed{
+      .feed,
+      .store-feed{
         display:block !important;
-        gap:0 !important;
+        width:100% !important;
+        max-width:none !important;
         margin:0 !important;
-        padding:0 0 var(--cs-bottom-ui) 0 !important;
+        padding:0 0 var(--demo-bottom-space) 0 !important;
+        gap:0 !important;
+        background:#050507 !important;
+        overflow-x:hidden !important;
         scroll-snap-type:none !important;
-        overflow:visible !important;
       }
 
-      .feed > .post-card{
+      .feed-title{
+        display:none !important;
+      }
+
+      .feed > .post-card,
+      .store-feed > .post-card{
         position:relative !important;
-        height:var(--cs-card-height) !important;
-        min-height:var(--cs-card-height) !important;
-        max-height:var(--cs-card-height) !important;
+        display:block !important;
+        width:100% !important;
+        max-width:none !important;
+        height:var(--demo-card-h) !important;
+        min-height:var(--demo-card-h) !important;
+        max-height:var(--demo-card-h) !important;
         margin:0 !important;
         padding:0 !important;
         border-radius:0 !important;
+        border:0 !important;
         overflow:hidden !important;
         background:#050507 !important;
         box-shadow:none !important;
       }
 
-      .feed > .post-card + .post-card{
+      .feed > .post-card + .post-card,
+      .store-feed > .post-card + .post-card{
         margin-top:0 !important;
       }
 
-      .feed > .post-card .media-area,
-      .feed > .post-card .media-area img,
-      .feed > .post-card .media-area .no-media,
-      .feed > .post-card .video-inline-wrap,
-      .feed > .post-card .video-inline-wrap video,
-      .feed > .post-card .media-area video.feed-video-player,
-      .feed > .post-card .media-carousel,
-      .feed > .post-card .media-carousel img,
-      .feed > .post-card .direct-frame-single,
-      .feed > .post-card .direct-frame-single img{
-        height:var(--cs-card-height) !important;
-        min-height:var(--cs-card-height) !important;
-        max-height:var(--cs-card-height) !important;
+      .post-card .media-area{
+        position:absolute !important;
+        inset:0 !important;
         width:100% !important;
+        height:100% !important;
+        min-height:100% !important;
+        max-height:100% !important;
         border-radius:0 !important;
-      }
-
-      .feed > .post-card .media-area{
-        position:relative !important;
         overflow:hidden !important;
+        background:#050507 !important;
+        z-index:1 !important;
       }
 
-      .feed > .post-card .post-body{
+      .post-card .media-area > img,
+      .post-card .media-area .framed-media,
+      .post-card .media-area .no-media,
+      .post-card .video-inline-wrap,
+      .post-card .video-inline-wrap video,
+      .post-card .media-area video.feed-video-player,
+      .post-card .media-carousel,
+      .post-card .media-carousel img,
+      .post-card .direct-frame-single,
+      .post-card .direct-frame-single img{
+        width:100% !important;
+        height:100% !important;
+        min-width:100% !important;
+        min-height:100% !important;
+        max-width:100% !important;
+        max-height:100% !important;
+        border-radius:0 !important;
+        background:#050507 !important;
+      }
+
+      /* En vista normal, priorizamos que no haya franjas negras ni tarjetas cortadas para la demo. */
+      .post-card:not(.direct-frame-active) .media-area .framed-media,
+      .post-card:not(.direct-frame-active) .media-carousel img,
+      .post-card:not(.direct-frame-active) .media-area > img{
+        object-fit:cover !important;
+        object-position:center center !important;
+        transform:none !important;
+      }
+
+      .post-card .post-body{
         position:absolute !important;
         left:0 !important;
         right:0 !important;
         bottom:0 !important;
-        z-index:72 !important;
+        z-index:80 !important;
         box-sizing:border-box !important;
         color:#fff !important;
-        padding:70px 82px var(--cs-bottom-ui) 16px !important;
-        max-height:62% !important;
+        padding:72px 84px var(--demo-bottom-space) 16px !important;
+        max-height:66% !important;
         min-height:0 !important;
         overflow:hidden !important;
         border-radius:0 !important;
-        background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.58) 24%,rgba(0,0,0,.88)) !important;
+        background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.58) 24%,rgba(0,0,0,.90)) !important;
         box-shadow:none !important;
         backdrop-filter:none !important;
         pointer-events:auto !important;
       }
 
-      .feed > .post-card.description-open .post-body{
-        max-height:76% !important;
+      .post-card.description-open .post-body{
+        max-height:78% !important;
         overflow-y:auto !important;
         -webkit-overflow-scrolling:touch !important;
         padding-right:18px !important;
-        background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.70) 18%,rgba(0,0,0,.94)) !important;
+        background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.70) 18%,rgba(0,0,0,.95)) !important;
       }
 
-      .feed > .post-card.direct-edit-active,
-      .feed > .post-card.direct-media-active{
-        height:var(--cs-card-height) !important;
-        min-height:var(--cs-card-height) !important;
-        max-height:var(--cs-card-height) !important;
-        overflow:hidden !important;
-      }
-
-      .feed > .post-card.direct-edit-active .post-body,
-      .feed > .post-card.direct-media-active .post-body{
-        max-height:80% !important;
+      .post-card.direct-edit-active .post-body,
+      .post-card.direct-media-active .post-body{
+        max-height:82% !important;
         overflow-y:auto !important;
         -webkit-overflow-scrolling:touch !important;
-        padding:58px 14px var(--cs-bottom-ui) 14px !important;
-        background:linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,.74) 18%,rgba(0,0,0,.95)) !important;
+        padding:60px 14px var(--demo-bottom-space) 14px !important;
+        background:linear-gradient(180deg,rgba(0,0,0,.16),rgba(0,0,0,.76) 18%,rgba(0,0,0,.96)) !important;
       }
 
-      .feed > .post-card.direct-frame-active .post-body{
+      .post-card.direct-frame-active .post-body{
         display:none !important;
       }
 
-      .feed > .post-card .owner-row{
-        margin-bottom:4px !important;
+      .owner-row{
+        margin-bottom:5px !important;
       }
 
-      .feed > .post-card .post-body h2{
+      .post-body h2{
         font-size:18px !important;
         line-height:1.12 !important;
         margin:0 0 5px !important;
+        color:#fff !important;
       }
 
-      .feed > .post-card .post-description-short,
-      .feed > .post-card .post-description-collapsed,
-      .feed > .post-card .post-description-expanded{
+      .post-description-short,
+      .post-description-collapsed,
+      .post-description-expanded,
+      .post-body p{
         font-size:13px !important;
         line-height:1.25 !important;
+        color:rgba(255,255,255,.94) !important;
       }
 
-      .feed > .post-card .post-action-row{
-        margin-top:8px !important;
+      .post-meta{
+        margin-top:4px !important;
+        font-size:11px !important;
+      }
+
+      .post-action-row{
+        display:grid !important;
+        grid-template-columns:repeat(3, minmax(0,1fr)) !important;
         gap:7px !important;
+        width:100% !important;
+        margin-top:8px !important;
       }
 
-      .feed > .post-card .post-action-row button{
+      .post-action-row button{
         min-height:34px !important;
         padding:7px 8px !important;
+        border-radius:999px !important;
       }
 
-      .feed > .post-card .manage-row{
-        margin-top:7px !important;
-        padding-top:4px !important;
-        padding-bottom:0 !important;
+      /* Evita duplicidad visual de audio en la fila inferior: queda el botón flotante de audio. */
+      .post-action-row .audio-row-btn{
+        display:none !important;
+      }
+
+      .manage-row{
         position:relative !important;
-        top:auto !important;
         left:auto !important;
         right:auto !important;
+        top:auto !important;
         bottom:auto !important;
+        z-index:120 !important;
+        display:flex !important;
+        flex-wrap:nowrap !important;
+        overflow-x:auto !important;
+        gap:7px !important;
+        width:100% !important;
+        margin-top:7px !important;
+        padding:4px 0 0 !important;
+        scrollbar-width:none !important;
       }
+      .manage-row::-webkit-scrollbar{display:none !important;}
+      .manage-row::before{content:none !important;display:none !important;}
 
-      .feed > .post-card .manage-row button{
+      .manage-row button{
+        flex:0 0 auto !important;
         min-height:32px !important;
         padding:7px 10px !important;
         font-size:12px !important;
+        border-radius:999px !important;
       }
 
-      .post-card .service-area-row{
+      .media-top{
+        z-index:90 !important;
+      }
+
+      .service-area-row{
         position:absolute !important;
         top:136px !important;
         left:150px !important;
-        right:18px !important;
-        z-index:64 !important;
-        max-width:calc(100% - 168px) !important;
+        right:16px !important;
+        z-index:92 !important;
+        width:max-content !important;
+        max-width:calc(100% - 166px) !important;
         pointer-events:none !important;
+        color:#fff !important;
+        background:rgba(0,0,0,.54) !important;
+        border:1px solid rgba(255,255,255,.22) !important;
       }
 
-      .post-card .post-body-gallery-dots,
-      .post-card .gallery-dots{
-        z-index:65 !important;
+      .service-area-row strong{
+        color:#fff !important;
+      }
+
+      .gallery-dots,
+      .post-body-gallery-dots{
+        z-index:92 !important;
       }
 
       .direct-frame-active .service-area-row,
       .direct-frame-active .post-body-gallery-dots,
       .direct-frame-active .gallery-dots{
         display:none !important;
-        pointer-events:none !important;
+      }
+
+      .sound-toggle,
+      .sound-toggle-card{
+        z-index:95 !important;
       }
 
       .bottom-nav{
-        height:62px !important;
-        min-height:62px !important;
-        left:24px !important;
-        right:24px !important;
-        bottom:calc(env(safe-area-inset-bottom) + 7px) !important;
-        z-index:250 !important;
+        position:fixed !important;
+        left:18px !important;
+        right:18px !important;
+        bottom:calc(env(safe-area-inset-bottom) + 8px) !important;
+        width:auto !important;
+        max-width:none !important;
+        height:66px !important;
+        min-height:66px !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:space-around !important;
+        gap:4px !important;
+        transform:none !important;
+        z-index:300 !important;
+        overflow:visible !important;
       }
 
-      .nav-plus{
-        width:54px !important;
-        height:54px !important;
-        min-width:54px !important;
-        min-height:54px !important;
-        transform:translateY(-10px) !important;
+      .bottom-nav .nav-item{
+        flex:1 1 0 !important;
+        min-width:0 !important;
       }
 
-      @media (max-height:700px){
-        :root{ --cs-bottom-ui: calc(env(safe-area-inset-bottom) + 74px); }
+      .bottom-nav .nav-plus{
+        flex:0 0 58px !important;
+        width:58px !important;
+        height:58px !important;
+        min-width:58px !important;
+        min-height:58px !important;
+        transform:translateY(-12px) !important;
+      }
 
-        .feed > .post-card .post-body{
-          padding:56px 78px var(--cs-bottom-ui) 14px !important;
-          max-height:58% !important;
+      @media (max-height:720px){
+        :root{
+          --demo-bottom-space: calc(env(safe-area-inset-bottom) + 98px);
         }
 
-        .feed > .post-card .post-body h2{
+        .post-card .post-body{
+          padding:58px 78px var(--demo-bottom-space) 14px !important;
+          max-height:64% !important;
+        }
+
+        .post-body h2{
           font-size:16px !important;
         }
 
-        .feed > .post-card .post-description-short,
-        .feed > .post-card .post-description-collapsed,
-        .feed > .post-card .post-description-expanded{
+        .post-description-short,
+        .post-description-collapsed,
+        .post-description-expanded,
+        .post-body p{
           font-size:12px !important;
         }
 
         .bottom-nav{
-          height:58px !important;
-          min-height:58px !important;
+          height:60px !important;
+          min-height:60px !important;
         }
       }
 
       @media (min-width:720px){
-        .feed{
+        .feed,
+        .store-feed{
           max-width:440px !important;
           margin:0 auto !important;
         }
@@ -7090,7 +7089,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       if(state.route === '/publicar') setupFrameTouchEditor();
     }catch(error){
       console.error('[Conecta] Error de render', error);
-      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6437 o recarga.</p><button class="big-button" onclick="location.href='/?v=6437'">Recargar app</button></section></main>`;
+      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6439 o recarga.</p><button class="big-button" onclick="location.href='/?v=6439'">Recargar app</button></section></main>`;
     }
   }
 
@@ -7861,7 +7860,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.37: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.39: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -8563,7 +8562,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
       const end = e => {
         const p = pointers.get(e.pointerId);
-        // v6.4.37: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
+        // v6.4.39: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
         // Se desactiva doble toque para no interferir con el uso normal de la publicación.
 
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
