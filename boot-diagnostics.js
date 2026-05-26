@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.54-sincroniza-muro-publico';
+  const VERSION = 'v6.4.55-restaura-feed-visual-y-entrada';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 

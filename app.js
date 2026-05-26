@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.54-sincroniza-muro-publico
+/* Conecta Servicios v6.4.55-restaura-feed-visual-y-entrada
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.54-sincroniza-muro-publico';
+  const VERSION = 'v6.4.55-restaura-feed-visual-y-entrada';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -1428,6 +1428,10 @@
     }
   }
 
+  try{
+    window.conectaActualizarMuro = () => forcePublicFeedFromCloud({renderAfter:true, reason:'manual-window'});
+  }catch{}
+
   async function syncFromCloud(options={}){
     if(state.syncing) return false;
     state.syncing = true;
@@ -2285,7 +2289,7 @@
 
       /* v6.3.37: corrección precisa de menú y puntitos */
 
-      /* v6.4.54: puntitos fuera del encuadre y foto única al encuadrar */
+      /* v6.4.55: puntitos fuera del encuadre y foto única al encuadrar */
       .direct-frame-active .post-body-gallery-dots,
       .direct-frame-active .gallery-dots{
         display:none !important;
@@ -2293,7 +2297,7 @@
       }
 
 
-      /* v6.4.54: encuadre independiente por foto */
+      /* v6.4.55: encuadre independiente por foto */
       .direct-frame-active .direct-frame-hint{
         max-width:calc(100% - 44px) !important;
       }
@@ -2624,7 +2628,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.54: acciones icon-only y perfil simple */
+      /* v6.4.55: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2656,7 +2660,7 @@
         display:none !important;
       }
 
-      /* v6.4.54-sincroniza-muro-publico: bloque consolidado de Home/postCard.
+      /* v6.4.55-restaura-feed-visual-y-entrada: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2835,7 +2839,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.54: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.55: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2854,7 +2858,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.54: descripción visible, ...leer separado del texto */
+      /* v6.4.55: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2989,7 +2993,7 @@
         min-height:48px;
       }
 
-      /* v6.4.54-sincroniza-muro-publico */
+      /* v6.4.55-restaura-feed-visual-y-entrada */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -3251,7 +3255,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.54: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.55: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3397,7 +3401,7 @@
 
 
 
-      /* v6.4.54: encuadre táctil libre sin controles inferiores */
+      /* v6.4.55: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3444,9 +3448,9 @@
       }
 
 
-      /* v6.4.54: encuadre táctil tipo redes sociales */
+      /* v6.4.55: encuadre táctil tipo redes sociales */
       
-      /* v6.4.54: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.55: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3454,13 +3458,13 @@
 
 
 
-      /* v6.4.54: encuadre directo táctil fino */
+      /* v6.4.55: encuadre directo táctil fino */
 
-      /* v6.4.54: edición directa desde la publicación */
+      /* v6.4.55: edición directa desde la publicación */
 
-      /* v6.4.54: zona/cobertura libre visible */
+      /* v6.4.55: zona/cobertura libre visible */
 
-      /* v6.4.54: carrusel más suave y encuadre por foto */
+      /* v6.4.55: carrusel más suave y encuadre por foto */
       .gallery-stage{
         touch-action:pan-y !important;
       }
@@ -3517,15 +3521,15 @@
       }
 
 
-      /* v6.4.54: multimedia directa básica e instrucciones visibles */
+      /* v6.4.55: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.54: puntitos centrados arriba del usuario */
+      /* v6.4.55: puntitos centrados arriba del usuario */
 
-      /* v6.4.54: carrusel táctil y edición limpia */
+      /* v6.4.55: carrusel táctil y edición limpia */
 
-      /* v6.4.54: carrusel Android, categoría completa y puntitos pequeños */
+      /* v6.4.55: carrusel Android, categoría completa y puntitos pequeños */
 
-      /* v6.4.54: zona legible, encuadre simple y carrusel por swipe */
+      /* v6.4.55: zona legible, encuadre simple y carrusel por swipe */
       .service-area-row{
         background:rgba(0,0,0,.56) !important;
         color:#fff !important;
@@ -3638,7 +3642,7 @@
       }
 
 
-      /* v6.4.54 final override dentro del CSS */
+      /* v6.4.55 final override dentro del CSS */
       .service-area-row{
         background:rgba(0,0,0,.56)!important;
         color:#fff!important;
@@ -4282,7 +4286,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.54: encuadre directo desde la publicación */
+      /* v6.4.55: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -4374,7 +4378,7 @@
         display:none !important;
       }
 
-      /* v6.4.54: recuperación de scroll global */
+      /* v6.4.55: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -4576,7 +4580,7 @@
         }
       }
 
-      /* v6.4.54: encuadre editable de multimedia */
+      /* v6.4.55: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4809,7 +4813,7 @@
       }
 
 
-      /* v6.4.54: encuadre editable de multimedia */
+      /* v6.4.55: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5268,7 +5272,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.54: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.55: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -5412,7 +5416,7 @@
       }
 
 
-      /* v6.4.54: encuadre editable de multimedia */
+      /* v6.4.55: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5645,7 +5649,7 @@
       }
 
 
-      /* v6.4.54: encuadre editable de multimedia */
+      /* v6.4.55: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5767,7 +5771,7 @@
 
 
 
-      /* v6.4.54-sincroniza-muro-publico
+      /* v6.4.55-restaura-feed-visual-y-entrada
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6198,7 +6202,7 @@
 
 
 
-      /* v6.4.54-sincroniza-muro-publico
+      /* v6.4.55-restaura-feed-visual-y-entrada
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6281,7 +6285,7 @@
 
 
 
-      /* v6.4.54: ajustes post diseño según revisión real en celular.
+      /* v6.4.55: ajustes post diseño según revisión real en celular.
          Mantiene funciones, corrige encabezado, barra inferior, corazón, puntitos y orden visual. */
 
       /* Restaurar encabezado oscuro/transparente: se deben ver Municipio / Tienda / Para ti. */
@@ -6505,7 +6509,7 @@
 
 
 
-      /* v6.4.54: menú flotante por publicación.
+      /* v6.4.55: menú flotante por publicación.
          Orden pedido: Municipio/Zona + Carrito + Corazón + Lupa.
          Se elimina Siguiendo de arriba porque ya existe abajo. */
       .glass-top.tiktok-top.floating-post-menu{
@@ -6702,7 +6706,7 @@
 
 
 
-      /* v6.4.54: corrige el hueco inferior entre publicaciones.
+      /* v6.4.55: corrige el hueco inferior entre publicaciones.
          El menú superior es flotante, por eso cada publicación debe ocupar 100% de la pantalla.
          No toca mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6781,7 +6785,7 @@
 
 
 
-      /* v6.4.54: admin de encuadre y video auto-ajustado.
+      /* v6.4.55: admin de encuadre y video auto-ajustado.
          El admin local solo muestra Encuadre admin, no borrar ni editar contenido. */
       .admin-frame-row{
         justify-content:flex-start !important;
@@ -6810,7 +6814,7 @@
 
 
 
-      /* v6.4.54: controles de encuadre visibles.
+      /* v6.4.55: controles de encuadre visibles.
          Corrige Guardar/Cancelar tapados por barra inferior y mejora escritura en paneles. */
 
       .direct-frame-active .direct-frame-controls{
@@ -6918,7 +6922,7 @@
 
 
 
-      /* v6.4.54: encuadre con botones arriba y barra inferior oculta realmente.
+      /* v6.4.55: encuadre con botones arriba y barra inferior oculta realmente.
          La barra inferior es hermana del main, por eso se usa :has() y selector de hermano. */
 
       body:has(.post-card.direct-frame-active) .bottom-nav,
@@ -7047,7 +7051,7 @@
 
 
 
-      /* v6.4.54: estabilidad de entrada y encuadre global persistente. */
+      /* v6.4.55: estabilidad de entrada y encuadre global persistente. */
       .admin-frame-row{
         justify-content:flex-start !important;
       }
@@ -7068,7 +7072,7 @@
 
 
 
-      /* v6.4.54: el estado vacío ya no debe quedar como pantalla blanca confusa detrás del menú. */
+      /* v6.4.55: el estado vacío ya no debe quedar como pantalla blanca confusa detrás del menú. */
       .feed .empty,
       .feed .empty-state,
       .feed .panel:has(h2),
@@ -7082,7 +7086,7 @@
 
 
 
-      /* v6.4.54: entrada pública más fuerte y pantalla de carga no técnica. */
+      /* v6.4.55: entrada pública más fuerte y pantalla de carga no técnica. */
       .feed-loading-card{
         margin:calc(env(safe-area-inset-top) + 122px) 14px 0 !important;
         padding:22px 18px !important;
@@ -7117,7 +7121,7 @@
 
 
 
-      /* v6.4.54: sincronización de muro público y protección visible discreta. */
+      /* v6.4.55: sincronización de muro público y protección visible discreta. */
       .secondary-public-sync{
         margin-top:10px !important;
         background:#0f766e !important;
@@ -7144,6 +7148,47 @@
 
       body:has(.post-card) .legal-mini-footer{
         opacity:.45 !important;
+      }
+
+
+
+      /* v6.4.55: restauración visual del feed.
+         Quita el cuadro Buscar/OFREZCO que se metía bajo la publicación y oculta footer dentro del feed. */
+      .feed-title{
+        display:none !important;
+      }
+
+      .legal-mini-footer{
+        display:none !important;
+      }
+
+      .feed{
+        padding-top:0 !important;
+        background:#050507 !important;
+      }
+
+      .feed-loading-card{
+        margin:calc(env(safe-area-inset-top) + 128px) 14px 0 !important;
+        position:relative !important;
+        z-index:20 !important;
+      }
+
+      .feed-loading-card .small-link{
+        margin-top:8px !important;
+        color:#1D4ED8 !important;
+        background:rgba(255,255,255,.84) !important;
+        border-radius:999px !important;
+        padding:10px 14px !important;
+        font-weight:900 !important;
+      }
+
+      body:has(.post-card) .feed-loading-card{
+        display:none !important;
+      }
+
+      .tiktok-search-panel.visual-search-panel.floating-search-panel{
+        position:relative !important;
+        z-index:300 !important;
       }
 
 `;
@@ -7205,7 +7250,7 @@
     return `<button class="path-card ${klass} ${state.filter===key?'active':''}" data-filter="${key}"><span class="path-icon">${icon}</span><span class="path-label">${label}</span></button>`;
   }
 
-  function homePage(){ return shell(`${homeHeader()}<section class="feed-title" id="feedTitle">${feedTitleMarkup()}</section><section class="feed" id="feed">${feedMarkup()}</section>`); }
+  function homePage(){ return shell(`${homeHeader()}<section class="feed" id="feed">${feedMarkup()}</section>`); }
   function feedTitleMarkup(){
     const searching = !!state.query.trim();
     const title = searching ? 'Resultados' : (state.filter === 'ALL' ? 'Publicaciones cerca de ti' : state.filter);
@@ -7226,20 +7271,13 @@
     if(!state.feedForceRecoveryStarted){
       state.feedForceRecoveryStarted = true;
       setTimeout(()=>forcePublicFeedFromCloud({renderAfter:true, reason:'empty-feed'}).catch(()=>null), 120);
-      setTimeout(()=>{
-        if(!filteredPosts().length && publicVisiblePosts().length){
-          recoverPublicFeed('delayed-public-visible');
-          render();
-        }
-      }, 4500);
+      setTimeout(()=>forcePublicFeedFromCloud({renderAfter:true, reason:'empty-feed-retry'}).catch(()=>null), 3500);
     }
 
-    const canSyncLocal = adminFrameMode() && publicVisiblePosts().length;
     return `<section class="panel empty-state feed-loading-card">
       <h2>Cargando publicaciones</h2>
-      <p>${canSyncLocal ? 'Este celular tiene publicaciones locales. Puedes subirlas al muro público.' : 'Estamos actualizando el muro público.'}</p>
+      <p>Estamos actualizando el muro público.</p>
       <button class="big-button" type="button" data-force-public-feed>Actualizar muro</button>
-      ${canSyncLocal ? '<button class="big-button secondary-public-sync" type="button" data-sync-public-wall>Subir publicaciones de este celular</button>' : ''}
       <button class="small-link" type="button" data-clear>Entrar al inicio</button>
     </section>`;
   }
@@ -8202,7 +8240,7 @@ ${esc(shortDiagnosticText(diag))}</code>
         }
       }catch(recoveryError){
         console.error('[Conecta] Error de recuperación', recoveryError);
-        if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>Entrando a la app...</p><button class="big-button" onclick="sessionStorage.clear();location.replace('/?v=6454&fresh='+Date.now())">Entrar</button></section></main>`;
+        if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>Entrando a la app...</p><button class="big-button" onclick="sessionStorage.clear();location.replace('/?v=6455&fresh='+Date.now())">Entrar</button></section></main>`;
       }
     }
   }
@@ -8974,7 +9012,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.54: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.55: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -9733,7 +9771,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
       const end = e => {
         const p = pointers.get(e.pointerId);
-        // v6.4.54: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
+        // v6.4.55: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
         // Se desactiva doble toque para no interferir con el uso normal de la publicación.
 
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
@@ -9871,6 +9909,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       profileNameInput.onblur=()=>{setTimeout(()=>{state.profileEditing=false;},300);};
       profileNameInput.oninput=()=>{state.profileEditing=true;};
     }
+    document.querySelectorAll('[data-force-public-feed]').forEach(b=>b.onclick=()=>forcePublicFeedFromCloud({renderAfter:true, reason:'button-bind'}));
     document.querySelectorAll('[data-toggle-search]').forEach(b=>b.onclick=toggleSearchPanel);
     document.querySelectorAll('[data-open-store]').forEach(b=>b.onclick=()=>openStore(b.dataset.openStore));
     document.querySelectorAll('[data-top-tab]').forEach(b=>b.onclick=()=>setTopTab(b.dataset.topTab));
@@ -9947,16 +9986,6 @@ ${esc(shortDiagnosticText(diag))}</code>
       state.query = '';
       state.topTab = 'para-ti';
       state.searchOpen = false;
-    }
-
-    if(shouldAutoSyncPublicWall()){
-      injectRootStyles();
-      app.innerHTML = shell(`${homeHeader()}<section class="feed" id="feed"><section class="panel empty-state feed-loading-card"><h2>Sincronizando muro público</h2><p>Subiendo publicaciones visibles de este celular.</p></section></section>`);
-      bind();
-      await syncLocalWallToCloud({renderAfter:false, reason:'auto-url'});
-      await forcePublicFeedFromCloud({renderAfter:true, reason:'after-auto-sync'});
-      startPolling();
-      return;
     }
 
     if(!state.posts.length){
