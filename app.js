@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.48-encuadre-botones-arriba
+/* Conecta Servicios v6.4.49-entrada-directa-sin-pantalla-blanca
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.48-encuadre-botones-arriba';
+  const VERSION = 'v6.4.49-entrada-directa-sin-pantalla-blanca';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2118,7 +2118,7 @@
 
       /* v6.3.37: corrección precisa de menú y puntitos */
 
-      /* v6.4.48: puntitos fuera del encuadre y foto única al encuadrar */
+      /* v6.4.49: puntitos fuera del encuadre y foto única al encuadrar */
       .direct-frame-active .post-body-gallery-dots,
       .direct-frame-active .gallery-dots{
         display:none !important;
@@ -2126,7 +2126,7 @@
       }
 
 
-      /* v6.4.48: encuadre independiente por foto */
+      /* v6.4.49: encuadre independiente por foto */
       .direct-frame-active .direct-frame-hint{
         max-width:calc(100% - 44px) !important;
       }
@@ -2457,7 +2457,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.48: acciones icon-only y perfil simple */
+      /* v6.4.49: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2489,7 +2489,7 @@
         display:none !important;
       }
 
-      /* v6.4.48-encuadre-botones-arriba: bloque consolidado de Home/postCard.
+      /* v6.4.49-entrada-directa-sin-pantalla-blanca: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2668,7 +2668,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.48: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.49: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2687,7 +2687,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.48: descripción visible, ...leer separado del texto */
+      /* v6.4.49: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2822,7 +2822,7 @@
         min-height:48px;
       }
 
-      /* v6.4.48-encuadre-botones-arriba */
+      /* v6.4.49-entrada-directa-sin-pantalla-blanca */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -3084,7 +3084,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.48: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.49: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3230,7 +3230,7 @@
 
 
 
-      /* v6.4.48: encuadre táctil libre sin controles inferiores */
+      /* v6.4.49: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3277,9 +3277,9 @@
       }
 
 
-      /* v6.4.48: encuadre táctil tipo redes sociales */
+      /* v6.4.49: encuadre táctil tipo redes sociales */
       
-      /* v6.4.48: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.49: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3287,13 +3287,13 @@
 
 
 
-      /* v6.4.48: encuadre directo táctil fino */
+      /* v6.4.49: encuadre directo táctil fino */
 
-      /* v6.4.48: edición directa desde la publicación */
+      /* v6.4.49: edición directa desde la publicación */
 
-      /* v6.4.48: zona/cobertura libre visible */
+      /* v6.4.49: zona/cobertura libre visible */
 
-      /* v6.4.48: carrusel más suave y encuadre por foto */
+      /* v6.4.49: carrusel más suave y encuadre por foto */
       .gallery-stage{
         touch-action:pan-y !important;
       }
@@ -3350,15 +3350,15 @@
       }
 
 
-      /* v6.4.48: multimedia directa básica e instrucciones visibles */
+      /* v6.4.49: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.48: puntitos centrados arriba del usuario */
+      /* v6.4.49: puntitos centrados arriba del usuario */
 
-      /* v6.4.48: carrusel táctil y edición limpia */
+      /* v6.4.49: carrusel táctil y edición limpia */
 
-      /* v6.4.48: carrusel Android, categoría completa y puntitos pequeños */
+      /* v6.4.49: carrusel Android, categoría completa y puntitos pequeños */
 
-      /* v6.4.48: zona legible, encuadre simple y carrusel por swipe */
+      /* v6.4.49: zona legible, encuadre simple y carrusel por swipe */
       .service-area-row{
         background:rgba(0,0,0,.56) !important;
         color:#fff !important;
@@ -3471,7 +3471,7 @@
       }
 
 
-      /* v6.4.48 final override dentro del CSS */
+      /* v6.4.49 final override dentro del CSS */
       .service-area-row{
         background:rgba(0,0,0,.56)!important;
         color:#fff!important;
@@ -4115,7 +4115,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.48: encuadre directo desde la publicación */
+      /* v6.4.49: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -4207,7 +4207,7 @@
         display:none !important;
       }
 
-      /* v6.4.48: recuperación de scroll global */
+      /* v6.4.49: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -4409,7 +4409,7 @@
         }
       }
 
-      /* v6.4.48: encuadre editable de multimedia */
+      /* v6.4.49: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4642,7 +4642,7 @@
       }
 
 
-      /* v6.4.48: encuadre editable de multimedia */
+      /* v6.4.49: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5101,7 +5101,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.48: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.49: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -5245,7 +5245,7 @@
       }
 
 
-      /* v6.4.48: encuadre editable de multimedia */
+      /* v6.4.49: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5478,7 +5478,7 @@
       }
 
 
-      /* v6.4.48: encuadre editable de multimedia */
+      /* v6.4.49: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5600,7 +5600,7 @@
 
 
 
-      /* v6.4.48-encuadre-botones-arriba
+      /* v6.4.49-entrada-directa-sin-pantalla-blanca
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6031,7 +6031,7 @@
 
 
 
-      /* v6.4.48-encuadre-botones-arriba
+      /* v6.4.49-entrada-directa-sin-pantalla-blanca
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6114,7 +6114,7 @@
 
 
 
-      /* v6.4.48: ajustes post diseño según revisión real en celular.
+      /* v6.4.49: ajustes post diseño según revisión real en celular.
          Mantiene funciones, corrige encabezado, barra inferior, corazón, puntitos y orden visual. */
 
       /* Restaurar encabezado oscuro/transparente: se deben ver Municipio / Tienda / Para ti. */
@@ -6338,7 +6338,7 @@
 
 
 
-      /* v6.4.48: menú flotante por publicación.
+      /* v6.4.49: menú flotante por publicación.
          Orden pedido: Municipio/Zona + Carrito + Corazón + Lupa.
          Se elimina Siguiendo de arriba porque ya existe abajo. */
       .glass-top.tiktok-top.floating-post-menu{
@@ -6535,7 +6535,7 @@
 
 
 
-      /* v6.4.48: corrige el hueco inferior entre publicaciones.
+      /* v6.4.49: corrige el hueco inferior entre publicaciones.
          El menú superior es flotante, por eso cada publicación debe ocupar 100% de la pantalla.
          No toca mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6614,7 +6614,7 @@
 
 
 
-      /* v6.4.48: admin de encuadre y video auto-ajustado.
+      /* v6.4.49: admin de encuadre y video auto-ajustado.
          El admin local solo muestra Encuadre admin, no borrar ni editar contenido. */
       .admin-frame-row{
         justify-content:flex-start !important;
@@ -6643,7 +6643,7 @@
 
 
 
-      /* v6.4.48: controles de encuadre visibles.
+      /* v6.4.49: controles de encuadre visibles.
          Corrige Guardar/Cancelar tapados por barra inferior y mejora escritura en paneles. */
 
       .direct-frame-active .direct-frame-controls{
@@ -6751,7 +6751,7 @@
 
 
 
-      /* v6.4.48: encuadre con botones arriba y barra inferior oculta realmente.
+      /* v6.4.49: encuadre con botones arriba y barra inferior oculta realmente.
          La barra inferior es hermana del main, por eso se usa :has() y selector de hermano. */
 
       body:has(.post-card.direct-frame-active) .bottom-nav,
@@ -7844,7 +7844,51 @@ ${esc(shortDiagnosticText(diag))}</code>
       if(state.route === '/publicar') setupFrameTouchEditor();
     }catch(error){
       console.error('[Conecta] Error de render', error);
-      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6448 o recarga.</p><button class="big-button" onclick="location.href='/?v=6448'">Recargar app</button></section></main>`;
+
+      // v6.4.49: entrada directa sin pantalla técnica.
+      // Si un celular trae caché vieja o estado local raro, intentamos recuperar sin mostrar
+      // el mensaje de "pantalla en blanco" a usuarios/inversionistas.
+      try{
+        const recoveryKey = 'cs_v649_render_recovery_once';
+        const alreadyTried = sessionStorage.getItem(recoveryKey) === '1';
+
+        if(!alreadyTried){
+          sessionStorage.setItem(recoveryKey, '1');
+          if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>Entrando a la app...</p></section></main>`;
+
+          Promise.resolve(window.conectaBootReset ? window.conectaBootReset({hard:false}) : null)
+            .catch(()=>null)
+            .finally(()=>{
+              const freshUrl = '/?v=6449&fresh=' + Date.now();
+              location.replace(freshUrl);
+            });
+          return;
+        }
+
+        // Segundo intento: limpiamos estados visuales temporales, conservando perfil,
+        // mensajes, publicaciones, follows y datos locales.
+        state.route = '/';
+        state.filter = 'ALL';
+        state.query = '';
+        state.searchOpen = false;
+        state.searchTyping = false;
+        state.topTab = 'para-ti';
+        state.directFramePostId = '';
+        state.directEditPostId = '';
+        state.directMediaPostId = '';
+        state.videoViewer = null;
+        state.chat = null;
+
+        const safeMarkup = `${homeHeader()}<section class="feed" id="feed">${feedMarkup()}</section>`;
+        if(app) app.innerHTML = shell(safeMarkup);
+        bind();
+        setupInternalVideos();
+        setupGalleries();
+        setupDirectFrameEditors();
+      }catch(recoveryError){
+        console.error('[Conecta] Error de recuperación', recoveryError);
+        if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>Entrando a la app...</p><button class="big-button" onclick="location.replace('/?v=6449&fresh='+Date.now())">Entrar</button></section></main>`;
+      }
     }
   }
 
@@ -8615,7 +8659,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.48: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.49: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -9317,7 +9361,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
       const end = e => {
         const p = pointers.get(e.pointerId);
-        // v6.4.48: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
+        // v6.4.49: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
         // Se desactiva doble toque para no interferir con el uso normal de la publicación.
 
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);

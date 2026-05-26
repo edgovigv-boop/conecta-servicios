@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.48-encuadre-botones-arriba';
+  const VERSION = 'v6.4.49-entrada-directa-sin-pantalla-blanca';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 
