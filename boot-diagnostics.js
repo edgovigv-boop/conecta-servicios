@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.50-entrada-estable-y-encuadre-global';
+  const VERSION = 'v6.4.51-feed-y-encuadre-remoto';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 
