@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.55-restaura-feed-visual-y-entrada';
+  const VERSION = 'v6.4.56-restauracion-segura-desde-6452';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 
