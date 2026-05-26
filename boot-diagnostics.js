@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.49-entrada-directa-sin-pantalla-blanca';
+  const VERSION = 'v6.4.50-entrada-estable-y-encuadre-global';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 
