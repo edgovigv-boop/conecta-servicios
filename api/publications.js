@@ -90,19 +90,6 @@ function normalizePost(post, row = {}) {
     }
   }
 
-  // Mantener encuadre explícito dentro del JSON para que todos los celulares lo vean igual.
-  if (p.fit && !p.mediaFit) p.mediaFit = p.fit;
-  if (p.scale !== undefined && p.mediaScale === undefined) p.mediaScale = p.scale;
-  if (p.x !== undefined && p.mediaX === undefined) p.mediaX = p.x;
-  if (p.y !== undefined && p.mediaY === undefined) p.mediaY = p.y;
-  if (p.mediaFit && !p.fit) p.fit = p.mediaFit;
-  if (p.mediaScale !== undefined && p.scale === undefined) p.scale = p.mediaScale;
-  if (p.mediaX !== undefined && p.x === undefined) p.x = p.mediaX;
-  if (p.mediaY !== undefined && p.y === undefined) p.y = p.mediaY;
-  if (!p.frameUpdatedAt && (p.mediaFit || p.mediaScale !== undefined || p.mediaX !== undefined || p.mediaY !== undefined)) {
-    p.frameUpdatedAt = p.updatedAt || row.updated_at || new Date().toISOString();
-  }
-
   return p;
 }
 

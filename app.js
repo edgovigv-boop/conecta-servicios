@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.58-emergencia-feed-siempre-visible
+/* Conecta Servicios v6.4.59-restauracion-total-v648
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.58-emergencia-feed-siempre-visible';
+  const VERSION = 'v6.4.59-restauracion-total-v648';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -37,68 +37,7 @@
   const CATEGORIES = ['VENDO', 'OFREZCO', 'NECESITO'];
   const ZONES = ['Tejupilco', 'Toluca', 'Metepec', 'Chapultepec', 'Centro', 'Zona cercana', 'Todo México'];
 
-  const seed = [
-    {
-        "id": "pilot-vendo-equipo-computo",
-        "ownerId": "public-pilot-virtu",
-        "ownerName": "Virtu",
-        "title": "Vendo equipo de cómputo y oficina, archiveros, etc.",
-        "description": "Vendo equipo de cómputo y oficina, archiveros y artículos para negocio. Publicación de respaldo del muro público.",
-        "category": "VENDO",
-        "zone": "Chapultepec",
-        "serviceArea": "Chapultepec",
-        "status": "activa",
-        "cloudStatus": "publica",
-        "createdAt": "2026-05-26T12:00:00.000Z",
-        "updatedAt": "2026-05-26T12:00:00.000Z",
-        "mediaType": "image",
-        "mediaData": "data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20900%201600%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset=%220%22%20stop-color=%22#0f172a%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset=%221%22%20stop-color=%22#1d4ed8%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id=%22r%22%20cx=%2250%%22%20cy=%2235%%22%20r=%2265%%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset=%220%22%20stop-color=%22white%22%20stop-opacity=%22.24%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset=%221%22%20stop-color=%22black%22%20stop-opacity=%22.18%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width=%22900%22%20height=%221600%22%20fill=%22url(#g)%22/%3E%0A%20%20%3Crect%20width=%22900%22%20height=%221600%22%20fill=%22url(#r)%22/%3E%0A%20%20%3Ccircle%20cx=%22720%22%20cy=%22220%22%20r=%22180%22%20fill=%22#60a5fa%22%20opacity=%22.28%22/%3E%0A%20%20%3Ccircle%20cx=%22180%22%20cy=%221320%22%20r=%22260%22%20fill=%22#60a5fa%22%20opacity=%22.22%22/%3E%0A%20%20%3Crect%20x=%2295%22%20y=%22640%22%20width=%22710%22%20height=%22260%22%20rx=%2242%22%20fill=%22rgba(0,0,0,.28)%22/%3E%0A%20%20%3Ctext%20x=%22450%22%20y=%22735%22%20text-anchor=%22middle%22%20font-family=%22Arial,%20sans-serif%22%20font-size=%2258%22%20font-weight=%22900%22%20fill=%22white%22%3EVENDO%3C/text%3E%0A%20%20%3Ctext%20x=%22450%22%20y=%22815%22%20text-anchor=%22middle%22%20font-family=%22Arial,%20sans-serif%22%20font-size=%2234%22%20font-weight=%22700%22%20fill=%22white%22%20opacity=%22.92%22%3EEquipo%20y%20oficina%3C/text%3E%0A%20%20%3Ctext%20x=%22450%22%20y=%221450%22%20text-anchor=%22middle%22%20font-family=%22Arial,%20sans-serif%22%20font-size=%2230%22%20font-weight=%22800%22%20fill=%22white%22%20opacity=%22.75%22%3EConecta%20Servicios%3C/text%3E%0A%3C/svg%3E",
-        "mediaFit": "cover",
-        "mediaScale": 1,
-        "mediaX": 50,
-        "mediaY": 50
-    },
-    {
-        "id": "pilot-ofrezco-consultoria-digital",
-        "ownerId": "public-pilot-edgar",
-        "ownerName": "Edgar",
-        "title": "Consultoría en tecnología digital para empresas",
-        "description": "Ayudo a negocios a mejorar su presencia digital, comunicación y uso de herramientas tecnológicas.",
-        "category": "OFREZCO",
-        "zone": "En todo el mundo",
-        "serviceArea": "En todo el mundo",
-        "status": "activa",
-        "cloudStatus": "publica",
-        "createdAt": "2026-05-25T12:00:00.000Z",
-        "updatedAt": "2026-05-25T12:00:00.000Z",
-        "mediaType": "image",
-        "mediaData": "data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20900%201600%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset=%220%22%20stop-color=%22#111827%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset=%221%22%20stop-color=%22#0f766e%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id=%22r%22%20cx=%2250%%22%20cy=%2235%%22%20r=%2265%%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset=%220%22%20stop-color=%22white%22%20stop-opacity=%22.24%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset=%221%22%20stop-color=%22black%22%20stop-opacity=%22.18%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width=%22900%22%20height=%221600%22%20fill=%22url(#g)%22/%3E%0A%20%20%3Crect%20width=%22900%22%20height=%221600%22%20fill=%22url(#r)%22/%3E%0A%20%20%3Ccircle%20cx=%22720%22%20cy=%22220%22%20r=%22180%22%20fill=%22#34d399%22%20opacity=%22.28%22/%3E%0A%20%20%3Ccircle%20cx=%22180%22%20cy=%221320%22%20r=%22260%22%20fill=%22#34d399%22%20opacity=%22.22%22/%3E%0A%20%20%3Crect%20x=%2295%22%20y=%22640%22%20width=%22710%22%20height=%22260%22%20rx=%2242%22%20fill=%22rgba(0,0,0,.28)%22/%3E%0A%20%20%3Ctext%20x=%22450%22%20y=%22735%22%20text-anchor=%22middle%22%20font-family=%22Arial,%20sans-serif%22%20font-size=%2258%22%20font-weight=%22900%22%20fill=%22white%22%3EOFREZCO%3C/text%3E%0A%20%20%3Ctext%20x=%22450%22%20y=%22815%22%20text-anchor=%22middle%22%20font-family=%22Arial,%20sans-serif%22%20font-size=%2234%22%20font-weight=%22700%22%20fill=%22white%22%20opacity=%22.92%22%3ETecnolog%C3%ADa%20digital%3C/text%3E%0A%20%20%3Ctext%20x=%22450%22%20y=%221450%22%20text-anchor=%22middle%22%20font-family=%22Arial,%20sans-serif%22%20font-size=%2230%22%20font-weight=%22800%22%20fill=%22white%22%20opacity=%22.75%22%3EConecta%20Servicios%3C/text%3E%0A%3C/svg%3E",
-        "mediaFit": "cover",
-        "mediaScale": 1,
-        "mediaX": 50,
-        "mediaY": 50
-    },
-    {
-        "id": "pilot-necesito-mandado",
-        "ownerId": "public-pilot-comunidad",
-        "ownerName": "Comunidad",
-        "title": "Necesito apoyo con un mandado o servicio cercano",
-        "description": "Publica lo que necesitas, tu zona y recibe mensajes de personas cercanas disponibles.",
-        "category": "NECESITO",
-        "zone": "Chapultepec",
-        "serviceArea": "Chapultepec",
-        "status": "activa",
-        "cloudStatus": "publica",
-        "createdAt": "2026-05-24T12:00:00.000Z",
-        "updatedAt": "2026-05-24T12:00:00.000Z",
-        "mediaType": "image",
-        "mediaData": "data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20900%201600%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset=%220%22%20stop-color=%22#312e81%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset=%221%22%20stop-color=%22#7c2d12%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id=%22r%22%20cx=%2250%%22%20cy=%2235%%22%20r=%2265%%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset=%220%22%20stop-color=%22white%22%20stop-opacity=%22.24%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset=%221%22%20stop-color=%22black%22%20stop-opacity=%22.18%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width=%22900%22%20height=%221600%22%20fill=%22url(#g)%22/%3E%0A%20%20%3Crect%20width=%22900%22%20height=%221600%22%20fill=%22url(#r)%22/%3E%0A%20%20%3Ccircle%20cx=%22720%22%20cy=%22220%22%20r=%22180%22%20fill=%22#f97316%22%20opacity=%22.28%22/%3E%0A%20%20%3Ccircle%20cx=%22180%22%20cy=%221320%22%20r=%22260%22%20fill=%22#f97316%22%20opacity=%22.22%22/%3E%0A%20%20%3Crect%20x=%2295%22%20y=%22640%22%20width=%22710%22%20height=%22260%22%20rx=%2242%22%20fill=%22rgba(0,0,0,.28)%22/%3E%0A%20%20%3Ctext%20x=%22450%22%20y=%22735%22%20text-anchor=%22middle%22%20font-family=%22Arial,%20sans-serif%22%20font-size=%2258%22%20font-weight=%22900%22%20fill=%22white%22%3ENECESITO%3C/text%3E%0A%20%20%3Ctext%20x=%22450%22%20y=%22815%22%20text-anchor=%22middle%22%20font-family=%22Arial,%20sans-serif%22%20font-size=%2234%22%20font-weight=%22700%22%20fill=%22white%22%20opacity=%22.92%22%3EAyuda%20cercana%3C/text%3E%0A%20%20%3Ctext%20x=%22450%22%20y=%221450%22%20text-anchor=%22middle%22%20font-family=%22Arial,%20sans-serif%22%20font-size=%2230%22%20font-weight=%22800%22%20fill=%22white%22%20opacity=%22.75%22%3EConecta%20Servicios%3C/text%3E%0A%3C/svg%3E",
-        "mediaFit": "cover",
-        "mediaScale": 1,
-        "mediaX": 50,
-        "mediaY": 50
-    }
-];
+  const seed = [];
 
   const app = document.getElementById('app');
   const toastEl = document.getElementById('toast');
@@ -712,23 +651,11 @@
 
   function localPosts(){
     const saved = get(K.posts, null);
-
-    // Emergencia visual: ningún celular debe abrir en blanco.
-    // Si no hay publicaciones locales, usamos el muro base de respaldo.
-    if(!Array.isArray(saved) || !saved.length){
-      const starter = seed.map(p => normalizePost(p)).filter(p => !isSeed(p));
-      set(K.posts, starter);
-      return starter;
+    if(!saved){
+      set(K.posts, seed);
+      return seed.map(p => normalizePost(p)).filter(p => !isSeed(p));
     }
-
-    const cleaned = saved.map(p => normalizePost(p)).filter(p => !isSeed(p) && postStatus(p) !== 'eliminada');
-    if(!cleaned.length){
-      const starter = seed.map(p => normalizePost(p)).filter(p => !isSeed(p));
-      set(K.posts, starter);
-      return starter;
-    }
-
-    return cleaned;
+    return (Array.isArray(saved) ? saved : []).map(p => normalizePost(p)).filter(p => !isSeed(p));
   }
 
   function stripForLocal(post){
@@ -753,12 +680,6 @@
 
     if(isDeleted(b) && !isDeleted(a)) return b;
     if(isDeleted(a) && !isDeleted(b)) return a;
-
-    const af = new Date(a.frameUpdatedAt || 0).getTime();
-    const bf = new Date(b.frameUpdatedAt || 0).getTime();
-    if(Number.isFinite(af) && Number.isFinite(bf) && af !== bf){
-      return bf > af ? {...a, ...b} : {...b, ...a};
-    }
 
     // Regla central del arreglo: mediaUrl remota/video real siempre gana.
     if(hasRemoteMedia(b) && !hasRemoteMedia(a)) return b;
@@ -947,36 +868,6 @@
   function myPosts(){ return filteredAll().filter(p => isMeId(p.ownerId)); }
   function followedPosts(){ const ids = new Set(follows()); return filteredAll().filter(p => ids.has(p.ownerId)); }
   function filteredAll(){ return dedupePosts(state.posts).filter(p => !isDeleted(p)).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)); }
-  function publicVisiblePosts(){
-    // Recuperación para celulares de prueba: ignora marcas locales de borrado/filtros
-    // cuando hay publicaciones públicas disponibles en este dispositivo.
-    return dedupePosts(state.posts)
-      .filter(p => p && !isSeed(p) && postStatus(p) !== 'eliminada')
-      .sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
-  }
-
-  function recoverPublicFeed(reason=''){
-    try{
-      state.route = '/';
-      state.filter = 'ALL';
-      state.query = '';
-      state.searchOpen = false;
-      state.searchTyping = false;
-      state.topTab = 'para-ti';
-      // Si este celular guardó IDs eliminados de pruebas anteriores, no deben bloquear el muro público.
-      localStorage.removeItem(K.deletedPosts);
-      const visible = publicVisiblePosts();
-      if(visible.length){
-        state.posts = visible;
-        set(K.posts, visible.map(stripForLocal));
-        return true;
-      }
-    }catch(error){
-      console.warn('[Conecta] No se pudo recuperar feed público', reason, error);
-    }
-    return false;
-  }
-
   function ownerPosts(ownerId){
     return filteredAll().filter(p => p.ownerId === ownerId);
   }
@@ -1378,16 +1269,6 @@
     };
   }
 
-  function applyRemotePostSnapshot(remotePost){
-    if(!remotePost || !remotePost.id) return;
-    const normalized = normalizePost(remotePost, 'remote');
-    const exists = state.posts.some(p => String(p.id) === String(normalized.id));
-    const next = exists
-      ? state.posts.map(p => String(p.id) === String(normalized.id) ? {...p, ...normalized} : p)
-      : [normalized, ...state.posts];
-    saveLocalPosts(next);
-  }
-
   async function syncPost(post){
     try{
       const clean = stripForRemote(normalizePost(post));
@@ -1407,18 +1288,13 @@
     if(state.syncing) return false;
     state.syncing = true;
     try{
-      const res = await fetch('/api/publications?t=' + Date.now(), {cache:'no-store'});
+      const res = await fetch('/api/publications', {cache:'no-store'});
       const data = await res.json();
       if(!res.ok || !data.ok) throw new Error('offline');
 
-      const remote = (data.posts || []).map(p => normalizePost(p, 'remote')).filter(p => postStatus(p) !== 'eliminada');
+      const remote = (data.posts || []).map(p => normalizePost(p, 'remote'));
       state.cloudReady = true;
-
-      if(remote.length){
-        saveLocalPosts(mergeLocalAndRemote(localPosts(), remote));
-      }else if(!filteredPosts().length){
-        saveLocalPosts(seed.map(p => normalizePost(p)).filter(p => !isSeed(p)));
-      }
+      saveLocalPosts(mergeLocalAndRemote(localPosts(), remote));
 
       if(options.render !== false && state.route !== '/publicar' && !shouldAvoidRender()) render();
       return true;
@@ -1449,12 +1325,9 @@
   }
 
   function injectRootStyles(){
-    const existingRootStyles = document.getElementById('cs-root-fix-styles');
-    if(existingRootStyles && existingRootStyles.dataset.version === VERSION) return;
-    existingRootStyles?.remove();
+    if(document.getElementById('cs-root-fix-styles')) return;
     const style = document.createElement('style');
     style.id = 'cs-root-fix-styles';
-    style.dataset.version = VERSION;
     style.textContent = `
       .video-tile{
         position:relative; width:100%; min-height:380px; height:100%;
@@ -2245,7 +2118,7 @@
 
       /* v6.3.37: corrección precisa de menú y puntitos */
 
-      /* v6.4.58: puntitos fuera del encuadre y foto única al encuadrar */
+      /* v6.4.59: puntitos fuera del encuadre y foto única al encuadrar */
       .direct-frame-active .post-body-gallery-dots,
       .direct-frame-active .gallery-dots{
         display:none !important;
@@ -2253,7 +2126,7 @@
       }
 
 
-      /* v6.4.58: encuadre independiente por foto */
+      /* v6.4.59: encuadre independiente por foto */
       .direct-frame-active .direct-frame-hint{
         max-width:calc(100% - 44px) !important;
       }
@@ -2584,7 +2457,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.58: acciones icon-only y perfil simple */
+      /* v6.4.59: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2616,7 +2489,7 @@
         display:none !important;
       }
 
-      /* v6.4.58-emergencia-feed-siempre-visible: bloque consolidado de Home/postCard.
+      /* v6.4.59-restauracion-total-v648: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2795,7 +2668,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.58: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.59: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2814,7 +2687,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.58: descripción visible, ...leer separado del texto */
+      /* v6.4.59: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2949,7 +2822,7 @@
         min-height:48px;
       }
 
-      /* v6.4.58-emergencia-feed-siempre-visible */
+      /* v6.4.59-restauracion-total-v648 */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -3211,7 +3084,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.58: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.59: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3357,7 +3230,7 @@
 
 
 
-      /* v6.4.58: encuadre táctil libre sin controles inferiores */
+      /* v6.4.59: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3404,9 +3277,9 @@
       }
 
 
-      /* v6.4.58: encuadre táctil tipo redes sociales */
+      /* v6.4.59: encuadre táctil tipo redes sociales */
       
-      /* v6.4.58: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.59: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3414,13 +3287,13 @@
 
 
 
-      /* v6.4.58: encuadre directo táctil fino */
+      /* v6.4.59: encuadre directo táctil fino */
 
-      /* v6.4.58: edición directa desde la publicación */
+      /* v6.4.59: edición directa desde la publicación */
 
-      /* v6.4.58: zona/cobertura libre visible */
+      /* v6.4.59: zona/cobertura libre visible */
 
-      /* v6.4.58: carrusel más suave y encuadre por foto */
+      /* v6.4.59: carrusel más suave y encuadre por foto */
       .gallery-stage{
         touch-action:pan-y !important;
       }
@@ -3477,15 +3350,15 @@
       }
 
 
-      /* v6.4.58: multimedia directa básica e instrucciones visibles */
+      /* v6.4.59: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.58: puntitos centrados arriba del usuario */
+      /* v6.4.59: puntitos centrados arriba del usuario */
 
-      /* v6.4.58: carrusel táctil y edición limpia */
+      /* v6.4.59: carrusel táctil y edición limpia */
 
-      /* v6.4.58: carrusel Android, categoría completa y puntitos pequeños */
+      /* v6.4.59: carrusel Android, categoría completa y puntitos pequeños */
 
-      /* v6.4.58: zona legible, encuadre simple y carrusel por swipe */
+      /* v6.4.59: zona legible, encuadre simple y carrusel por swipe */
       .service-area-row{
         background:rgba(0,0,0,.56) !important;
         color:#fff !important;
@@ -3598,7 +3471,7 @@
       }
 
 
-      /* v6.4.58 final override dentro del CSS */
+      /* v6.4.59 final override dentro del CSS */
       .service-area-row{
         background:rgba(0,0,0,.56)!important;
         color:#fff!important;
@@ -4242,7 +4115,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.58: encuadre directo desde la publicación */
+      /* v6.4.59: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -4334,7 +4207,7 @@
         display:none !important;
       }
 
-      /* v6.4.58: recuperación de scroll global */
+      /* v6.4.59: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -4536,7 +4409,7 @@
         }
       }
 
-      /* v6.4.58: encuadre editable de multimedia */
+      /* v6.4.59: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4769,7 +4642,7 @@
       }
 
 
-      /* v6.4.58: encuadre editable de multimedia */
+      /* v6.4.59: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5228,7 +5101,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.58: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.59: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -5372,7 +5245,7 @@
       }
 
 
-      /* v6.4.58: encuadre editable de multimedia */
+      /* v6.4.59: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5605,7 +5478,7 @@
       }
 
 
-      /* v6.4.58: encuadre editable de multimedia */
+      /* v6.4.59: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5727,7 +5600,7 @@
 
 
 
-      /* v6.4.58-emergencia-feed-siempre-visible
+      /* v6.4.59-restauracion-total-v648
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6158,7 +6031,7 @@
 
 
 
-      /* v6.4.58-emergencia-feed-siempre-visible
+      /* v6.4.59-restauracion-total-v648
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6241,7 +6114,7 @@
 
 
 
-      /* v6.4.58: ajustes post diseño según revisión real en celular.
+      /* v6.4.59: ajustes post diseño según revisión real en celular.
          Mantiene funciones, corrige encabezado, barra inferior, corazón, puntitos y orden visual. */
 
       /* Restaurar encabezado oscuro/transparente: se deben ver Municipio / Tienda / Para ti. */
@@ -6465,7 +6338,7 @@
 
 
 
-      /* v6.4.58: menú flotante por publicación.
+      /* v6.4.59: menú flotante por publicación.
          Orden pedido: Municipio/Zona + Carrito + Corazón + Lupa.
          Se elimina Siguiendo de arriba porque ya existe abajo. */
       .glass-top.tiktok-top.floating-post-menu{
@@ -6662,7 +6535,7 @@
 
 
 
-      /* v6.4.58: corrige el hueco inferior entre publicaciones.
+      /* v6.4.59: corrige el hueco inferior entre publicaciones.
          El menú superior es flotante, por eso cada publicación debe ocupar 100% de la pantalla.
          No toca mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6741,7 +6614,7 @@
 
 
 
-      /* v6.4.58: admin de encuadre y video auto-ajustado.
+      /* v6.4.59: admin de encuadre y video auto-ajustado.
          El admin local solo muestra Encuadre admin, no borrar ni editar contenido. */
       .admin-frame-row{
         justify-content:flex-start !important;
@@ -6770,7 +6643,7 @@
 
 
 
-      /* v6.4.58: controles de encuadre visibles.
+      /* v6.4.59: controles de encuadre visibles.
          Corrige Guardar/Cancelar tapados por barra inferior y mejora escritura en paneles. */
 
       .direct-frame-active .direct-frame-controls{
@@ -6878,7 +6751,7 @@
 
 
 
-      /* v6.4.58: encuadre con botones arriba y barra inferior oculta realmente.
+      /* v6.4.59: encuadre con botones arriba y barra inferior oculta realmente.
          La barra inferior es hermana del main, por eso se usa :has() y selector de hermano. */
 
       body:has(.post-card.direct-frame-active) .bottom-nav,
@@ -7005,162 +6878,6 @@
         }
       }
 
-
-
-      /* v6.4.58: estabilidad de entrada y encuadre global persistente. */
-      .admin-frame-row{
-        justify-content:flex-start !important;
-      }
-      .admin-frame-btn{
-        background:linear-gradient(135deg,#1D4ED8,#0f766e) !important;
-        color:#fff !important;
-        border:1px solid rgba(255,255,255,.28) !important;
-      }
-      .admin-frame-btn::before{
-        content:"🛠️ ";
-      }
-      .post-card video.framed-media,
-      .post-card .media-area video.feed-video-player{
-        object-fit:var(--media-fit, cover) !important;
-        transform:translate3d(var(--media-tx, 0%), var(--media-ty, 0%), 0) scale(var(--media-scale, 1)) !important;
-        transform-origin:center center !important;
-      }
-
-
-
-      /* v6.4.58: el estado vacío ya no debe quedar como pantalla blanca confusa detrás del menú. */
-      .feed .empty,
-      .feed .empty-state,
-      .feed .panel:has(h2),
-      .feed .panel:has(h1){
-        margin-top:calc(env(safe-area-inset-top) + 124px) !important;
-        background:rgba(255,255,255,.94) !important;
-        color:#111827 !important;
-        border-radius:22px !important;
-        box-shadow:0 18px 40px rgba(17,24,39,.12) !important;
-      }
-
-
-
-      /* v6.4.58 restauración segura:
-         evita que un encabezado/buscador viejo se muestre debajo de la publicación. */
-      .feed-title{
-        display:none !important;
-      }
-
-      .feed{
-        padding-top:0 !important;
-      }
-
-
-
-      /* v6.4.58: reparación de emergencia del feed.
-         No puede aparecer el bloque Buscar/OFREZCO debajo de la publicación. */
-      #feedTitle,
-      .feed-title,
-      .brand-row,
-      .path-row,
-      .search-box,
-      .old-home-search,
-      .home-search-card,
-      .legacy-home-panel{
-        display:none !important;
-        visibility:hidden !important;
-        opacity:0 !important;
-        pointer-events:none !important;
-        position:absolute !important;
-        left:-9999px !important;
-        top:auto !important;
-        width:0 !important;
-        height:0 !important;
-        max-height:0 !important;
-        overflow:hidden !important;
-        margin:0 !important;
-        padding:0 !important;
-      }
-
-      .feed{
-        padding-top:0 !important;
-        margin-top:0 !important;
-        gap:0 !important;
-        background:#050507 !important;
-      }
-
-      .feed > .post-card{
-        height:100dvh !important;
-        min-height:100dvh !important;
-        max-height:100dvh !important;
-        margin:0 !important;
-        overflow:hidden !important;
-      }
-
-      @supports (height:100svh){
-        .feed > .post-card{
-          height:100svh !important;
-          min-height:100svh !important;
-          max-height:100svh !important;
-        }
-      }
-
-      .app-page .top-space{
-        display:none !important;
-        height:0 !important;
-        min-height:0 !important;
-      }
-
-      .feed > .post-card + .post-card{
-        margin-top:0 !important;
-      }
-
-      .post-card .media-area{
-        height:100% !important;
-        min-height:100% !important;
-      }
-
-      .post-card .post-body{
-        bottom:0 !important;
-      }
-
-
-
-      /* v6.4.58: emergencia feed siempre visible */
-      #feedTitle,
-      .feed-title,
-      .feed-loading-card,
-      .empty-state:has(h2),
-      .empty-state:has(h1){
-        display:none !important;
-      }
-
-      .feed{
-        padding-top:0 !important;
-        margin-top:0 !important;
-        gap:0 !important;
-        background:#050507 !important;
-      }
-
-      .feed > .post-card{
-        height:100dvh !important;
-        min-height:100dvh !important;
-        max-height:100dvh !important;
-        margin:0 !important;
-        overflow:hidden !important;
-      }
-
-      @supports (height:100svh){
-        .feed > .post-card{
-          height:100svh !important;
-          min-height:100svh !important;
-          max-height:100svh !important;
-        }
-      }
-
-      .no-media{
-        height:100% !important;
-        background:linear-gradient(135deg,#0f172a,#1d4ed8) !important;
-        color:#fff !important;
-      }
-
 `;
     document.head.appendChild(style);
   }
@@ -7219,27 +6936,15 @@
     return `<button class="path-card ${klass} ${state.filter===key?'active':''}" data-filter="${key}"><span class="path-icon">${icon}</span><span class="path-label">${label}</span></button>`;
   }
 
-  function homePage(){ return shell(`${homeHeader()}<section class="feed" id="feed">${feedMarkup()}</section>`); }
+  function homePage(){ return shell(`${homeHeader()}<section class="feed-title" id="feedTitle">${feedTitleMarkup()}</section><section class="feed" id="feed">${feedMarkup()}</section>`); }
   function feedTitleMarkup(){
     const searching = !!state.query.trim();
     const title = searching ? 'Resultados' : (state.filter === 'ALL' ? 'Publicaciones cerca de ti' : state.filter);
     const subtitle = searching ? searchResultText() : (state.cloudReady ? 'Publicaciones disponibles' : 'También funciona sin conexión');
     return `<div><h1>${esc(title)}</h1><p>${esc(subtitle)}</p></div>${state.syncing?'<span class="sync-pill">Actualizando...</span>':(state.filter!=='ALL'||state.query?'<button class="small-link" data-clear>Todo</button>':'')}`;
   }
-  function feedMarkup(){
-    let posts = filteredPosts();
-
-    if(!posts.length){
-      const fallback = seed.map(p => normalizePost(p)).filter(p => !isSeed(p));
-      state.posts = dedupePosts([...(state.posts || []), ...fallback]).filter(p => postStatus(p) !== 'eliminada');
-      set(K.posts, state.posts.map(stripForLocal));
-      posts = filteredPosts();
-    }
-
-    const cards = posts.map(safePostCard).join('');
-    return cards || seed.map(p => safePostCard(normalizePost(p))).join('');
-  }
-  function updateFeedOnly(){ const feed=document.getElementById('feed'); if(feed) feed.innerHTML=feedMarkup(); bindDynamicFeedControls(); setupInternalVideos(); setupGalleries(); }
+  function feedMarkup(){ const posts=filteredPosts(); return posts.map(postCard).join('') || emptyState('No encontré publicaciones','Prueba otra búsqueda o publica algo con el botón +.'); }
+  function updateFeedOnly(){ const feed=document.getElementById('feed'); if(feed) feed.innerHTML=feedMarkup(); const title=document.getElementById('feedTitle'); if(title) title.innerHTML=feedTitleMarkup(); bindDynamicFeedControls(); setupInternalVideos(); setupGalleries(); }
   function serviceAreaText(post){
     return String(post?.serviceArea || post?.coverageArea || post?.zone || '').trim();
   }
@@ -7806,24 +7511,6 @@
     toast(single ? 'Quedó una sola foto.' : 'Foto quitada.');
   }
 
-  function safePostCard(post){
-    try{
-      if(!post || typeof post !== 'object') return '';
-      return postCard(post);
-    }catch(error){
-      console.warn('[Conecta] Publicación omitida por seguridad visual', error, post?.id || '');
-      try{
-        localStorage.setItem('cs_v650_last_safe_post_error', JSON.stringify({
-          id: post?.id || '',
-          title: post?.title || '',
-          message: error?.message || String(error),
-          at: new Date().toISOString()
-        }));
-      }catch{}
-      return '';
-    }
-  }
-
   function postCard(post){
     post = normalizePost(post);
     const ownerPost = isMeId(post.ownerId);
@@ -7904,7 +7591,7 @@
       </div>
       ${summary.isMe && !vendo.length ? '<div class="local-note">Publica algo en categoría VENDO para empezar tu tienda.</div>' : ''}
     </section>
-    <section class="feed store-feed">${vendo.map(safePostCard).join('') || emptyState('Esta tienda aún no tiene productos','Cuando publique en VENDO, aparecerá aquí.')}</section>
+    <section class="feed store-feed">${vendo.map(postCard).join('') || emptyState('Esta tienda aún no tiene productos','Cuando publique en VENDO, aparecerá aquí.')}</section>
     ${suggestions.length ? `<section class="panel owner-directory"><h2>Otras tiendas locales</h2><div class="owner-list">${suggestions.map(s => ownerCard(s)).join('')}</div></section>` : ''}`);
   }
 
@@ -7923,7 +7610,7 @@
       <h2>Guardados para ti</h2>
       <p>Publicaciones marcadas con corazón.</p>
     </section>
-    <section class="feed following-liked-feed">${liked.map(safePostCard).join('') || emptyState('Todavía no guardas publicaciones','Toca el corazón en una publicación para verla aquí.')}</section>
+    <section class="feed following-liked-feed">${liked.map(postCard).join('') || emptyState('Todavía no guardas publicaciones','Toca el corazón en una publicación para verla aquí.')}</section>
     <section class="panel owner-directory">
       <h2>Cuentas que sigues</h2>
       <div class="owner-list">${summaries.map(s => ownerCard(s)).join('') || emptyState('Todavía no sigues cuentas','Cuando sigas a un publicante, aparecerá aquí.')}</div>
@@ -7984,7 +7671,7 @@ ${esc(shortDiagnosticText(diag))}</code>
         </div>
         <button type="button" data-nav="/confianza">Ver</button>
       </div>
-    </section>${diagnosticsPanel()}<section class="feed">${mine.map(safePostCard).join('')||emptyState('No has publicado','Toca + para crear tu primera publicación.')}</section>`);
+    </section>${diagnosticsPanel()}<section class="feed">${mine.map(postCard).join('')||emptyState('No has publicado','Toca + para crear tu primera publicación.')}</section>`);
   }
 
   function confidencePage(){
@@ -8155,51 +7842,9 @@ ${esc(shortDiagnosticText(diag))}</code>
       setupGalleries();
       setupDirectFrameEditors();
       if(state.route === '/publicar') setupFrameTouchEditor();
-      try{ sessionStorage.removeItem('cs_v650_render_recovery_once'); }catch{}
     }catch(error){
       console.error('[Conecta] Error de render', error);
-      try{
-        localStorage.setItem('cs_v650_last_render_error', JSON.stringify({
-          route: state.route || '/',
-          message: error?.message || String(error),
-          stack: String(error?.stack || '').slice(0, 1000),
-          at: new Date().toISOString()
-        }));
-      }catch{}
-
-      try{
-        const recoveryKey = 'cs_v650_render_recovery_once';
-        const alreadyTried = sessionStorage.getItem(recoveryKey) === '1';
-
-        state.route = '/';
-        state.filter = 'ALL';
-        state.query = '';
-        state.searchOpen = false;
-        state.searchTyping = false;
-        state.topTab = 'para-ti';
-        state.directFramePostId = '';
-        state.directEditPostId = '';
-        state.directMediaPostId = '';
-        state.videoViewer = null;
-        state.chat = null;
-
-        injectRootStyles();
-        const posts = filteredPosts();
-        const cards = posts.map(safePostCard).join('');
-        app.innerHTML = shell(`${homeHeader()}<section class="feed" id="feed">${cards || emptyState('Publicaciones disponibles','Toca + para publicar o usa la lupa para buscar.')}</section>`);
-        bind();
-        setupInternalVideos();
-        setupGalleries();
-        setupDirectFrameEditors();
-
-        if(!alreadyTried){
-          sessionStorage.setItem(recoveryKey, '1');
-          setTimeout(()=>syncFromCloud({render:false}).then(()=>updateFeedOnly()).catch(()=>null), 300);
-        }
-      }catch(recoveryError){
-        console.error('[Conecta] Error de recuperación', recoveryError);
-        if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>Entrando a la app...</p><button class="big-button" onclick="sessionStorage.clear();location.replace('/?v=6458&fresh='+Date.now())">Entrar</button></section></main>`;
-      }
+      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6459 o recarga.</p><button class="big-button" onclick="location.href='/?v=6459'">Recargar app</button></section></main>`;
     }
   }
 
@@ -8970,7 +8615,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.58: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.59: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -9545,76 +9190,19 @@ ${esc(shortDiagnosticText(diag))}</code>
 
   async function saveDirectFrame(postId){
     const post = state.posts.find(p => String(p.id) === String(postId));
-    if(!post || !canFramePostAsAdmin(post)) return toast('Solo puedes guardar publicaciones propias o activar modo admin.');
+    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes guardar tus publicaciones.');
     state.directFrameSaving = true;
     render();
-
-    const current = state.posts.find(p => String(p.id) === String(postId)) || post;
-    const frame = postFrameData(current);
-    const active = activeGalleryIndex(postId);
-    const imageItems = galleryImageItems(current);
-    const nextItems = Array.isArray(current.mediaItems) ? current.mediaItems.map((item, index) => {
-      if(imageItems.length && index === active){
-        return {
-          ...item,
-          mediaFit: frame.fit,
-          mediaScale: frame.scale,
-          mediaX: frame.x,
-          mediaY: frame.y,
-          fit: frame.fit,
-          scale: frame.scale,
-          x: frame.x,
-          y: frame.y,
-          frameUpdatedAt:new Date().toISOString()
-        };
-      }
-      return item;
-    }) : [];
-
-    const updated = normalizePost({
-      ...current,
-      mediaItems: nextItems,
-      mediaFit: frame.fit,
-      mediaScale: frame.scale,
-      mediaX: frame.x,
-      mediaY: frame.y,
-      fit: frame.fit,
-      scale: frame.scale,
-      x: frame.x,
-      y: frame.y,
-      frameUpdatedAt:new Date().toISOString(),
-      updatedAt:new Date().toISOString(),
-      cloudStatus: current.cloudStatus || 'publica'
-    });
-
+    const updated = normalizePost({...post, updatedAt:new Date().toISOString(), cloudStatus: post.cloudStatus || 'publica'});
     saveLocalPosts(state.posts.map(p => String(p.id) === String(postId) ? updated : p));
-
-    let ok = false;
-    try{
-      const clean = stripForRemote(updated);
-      const res = await fetch('/api/publications?frame=1&t=' + Date.now(), {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({post: clean, adminFrame: adminFrameMode()})
-      });
-      const data = await res.json().catch(()=>({ok:false}));
-      ok = !!(res.ok && data.ok);
-      if(ok && data.post) applyRemotePostSnapshot(data.post);
-    }catch{
-      ok = false;
-    }
-
-    if(ok){
-      await syncFromCloud({render:false, cacheBust:true}).catch(()=>null);
-    }
-
+    const ok = await syncPost(updated);
     state.directFramePostId = '';
     state.directFrameOriginal = null;
     state.directFrameSaving = false;
     render();
     setTimeout(()=>goGallery(postId, activeGalleryIndex(postId)), 80);
     scrollBackToPost(postId);
-    toast(ok ? 'Encuadre guardado para todos.' : 'Encuadre guardado localmente. Revisa conexión.');
+    toast(ok ? 'Encuadre guardado.' : 'Encuadre guardado localmente. Revisa conexión.');
   }
 
   function setupDirectFrameEditors(){
@@ -9729,7 +9317,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
       const end = e => {
         const p = pointers.get(e.pointerId);
-        // v6.4.58: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
+        // v6.4.59: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
         // Se desactiva doble toque para no interferir con el uso normal de la publicación.
 
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
@@ -9934,26 +9522,8 @@ ${esc(shortDiagnosticText(diag))}</code>
     state.posts = localPosts();
     loadComposerDraft();
     setupNavigationHistory();
-
-    // Entrada pública limpia: no conservar un filtro visual vacío en celulares de prueba.
-    if(state.route === '/'){
-      state.filter = 'ALL';
-      state.query = '';
-      state.topTab = 'para-ti';
-      state.searchOpen = false;
-    }
-
-    if(!state.posts.length){
-      injectRootStyles();
-      app.innerHTML = shell(`${homeHeader()}<section class="feed" id="feed">${emptyState('Cargando publicaciones','Estamos actualizando el muro público.')}</section>`);
-      bind();
-      await syncFromCloud({render:true, cacheBust:true});
-    }else{
-      recoverPublicFeed('init');
-      render();
-      await syncFromCloud({render:true, cacheBust:true});
-    }
-
+    render();
+    await syncFromCloud({render:true});
     startPolling();
   }
 
