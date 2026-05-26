@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.42-diseno-prototipo-aplicado
+/* Conecta Servicios v6.4.43-ajustes-post-diseno
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.42-diseno-prototipo-aplicado';
+  const VERSION = 'v6.4.43-ajustes-post-diseno';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -828,7 +828,7 @@
     return list;
   }
 
-  function myPosts(){ return filteredAll().filter(p => p.ownerId === userId()); }
+  function myPosts(){ return filteredAll().filter(p => isMeId(p.ownerId)); }
   function followedPosts(){ const ids = new Set(follows()); return filteredAll().filter(p => ids.has(p.ownerId)); }
   function filteredAll(){ return dedupePosts(state.posts).filter(p => !isDeleted(p)).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)); }
   function ownerPosts(ownerId){
@@ -2081,7 +2081,7 @@
 
       /* v6.3.37: corrección precisa de menú y puntitos */
 
-      /* v6.4.42: puntitos fuera del encuadre y foto única al encuadrar */
+      /* v6.4.43: puntitos fuera del encuadre y foto única al encuadrar */
       .direct-frame-active .post-body-gallery-dots,
       .direct-frame-active .gallery-dots{
         display:none !important;
@@ -2089,7 +2089,7 @@
       }
 
 
-      /* v6.4.42: encuadre independiente por foto */
+      /* v6.4.43: encuadre independiente por foto */
       .direct-frame-active .direct-frame-hint{
         max-width:calc(100% - 44px) !important;
       }
@@ -2420,7 +2420,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.42: acciones icon-only y perfil simple */
+      /* v6.4.43: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2452,7 +2452,7 @@
         display:none !important;
       }
 
-      /* v6.4.42-diseno-prototipo-aplicado: bloque consolidado de Home/postCard.
+      /* v6.4.43-ajustes-post-diseno: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2631,7 +2631,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.42: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.43: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2650,7 +2650,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.42: descripción visible, ...leer separado del texto */
+      /* v6.4.43: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2785,7 +2785,7 @@
         min-height:48px;
       }
 
-      /* v6.4.42-diseno-prototipo-aplicado */
+      /* v6.4.43-ajustes-post-diseno */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -3047,7 +3047,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.42: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.43: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3193,7 +3193,7 @@
 
 
 
-      /* v6.4.42: encuadre táctil libre sin controles inferiores */
+      /* v6.4.43: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3240,9 +3240,9 @@
       }
 
 
-      /* v6.4.42: encuadre táctil tipo redes sociales */
+      /* v6.4.43: encuadre táctil tipo redes sociales */
       
-      /* v6.4.42: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.43: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3250,13 +3250,13 @@
 
 
 
-      /* v6.4.42: encuadre directo táctil fino */
+      /* v6.4.43: encuadre directo táctil fino */
 
-      /* v6.4.42: edición directa desde la publicación */
+      /* v6.4.43: edición directa desde la publicación */
 
-      /* v6.4.42: zona/cobertura libre visible */
+      /* v6.4.43: zona/cobertura libre visible */
 
-      /* v6.4.42: carrusel más suave y encuadre por foto */
+      /* v6.4.43: carrusel más suave y encuadre por foto */
       .gallery-stage{
         touch-action:pan-y !important;
       }
@@ -3313,15 +3313,15 @@
       }
 
 
-      /* v6.4.42: multimedia directa básica e instrucciones visibles */
+      /* v6.4.43: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.42: puntitos centrados arriba del usuario */
+      /* v6.4.43: puntitos centrados arriba del usuario */
 
-      /* v6.4.42: carrusel táctil y edición limpia */
+      /* v6.4.43: carrusel táctil y edición limpia */
 
-      /* v6.4.42: carrusel Android, categoría completa y puntitos pequeños */
+      /* v6.4.43: carrusel Android, categoría completa y puntitos pequeños */
 
-      /* v6.4.42: zona legible, encuadre simple y carrusel por swipe */
+      /* v6.4.43: zona legible, encuadre simple y carrusel por swipe */
       .service-area-row{
         background:rgba(0,0,0,.56) !important;
         color:#fff !important;
@@ -3434,7 +3434,7 @@
       }
 
 
-      /* v6.4.42 final override dentro del CSS */
+      /* v6.4.43 final override dentro del CSS */
       .service-area-row{
         background:rgba(0,0,0,.56)!important;
         color:#fff!important;
@@ -4078,7 +4078,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.42: encuadre directo desde la publicación */
+      /* v6.4.43: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -4170,7 +4170,7 @@
         display:none !important;
       }
 
-      /* v6.4.42: recuperación de scroll global */
+      /* v6.4.43: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -4372,7 +4372,7 @@
         }
       }
 
-      /* v6.4.42: encuadre editable de multimedia */
+      /* v6.4.43: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4605,7 +4605,7 @@
       }
 
 
-      /* v6.4.42: encuadre editable de multimedia */
+      /* v6.4.43: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5064,7 +5064,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.42: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.43: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -5208,7 +5208,7 @@
       }
 
 
-      /* v6.4.42: encuadre editable de multimedia */
+      /* v6.4.43: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5441,7 +5441,7 @@
       }
 
 
-      /* v6.4.42: encuadre editable de multimedia */
+      /* v6.4.43: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5563,7 +5563,7 @@
 
 
 
-      /* v6.4.42-diseno-prototipo-aplicado
+      /* v6.4.43-ajustes-post-diseno
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -5994,7 +5994,7 @@
 
 
 
-      /* v6.4.42-diseno-prototipo-aplicado
+      /* v6.4.43-ajustes-post-diseno
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6074,6 +6074,230 @@
       .bottom-nav .nav-item{flex:1 1 0!important;min-width:0!important;color:var(--text-muted)!important;}.bottom-nav .nav-item.active{color:var(--brand-blue)!important;}.nav-icon{font-size:20px!important;}.nav-item small{font-size:10px!important;font-weight:800!important;}.bottom-nav .nav-plus{flex:0 0 58px!important;width:58px!important;height:58px!important;min-width:58px!important;min-height:58px!important;border-radius:999px!important;background:var(--brand-blue)!important;color:#fff!important;box-shadow:0 12px 28px rgba(29,78,216,.30)!important;border:4px solid #fff!important;transform:translateY(-14px)!important;font-size:30px!important;}
       @media (max-height:720px){:root{--cs-top-h:126px;--cs-bottom-nav-h:66px;}.post-card .post-body{padding-top:54px!important;max-height:68%!important;}.post-body h2{font-size:16px!important;}.post-description-short,.post-description-collapsed,.post-description-expanded,.post-body p{font-size:12px!important;}.bottom-nav{height:66px!important;min-height:66px!important;}.bottom-nav .nav-plus{width:54px!important;height:54px!important;min-width:54px!important;min-height:54px!important;}}
       @media (min-width:720px){.feed,.store-feed{max-width:430px!important;margin:0 auto!important;}.bottom-nav{max-width:410px!important;left:50%!important;right:auto!important;width:calc(100% - 48px)!important;transform:translateX(-50%)!important;}}
+
+
+
+      /* v6.4.43: ajustes post diseño según revisión real en celular.
+         Mantiene funciones, corrige encabezado, barra inferior, corazón, puntitos y orden visual. */
+
+      /* Restaurar encabezado oscuro/transparente: se deben ver Municipio / Tienda / Para ti. */
+      .glass-top.tiktok-top{
+        position:sticky !important;
+        top:0 !important;
+        z-index:260 !important;
+        padding:calc(env(safe-area-inset-top) + 6px) 12px 8px !important;
+        background:rgba(0,0,0,.76) !important;
+        border:0 !important;
+        border-bottom:1px solid rgba(255,255,255,.12) !important;
+        box-shadow:none !important;
+        color:#fff !important;
+        backdrop-filter:blur(14px) !important;
+        -webkit-backdrop-filter:blur(14px) !important;
+      }
+
+      .tiktok-topbar{
+        display:grid !important;
+        grid-template-columns:42px 1fr 42px !important;
+        align-items:center !important;
+        gap:8px !important;
+        min-height:40px !important;
+      }
+
+      .tiktok-tabs{
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        gap:16px !important;
+        min-width:0 !important;
+        overflow:visible !important;
+      }
+
+      .tiktok-tab{
+        color:rgba(255,255,255,.76) !important;
+        font-size:16px !important;
+        font-weight:900 !important;
+        text-shadow:0 2px 10px rgba(0,0,0,.42) !important;
+      }
+
+      .tiktok-tab.active{
+        color:#fff !important;
+      }
+
+      .tiktok-tab.active::after{
+        background:#fff !important;
+        box-shadow:0 2px 10px rgba(255,255,255,.30) !important;
+      }
+
+      .tiktok-icon-btn{
+        background:rgba(255,255,255,.18) !important;
+        color:#fff !important;
+        border:1px solid rgba(255,255,255,.18) !important;
+        box-shadow:0 8px 22px rgba(0,0,0,.18) !important;
+      }
+
+      .visual-filter-row,
+      .tiktok-filter-row{
+        background:rgba(0,0,0,.72) !important;
+        padding:8px 12px 10px !important;
+        gap:8px !important;
+      }
+
+      .path-card{
+        background:rgba(255,255,255,.16) !important;
+        color:rgba(255,255,255,.88) !important;
+        border:1px solid rgba(255,255,255,.18) !important;
+        box-shadow:none !important;
+      }
+
+      .path-card.active{
+        background:#fff !important;
+        color:#111827 !important;
+        border-color:#fff !important;
+      }
+
+      .tiktok-search-panel{
+        background:rgba(255,255,255,.12) !important;
+        border:1px solid rgba(255,255,255,.18) !important;
+        color:#fff !important;
+      }
+
+      .tiktok-search-panel input{
+        color:#fff !important;
+      }
+
+      .tiktok-search-panel input::placeholder{
+        color:rgba(255,255,255,.64) !important;
+      }
+
+      /* Sin barra blanca/pastilla: conservar navegación, pero quitar contenedor blanco grande. */
+      .bottom-nav{
+        left:0 !important;
+        right:0 !important;
+        bottom:calc(env(safe-area-inset-bottom) + 4px) !important;
+        width:100% !important;
+        height:70px !important;
+        min-height:70px !important;
+        padding:0 18px !important;
+        border-radius:0 !important;
+        background:transparent !important;
+        border:0 !important;
+        box-shadow:none !important;
+        backdrop-filter:none !important;
+        -webkit-backdrop-filter:none !important;
+      }
+
+      .bottom-nav .nav-item{
+        color:rgba(255,255,255,.88) !important;
+        text-shadow:0 2px 10px rgba(0,0,0,.52) !important;
+        background:transparent !important;
+      }
+
+      .bottom-nav .nav-item.active{
+        color:#DBEAFE !important;
+      }
+
+      .nav-icon{
+        font-size:22px !important;
+        filter:drop-shadow(0 2px 8px rgba(0,0,0,.45));
+      }
+
+      .nav-item small{
+        color:inherit !important;
+        font-size:10px !important;
+        font-weight:900 !important;
+      }
+
+      .bottom-nav .nav-plus{
+        background:#1D4ED8 !important;
+        color:#fff !important;
+        border:4px solid rgba(255,255,255,.92) !important;
+        box-shadow:0 12px 28px rgba(0,0,0,.30) !important;
+      }
+
+      /* Botones de acción: el corazón no debe ocupar media pantalla. */
+      .post-action-row{
+        display:flex !important;
+        align-items:center !important;
+        gap:10px !important;
+        width:100% !important;
+        margin-top:10px !important;
+      }
+
+      .post-action-row .icon-only-action,
+      .post-action-row button{
+        flex:0 0 52px !important;
+        width:52px !important;
+        height:46px !important;
+        min-width:52px !important;
+        min-height:46px !important;
+        border-radius:18px !important;
+        padding:0 !important;
+        font-size:20px !important;
+      }
+
+      .post-action-row .heart-action{
+        flex:0 0 52px !important;
+        width:52px !important;
+        height:46px !important;
+        min-width:52px !important;
+        font-size:25px !important;
+        background:rgba(255,255,255,.20) !important;
+        color:#fff !important;
+      }
+
+      .post-action-row .heart-action.liked{
+        color:#ef4444 !important;
+      }
+
+      /* Mensaje y compartir se mantienen compactos y claros. */
+      .post-action-row button[data-message],
+      .post-action-row button[data-share]{
+        background:rgba(255,255,255,.22) !important;
+        color:#fff !important;
+      }
+
+      /* Si solo queda una foto o un punto único, no mostrar carrusel. */
+      .gallery-dots:has(.gallery-dot:only-child),
+      .post-body-gallery-dots:has(.gallery-dot:only-child){
+        display:none !important;
+      }
+
+      .gallery-dots,
+      .post-body-gallery-dots{
+        max-width:58px !important;
+        pointer-events:none !important;
+      }
+
+      .gallery-dot{
+        pointer-events:auto !important;
+      }
+
+      /* Perfil/Siguiendo: que las publicaciones dentro de secciones no queden cortadas detrás del header. */
+      .following-liked-feed,
+      .profile-panel + .diag-panel + .feed,
+      .profile-panel ~ .feed{
+        padding-top:0 !important;
+      }
+
+      @media (max-height:720px){
+        .tiktok-tab{
+          font-size:15px !important;
+        }
+
+        .bottom-nav{
+          height:64px !important;
+          min-height:64px !important;
+        }
+
+        .post-action-row .icon-only-action,
+        .post-action-row button,
+        .post-action-row .heart-action{
+          width:48px !important;
+          min-width:48px !important;
+          height:42px !important;
+          min-height:42px !important;
+        }
+      }
 
 `;
     document.head.appendChild(style);
@@ -6681,23 +6905,33 @@
     if(items.length <= 1) return toast('Deja al menos una foto o usa Cambiar todo.');
     const nextItems = items.filter((_, i) => i !== Number(index));
     const first = nextItems[0] || {};
+
+    const single = nextItems.length === 1;
     const updated = normalizePost({
       ...post,
-      mediaItems: nextItems,
+      // Si queda una sola foto, la publicación vuelve a multimedia simple.
+      // Así desaparecen los puntitos del carrusel.
+      mediaItems: single ? [] : nextItems,
       mediaType:'image',
       mediaUrl:first.mediaUrl || '',
       mediaRef:first.mediaRef || '',
+      mediaData:first.mediaData || '',
       mediaName:first.mediaName || '',
       mediaMime:first.mediaMime || '',
       mediaPreviewUrl:first.mediaPreviewUrl || '',
+      mediaFit:first.mediaFit || first.fit || post.mediaFit || 'contain',
+      mediaScale:first.mediaScale || first.scale || post.mediaScale || 1,
+      mediaX:first.mediaX || first.x || post.mediaX || 50,
+      mediaY:first.mediaY || first.y || post.mediaY || 50,
       mediaStatus:'',
       mediaPending:false,
       updatedAt:new Date().toISOString()
     });
+    state.galleryIndex[String(postId)] = 0;
     saveLocalPosts(state.posts.map(p => String(p.id) === String(postId) ? updated : p));
     syncPost(updated).catch(()=>null);
     render();
-    toast('Foto quitada.');
+    toast(single ? 'Quedó una sola foto.' : 'Foto quitada.');
   }
 
   function postCard(post){
@@ -6784,8 +7018,24 @@
 
   function followingPage(){
     const ids = follows();
+    const likedIds = new Set(likedPostIds().map(String));
+    const liked = filteredAll().filter(p => likedIds.has(String(p.id)));
     const summaries = ids.map(ownerSummary).filter(s => s.total > 0);
-    return shell(`<section class="panel following-panel"><button class="small-link" data-nav="/">← Volver al Home</button><h1>Siguiendo</h1><p>Personas, proveedores, clientes o mensajeros que sigues. Entra a su cuenta para ver su tienda VENDO.</p></section><section class="panel owner-directory"><div class="owner-list">${summaries.map(s => ownerCard(s)).join('') || emptyState('Todavía no sigues a nadie','Toca Seguir en una publicación para ver su cuenta y tienda aquí.')}</div></section>`);
+
+    return shell(`<section class="panel following-panel">
+      <button class="small-link" data-nav="/">← Volver al Home</button>
+      <h1>Siguiendo</h1>
+      <p>Aquí aparecen las publicaciones que marcaste con corazón y las cuentas que sigues.</p>
+    </section>
+    <section class="panel following-panel">
+      <h2>Guardados para ti</h2>
+      <p>Publicaciones marcadas con corazón.</p>
+    </section>
+    <section class="feed following-liked-feed">${liked.map(postCard).join('') || emptyState('Todavía no guardas publicaciones','Toca el corazón en una publicación para verla aquí.')}</section>
+    <section class="panel owner-directory">
+      <h2>Cuentas que sigues</h2>
+      <div class="owner-list">${summaries.map(s => ownerCard(s)).join('') || emptyState('Todavía no sigues cuentas','Cuando sigas a un publicante, aparecerá aquí.')}</div>
+    </section>`);
   }
 
   function diagnosticsPanel(){
@@ -7015,7 +7265,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       if(state.route === '/publicar') setupFrameTouchEditor();
     }catch(error){
       console.error('[Conecta] Error de render', error);
-      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6442 o recarga.</p><button class="big-button" onclick="location.href='/?v=6442'">Recargar app</button></section></main>`;
+      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6443 o recarga.</p><button class="big-button" onclick="location.href='/?v=6443'">Recargar app</button></section></main>`;
     }
   }
 
@@ -7786,7 +8036,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.42: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.43: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -8488,7 +8738,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
       const end = e => {
         const p = pointers.get(e.pointerId);
-        // v6.4.42: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
+        // v6.4.43: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
         // Se desactiva doble toque para no interferir con el uso normal de la publicación.
 
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);

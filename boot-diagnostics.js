@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.42-diseno-prototipo-aplicado';
+  const VERSION = 'v6.4.43-ajustes-post-diseno';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 
