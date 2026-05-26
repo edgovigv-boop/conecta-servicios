@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.41-layout-limpio-estable
+/* Conecta Servicios v6.4.42-diseno-prototipo-aplicado
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.41-layout-limpio-estable';
+  const VERSION = 'v6.4.42-diseno-prototipo-aplicado';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2081,7 +2081,7 @@
 
       /* v6.3.37: corrección precisa de menú y puntitos */
 
-      /* v6.4.41: puntitos fuera del encuadre y foto única al encuadrar */
+      /* v6.4.42: puntitos fuera del encuadre y foto única al encuadrar */
       .direct-frame-active .post-body-gallery-dots,
       .direct-frame-active .gallery-dots{
         display:none !important;
@@ -2089,7 +2089,7 @@
       }
 
 
-      /* v6.4.41: encuadre independiente por foto */
+      /* v6.4.42: encuadre independiente por foto */
       .direct-frame-active .direct-frame-hint{
         max-width:calc(100% - 44px) !important;
       }
@@ -2420,7 +2420,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.41: acciones icon-only y perfil simple */
+      /* v6.4.42: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2452,7 +2452,7 @@
         display:none !important;
       }
 
-      /* v6.4.41-layout-limpio-estable: bloque consolidado de Home/postCard.
+      /* v6.4.42-diseno-prototipo-aplicado: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2631,7 +2631,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.41: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.42: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2650,7 +2650,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.41: descripción visible, ...leer separado del texto */
+      /* v6.4.42: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2785,7 +2785,7 @@
         min-height:48px;
       }
 
-      /* v6.4.41-layout-limpio-estable */
+      /* v6.4.42-diseno-prototipo-aplicado */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -3047,7 +3047,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.41: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.42: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3193,7 +3193,7 @@
 
 
 
-      /* v6.4.41: encuadre táctil libre sin controles inferiores */
+      /* v6.4.42: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3240,9 +3240,9 @@
       }
 
 
-      /* v6.4.41: encuadre táctil tipo redes sociales */
+      /* v6.4.42: encuadre táctil tipo redes sociales */
       
-      /* v6.4.41: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.42: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3250,13 +3250,13 @@
 
 
 
-      /* v6.4.41: encuadre directo táctil fino */
+      /* v6.4.42: encuadre directo táctil fino */
 
-      /* v6.4.41: edición directa desde la publicación */
+      /* v6.4.42: edición directa desde la publicación */
 
-      /* v6.4.41: zona/cobertura libre visible */
+      /* v6.4.42: zona/cobertura libre visible */
 
-      /* v6.4.41: carrusel más suave y encuadre por foto */
+      /* v6.4.42: carrusel más suave y encuadre por foto */
       .gallery-stage{
         touch-action:pan-y !important;
       }
@@ -3313,15 +3313,15 @@
       }
 
 
-      /* v6.4.41: multimedia directa básica e instrucciones visibles */
+      /* v6.4.42: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.41: puntitos centrados arriba del usuario */
+      /* v6.4.42: puntitos centrados arriba del usuario */
 
-      /* v6.4.41: carrusel táctil y edición limpia */
+      /* v6.4.42: carrusel táctil y edición limpia */
 
-      /* v6.4.41: carrusel Android, categoría completa y puntitos pequeños */
+      /* v6.4.42: carrusel Android, categoría completa y puntitos pequeños */
 
-      /* v6.4.41: zona legible, encuadre simple y carrusel por swipe */
+      /* v6.4.42: zona legible, encuadre simple y carrusel por swipe */
       .service-area-row{
         background:rgba(0,0,0,.56) !important;
         color:#fff !important;
@@ -3434,7 +3434,7 @@
       }
 
 
-      /* v6.4.41 final override dentro del CSS */
+      /* v6.4.42 final override dentro del CSS */
       .service-area-row{
         background:rgba(0,0,0,.56)!important;
         color:#fff!important;
@@ -4078,7 +4078,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.41: encuadre directo desde la publicación */
+      /* v6.4.42: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -4170,7 +4170,7 @@
         display:none !important;
       }
 
-      /* v6.4.41: recuperación de scroll global */
+      /* v6.4.42: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -4372,7 +4372,7 @@
         }
       }
 
-      /* v6.4.41: encuadre editable de multimedia */
+      /* v6.4.42: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4605,7 +4605,7 @@
       }
 
 
-      /* v6.4.41: encuadre editable de multimedia */
+      /* v6.4.42: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5064,7 +5064,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.41: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.42: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -5208,7 +5208,7 @@
       }
 
 
-      /* v6.4.41: encuadre editable de multimedia */
+      /* v6.4.42: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5441,7 +5441,7 @@
       }
 
 
-      /* v6.4.41: encuadre editable de multimedia */
+      /* v6.4.42: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5563,7 +5563,7 @@
 
 
 
-      /* v6.4.41-layout-limpio-estable
+      /* v6.4.42-diseno-prototipo-aplicado
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -5991,6 +5991,89 @@
           transform:translateX(-50%) !important;
         }
       }
+
+
+
+      /* v6.4.42-diseno-prototipo-aplicado
+         Aplicación del lenguaje visual del prototipo HTML sobre la app real.
+         No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
+      :root{
+        --brand-blue:#1D4ED8;
+        --brand-blue-dark:#1E3A8A;
+        --brand-blue-soft:#DBEAFE;
+        --surface:#FFFFFF;
+        --surface-soft:#F3F4F6;
+        --text-main:#111827;
+        --text-muted:#6B7280;
+        --border-soft:#E5E7EB;
+        --ok:#16A34A;
+        --danger:#DC2626;
+        --cs-safe-bottom:env(safe-area-inset-bottom);
+        --cs-bottom-nav-h:72px;
+        --cs-top-h:142px;
+        --cs-feed-card-h:calc(100dvh - var(--cs-top-h));
+      }
+      @supports (height:100svh){:root{--cs-feed-card-h:calc(100svh - var(--cs-top-h));}}
+      html,body,#app{margin:0!important;padding:0!important;width:100%!important;min-height:100%!important;overflow-x:hidden!important;background:var(--surface-soft)!important;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif!important;color:var(--text-main)!important;}
+      .app-page,main.app-page{width:100%!important;max-width:none!important;margin:0!important;padding:0!important;min-height:100dvh!important;overflow-x:hidden!important;background:var(--surface-soft)!important;}
+      .top-space,.feed-title{display:none!important;height:0!important;min-height:0!important;}
+      .glass-top.tiktok-top{position:sticky!important;top:0!important;left:0!important;right:0!important;z-index:260!important;padding:calc(env(safe-area-inset-top) + 10px) 14px 10px!important;background:var(--surface)!important;border-bottom:1px solid var(--border-soft)!important;box-shadow:0 8px 18px rgba(17,24,39,.06)!important;color:var(--text-main)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}
+      .tiktok-topbar{display:grid!important;grid-template-columns:42px 1fr 42px!important;align-items:center!important;gap:10px!important;min-height:42px!important;}
+      .tiktok-tabs{display:flex!important;align-items:center!important;justify-content:center!important;gap:16px!important;min-width:0!important;}
+      .tiktok-tab{appearance:none!important;border:0!important;background:transparent!important;color:var(--text-muted)!important;font-weight:800!important;font-size:15px!important;padding:7px 2px!important;text-shadow:none!important;white-space:nowrap!important;position:relative!important;}
+      .tiktok-tab.active{color:var(--brand-blue-dark)!important;font-weight:900!important;}
+      .tiktok-tab.active::after{content:""!important;position:absolute!important;left:50%!important;bottom:0!important;transform:translateX(-50%)!important;width:28px!important;height:3px!important;border-radius:999px!important;background:var(--brand-blue)!important;box-shadow:none!important;}
+      .tiktok-icon-btn{width:40px!important;height:40px!important;border:0!important;border-radius:999px!important;background:var(--brand-blue-soft)!important;color:var(--brand-blue)!important;font-size:20px!important;font-weight:900!important;text-shadow:none!important;box-shadow:0 4px 12px rgba(29,78,216,.08)!important;}
+      .tiktok-search-panel{margin-top:8px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:8px 10px!important;border-radius:14px!important;background:var(--surface-soft)!important;border:1px solid var(--border-soft)!important;box-shadow:none!important;backdrop-filter:none!important;}
+      .tiktok-search-panel input{flex:1!important;min-width:0!important;border:0!important;background:transparent!important;color:var(--text-main)!important;outline:none!important;font-size:14px!important;font-weight:650!important;}
+      .tiktok-search-panel input::placeholder{color:var(--text-muted)!important;}
+      .visual-filter-row,.tiktok-filter-row{display:flex!important;gap:8px!important;overflow-x:auto!important;padding:8px 14px 10px!important;background:var(--surface-soft)!important;scrollbar-width:none!important;}
+      .visual-filter-row::-webkit-scrollbar,.tiktok-filter-row::-webkit-scrollbar{display:none!important;}
+      .path-card{height:34px!important;min-height:34px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;flex:0 0 auto!important;border-radius:999px!important;padding:0 14px!important;border:1px solid var(--border-soft)!important;background:var(--surface)!important;color:var(--text-muted)!important;box-shadow:none!important;font-weight:800!important;}
+      .path-card.active{background:var(--brand-blue)!important;color:#fff!important;border-color:var(--brand-blue)!important;box-shadow:0 8px 18px rgba(29,78,216,.18)!important;}
+      .path-card .path-icon{display:none!important;}
+      .path-label{font-size:12px!important;font-weight:900!important;}
+      .feed,.store-feed{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0 0 calc(var(--cs-safe-bottom) + 82px) 0!important;background:var(--surface-soft)!important;overflow-x:hidden!important;scroll-snap-type:none!important;}
+      .feed>.post-card,.store-feed>.post-card{position:relative!important;display:block!important;width:100%!important;max-width:none!important;height:var(--cs-feed-card-h)!important;min-height:var(--cs-feed-card-h)!important;max-height:var(--cs-feed-card-h)!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;overflow:hidden!important;background:#111827!important;box-shadow:none!important;}
+      .feed>.post-card+.post-card,.store-feed>.post-card+.post-card{margin-top:10px!important;border-top:8px solid var(--surface-soft)!important;}
+      .post-card .media-area{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;z-index:1!important;overflow:hidden!important;border-radius:0!important;background:#111827!important;}
+      .post-card .media-area>img,.post-card .media-area .framed-media,.post-card .media-area .no-media,.post-card .video-inline-wrap,.post-card .video-inline-wrap video,.post-card .media-area video.feed-video-player,.post-card .media-carousel,.post-card .media-carousel img,.post-card .direct-frame-single,.post-card .direct-frame-single img{width:100%!important;min-width:100%!important;max-width:100%!important;height:100%!important;min-height:100%!important;max-height:100%!important;border-radius:0!important;background:#111827!important;}
+      .post-card:not(.direct-frame-active) .media-area>img,.post-card:not(.direct-frame-active) .media-area .framed-media,.post-card:not(.direct-frame-active) .media-carousel img{object-fit:cover!important;object-position:center center!important;}
+      .post-card .media-area::after{content:""!important;position:absolute!important;inset:0!important;z-index:2!important;pointer-events:none!important;background:linear-gradient(180deg,rgba(17,24,39,.05) 0%,rgba(17,24,39,.08) 34%,rgba(17,24,39,.46) 58%,rgba(17,24,39,.96) 100%)!important;}
+      .post-card.direct-frame-active .media-area::after{display:none!important;}
+      .sound-toggle,.sound-toggle-card,.audio-row-btn,[data-toggle-video-sound],[aria-label*="sonido" i],[aria-label*="audio" i]{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;}
+      .media-top{position:absolute!important;top:16px!important;left:16px!important;right:auto!important;z-index:92!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;width:auto!important;max-width:80%!important;}
+      .media-top .chip{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:28px!important;min-width:0!important;width:auto!important;padding:5px 10px!important;border-radius:999px!important;background:var(--brand-blue)!important;color:#fff!important;border:0!important;font-size:11px!important;font-weight:900!important;letter-spacing:.04em!important;box-shadow:0 8px 18px rgba(0,0,0,.18)!important;}
+      .post-card .post-body{position:absolute!important;left:0!important;right:0!important;bottom:0!important;z-index:85!important;box-sizing:border-box!important;color:#fff!important;min-height:0!important;max-height:70%!important;overflow:hidden!important;border-radius:0!important;padding:72px 16px calc(var(--cs-safe-bottom) + 84px) 16px!important;background:linear-gradient(180deg,rgba(17,24,39,0),rgba(17,24,39,.22) 0%,rgba(17,24,39,.86) 50%,rgba(17,24,39,1) 100%)!important;box-shadow:none!important;backdrop-filter:none!important;pointer-events:auto!important;}
+      .post-card.description-open .post-body{max-height:82%!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;padding-right:18px!important;background:linear-gradient(180deg,rgba(17,24,39,.10),rgba(17,24,39,.78) 18%,rgba(17,24,39,1) 100%)!important;}
+      .post-card.direct-edit-active .post-body,.post-card.direct-media-active .post-body{max-height:84%!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;padding:56px 14px calc(var(--cs-safe-bottom) + 84px) 14px!important;background:linear-gradient(180deg,rgba(17,24,39,.16),rgba(17,24,39,.86) 18%,rgba(17,24,39,1) 100%)!important;}
+      .post-card.direct-frame-active .post-body{display:none!important;}
+      .owner-row{display:flex!important;align-items:center!important;gap:9px!important;margin-bottom:7px!important;}
+      .owner-row img,.owner-avatar{width:40px!important;height:40px!important;border-radius:999px!important;border:2px solid #fff!important;box-shadow:0 8px 18px rgba(0,0,0,.24)!important;}
+      .owner-row span{font-size:14px!important;font-weight:800!important;color:#fff!important;text-shadow:0 2px 12px rgba(0,0,0,.42)!important;}
+      .service-area-row{position:relative!important;display:inline-flex!important;align-items:center!important;width:auto!important;max-width:100%!important;margin:0 0 6px!important;padding:6px 10px!important;border-radius:999px!important;background:rgba(219,234,254,.16)!important;border:1px solid rgba(219,234,254,.24)!important;color:#DBEAFE!important;font-size:12px!important;font-weight:900!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;pointer-events:none!important;}
+      .service-area-row strong{color:#fff!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+      .post-body h2{color:#fff!important;font-size:18px!important;line-height:1.12!important;margin:0 0 5px!important;font-weight:900!important;text-shadow:0 2px 14px rgba(0,0,0,.48)!important;}
+      .post-description-short,.post-description-collapsed,.post-description-expanded,.post-body p{color:#F3F4F6!important;font-size:13px!important;line-height:1.3!important;font-weight:500!important;}
+      .read-more,.read-toggle,[data-toggle-description]{color:#DBEAFE!important;font-weight:900!important;}
+      .post-meta{margin-top:4px!important;font-size:11px!important;color:rgba(255,255,255,.72)!important;}
+      .post-action-row{display:grid!important;grid-template-columns:minmax(0,1fr) 46px 46px!important;gap:8px!important;width:100%!important;margin-top:10px!important;align-items:center!important;}
+      .post-action-row button{min-height:46px!important;height:46px!important;border-radius:14px!important;border:1px solid rgba(255,255,255,.26)!important;background:rgba(255,255,255,.92)!important;color:var(--brand-blue-dark)!important;font-weight:900!important;font-size:13px!important;box-shadow:0 10px 22px rgba(0,0,0,.18)!important;backdrop-filter:blur(10px)!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;}
+      .post-action-row button[data-message-post],.post-action-row .primary,.post-action-row button:first-child{background:var(--brand-blue)!important;color:#fff!important;border-color:var(--brand-blue)!important;}
+      .manage-row{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;z-index:120!important;display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;gap:8px!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;margin-top:10px!important;padding:4px 0 0!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:none!important;}
+      .manage-row::-webkit-scrollbar{display:none!important;}.manage-row::before{content:none!important;display:none!important;}
+      .manage-row button{flex:0 0 auto!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:36px!important;white-space:nowrap!important;border-radius:12px!important;border:1px solid rgba(255,255,255,.18)!important;background:rgba(30,58,138,.88)!important;color:#fff!important;font-weight:900!important;font-size:12px!important;padding:8px 12px!important;box-shadow:0 8px 20px rgba(0,0,0,.16)!important;backdrop-filter:blur(10px)!important;}
+      .manage-row .frame-direct-btn{background:var(--brand-blue)!important;}.manage-row .direct-edit-btn{background:#1E3A8A!important;}.manage-row .direct-media-btn{background:#0F766E!important;}.manage-row .danger{background:var(--danger)!important;}
+      .direct-edit-panel,.direct-media-panel{position:relative!important;z-index:145!important;display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;background:rgba(255,255,255,.96)!important;color:var(--text-main)!important;border:1px solid rgba(255,255,255,.55)!important;border-radius:18px!important;box-shadow:0 14px 34px rgba(0,0,0,.24)!important;}
+      .direct-edit-panel label,.direct-media-panel label{color:var(--text-main)!important;font-weight:900!important;}.direct-edit-panel input,.direct-edit-panel textarea,.direct-edit-panel select,.direct-media-panel input{background:#fff!important;border:1px solid var(--border-soft)!important;border-radius:12px!important;color:var(--text-main)!important;}
+      .direct-save-btn,.direct-frame-controls button:first-child{background:var(--ok)!important;color:#fff!important;}
+      .gallery-dots,.post-body-gallery-dots{position:absolute!important;right:14px!important;top:42%!important;left:auto!important;bottom:auto!important;transform:translateY(-50%)!important;z-index:96!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:3px!important;padding:5px 7px!important;border-radius:999px!important;background:rgba(17,24,39,.34)!important;border:1px solid rgba(255,255,255,.18)!important;box-shadow:0 8px 18px rgba(0,0,0,.18)!important;}
+      .gallery-dot{width:12px!important;height:12px!important;min-width:12px!important;background:transparent!important;padding:0!important;border:0!important;display:flex!important;align-items:center!important;justify-content:center!important;}.gallery-dot span{width:4px!important;height:4px!important;border-radius:999px!important;background:rgba(255,255,255,.58)!important;display:block!important;}.gallery-dot.active span{width:12px!important;background:#fff!important;}
+      .direct-frame-active .service-area-row,.direct-frame-active .post-body-gallery-dots,.direct-frame-active .gallery-dots{display:none!important;pointer-events:none!important;}
+      .bottom-nav{position:fixed!important;left:18px!important;right:18px!important;bottom:calc(var(--cs-safe-bottom) + 8px)!important;width:auto!important;max-width:none!important;height:72px!important;min-height:72px!important;display:flex!important;align-items:center!important;justify-content:space-around!important;gap:4px!important;transform:none!important;z-index:300!important;overflow:visible!important;padding:6px 10px!important;border-radius:26px!important;background:rgba(255,255,255,.94)!important;border:1px solid var(--border-soft)!important;box-shadow:0 16px 36px rgba(17,24,39,.16)!important;backdrop-filter:blur(14px)!important;}
+      .bottom-nav .nav-item{flex:1 1 0!important;min-width:0!important;color:var(--text-muted)!important;}.bottom-nav .nav-item.active{color:var(--brand-blue)!important;}.nav-icon{font-size:20px!important;}.nav-item small{font-size:10px!important;font-weight:800!important;}.bottom-nav .nav-plus{flex:0 0 58px!important;width:58px!important;height:58px!important;min-width:58px!important;min-height:58px!important;border-radius:999px!important;background:var(--brand-blue)!important;color:#fff!important;box-shadow:0 12px 28px rgba(29,78,216,.30)!important;border:4px solid #fff!important;transform:translateY(-14px)!important;font-size:30px!important;}
+      @media (max-height:720px){:root{--cs-top-h:126px;--cs-bottom-nav-h:66px;}.post-card .post-body{padding-top:54px!important;max-height:68%!important;}.post-body h2{font-size:16px!important;}.post-description-short,.post-description-collapsed,.post-description-expanded,.post-body p{font-size:12px!important;}.bottom-nav{height:66px!important;min-height:66px!important;}.bottom-nav .nav-plus{width:54px!important;height:54px!important;min-width:54px!important;min-height:54px!important;}}
+      @media (min-width:720px){.feed,.store-feed{max-width:430px!important;margin:0 auto!important;}.bottom-nav{max-width:410px!important;left:50%!important;right:auto!important;width:calc(100% - 48px)!important;transform:translateX(-50%)!important;}}
 
 `;
     document.head.appendChild(style);
@@ -6932,7 +7015,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       if(state.route === '/publicar') setupFrameTouchEditor();
     }catch(error){
       console.error('[Conecta] Error de render', error);
-      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6441 o recarga.</p><button class="big-button" onclick="location.href='/?v=6441'">Recargar app</button></section></main>`;
+      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6442 o recarga.</p><button class="big-button" onclick="location.href='/?v=6442'">Recargar app</button></section></main>`;
     }
   }
 
@@ -7703,7 +7786,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.41: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.42: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -8405,7 +8488,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
       const end = e => {
         const p = pointers.get(e.pointerId);
-        // v6.4.41: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
+        // v6.4.42: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
         // Se desactiva doble toque para no interferir con el uso normal de la publicación.
 
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
