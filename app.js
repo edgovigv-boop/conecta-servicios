@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.45-ajusta-altura-feed
+/* Conecta Servicios v6.4.46-admin-encuadre-auto-video
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.45-ajusta-altura-feed';
+  const VERSION = 'v6.4.46-admin-encuadre-auto-video';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -215,6 +215,35 @@
 
   function isMeId(id){
     return identityAliases().includes(String(id || '').trim());
+  }
+
+  function adminFrameMode(){
+    // Modo admin local para piloto: permite encuadrar multimedia de cualquier publicación desde este navegador.
+    // No reemplaza una seguridad real de servidor; solo evita tocar Supabase/SQL en esta etapa.
+    const key = 'cs_v646_admin_frame_mode';
+    try{
+      const params = new URLSearchParams(location.search || '');
+      const requested = String(params.get('admin') || '').trim().toLowerCase();
+      if(requested === 'off' || requested === '0'){
+        localStorage.removeItem(key);
+        return false;
+      }
+      if(['1','true','media','encuadre','admin'].includes(requested)){
+        localStorage.setItem(key, '1');
+        return true;
+      }
+      if(location.hash && location.hash.toLowerCase().includes('admin-encuadre')){
+        localStorage.setItem(key, '1');
+        return true;
+      }
+      return localStorage.getItem(key) === '1';
+    }catch{
+      return false;
+    }
+  }
+
+  function canFramePostAsAdmin(post){
+    return !!post && (isMeId(post.ownerId) || adminFrameMode());
   }
 
   async function fetchMessagesForIdentity(params={}){
@@ -588,7 +617,15 @@
     if(isVideoPost(next) && !next.mediaType) next.mediaType = 'video';
     if(!next.mediaType) next.mediaType = mediaUrl ? 'image' : 'image';
 
-    const frame = mediaFrameFromPost(next);
+    const hasExplicitFrame = !!(next.mediaFit || next.fit || next.mediaScale !== undefined || next.scale !== undefined || next.mediaX !== undefined || next.x !== undefined || next.mediaY !== undefined || next.y !== undefined);
+    let frame = mediaFrameFromPost(next);
+
+    // Para publicaciones masivas con video, el estándar visual debe llenar la pantalla automáticamente.
+    // Si el usuario/admin ya ajustó el encuadre, respetamos su ajuste.
+    if(isVideoPost(next) && !hasExplicitFrame){
+      frame = {fit:'cover', scale:1, x:50, y:50};
+    }
+
     next.mediaFit = frame.fit;
     next.mediaScale = frame.scale;
     next.mediaX = frame.x;
@@ -2081,7 +2118,7 @@
 
       /* v6.3.37: corrección precisa de menú y puntitos */
 
-      /* v6.4.45: puntitos fuera del encuadre y foto única al encuadrar */
+      /* v6.4.46: puntitos fuera del encuadre y foto única al encuadrar */
       .direct-frame-active .post-body-gallery-dots,
       .direct-frame-active .gallery-dots{
         display:none !important;
@@ -2089,7 +2126,7 @@
       }
 
 
-      /* v6.4.45: encuadre independiente por foto */
+      /* v6.4.46: encuadre independiente por foto */
       .direct-frame-active .direct-frame-hint{
         max-width:calc(100% - 44px) !important;
       }
@@ -2420,7 +2457,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.45: acciones icon-only y perfil simple */
+      /* v6.4.46: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2452,7 +2489,7 @@
         display:none !important;
       }
 
-      /* v6.4.45-ajusta-altura-feed: bloque consolidado de Home/postCard.
+      /* v6.4.46-admin-encuadre-auto-video: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2631,7 +2668,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.45: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.46: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2650,7 +2687,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.45: descripción visible, ...leer separado del texto */
+      /* v6.4.46: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2785,7 +2822,7 @@
         min-height:48px;
       }
 
-      /* v6.4.45-ajusta-altura-feed */
+      /* v6.4.46-admin-encuadre-auto-video */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -3047,7 +3084,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.45: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.46: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3193,7 +3230,7 @@
 
 
 
-      /* v6.4.45: encuadre táctil libre sin controles inferiores */
+      /* v6.4.46: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3240,9 +3277,9 @@
       }
 
 
-      /* v6.4.45: encuadre táctil tipo redes sociales */
+      /* v6.4.46: encuadre táctil tipo redes sociales */
       
-      /* v6.4.45: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.46: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3250,13 +3287,13 @@
 
 
 
-      /* v6.4.45: encuadre directo táctil fino */
+      /* v6.4.46: encuadre directo táctil fino */
 
-      /* v6.4.45: edición directa desde la publicación */
+      /* v6.4.46: edición directa desde la publicación */
 
-      /* v6.4.45: zona/cobertura libre visible */
+      /* v6.4.46: zona/cobertura libre visible */
 
-      /* v6.4.45: carrusel más suave y encuadre por foto */
+      /* v6.4.46: carrusel más suave y encuadre por foto */
       .gallery-stage{
         touch-action:pan-y !important;
       }
@@ -3313,15 +3350,15 @@
       }
 
 
-      /* v6.4.45: multimedia directa básica e instrucciones visibles */
+      /* v6.4.46: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.45: puntitos centrados arriba del usuario */
+      /* v6.4.46: puntitos centrados arriba del usuario */
 
-      /* v6.4.45: carrusel táctil y edición limpia */
+      /* v6.4.46: carrusel táctil y edición limpia */
 
-      /* v6.4.45: carrusel Android, categoría completa y puntitos pequeños */
+      /* v6.4.46: carrusel Android, categoría completa y puntitos pequeños */
 
-      /* v6.4.45: zona legible, encuadre simple y carrusel por swipe */
+      /* v6.4.46: zona legible, encuadre simple y carrusel por swipe */
       .service-area-row{
         background:rgba(0,0,0,.56) !important;
         color:#fff !important;
@@ -3434,7 +3471,7 @@
       }
 
 
-      /* v6.4.45 final override dentro del CSS */
+      /* v6.4.46 final override dentro del CSS */
       .service-area-row{
         background:rgba(0,0,0,.56)!important;
         color:#fff!important;
@@ -4078,7 +4115,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.45: encuadre directo desde la publicación */
+      /* v6.4.46: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -4170,7 +4207,7 @@
         display:none !important;
       }
 
-      /* v6.4.45: recuperación de scroll global */
+      /* v6.4.46: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -4372,7 +4409,7 @@
         }
       }
 
-      /* v6.4.45: encuadre editable de multimedia */
+      /* v6.4.46: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4605,7 +4642,7 @@
       }
 
 
-      /* v6.4.45: encuadre editable de multimedia */
+      /* v6.4.46: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5064,7 +5101,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.45: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.46: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -5208,7 +5245,7 @@
       }
 
 
-      /* v6.4.45: encuadre editable de multimedia */
+      /* v6.4.46: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5441,7 +5478,7 @@
       }
 
 
-      /* v6.4.45: encuadre editable de multimedia */
+      /* v6.4.46: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5563,7 +5600,7 @@
 
 
 
-      /* v6.4.45-ajusta-altura-feed
+      /* v6.4.46-admin-encuadre-auto-video
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -5994,7 +6031,7 @@
 
 
 
-      /* v6.4.45-ajusta-altura-feed
+      /* v6.4.46-admin-encuadre-auto-video
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6077,7 +6114,7 @@
 
 
 
-      /* v6.4.45: ajustes post diseño según revisión real en celular.
+      /* v6.4.46: ajustes post diseño según revisión real en celular.
          Mantiene funciones, corrige encabezado, barra inferior, corazón, puntitos y orden visual. */
 
       /* Restaurar encabezado oscuro/transparente: se deben ver Municipio / Tienda / Para ti. */
@@ -6301,7 +6338,7 @@
 
 
 
-      /* v6.4.45: menú flotante por publicación.
+      /* v6.4.46: menú flotante por publicación.
          Orden pedido: Municipio/Zona + Carrito + Corazón + Lupa.
          Se elimina Siguiendo de arriba porque ya existe abajo. */
       .glass-top.tiktok-top.floating-post-menu{
@@ -6498,7 +6535,7 @@
 
 
 
-      /* v6.4.45: corrige el hueco inferior entre publicaciones.
+      /* v6.4.46: corrige el hueco inferior entre publicaciones.
          El menú superior es flotante, por eso cada publicación debe ocupar 100% de la pantalla.
          No toca mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6573,6 +6610,35 @@
         .post-card .post-body{
           padding-bottom:calc(env(safe-area-inset-bottom) + 76px) !important;
         }
+      }
+
+
+
+      /* v6.4.46: admin de encuadre y video auto-ajustado.
+         El admin local solo muestra Encuadre admin, no borrar ni editar contenido. */
+      .admin-frame-row{
+        justify-content:flex-start !important;
+      }
+
+      .admin-frame-btn{
+        background:linear-gradient(135deg,#1D4ED8,#0f766e) !important;
+        color:#fff !important;
+        border:1px solid rgba(255,255,255,.28) !important;
+      }
+
+      .admin-frame-btn::before{
+        content:"🛠️ ";
+      }
+
+      .post-card video.framed-media,
+      .post-card .media-area video.feed-video-player{
+        object-fit:var(--media-fit, cover) !important;
+        transform:translate3d(var(--media-tx, 0%), var(--media-ty, 0%), 0) scale(var(--media-scale, 1)) !important;
+        transform-origin:center center !important;
+      }
+
+      .direct-frame-active .direct-frame-hint{
+        top:calc(env(safe-area-inset-top) + 82px) !important;
       }
 
 `;
@@ -6887,7 +6953,7 @@
 
   async function saveDirectEdit(postId){
     const post = state.posts.find(p => String(p.id) === String(postId));
-    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes guardar tus publicaciones.');
+    if(!post || !canFramePostAsAdmin(post)) return toast('Solo puedes guardar publicaciones propias o activar modo admin.');
     const form = readDirectEditForm(postId);
     if(!form.title && !form.description) return toast('Agrega título o descripción.');
     if(!form.zone) return toast('Agrega zona o municipio.');
@@ -7210,10 +7276,12 @@
 
   function postCard(post){
     post = normalizePost(post);
-    const own = isMeId(post.ownerId);
+    const ownerPost = isMeId(post.ownerId);
+    const adminFramePost = !ownerPost && adminFrameMode();
+    const own = ownerPost;
     const pending = isVideoPost(post) && !post.mediaUrl;
     const expandedDesc = isDescriptionExpanded(post.id);
-    const canFrameDirect = own && !pending && !!resolveMedia(post);
+    const canFrameDirect = (ownerPost || adminFramePost) && !pending && !!resolveMedia(post);
     const directFrameActive = state.directFramePostId === post.id;
     const directEditActive = state.directEditPostId === post.id;
     const directMediaActive = state.directMediaPostId === post.id;
@@ -7223,7 +7291,7 @@
         ${pending ? '<div class="media-pending">Video en proceso. La publicación ya está visible.</div>' : ''}
         <div class="media-top"><span class="chip ${categoryClass(post.category)}">${esc(normalizeCategory(post.category))}</span></div>
         ${isVideoPost(post) && post.mediaUrl ? `<button class="sound-toggle-card" type="button" data-toggle-video-sound="${esc(post.id)}" aria-label="Activar sonido">🔇</button>` : ''}
-        ${directFrameActive ? `<div class="direct-frame-grid" aria-hidden="true"></div><div class="direct-frame-hint">Encuadre de esta foto · Pellizca tamaño</div><div class="direct-frame-controls"><button type="button" data-direct-frame-save="${esc(post.id)}">${state.directFrameSaving ? 'Guardando...' : 'Guardar y volver'}</button><button type="button" data-direct-frame-cancel="${esc(post.id)}">Cancelar</button></div>` : ''}
+        ${directFrameActive ? `<div class="direct-frame-grid" aria-hidden="true"></div><div class="direct-frame-hint">${isVideoPost(post) ? 'Encuadre de video' : 'Encuadre de multimedia'} · Pellizca tamaño</div><div class="direct-frame-controls"><button type="button" data-direct-frame-save="${esc(post.id)}">${state.directFrameSaving ? 'Guardando...' : 'Guardar y volver'}</button><button type="button" data-direct-frame-cancel="${esc(post.id)}">Cancelar</button></div>` : ''}
       </div>
       <div class="post-body ${expandedDesc ? 'expanded-description-body' : ''}">
         ${galleryDotsMarkup(post)}
@@ -7241,7 +7309,7 @@
           ${isVideoPost(post) && post.mediaUrl ? `<button type="button" class="icon-only-action audio-row-btn" data-toggle-video-sound="${esc(post.id)}" aria-label="Audio" title="Audio">🔇</button>` : ''}
         </div>
         ${statusLabel(post)}
-        ${own ? `<div class="manage-row">${post.cloudStatus==='local'||post.mediaStatus==='pendiente'||post.mediaStatus==='error'?`<button class="retry" data-retry="${esc(post.id)}">Reintentar</button>`:''}${canFrameDirect ? `<button class="frame-direct-btn" data-direct-frame-start="${esc(post.id)}">${directFrameActive ? 'Encuadre...' : 'Encuadre'}</button>` : ''}<button class="direct-edit-btn" data-direct-edit-start="${esc(post.id)}">${directEditActive ? 'Editando...' : 'Editar aquí'}</button><button class="direct-media-btn" data-direct-media-start="${esc(post.id)}">${directMediaActive ? 'Multimedia...' : 'Multimedia'}</button><button data-edit="${esc(post.id)}">Completo</button><button class="danger" data-delete="${esc(post.id)}">Borrar</button></div>` : ''}
+        ${own ? `<div class="manage-row">${post.cloudStatus==='local'||post.mediaStatus==='pendiente'||post.mediaStatus==='error'?`<button class="retry" data-retry="${esc(post.id)}">Reintentar</button>`:''}${canFrameDirect ? `<button class="frame-direct-btn" data-direct-frame-start="${esc(post.id)}">${directFrameActive ? 'Encuadre...' : 'Encuadre'}</button>` : ''}<button class="direct-edit-btn" data-direct-edit-start="${esc(post.id)}">${directEditActive ? 'Editando...' : 'Editar aquí'}</button><button class="direct-media-btn" data-direct-media-start="${esc(post.id)}">${directMediaActive ? 'Multimedia...' : 'Multimedia'}</button><button data-edit="${esc(post.id)}">Completo</button><button class="danger" data-delete="${esc(post.id)}">Borrar</button></div>` : (adminFramePost && canFrameDirect ? `<div class="manage-row admin-frame-row"><button class="frame-direct-btn admin-frame-btn" data-direct-frame-start="${esc(post.id)}">${directFrameActive ? 'Encuadre admin...' : 'Encuadre admin'}</button></div>` : '')}
         ${post.cloudStatus==='local' ? '<div class="local-note">Tu publicación se guardó en este dispositivo. Revisa tu conexión e intenta de nuevo.</div>' : ''}
       </div>
     </article>`;
@@ -7539,7 +7607,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       if(state.route === '/publicar') setupFrameTouchEditor();
     }catch(error){
       console.error('[Conecta] Error de render', error);
-      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6445 o recarga.</p><button class="big-button" onclick="location.href='/?v=6445'">Recargar app</button></section></main>`;
+      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6446 o recarga.</p><button class="big-button" onclick="location.href='/?v=6446'">Recargar app</button></section></main>`;
     }
   }
 
@@ -8310,7 +8378,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.45: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.46: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -8847,7 +8915,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
   function startDirectFrame(postId){
     const post = state.posts.find(p => String(p.id) === String(postId));
-    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes encuadrar tus publicaciones.');
+    if(!post || !canFramePostAsAdmin(post)) return toast('Solo puedes encuadrar publicaciones propias o activar modo admin.');
     if(!resolveMedia(post)) return toast('Esta publicación no tiene multimedia para encuadrar.');
 
     const gallery = document.querySelector(`[data-gallery="${cssEscape(postId)}"]`);
@@ -9012,7 +9080,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
       const end = e => {
         const p = pointers.get(e.pointerId);
-        // v6.4.45: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
+        // v6.4.46: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
         // Se desactiva doble toque para no interferir con el uso normal de la publicación.
 
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
