@@ -5,15 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#5b2eea" />
   <meta name="description" content="Conecta Servicios: red social local para vender, ofrecer, pedir ayuda y conversar en tu zona." />
-  <title>Conecta Servicios v6.4.60</title>
-  <link rel="manifest" href="manifest.json?v=6460" />
+  <title>Conecta Servicios v6.4.62</title>
+  <link rel="manifest" href="manifest.json?v=6462" />
   <link rel="icon" href="assets/icons/favicon.ico" sizes="any" />
-  <link rel="stylesheet" href="styles.css?v=6460" />
+  <link rel="stylesheet" href="styles.css?v=6462" />
   <script>
     (async function conectaCacheResetOnce(){
       try{
         var params = new URLSearchParams(location.search || '');
-        var marker = 'cs_v6460_cache_reset_done';
+        var marker = 'cs_v6462_cache_reset_done';
         if(params.get('reset') === 'done' || sessionStorage.getItem(marker) === '1') return;
         sessionStorage.setItem(marker, '1');
         if('caches' in window){
@@ -24,15 +24,15 @@
           var regs = await navigator.serviceWorker.getRegistrations();
           await Promise.all(regs.map(function(reg){ return reg.unregister().catch(function(){}); }));
         }
-        location.replace('/?v=6460&reset=done');
+        location.replace('/?v=6462&reset=done');
       }catch(e){}
     })();
   </script>
 </head>
-<body data-version="v6.4.60-restauracion-cache-real">
+<body data-version="v6.4.62-admin-panel-e-instalar-app">
   <noscript>Activa JavaScript para usar Conecta Servicios.</noscript>
   <div id="app" class="app-shell"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=6460" defer></script>
+  <script src="app.js?v=6462" defer></script>
 </body>
 </html>
