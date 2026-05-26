@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.57-reparacion-feed-sin-buscador-inferior';
+  const VERSION = 'v6.4.58-emergencia-feed-siempre-visible';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 
