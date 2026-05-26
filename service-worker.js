@@ -1,4 +1,4 @@
-const CACHE_NAME = 'conecta-servicios-v6-4-43-ajustes-post-diseno';
+const CACHE_NAME = 'conecta-servicios-v6-4-44-menu-flotante-publicacion';
 
 const ASSETS = [
   '/',
@@ -36,7 +36,7 @@ self.addEventListener('fetch', event => {
     url.pathname.endsWith('/index.html') ||
     url.pathname.endsWith('/app.js') ||
     url.pathname.endsWith('/service-worker.js') ||
-    url.search.includes('v=6443') ||
+    url.search.includes('v=6444') ||
     url.search.includes('v=6.3.41');
 
   if (networkFirst) {
