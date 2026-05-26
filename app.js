@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.51-feed-y-encuadre-remoto
+/* Conecta Servicios v6.4.52-recupera-feed-publico
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.51-feed-y-encuadre-remoto';
+  const VERSION = 'v6.4.52-recupera-feed-publico';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -874,6 +874,36 @@
   function myPosts(){ return filteredAll().filter(p => isMeId(p.ownerId)); }
   function followedPosts(){ const ids = new Set(follows()); return filteredAll().filter(p => ids.has(p.ownerId)); }
   function filteredAll(){ return dedupePosts(state.posts).filter(p => !isDeleted(p)).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)); }
+  function publicVisiblePosts(){
+    // Recuperación para celulares de prueba: ignora marcas locales de borrado/filtros
+    // cuando hay publicaciones públicas disponibles en este dispositivo.
+    return dedupePosts(state.posts)
+      .filter(p => p && !isSeed(p) && postStatus(p) !== 'eliminada')
+      .sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+  }
+
+  function recoverPublicFeed(reason=''){
+    try{
+      state.route = '/';
+      state.filter = 'ALL';
+      state.query = '';
+      state.searchOpen = false;
+      state.searchTyping = false;
+      state.topTab = 'para-ti';
+      // Si este celular guardó IDs eliminados de pruebas anteriores, no deben bloquear el muro público.
+      localStorage.removeItem(K.deletedPosts);
+      const visible = publicVisiblePosts();
+      if(visible.length){
+        state.posts = visible;
+        set(K.posts, visible.map(stripForLocal));
+        return true;
+      }
+    }catch(error){
+      console.warn('[Conecta] No se pudo recuperar feed público', reason, error);
+    }
+    return false;
+  }
+
   function ownerPosts(ownerId){
     return filteredAll().filter(p => p.ownerId === ownerId);
   }
@@ -1309,16 +1339,28 @@
       const data = await res.json();
       if(!res.ok || !data.ok) throw new Error('offline');
 
-      const remote = (data.posts || []).map(p => normalizePost(p, 'remote'));
+      const remote = (data.posts || []).map(p => normalizePost(p, 'remote')).filter(p => postStatus(p) !== 'eliminada');
       state.cloudReady = true;
-      saveLocalPosts(mergeLocalAndRemote(localPosts(), remote));
 
-      // Si el usuario quedó en un filtro sin resultados, regresamos a Para ti para no mostrar pantalla vacía.
-      if(state.route === '/' && !filteredPosts().length && filteredAll().length){
-        state.filter = 'ALL';
-        state.query = '';
-        state.topTab = 'para-ti';
-        state.searchOpen = false;
+      let merged = mergeLocalAndRemote(localPosts(), remote);
+
+      // Si el celular de prueba traía filtros/borrados locales y el feed queda vacío,
+      // recuperamos con la nube pública directamente.
+      const visibleMerged = dedupePosts(merged).filter(p => p && !isSeed(p) && postStatus(p) !== 'eliminada');
+      if(remote.length && !visibleMerged.length){
+        localStorage.removeItem(K.deletedPosts);
+        merged = remote;
+      }
+
+      saveLocalPosts(merged);
+
+      if(remote.length && !filteredAll().length){
+        localStorage.removeItem(K.deletedPosts);
+        saveLocalPosts(remote);
+      }
+
+      if(state.route === '/' && !filteredPosts().length && publicVisiblePosts().length){
+        recoverPublicFeed('empty-filter-after-sync');
       }
 
       if(options.render !== false && state.route !== '/publicar' && !shouldAvoidRender()) render();
@@ -1326,6 +1368,7 @@
     }catch{
       state.cloudReady = false;
       state.posts = localPosts().filter(p => !isDeleted(p));
+      if(!filteredPosts().length) recoverPublicFeed('offline-empty');
       if(options.render !== false && state.route !== '/publicar' && !shouldAvoidRender()) render();
       return false;
     }finally{
@@ -2143,7 +2186,7 @@
 
       /* v6.3.37: corrección precisa de menú y puntitos */
 
-      /* v6.4.51: puntitos fuera del encuadre y foto única al encuadrar */
+      /* v6.4.52: puntitos fuera del encuadre y foto única al encuadrar */
       .direct-frame-active .post-body-gallery-dots,
       .direct-frame-active .gallery-dots{
         display:none !important;
@@ -2151,7 +2194,7 @@
       }
 
 
-      /* v6.4.51: encuadre independiente por foto */
+      /* v6.4.52: encuadre independiente por foto */
       .direct-frame-active .direct-frame-hint{
         max-width:calc(100% - 44px) !important;
       }
@@ -2482,7 +2525,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.51: acciones icon-only y perfil simple */
+      /* v6.4.52: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2514,7 +2557,7 @@
         display:none !important;
       }
 
-      /* v6.4.51-feed-y-encuadre-remoto: bloque consolidado de Home/postCard.
+      /* v6.4.52-recupera-feed-publico: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2693,7 +2736,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.51: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.52: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2712,7 +2755,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.51: descripción visible, ...leer separado del texto */
+      /* v6.4.52: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2847,7 +2890,7 @@
         min-height:48px;
       }
 
-      /* v6.4.51-feed-y-encuadre-remoto */
+      /* v6.4.52-recupera-feed-publico */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -3109,7 +3152,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.51: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.52: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3255,7 +3298,7 @@
 
 
 
-      /* v6.4.51: encuadre táctil libre sin controles inferiores */
+      /* v6.4.52: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3302,9 +3345,9 @@
       }
 
 
-      /* v6.4.51: encuadre táctil tipo redes sociales */
+      /* v6.4.52: encuadre táctil tipo redes sociales */
       
-      /* v6.4.51: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.52: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3312,13 +3355,13 @@
 
 
 
-      /* v6.4.51: encuadre directo táctil fino */
+      /* v6.4.52: encuadre directo táctil fino */
 
-      /* v6.4.51: edición directa desde la publicación */
+      /* v6.4.52: edición directa desde la publicación */
 
-      /* v6.4.51: zona/cobertura libre visible */
+      /* v6.4.52: zona/cobertura libre visible */
 
-      /* v6.4.51: carrusel más suave y encuadre por foto */
+      /* v6.4.52: carrusel más suave y encuadre por foto */
       .gallery-stage{
         touch-action:pan-y !important;
       }
@@ -3375,15 +3418,15 @@
       }
 
 
-      /* v6.4.51: multimedia directa básica e instrucciones visibles */
+      /* v6.4.52: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.51: puntitos centrados arriba del usuario */
+      /* v6.4.52: puntitos centrados arriba del usuario */
 
-      /* v6.4.51: carrusel táctil y edición limpia */
+      /* v6.4.52: carrusel táctil y edición limpia */
 
-      /* v6.4.51: carrusel Android, categoría completa y puntitos pequeños */
+      /* v6.4.52: carrusel Android, categoría completa y puntitos pequeños */
 
-      /* v6.4.51: zona legible, encuadre simple y carrusel por swipe */
+      /* v6.4.52: zona legible, encuadre simple y carrusel por swipe */
       .service-area-row{
         background:rgba(0,0,0,.56) !important;
         color:#fff !important;
@@ -3496,7 +3539,7 @@
       }
 
 
-      /* v6.4.51 final override dentro del CSS */
+      /* v6.4.52 final override dentro del CSS */
       .service-area-row{
         background:rgba(0,0,0,.56)!important;
         color:#fff!important;
@@ -4140,7 +4183,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.51: encuadre directo desde la publicación */
+      /* v6.4.52: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -4232,7 +4275,7 @@
         display:none !important;
       }
 
-      /* v6.4.51: recuperación de scroll global */
+      /* v6.4.52: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -4434,7 +4477,7 @@
         }
       }
 
-      /* v6.4.51: encuadre editable de multimedia */
+      /* v6.4.52: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4667,7 +4710,7 @@
       }
 
 
-      /* v6.4.51: encuadre editable de multimedia */
+      /* v6.4.52: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5126,7 +5169,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.51: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.52: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -5270,7 +5313,7 @@
       }
 
 
-      /* v6.4.51: encuadre editable de multimedia */
+      /* v6.4.52: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5503,7 +5546,7 @@
       }
 
 
-      /* v6.4.51: encuadre editable de multimedia */
+      /* v6.4.52: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5625,7 +5668,7 @@
 
 
 
-      /* v6.4.51-feed-y-encuadre-remoto
+      /* v6.4.52-recupera-feed-publico
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6056,7 +6099,7 @@
 
 
 
-      /* v6.4.51-feed-y-encuadre-remoto
+      /* v6.4.52-recupera-feed-publico
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6139,7 +6182,7 @@
 
 
 
-      /* v6.4.51: ajustes post diseño según revisión real en celular.
+      /* v6.4.52: ajustes post diseño según revisión real en celular.
          Mantiene funciones, corrige encabezado, barra inferior, corazón, puntitos y orden visual. */
 
       /* Restaurar encabezado oscuro/transparente: se deben ver Municipio / Tienda / Para ti. */
@@ -6363,7 +6406,7 @@
 
 
 
-      /* v6.4.51: menú flotante por publicación.
+      /* v6.4.52: menú flotante por publicación.
          Orden pedido: Municipio/Zona + Carrito + Corazón + Lupa.
          Se elimina Siguiendo de arriba porque ya existe abajo. */
       .glass-top.tiktok-top.floating-post-menu{
@@ -6560,7 +6603,7 @@
 
 
 
-      /* v6.4.51: corrige el hueco inferior entre publicaciones.
+      /* v6.4.52: corrige el hueco inferior entre publicaciones.
          El menú superior es flotante, por eso cada publicación debe ocupar 100% de la pantalla.
          No toca mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6639,7 +6682,7 @@
 
 
 
-      /* v6.4.51: admin de encuadre y video auto-ajustado.
+      /* v6.4.52: admin de encuadre y video auto-ajustado.
          El admin local solo muestra Encuadre admin, no borrar ni editar contenido. */
       .admin-frame-row{
         justify-content:flex-start !important;
@@ -6668,7 +6711,7 @@
 
 
 
-      /* v6.4.51: controles de encuadre visibles.
+      /* v6.4.52: controles de encuadre visibles.
          Corrige Guardar/Cancelar tapados por barra inferior y mejora escritura en paneles. */
 
       .direct-frame-active .direct-frame-controls{
@@ -6776,7 +6819,7 @@
 
 
 
-      /* v6.4.51: encuadre con botones arriba y barra inferior oculta realmente.
+      /* v6.4.52: encuadre con botones arriba y barra inferior oculta realmente.
          La barra inferior es hermana del main, por eso se usa :has() y selector de hermano. */
 
       body:has(.post-card.direct-frame-active) .bottom-nav,
@@ -6905,7 +6948,7 @@
 
 
 
-      /* v6.4.51: estabilidad de entrada y encuadre global persistente. */
+      /* v6.4.52: estabilidad de entrada y encuadre global persistente. */
       .admin-frame-row{
         justify-content:flex-start !important;
       }
@@ -6922,6 +6965,20 @@
         object-fit:var(--media-fit, cover) !important;
         transform:translate3d(var(--media-tx, 0%), var(--media-ty, 0%), 0) scale(var(--media-scale, 1)) !important;
         transform-origin:center center !important;
+      }
+
+
+
+      /* v6.4.52: el estado vacío ya no debe quedar como pantalla blanca confusa detrás del menú. */
+      .feed .empty,
+      .feed .empty-state,
+      .feed .panel:has(h2),
+      .feed .panel:has(h1){
+        margin-top:calc(env(safe-area-inset-top) + 124px) !important;
+        background:rgba(255,255,255,.94) !important;
+        color:#111827 !important;
+        border-radius:22px !important;
+        box-shadow:0 18px 40px rgba(17,24,39,.12) !important;
       }
 
 `;
@@ -6992,24 +7049,18 @@
   function feedMarkup(){
     let posts = filteredPosts();
 
-    // Si hay publicaciones, pero el celular quedó en un filtro vacío, mostrar Para ti automáticamente.
-    if(!posts.length && filteredAll().length && (state.filter !== 'ALL' || state.query || state.topTab === 'municipio')){
-      state.filter = 'ALL';
-      state.query = '';
-      state.topTab = 'para-ti';
-      state.searchOpen = false;
-      posts = filteredPosts();
+    // Si el celular quedó en búsqueda/filtro vacío, salimos a Para ti.
+    if(!posts.length && publicVisiblePosts().length){
+      recoverPublicFeed('feed-empty');
+      posts = publicVisiblePosts();
     }
 
     const cards = posts.map(safePostCard).join('');
     if(cards) return cards;
 
-    if(!state.cloudReady){
-      setTimeout(()=>syncFromCloud({render:true, cacheBust:true}).catch(()=>null), 100);
-      return emptyState('Cargando publicaciones','Estamos actualizando la información pública.');
-    }
-
-    return emptyState('No encontré publicaciones','Toca la lupa, cambia filtro o publica algo con el botón +.');
+    // Nunca mostrar "Prueba otra búsqueda" como primera impresión pública.
+    setTimeout(()=>syncFromCloud({render:true, cacheBust:true}).catch(()=>null), 100);
+    return emptyState('Cargando publicaciones','Estamos actualizando el muro público.');
   }
   function updateFeedOnly(){ const feed=document.getElementById('feed'); if(feed) feed.innerHTML=feedMarkup(); const title=document.getElementById('feedTitle'); if(title) title.innerHTML=feedTitleMarkup(); bindDynamicFeedControls(); setupInternalVideos(); setupGalleries(); }
   function serviceAreaText(post){
@@ -7970,7 +8021,7 @@ ${esc(shortDiagnosticText(diag))}</code>
         }
       }catch(recoveryError){
         console.error('[Conecta] Error de recuperación', recoveryError);
-        if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>Entrando a la app...</p><button class="big-button" onclick="sessionStorage.clear();location.replace('/?v=6451&fresh='+Date.now())">Entrar</button></section></main>`;
+        if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>Entrando a la app...</p><button class="big-button" onclick="sessionStorage.clear();location.replace('/?v=6452&fresh='+Date.now())">Entrar</button></section></main>`;
       }
     }
   }
@@ -8742,7 +8793,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.51: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.52: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -9501,7 +9552,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
       const end = e => {
         const p = pointers.get(e.pointerId);
-        // v6.4.51: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
+        // v6.4.52: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
         // Se desactiva doble toque para no interferir con el uso normal de la publicación.
 
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
@@ -9707,12 +9758,21 @@ ${esc(shortDiagnosticText(diag))}</code>
     loadComposerDraft();
     setupNavigationHistory();
 
+    // Entrada pública limpia: no conservar un filtro visual vacío en celulares de prueba.
+    if(state.route === '/'){
+      state.filter = 'ALL';
+      state.query = '';
+      state.topTab = 'para-ti';
+      state.searchOpen = false;
+    }
+
     if(!state.posts.length){
       injectRootStyles();
-      app.innerHTML = shell(`${homeHeader()}<section class="feed" id="feed">${emptyState('Cargando publicaciones','Estamos actualizando la información pública.')}</section>`);
+      app.innerHTML = shell(`${homeHeader()}<section class="feed" id="feed">${emptyState('Cargando publicaciones','Estamos actualizando el muro público.')}</section>`);
       bind();
       await syncFromCloud({render:true, cacheBust:true});
     }else{
+      recoverPublicFeed('init');
       render();
       await syncFromCloud({render:true, cacheBust:true});
     }
