@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.52-recupera-feed-publico';
+  const VERSION = 'v6.4.53-entrada-forzada-y-proteccion-legal';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 
