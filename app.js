@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.44-menu-flotante-publicacion
+/* Conecta Servicios v6.4.45-ajusta-altura-feed
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.44-menu-flotante-publicacion';
+  const VERSION = 'v6.4.45-ajusta-altura-feed';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2081,7 +2081,7 @@
 
       /* v6.3.37: corrección precisa de menú y puntitos */
 
-      /* v6.4.44: puntitos fuera del encuadre y foto única al encuadrar */
+      /* v6.4.45: puntitos fuera del encuadre y foto única al encuadrar */
       .direct-frame-active .post-body-gallery-dots,
       .direct-frame-active .gallery-dots{
         display:none !important;
@@ -2089,7 +2089,7 @@
       }
 
 
-      /* v6.4.44: encuadre independiente por foto */
+      /* v6.4.45: encuadre independiente por foto */
       .direct-frame-active .direct-frame-hint{
         max-width:calc(100% - 44px) !important;
       }
@@ -2420,7 +2420,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.44: acciones icon-only y perfil simple */
+      /* v6.4.45: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2452,7 +2452,7 @@
         display:none !important;
       }
 
-      /* v6.4.44-menu-flotante-publicacion: bloque consolidado de Home/postCard.
+      /* v6.4.45-ajusta-altura-feed: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2631,7 +2631,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.44: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.45: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2650,7 +2650,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.44: descripción visible, ...leer separado del texto */
+      /* v6.4.45: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2785,7 +2785,7 @@
         min-height:48px;
       }
 
-      /* v6.4.44-menu-flotante-publicacion */
+      /* v6.4.45-ajusta-altura-feed */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -3047,7 +3047,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.44: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.45: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3193,7 +3193,7 @@
 
 
 
-      /* v6.4.44: encuadre táctil libre sin controles inferiores */
+      /* v6.4.45: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3240,9 +3240,9 @@
       }
 
 
-      /* v6.4.44: encuadre táctil tipo redes sociales */
+      /* v6.4.45: encuadre táctil tipo redes sociales */
       
-      /* v6.4.44: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.45: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3250,13 +3250,13 @@
 
 
 
-      /* v6.4.44: encuadre directo táctil fino */
+      /* v6.4.45: encuadre directo táctil fino */
 
-      /* v6.4.44: edición directa desde la publicación */
+      /* v6.4.45: edición directa desde la publicación */
 
-      /* v6.4.44: zona/cobertura libre visible */
+      /* v6.4.45: zona/cobertura libre visible */
 
-      /* v6.4.44: carrusel más suave y encuadre por foto */
+      /* v6.4.45: carrusel más suave y encuadre por foto */
       .gallery-stage{
         touch-action:pan-y !important;
       }
@@ -3313,15 +3313,15 @@
       }
 
 
-      /* v6.4.44: multimedia directa básica e instrucciones visibles */
+      /* v6.4.45: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.44: puntitos centrados arriba del usuario */
+      /* v6.4.45: puntitos centrados arriba del usuario */
 
-      /* v6.4.44: carrusel táctil y edición limpia */
+      /* v6.4.45: carrusel táctil y edición limpia */
 
-      /* v6.4.44: carrusel Android, categoría completa y puntitos pequeños */
+      /* v6.4.45: carrusel Android, categoría completa y puntitos pequeños */
 
-      /* v6.4.44: zona legible, encuadre simple y carrusel por swipe */
+      /* v6.4.45: zona legible, encuadre simple y carrusel por swipe */
       .service-area-row{
         background:rgba(0,0,0,.56) !important;
         color:#fff !important;
@@ -3434,7 +3434,7 @@
       }
 
 
-      /* v6.4.44 final override dentro del CSS */
+      /* v6.4.45 final override dentro del CSS */
       .service-area-row{
         background:rgba(0,0,0,.56)!important;
         color:#fff!important;
@@ -4078,7 +4078,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.44: encuadre directo desde la publicación */
+      /* v6.4.45: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -4170,7 +4170,7 @@
         display:none !important;
       }
 
-      /* v6.4.44: recuperación de scroll global */
+      /* v6.4.45: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -4372,7 +4372,7 @@
         }
       }
 
-      /* v6.4.44: encuadre editable de multimedia */
+      /* v6.4.45: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4605,7 +4605,7 @@
       }
 
 
-      /* v6.4.44: encuadre editable de multimedia */
+      /* v6.4.45: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5064,7 +5064,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.44: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.45: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -5208,7 +5208,7 @@
       }
 
 
-      /* v6.4.44: encuadre editable de multimedia */
+      /* v6.4.45: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5441,7 +5441,7 @@
       }
 
 
-      /* v6.4.44: encuadre editable de multimedia */
+      /* v6.4.45: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5563,7 +5563,7 @@
 
 
 
-      /* v6.4.44-menu-flotante-publicacion
+      /* v6.4.45-ajusta-altura-feed
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -5994,7 +5994,7 @@
 
 
 
-      /* v6.4.44-menu-flotante-publicacion
+      /* v6.4.45-ajusta-altura-feed
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6077,7 +6077,7 @@
 
 
 
-      /* v6.4.44: ajustes post diseño según revisión real en celular.
+      /* v6.4.45: ajustes post diseño según revisión real en celular.
          Mantiene funciones, corrige encabezado, barra inferior, corazón, puntitos y orden visual. */
 
       /* Restaurar encabezado oscuro/transparente: se deben ver Municipio / Tienda / Para ti. */
@@ -6301,7 +6301,7 @@
 
 
 
-      /* v6.4.44: menú flotante por publicación.
+      /* v6.4.45: menú flotante por publicación.
          Orden pedido: Municipio/Zona + Carrito + Corazón + Lupa.
          Se elimina Siguiendo de arriba porque ya existe abajo. */
       .glass-top.tiktok-top.floating-post-menu{
@@ -6493,6 +6493,85 @@
 
         .floating-filter-row .path-card{
           padding:0 10px !important;
+        }
+      }
+
+
+
+      /* v6.4.45: corrige el hueco inferior entre publicaciones.
+         El menú superior es flotante, por eso cada publicación debe ocupar 100% de la pantalla.
+         No toca mensajes, perfil, Supabase, Storage ni SQL. */
+      :root{
+        --cs-feed-card-h:100dvh !important;
+        --cs-post-height:100dvh !important;
+      }
+
+      @supports (height:100svh){
+        :root{
+          --cs-feed-card-h:100svh !important;
+          --cs-post-height:100svh !important;
+        }
+      }
+
+      .feed,
+      .store-feed,
+      .following-liked-feed,
+      .profile-panel ~ .feed{
+        padding-top:0 !important;
+        padding-bottom:0 !important;
+        gap:0 !important;
+        background:#050507 !important;
+      }
+
+      .feed > .post-card,
+      .store-feed > .post-card,
+      .following-liked-feed > .post-card,
+      .profile-panel ~ .feed > .post-card{
+        height:var(--cs-feed-card-h) !important;
+        min-height:var(--cs-feed-card-h) !important;
+        max-height:var(--cs-feed-card-h) !important;
+        margin:0 !important;
+        border-top:0 !important;
+        border-bottom:0 !important;
+        overflow:hidden !important;
+      }
+
+      .feed > .post-card + .post-card,
+      .store-feed > .post-card + .post-card,
+      .following-liked-feed > .post-card + .post-card,
+      .profile-panel ~ .feed > .post-card + .post-card{
+        margin-top:0 !important;
+        border-top:0 !important;
+      }
+
+      .post-card .media-area,
+      .post-card .media-area > img,
+      .post-card .media-area .framed-media,
+      .post-card .media-area .no-media,
+      .post-card .video-inline-wrap,
+      .post-card .video-inline-wrap video,
+      .post-card .media-area video.feed-video-player,
+      .post-card .media-carousel,
+      .post-card .media-carousel img,
+      .post-card .direct-frame-single,
+      .post-card .direct-frame-single img{
+        height:100% !important;
+        min-height:100% !important;
+        max-height:100% !important;
+      }
+
+      .post-card .post-body{
+        bottom:0 !important;
+        padding-bottom:calc(env(safe-area-inset-bottom) + 86px) !important;
+      }
+
+      .bottom-nav{
+        bottom:calc(env(safe-area-inset-bottom) + 0px) !important;
+      }
+
+      @media (max-height:720px){
+        .post-card .post-body{
+          padding-bottom:calc(env(safe-area-inset-bottom) + 76px) !important;
         }
       }
 
@@ -7460,7 +7539,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       if(state.route === '/publicar') setupFrameTouchEditor();
     }catch(error){
       console.error('[Conecta] Error de render', error);
-      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6444 o recarga.</p><button class="big-button" onclick="location.href='/?v=6444'">Recargar app</button></section></main>`;
+      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6445 o recarga.</p><button class="big-button" onclick="location.href='/?v=6445'">Recargar app</button></section></main>`;
     }
   }
 
@@ -8231,7 +8310,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.44: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.45: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -8933,7 +9012,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
       const end = e => {
         const p = pointers.get(e.pointerId);
-        // v6.4.44: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
+        // v6.4.45: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
         // Se desactiva doble toque para no interferir con el uso normal de la publicación.
 
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
