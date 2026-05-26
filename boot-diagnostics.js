@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.46-admin-encuadre-auto-video';
+  const VERSION = 'v6.4.48-encuadre-botones-arriba';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 

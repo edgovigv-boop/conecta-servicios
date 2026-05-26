@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.46-admin-encuadre-auto-video
+/* Conecta Servicios v6.4.48-encuadre-botones-arriba
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.46-admin-encuadre-auto-video';
+  const VERSION = 'v6.4.48-encuadre-botones-arriba';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2118,7 +2118,7 @@
 
       /* v6.3.37: corrección precisa de menú y puntitos */
 
-      /* v6.4.46: puntitos fuera del encuadre y foto única al encuadrar */
+      /* v6.4.48: puntitos fuera del encuadre y foto única al encuadrar */
       .direct-frame-active .post-body-gallery-dots,
       .direct-frame-active .gallery-dots{
         display:none !important;
@@ -2126,7 +2126,7 @@
       }
 
 
-      /* v6.4.46: encuadre independiente por foto */
+      /* v6.4.48: encuadre independiente por foto */
       .direct-frame-active .direct-frame-hint{
         max-width:calc(100% - 44px) !important;
       }
@@ -2457,7 +2457,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.46: acciones icon-only y perfil simple */
+      /* v6.4.48: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2489,7 +2489,7 @@
         display:none !important;
       }
 
-      /* v6.4.46-admin-encuadre-auto-video: bloque consolidado de Home/postCard.
+      /* v6.4.48-encuadre-botones-arriba: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2668,7 +2668,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.46: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.48: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2687,7 +2687,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.46: descripción visible, ...leer separado del texto */
+      /* v6.4.48: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2822,7 +2822,7 @@
         min-height:48px;
       }
 
-      /* v6.4.46-admin-encuadre-auto-video */
+      /* v6.4.48-encuadre-botones-arriba */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -3084,7 +3084,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.46: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.48: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3230,7 +3230,7 @@
 
 
 
-      /* v6.4.46: encuadre táctil libre sin controles inferiores */
+      /* v6.4.48: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3277,9 +3277,9 @@
       }
 
 
-      /* v6.4.46: encuadre táctil tipo redes sociales */
+      /* v6.4.48: encuadre táctil tipo redes sociales */
       
-      /* v6.4.46: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.48: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3287,13 +3287,13 @@
 
 
 
-      /* v6.4.46: encuadre directo táctil fino */
+      /* v6.4.48: encuadre directo táctil fino */
 
-      /* v6.4.46: edición directa desde la publicación */
+      /* v6.4.48: edición directa desde la publicación */
 
-      /* v6.4.46: zona/cobertura libre visible */
+      /* v6.4.48: zona/cobertura libre visible */
 
-      /* v6.4.46: carrusel más suave y encuadre por foto */
+      /* v6.4.48: carrusel más suave y encuadre por foto */
       .gallery-stage{
         touch-action:pan-y !important;
       }
@@ -3350,15 +3350,15 @@
       }
 
 
-      /* v6.4.46: multimedia directa básica e instrucciones visibles */
+      /* v6.4.48: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.46: puntitos centrados arriba del usuario */
+      /* v6.4.48: puntitos centrados arriba del usuario */
 
-      /* v6.4.46: carrusel táctil y edición limpia */
+      /* v6.4.48: carrusel táctil y edición limpia */
 
-      /* v6.4.46: carrusel Android, categoría completa y puntitos pequeños */
+      /* v6.4.48: carrusel Android, categoría completa y puntitos pequeños */
 
-      /* v6.4.46: zona legible, encuadre simple y carrusel por swipe */
+      /* v6.4.48: zona legible, encuadre simple y carrusel por swipe */
       .service-area-row{
         background:rgba(0,0,0,.56) !important;
         color:#fff !important;
@@ -3471,7 +3471,7 @@
       }
 
 
-      /* v6.4.46 final override dentro del CSS */
+      /* v6.4.48 final override dentro del CSS */
       .service-area-row{
         background:rgba(0,0,0,.56)!important;
         color:#fff!important;
@@ -4115,7 +4115,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.46: encuadre directo desde la publicación */
+      /* v6.4.48: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -4207,7 +4207,7 @@
         display:none !important;
       }
 
-      /* v6.4.46: recuperación de scroll global */
+      /* v6.4.48: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -4409,7 +4409,7 @@
         }
       }
 
-      /* v6.4.46: encuadre editable de multimedia */
+      /* v6.4.48: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4642,7 +4642,7 @@
       }
 
 
-      /* v6.4.46: encuadre editable de multimedia */
+      /* v6.4.48: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5101,7 +5101,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.46: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.48: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -5245,7 +5245,7 @@
       }
 
 
-      /* v6.4.46: encuadre editable de multimedia */
+      /* v6.4.48: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5478,7 +5478,7 @@
       }
 
 
-      /* v6.4.46: encuadre editable de multimedia */
+      /* v6.4.48: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5600,7 +5600,7 @@
 
 
 
-      /* v6.4.46-admin-encuadre-auto-video
+      /* v6.4.48-encuadre-botones-arriba
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6031,7 +6031,7 @@
 
 
 
-      /* v6.4.46-admin-encuadre-auto-video
+      /* v6.4.48-encuadre-botones-arriba
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6114,7 +6114,7 @@
 
 
 
-      /* v6.4.46: ajustes post diseño según revisión real en celular.
+      /* v6.4.48: ajustes post diseño según revisión real en celular.
          Mantiene funciones, corrige encabezado, barra inferior, corazón, puntitos y orden visual. */
 
       /* Restaurar encabezado oscuro/transparente: se deben ver Municipio / Tienda / Para ti. */
@@ -6338,7 +6338,7 @@
 
 
 
-      /* v6.4.46: menú flotante por publicación.
+      /* v6.4.48: menú flotante por publicación.
          Orden pedido: Municipio/Zona + Carrito + Corazón + Lupa.
          Se elimina Siguiendo de arriba porque ya existe abajo. */
       .glass-top.tiktok-top.floating-post-menu{
@@ -6535,7 +6535,7 @@
 
 
 
-      /* v6.4.46: corrige el hueco inferior entre publicaciones.
+      /* v6.4.48: corrige el hueco inferior entre publicaciones.
          El menú superior es flotante, por eso cada publicación debe ocupar 100% de la pantalla.
          No toca mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6614,7 +6614,7 @@
 
 
 
-      /* v6.4.46: admin de encuadre y video auto-ajustado.
+      /* v6.4.48: admin de encuadre y video auto-ajustado.
          El admin local solo muestra Encuadre admin, no borrar ni editar contenido. */
       .admin-frame-row{
         justify-content:flex-start !important;
@@ -6639,6 +6639,243 @@
 
       .direct-frame-active .direct-frame-hint{
         top:calc(env(safe-area-inset-top) + 82px) !important;
+      }
+
+
+
+      /* v6.4.48: controles de encuadre visibles.
+         Corrige Guardar/Cancelar tapados por barra inferior y mejora escritura en paneles. */
+
+      .direct-frame-active .direct-frame-controls{
+        position:absolute !important;
+        left:14px !important;
+        right:14px !important;
+        bottom:calc(env(safe-area-inset-bottom) + 92px) !important;
+        z-index:360 !important;
+        display:grid !important;
+        grid-template-columns:1fr 1fr !important;
+        gap:12px !important;
+        padding:0 !important;
+        pointer-events:auto !important;
+      }
+
+      .direct-frame-active .direct-frame-controls button{
+        min-height:48px !important;
+        height:48px !important;
+        border-radius:999px !important;
+        font-size:15px !important;
+        font-weight:900 !important;
+        box-shadow:0 12px 28px rgba(0,0,0,.32) !important;
+        touch-action:manipulation !important;
+      }
+
+      .direct-frame-active .direct-frame-controls button:first-child{
+        background:#16A34A !important;
+        color:#fff !important;
+        border:1px solid rgba(255,255,255,.24) !important;
+      }
+
+      .direct-frame-active .direct-frame-controls button:last-child{
+        background:rgba(255,255,255,.94) !important;
+        color:#111827 !important;
+        border:1px solid rgba(255,255,255,.48) !important;
+      }
+
+      .direct-frame-active .bottom-nav{
+        display:none !important;
+        pointer-events:none !important;
+      }
+
+      .direct-frame-active .direct-frame-hint{
+        top:calc(env(safe-area-inset-top) + 92px) !important;
+        z-index:356 !important;
+      }
+
+      /* Cuando se edita texto o multimedia, la barra inferior no debe bloquear campos ni botones. */
+      .post-card.direct-edit-active .post-body,
+      .post-card.direct-media-active .post-body{
+        padding-bottom:calc(env(safe-area-inset-bottom) + 122px) !important;
+        overflow-y:auto !important;
+        -webkit-overflow-scrolling:touch !important;
+      }
+
+      .post-card.direct-edit-active .bottom-nav,
+      .post-card.direct-media-active .bottom-nav{
+        pointer-events:none !important;
+      }
+
+      .direct-edit-panel,
+      .direct-media-panel{
+        margin-bottom:calc(env(safe-area-inset-bottom) + 26px) !important;
+      }
+
+      .direct-edit-panel input,
+      .direct-edit-panel textarea,
+      .direct-edit-panel select,
+      .direct-media-panel input,
+      .direct-media-panel textarea{
+        position:relative !important;
+        z-index:380 !important;
+        pointer-events:auto !important;
+        -webkit-user-select:text !important;
+        user-select:text !important;
+        touch-action:manipulation !important;
+        font-size:16px !important;
+      }
+
+      .direct-edit-actions,
+      .direct-media-actions{
+        position:sticky !important;
+        bottom:calc(env(safe-area-inset-bottom) + 84px) !important;
+        z-index:390 !important;
+        padding-top:8px !important;
+        background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.96) 35%,rgba(255,255,255,.98)) !important;
+      }
+
+      @media (max-height:720px){
+        .direct-frame-active .direct-frame-controls{
+          bottom:calc(env(safe-area-inset-bottom) + 78px) !important;
+        }
+
+        .direct-frame-active .direct-frame-controls button{
+          min-height:44px !important;
+          height:44px !important;
+          font-size:14px !important;
+        }
+
+        .direct-edit-actions,
+        .direct-media-actions{
+          bottom:calc(env(safe-area-inset-bottom) + 74px) !important;
+        }
+      }
+
+
+
+      /* v6.4.48: encuadre con botones arriba y barra inferior oculta realmente.
+         La barra inferior es hermana del main, por eso se usa :has() y selector de hermano. */
+
+      body:has(.post-card.direct-frame-active) .bottom-nav,
+      .app-page:has(.post-card.direct-frame-active) + .bottom-nav{
+        display:none !important;
+        visibility:hidden !important;
+        opacity:0 !important;
+        pointer-events:none !important;
+      }
+
+      body:has(.post-card.direct-frame-active) .floating-filter-row{
+        display:none !important;
+      }
+
+      body:has(.post-card.direct-frame-active) .floating-post-nav{
+        opacity:.88 !important;
+      }
+
+      .post-card.direct-frame-active .direct-frame-controls{
+        position:absolute !important;
+        left:14px !important;
+        right:14px !important;
+        top:calc(env(safe-area-inset-top) + 104px) !important;
+        bottom:auto !important;
+        z-index:999 !important;
+        display:grid !important;
+        grid-template-columns:1fr 1fr !important;
+        gap:10px !important;
+        padding:0 !important;
+        pointer-events:auto !important;
+        transform:none !important;
+      }
+
+      .post-card.direct-frame-active .direct-frame-controls button{
+        min-height:48px !important;
+        height:48px !important;
+        border-radius:999px !important;
+        font-size:15px !important;
+        font-weight:900 !important;
+        box-shadow:0 12px 30px rgba(0,0,0,.38) !important;
+        touch-action:manipulation !important;
+        pointer-events:auto !important;
+      }
+
+      .post-card.direct-frame-active .direct-frame-controls button:first-child{
+        background:#16A34A !important;
+        color:#fff !important;
+        border:1px solid rgba(255,255,255,.26) !important;
+      }
+
+      .post-card.direct-frame-active .direct-frame-controls button:last-child{
+        background:rgba(255,255,255,.94) !important;
+        color:#111827 !important;
+        border:1px solid rgba(255,255,255,.52) !important;
+      }
+
+      .post-card.direct-frame-active .direct-frame-hint{
+        top:calc(env(safe-area-inset-top) + 158px) !important;
+        left:50% !important;
+        right:auto !important;
+        transform:translateX(-50%) !important;
+        max-width:calc(100% - 34px) !important;
+        z-index:998 !important;
+        pointer-events:none !important;
+      }
+
+      .post-card.direct-frame-active .media-top{
+        display:none !important;
+      }
+
+      .post-card.direct-frame-active .media-area{
+        touch-action:none !important;
+      }
+
+      .post-card.direct-frame-active{
+        overflow:hidden !important;
+      }
+
+      /* Panel de edición: elevar zona de guardado para que sí se pueda escribir y guardar. */
+      body:has(.post-card.direct-edit-active) .bottom-nav,
+      .app-page:has(.post-card.direct-edit-active) + .bottom-nav{
+        opacity:.25 !important;
+        pointer-events:none !important;
+      }
+
+      .post-card.direct-edit-active .post-body,
+      .post-card.direct-media-active .post-body{
+        padding-bottom:calc(env(safe-area-inset-bottom) + 130px) !important;
+        overflow-y:auto !important;
+        -webkit-overflow-scrolling:touch !important;
+      }
+
+      .direct-edit-actions,
+      .direct-media-actions{
+        position:sticky !important;
+        bottom:calc(env(safe-area-inset-bottom) + 18px) !important;
+        z-index:999 !important;
+        padding:10px 0 4px !important;
+        background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.98) 42%,rgba(255,255,255,1)) !important;
+      }
+
+      .direct-edit-panel input,
+      .direct-edit-panel textarea,
+      .direct-edit-panel select{
+        font-size:16px !important;
+        touch-action:manipulation !important;
+        -webkit-user-select:text !important;
+        user-select:text !important;
+      }
+
+      @media (max-height:720px){
+        .post-card.direct-frame-active .direct-frame-controls{
+          top:calc(env(safe-area-inset-top) + 92px) !important;
+        }
+
+        .post-card.direct-frame-active .direct-frame-controls button{
+          min-height:44px !important;
+          height:44px !important;
+          font-size:14px !important;
+        }
+
+        .post-card.direct-frame-active .direct-frame-hint{
+          top:calc(env(safe-area-inset-top) + 140px) !important;
+        }
       }
 
 `;
@@ -7607,7 +7844,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       if(state.route === '/publicar') setupFrameTouchEditor();
     }catch(error){
       console.error('[Conecta] Error de render', error);
-      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6446 o recarga.</p><button class="big-button" onclick="location.href='/?v=6446'">Recargar app</button></section></main>`;
+      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6448 o recarga.</p><button class="big-button" onclick="location.href='/?v=6448'">Recargar app</button></section></main>`;
     }
   }
 
@@ -8378,7 +8615,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.46: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.48: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -9080,7 +9317,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
       const end = e => {
         const p = pointers.get(e.pointerId);
-        // v6.4.46: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
+        // v6.4.48: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
         // Se desactiva doble toque para no interferir con el uso normal de la publicación.
 
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
