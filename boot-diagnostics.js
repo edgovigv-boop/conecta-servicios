@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.62-admin-panel-e-instalar-app';
+  const VERSION = 'v6.4.63-admin-analitica-limpia';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 

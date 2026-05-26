@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.62-admin-panel-e-instalar-app
+/* Conecta Servicios v6.4.63-admin-analitica-limpia
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.62-admin-panel-e-instalar-app';
+  const VERSION = 'v6.4.63-admin-analitica-limpia';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2155,7 +2155,7 @@
 
       /* v6.3.37: corrección precisa de menú y puntitos */
 
-      /* v6.4.62: puntitos fuera del encuadre y foto única al encuadrar */
+      /* v6.4.63: puntitos fuera del encuadre y foto única al encuadrar */
       .direct-frame-active .post-body-gallery-dots,
       .direct-frame-active .gallery-dots{
         display:none !important;
@@ -2163,7 +2163,7 @@
       }
 
 
-      /* v6.4.62: encuadre independiente por foto */
+      /* v6.4.63: encuadre independiente por foto */
       .direct-frame-active .direct-frame-hint{
         max-width:calc(100% - 44px) !important;
       }
@@ -2494,7 +2494,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.62: acciones icon-only y perfil simple */
+      /* v6.4.63: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2526,7 +2526,7 @@
         display:none !important;
       }
 
-      /* v6.4.62-admin-panel-e-instalar-app: bloque consolidado de Home/postCard.
+      /* v6.4.63-admin-analitica-limpia: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2705,7 +2705,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.62: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.63: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2724,7 +2724,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.62: descripción visible, ...leer separado del texto */
+      /* v6.4.63: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2859,7 +2859,7 @@
         min-height:48px;
       }
 
-      /* v6.4.62-admin-panel-e-instalar-app */
+      /* v6.4.63-admin-analitica-limpia */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -3121,7 +3121,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.62: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.63: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3267,7 +3267,7 @@
 
 
 
-      /* v6.4.62: encuadre táctil libre sin controles inferiores */
+      /* v6.4.63: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3314,9 +3314,9 @@
       }
 
 
-      /* v6.4.62: encuadre táctil tipo redes sociales */
+      /* v6.4.63: encuadre táctil tipo redes sociales */
       
-      /* v6.4.62: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.63: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3324,13 +3324,13 @@
 
 
 
-      /* v6.4.62: encuadre directo táctil fino */
+      /* v6.4.63: encuadre directo táctil fino */
 
-      /* v6.4.62: edición directa desde la publicación */
+      /* v6.4.63: edición directa desde la publicación */
 
-      /* v6.4.62: zona/cobertura libre visible */
+      /* v6.4.63: zona/cobertura libre visible */
 
-      /* v6.4.62: carrusel más suave y encuadre por foto */
+      /* v6.4.63: carrusel más suave y encuadre por foto */
       .gallery-stage{
         touch-action:pan-y !important;
       }
@@ -3387,15 +3387,15 @@
       }
 
 
-      /* v6.4.62: multimedia directa básica e instrucciones visibles */
+      /* v6.4.63: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.62: puntitos centrados arriba del usuario */
+      /* v6.4.63: puntitos centrados arriba del usuario */
 
-      /* v6.4.62: carrusel táctil y edición limpia */
+      /* v6.4.63: carrusel táctil y edición limpia */
 
-      /* v6.4.62: carrusel Android, categoría completa y puntitos pequeños */
+      /* v6.4.63: carrusel Android, categoría completa y puntitos pequeños */
 
-      /* v6.4.62: zona legible, encuadre simple y carrusel por swipe */
+      /* v6.4.63: zona legible, encuadre simple y carrusel por swipe */
       .service-area-row{
         background:rgba(0,0,0,.56) !important;
         color:#fff !important;
@@ -3508,7 +3508,7 @@
       }
 
 
-      /* v6.4.62 final override dentro del CSS */
+      /* v6.4.63 final override dentro del CSS */
       .service-area-row{
         background:rgba(0,0,0,.56)!important;
         color:#fff!important;
@@ -4152,7 +4152,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.62: encuadre directo desde la publicación */
+      /* v6.4.63: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -4244,7 +4244,7 @@
         display:none !important;
       }
 
-      /* v6.4.62: recuperación de scroll global */
+      /* v6.4.63: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -4446,7 +4446,7 @@
         }
       }
 
-      /* v6.4.62: encuadre editable de multimedia */
+      /* v6.4.63: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4679,7 +4679,7 @@
       }
 
 
-      /* v6.4.62: encuadre editable de multimedia */
+      /* v6.4.63: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5138,7 +5138,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.62: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.63: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -5282,7 +5282,7 @@
       }
 
 
-      /* v6.4.62: encuadre editable de multimedia */
+      /* v6.4.63: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5515,7 +5515,7 @@
       }
 
 
-      /* v6.4.62: encuadre editable de multimedia */
+      /* v6.4.63: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5637,7 +5637,7 @@
 
 
 
-      /* v6.4.62-admin-panel-e-instalar-app
+      /* v6.4.63-admin-analitica-limpia
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6068,7 +6068,7 @@
 
 
 
-      /* v6.4.62-admin-panel-e-instalar-app
+      /* v6.4.63-admin-analitica-limpia
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6151,7 +6151,7 @@
 
 
 
-      /* v6.4.62: ajustes post diseño según revisión real en celular.
+      /* v6.4.63: ajustes post diseño según revisión real en celular.
          Mantiene funciones, corrige encabezado, barra inferior, corazón, puntitos y orden visual. */
 
       /* Restaurar encabezado oscuro/transparente: se deben ver Municipio / Tienda / Para ti. */
@@ -6375,7 +6375,7 @@
 
 
 
-      /* v6.4.62: menú flotante por publicación.
+      /* v6.4.63: menú flotante por publicación.
          Orden pedido: Municipio/Zona + Carrito + Corazón + Lupa.
          Se elimina Siguiendo de arriba porque ya existe abajo. */
       .glass-top.tiktok-top.floating-post-menu{
@@ -6572,7 +6572,7 @@
 
 
 
-      /* v6.4.62: corrige el hueco inferior entre publicaciones.
+      /* v6.4.63: corrige el hueco inferior entre publicaciones.
          El menú superior es flotante, por eso cada publicación debe ocupar 100% de la pantalla.
          No toca mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6651,7 +6651,7 @@
 
 
 
-      /* v6.4.62: admin de encuadre y video auto-ajustado.
+      /* v6.4.63: admin de encuadre y video auto-ajustado.
          El admin local solo muestra Encuadre admin, no borrar ni editar contenido. */
       .admin-frame-row{
         justify-content:flex-start !important;
@@ -6680,7 +6680,7 @@
 
 
 
-      /* v6.4.62: controles de encuadre visibles.
+      /* v6.4.63: controles de encuadre visibles.
          Corrige Guardar/Cancelar tapados por barra inferior y mejora escritura en paneles. */
 
       .direct-frame-active .direct-frame-controls{
@@ -6788,7 +6788,7 @@
 
 
 
-      /* v6.4.62: encuadre con botones arriba y barra inferior oculta realmente.
+      /* v6.4.63: encuadre con botones arriba y barra inferior oculta realmente.
          La barra inferior es hermana del main, por eso se usa :has() y selector de hermano. */
 
       body:has(.post-card.direct-frame-active) .bottom-nav,
@@ -6917,7 +6917,7 @@
 
 
 
-      /* v6.4.62: editor/publicar más compacto y fácil de scrollear.
+      /* v6.4.63: editor/publicar más compacto y fácil de scrollear.
          El recuadro de multimedia ya no ocupa casi toda la pantalla. */
       .composer{
         padding-bottom:calc(env(safe-area-inset-bottom) + 150px) !important;
@@ -6982,7 +6982,7 @@
         }
       }
 
-      /* v6.4.62: al encuadrar como admin, guardar/cancelar deben quedar tocables. */
+      /* v6.4.63: al encuadrar como admin, guardar/cancelar deben quedar tocables. */
       body:has(.post-card.direct-frame-active) .bottom-nav,
       .app-page:has(.post-card.direct-frame-active) + .bottom-nav{
         display:none !important;
@@ -7026,7 +7026,7 @@
 
 
 
-      /* v6.4.62: admin piloto y opción instalar app */
+      /* v6.4.63: admin piloto y opción instalar app */
       .admin-entry-card{
         border-color:rgba(29,78,216,.18) !important;
         background:linear-gradient(135deg,rgba(29,78,216,.08),rgba(20,184,166,.08)) !important;
@@ -7112,6 +7112,32 @@
         background:#fee2e2 !important;
         color:#991b1b !important;
         border-color:rgba(153,27,27,.18) !important;
+      }
+
+
+
+      /* v6.4.63: Admin limpio, solo analítica.
+         La lista de publicaciones se elimina del panel porque las acciones ya están en cada publicación. */
+      .admin-analytics-only{
+        padding-bottom:calc(env(safe-area-inset-bottom) + 120px) !important;
+      }
+
+      .admin-actions-row{
+        display:grid !important;
+        grid-template-columns:1fr !important;
+        gap:10px !important;
+        margin-top:14px !important;
+      }
+
+      .admin-actions-row .small-link{
+        min-height:44px !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        border-radius:999px !important;
+        background:rgba(29,78,216,.08) !important;
+        color:#1d4ed8 !important;
+        font-weight:900 !important;
       }
 
 `;
@@ -7928,17 +7954,16 @@ ${esc(shortDiagnosticText(diag))}</code>
         <button class="small-link" data-nav="/perfil">← Volver al Perfil</button>
         <h1>Admin</h1>
         <p>El acceso admin no está activo en este navegador.</p>
-        <div class="local-note">Abre la app con <strong>?v=6462&admin=media#admin</strong> para activar el panel de piloto.</div>
+        <div class="local-note">Abre la app con <strong>?v=6463&admin=media#admin</strong> para activar el panel de piloto.</div>
       </section>`);
     }
 
     const m = adminMetrics();
-    const posts = filteredAll();
-    return shell(`<section class="panel admin-panel">
+    return shell(`<section class="panel admin-panel admin-analytics-only">
       <button class="small-link" data-nav="/perfil">← Volver al Perfil</button>
       <h1>Admin piloto</h1>
-      <p>Herramientas locales de operación para revisar publicaciones, editar, borrar y ver métricas rápidas.</p>
-      <div class="admin-warning">Acceso admin local de piloto. Para etapa masiva después debe convertirse en roles reales en Supabase.</div>
+      <p>Analítica rápida del piloto. Las acciones de control ya están directamente en cada publicación del feed.</p>
+      <div class="admin-warning">Para editar, encuadrar, cambiar multimedia o borrar, vuelve al Inicio y usa los botones Admin que aparecen en cada publicación.</div>
       <div class="admin-stats-grid">
         <div class="stat"><strong>${m.total}</strong><span>Publicaciones</span></div>
         <div class="stat"><strong>${m.owners}</strong><span>Usuarios</span></div>
@@ -7949,11 +7974,11 @@ ${esc(shortDiagnosticText(diag))}</code>
         <div class="stat"><strong>${m.necesito}</strong><span>Necesito</span></div>
         <div class="stat"><strong>${m.sinLeer}</strong><span>Mensajes sin leer</span></div>
       </div>
-    </section>
-    <section class="panel admin-panel">
-      <h2>Publicaciones</h2>
-      <p>Desde aquí puedes abrir, encuadrar, editar texto, cambiar multimedia o borrar publicaciones del piloto.</p>
-      <div class="admin-post-list">${posts.map(adminPostRow).join('') || emptyState('Sin publicaciones','Cuando existan publicaciones aparecerán aquí.')}</div>
+      <div class="admin-actions-row">
+        <button type="button" class="big-button" data-nav="/">Ir al feed</button>
+        <button type="button" class="small-link" data-nav="/mensajes">Ver mensajes</button>
+      </div>
+      <div class="local-note">Admin local de piloto. Para etapa masiva después debe convertirse en roles reales en Supabase.</div>
     </section>`);
   }
 
@@ -8181,7 +8206,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       if(state.route === '/publicar') setupFrameTouchEditor();
     }catch(error){
       console.error('[Conecta] Error de render', error);
-      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6462 o recarga.</p><button class="big-button" onclick="location.href='/?v=6462'">Recargar app</button></section></main>`;
+      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6463 o recarga.</p><button class="big-button" onclick="location.href='/?v=6463'">Recargar app</button></section></main>`;
     }
   }
 
@@ -8952,7 +8977,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.62: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.63: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -9670,7 +9695,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
       const end = e => {
         const p = pointers.get(e.pointerId);
-        // v6.4.62: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
+        // v6.4.63: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
         // Se desactiva doble toque para no interferir con el uso normal de la publicación.
 
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
