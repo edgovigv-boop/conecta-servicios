@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#5b2eea" />
+  <title>Limpiar caché · Conecta Servicios</title>
+  <style>
+    :root{
+      color-scheme: light;
+      --blue:#1d4ed8;
+      --purple:#5b2eea;
+      --ink:#111827;
+      --muted:#6b7280;
+      --bg:#f8fafc;
+      --card:#ffffff;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100dvh;
+      display:grid;
+      place-items:center;
+      padding:24px;
+      background:linear-gradient(180deg,#f8fafc,#eef2ff);
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--ink);
+    }
+    main{
+      width:100%;
+      max-width:440px;
+      border-radius:28px;
+      background:var(--card);
+      padding:26px;
+      box-shadow:0 22px 52px rgba(15,23,42,.16);
+    }
+    h1{margin:0 0 8px;font-size:28px;line-height:1.1}
+    p{margin:0 0 16px;color:var(--muted);line-height:1.45;font-size:16px}
+    .status{
+      margin:14px 0;
+      padding:12px 14px;
+      border-radius:16px;
+      background:#eef2ff;
+      color:#1e3a8a;
+      font-weight:800;
+      font-size:14px;
+    }
+    button,a.button{
+      width:100%;
+      min-height:52px;
+      border:0;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-decoration:none;
+      background:linear-gradient(135deg,var(--purple),#3b0b9f);
+      color:#fff;
+      font-weight:900;
+      font-size:16px;
+      margin-top:10px;
+    }
+    button.secondary{
+      background:#e5e7eb;
+      color:#111827;
+    }
+    small{display:block;margin-top:12px;color:#6b7280;line-height:1.35}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Conecta Servicios</h1>
+    <p>Vamos a limpiar únicamente caché y service worker de este celular para cargar la versión estable más reciente.</p>
+    <div class="status" id="status">Preparando limpieza segura...</div>
+    <button type="button" id="retry">Limpiar otra vez</button>
+    <a class="button" href="/?v=6471&fresh=1">Entrar a la app</a>
+    <button class="secondary" type="button" id="localReset">Último recurso: limpiar datos locales de este celular</button>
+    <small>
+      La limpieza normal no borra tus variables de Supabase ni modifica la nube. El botón de último recurso borra datos guardados solo en este navegador.
+    </small>
+  </main>
+
+  <script>
+    const statusEl = document.getElementById('status');
+
+    async function clearSafeCache(){
+      statusEl.textContent = 'Limpiando caché del navegador...';
+
+      try{
+        if('caches' in window){
+          const keys = await caches.keys();
+          await Promise.all(keys.map(key => caches.delete(key)));
+        }
+      }catch(error){
+        console.warn('No se pudo limpiar CacheStorage', error);
+      }
+
+      try{
+        if('serviceWorker' in navigator){
+          const regs = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(regs.map(reg => reg.unregister()));
+        }
+      }catch(error){
+        console.warn('No se pudo desregistrar service worker', error);
+      }
+
+      try{
+        sessionStorage.clear();
+      }catch(error){}
+
+      statusEl.textContent = 'Listo. Entrando a la versión limpia...';
+      setTimeout(() => {
+        location.replace('/?v=6471&fresh=' + Date.now());
+      }, 900);
+    }
+
+    document.getElementById('retry').addEventListener('click', clearSafeCache);
+
+    document.getElementById('localReset').addEventListener('click', async () => {
+      const ok = confirm('Esto borrará datos guardados SOLO en este navegador/celular. No borra Supabase. ¿Continuar?');
+      if(!ok) return;
+
+      try{ localStorage.clear(); }catch(error){}
+      try{ sessionStorage.clear(); }catch(error){}
+      await clearSafeCache();
+    });
+
+    clearSafeCache();
+  </script>
+</body>
+</html>
