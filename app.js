@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.73-restaura-appjs-completo
+/* Conecta Servicios v6.4.74-render-seguro-feed
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.73-restaura-appjs-completo';
+  const VERSION = 'v6.4.74-render-seguro-feed';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2489,7 +2489,7 @@
         display:none !important;
       }
 
-      /* v6.4.73-restaura-appjs-completo: bloque consolidado de Home/postCard.
+      /* v6.4.74-render-seguro-feed: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2822,7 +2822,7 @@
         min-height:48px;
       }
 
-      /* v6.4.73-restaura-appjs-completo */
+      /* v6.4.74-render-seguro-feed */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5600,7 +5600,7 @@
 
 
 
-      /* v6.4.73-restaura-appjs-completo
+      /* v6.4.74-render-seguro-feed
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6031,7 +6031,7 @@
 
 
 
-      /* v6.4.73-restaura-appjs-completo
+      /* v6.4.74-render-seguro-feed
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6943,7 +6943,7 @@
     const subtitle = searching ? searchResultText() : (state.cloudReady ? 'Publicaciones disponibles' : 'También funciona sin conexión');
     return `<div><h1>${esc(title)}</h1><p>${esc(subtitle)}</p></div>${state.syncing?'<span class="sync-pill">Actualizando...</span>':(state.filter!=='ALL'||state.query?'<button class="small-link" data-clear>Todo</button>':'')}`;
   }
-  function feedMarkup(){ const posts=filteredPosts(); return posts.map(postCard).join('') || emptyState('No encontré publicaciones','Prueba otra búsqueda o publica algo con el botón +.'); }
+  function feedMarkup(){ const posts=filteredPosts(); return posts.map(safePostCard).join('') || emptyState('No encontré publicaciones','Prueba otra búsqueda o publica algo con el botón +.'); }
   function updateFeedOnly(){ const feed=document.getElementById('feed'); if(feed) feed.innerHTML=feedMarkup(); const title=document.getElementById('feedTitle'); if(title) title.innerHTML=feedTitleMarkup(); bindDynamicFeedControls(); setupInternalVideos(); setupGalleries(); }
   function serviceAreaText(post){
     return String(post?.serviceArea || post?.coverageArea || post?.zone || '').trim();
@@ -7511,7 +7511,58 @@
     toast(single ? 'Quedó una sola foto.' : 'Foto quitada.');
   }
 
-  function postCard(post){
+  
+  function fallbackPostCard(post={}, error=null){
+    let p = {};
+    try{ p = normalizePost(post || {}); }catch{ p = post || {}; }
+    const mediaUrl = String(p.mediaUrl || (Array.isArray(p.mediaItems) && p.mediaItems[0]?.mediaUrl) || '').trim();
+    const title = esc(String(p.title || p.description || 'Publicación disponible').slice(0, 120));
+    const descRaw = String(p.description || p.details || p.content || '').trim();
+    const desc = esc(descRaw ? (descRaw.length > 120 ? descRaw.slice(0,120) + '...' : descRaw) : 'Toca mensaje para pedir información.');
+    const cat = esc(normalizeCategory(p.category || 'OFREZCO'));
+    const zone = esc(String(p.serviceArea || p.zone || 'Tu zona').trim() || 'Tu zona');
+    const owner = esc(String(p.ownerName || 'Usuario local').trim() || 'Usuario local');
+    const date = esc(shortDate(p.createdAt || p.updatedAt || new Date().toISOString()));
+    try{
+      console.warn('[Conecta] Tarjeta recuperada con fallback', error, p?.id || '');
+      localStorage.setItem('cs_v6474_last_card_error', JSON.stringify({
+        id:p?.id || '',
+        message:error?.message || String(error || ''),
+        at:new Date().toISOString()
+      }));
+    }catch{}
+    return `<article class="post-card fallback-post-card" style="position:relative;min-height:100dvh;background:#111827;color:white;overflow:hidden">
+      ${mediaUrl ? `<img src="${esc(mediaUrl)}" alt="${title}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;background:#111827">` : `<div style="position:absolute;inset:0;background:linear-gradient(135deg,#111827,#1d4ed8)"></div>`}
+      <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(17,24,39,.08),rgba(17,24,39,.2) 45%,rgba(17,24,39,.95))"></div>
+      <div style="position:absolute;left:16px;top:calc(env(safe-area-inset-top) + 150px);z-index:2;background:#1d4ed8;border-radius:999px;padding:8px 14px;font-weight:900;font-size:12px">${cat}</div>
+      <div style="position:absolute;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom) + 96px);z-index:2">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="width:42px;height:42px;border-radius:999px;border:2px solid white;display:grid;place-items:center;background:linear-gradient(135deg,#1d4ed8,#14b8a6);font-weight:900">${owner.slice(0,1).toUpperCase()}</div>
+          <strong style="font-size:16px">${owner}</strong>
+        </div>
+        <div style="display:inline-flex;padding:6px 11px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.18);font-size:12px;font-weight:800;margin-bottom:8px">📍 Atiende en: <strong style="margin-left:4px">${zone}</strong></div>
+        <h2 style="margin:0 0 6px;font-size:22px;line-height:1.12;font-weight:900">${title}</h2>
+        <p style="margin:0;font-size:15px;line-height:1.3;color:rgba(255,255,255,.92)">${desc}</p>
+        <div style="margin-top:8px;color:rgba(255,255,255,.72);font-size:12px;text-align:right">${date}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px">
+          <button data-like="${esc(p.id || '')}" style="height:46px;border:1px solid rgba(255,255,255,.26);border-radius:14px;background:rgba(255,255,255,.92);color:#1e3a8a;font-size:22px;font-weight:900">♡</button>
+          <button data-message-post="${esc(p.id || '')}" style="height:46px;border:1px solid rgba(255,255,255,.26);border-radius:14px;background:rgba(255,255,255,.92);color:#1e3a8a;font-size:22px;font-weight:900">✉️</button>
+          <button data-share-post="${esc(p.id || '')}" style="height:46px;border:1px solid rgba(255,255,255,.26);border-radius:14px;background:rgba(255,255,255,.92);color:#1e3a8a;font-size:22px;font-weight:900">↗️</button>
+        </div>
+      </div>
+    </article>`;
+  }
+
+  function safePostCard(post){
+    try{
+      if(!post || typeof post !== 'object') return '';
+      return postCard(post);
+    }catch(error){
+      return fallbackPostCard(post, error);
+    }
+  }
+
+function postCard(post){
     post = normalizePost(post);
     const ownerPost = isMeId(post.ownerId);
     const adminFramePost = !ownerPost && adminFrameMode();
@@ -7591,7 +7642,7 @@
       </div>
       ${summary.isMe && !vendo.length ? '<div class="local-note">Publica algo en categoría VENDO para empezar tu tienda.</div>' : ''}
     </section>
-    <section class="feed store-feed">${vendo.map(postCard).join('') || emptyState('Esta tienda aún no tiene productos','Cuando publique en VENDO, aparecerá aquí.')}</section>
+    <section class="feed store-feed">${vendo.map(safePostCard).join('') || emptyState('Esta tienda aún no tiene productos','Cuando publique en VENDO, aparecerá aquí.')}</section>
     ${suggestions.length ? `<section class="panel owner-directory"><h2>Otras tiendas locales</h2><div class="owner-list">${suggestions.map(s => ownerCard(s)).join('')}</div></section>` : ''}`);
   }
 
@@ -7610,7 +7661,7 @@
       <h2>Guardados para ti</h2>
       <p>Publicaciones marcadas con corazón.</p>
     </section>
-    <section class="feed following-liked-feed">${liked.map(postCard).join('') || emptyState('Todavía no guardas publicaciones','Toca el corazón en una publicación para verla aquí.')}</section>
+    <section class="feed following-liked-feed">${liked.map(safePostCard).join('') || emptyState('Todavía no guardas publicaciones','Toca el corazón en una publicación para verla aquí.')}</section>
     <section class="panel owner-directory">
       <h2>Cuentas que sigues</h2>
       <div class="owner-list">${summaries.map(s => ownerCard(s)).join('') || emptyState('Todavía no sigues cuentas','Cuando sigas a un publicante, aparecerá aquí.')}</div>
@@ -7671,7 +7722,7 @@ ${esc(shortDiagnosticText(diag))}</code>
         </div>
         <button type="button" data-nav="/confianza">Ver</button>
       </div>
-    </section>${diagnosticsPanel()}<section class="feed">${mine.map(postCard).join('')||emptyState('No has publicado','Toca + para crear tu primera publicación.')}</section>`);
+    </section>${diagnosticsPanel()}<section class="feed">${mine.map(safePostCard).join('')||emptyState('No has publicado','Toca + para crear tu primera publicación.')}</section>`);
   }
 
   function confidencePage(){
@@ -7843,8 +7894,30 @@ ${esc(shortDiagnosticText(diag))}</code>
       setupDirectFrameEditors();
       if(state.route === '/publicar') setupFrameTouchEditor();
     }catch(error){
-      console.error('[Conecta] Error de render', error);
-      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6448 o recarga.</p><button class="big-button" onclick="location.href='/?v=6448'">Recargar app</button></section></main>`;
+      console.error('[Conecta] Error de render recuperado', error);
+      try{
+        localStorage.setItem('cs_v6474_last_render_error', JSON.stringify({
+          route: state.route,
+          message: error?.message || String(error),
+          stack: String(error?.stack || '').slice(0, 500),
+          at: new Date().toISOString()
+        }));
+      }catch{}
+      try{
+        injectRootStyles();
+        const posts = dedupePosts(Array.isArray(state.posts) ? state.posts : localPosts()).filter(p => !isDeleted(p));
+        const body = posts.length
+          ? posts.map(safePostCard).join('')
+          : emptyState('Publicaciones disponibles','Toca + para publicar o espera la sincronización.');
+        app.innerHTML = shell(`${homeHeader()}<section class="feed" id="feed">${body}</section>`);
+        bind();
+        setupInternalVideos();
+        setupGalleries();
+        setupDirectFrameEditors();
+      }catch(recoveryError){
+        console.error('[Conecta] Error de recuperación final', recoveryError);
+        if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>Estamos cargando la app. Presiona entrar para volver al inicio.</p><button class="big-button" onclick="location.replace('/?v=6474&fresh=' + Date.now())">Entrar a la app</button></section></main>`;
+      }
     }
   }
 

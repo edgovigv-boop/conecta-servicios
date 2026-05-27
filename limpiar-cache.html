@@ -19,9 +19,9 @@
 <body>
   <main>
     <h1>Conecta Servicios</h1>
-    <p>Se restauró el archivo principal completo de la app. Esta página limpia el celular y entra a la versión nueva.</p>
-    <div class="status" id="status">Limpiando este navegador...</div>
-    <a href="/?v=6473&fresh=1">Entrar a la app</a>
+    <p>Se aplicó render seguro para que una publicación dañada no tumbe toda la app.</p>
+    <div class="status" id="status">Limpiando versión anterior...</div>
+    <a href="/?v=6474&fresh=1">Entrar a la app</a>
     <button class="secondary" type="button" id="again">Limpiar otra vez</button>
     <small>Esto no borra Supabase ni publicaciones de la nube.</small>
   </main>
@@ -30,8 +30,8 @@
       try{ if('caches' in window){ const keys=await caches.keys(); await Promise.all(keys.map(k=>caches.delete(k))); } }catch(e){}
       try{ if('serviceWorker' in navigator){ const regs=await navigator.serviceWorker.getRegistrations(); await Promise.all(regs.map(r=>r.unregister())); } }catch(e){}
       try{ sessionStorage.clear(); }catch(e){}
-      document.getElementById('status').textContent='Listo. Entrando a la app completa...';
-      setTimeout(()=>location.replace('/?v=6473&fresh='+Date.now()), 1000);
+      document.getElementById('status').textContent='Listo. Entrando a la app...';
+      setTimeout(()=>location.replace('/?v=6474&fresh='+Date.now()), 1000);
     }
     document.getElementById('again').addEventListener('click', clean);
     clean();

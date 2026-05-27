@@ -1,8 +1,9 @@
-/* Conecta Servicios v6.4.73
-   Service worker seguro para evitar versiones mezcladas.
-   No cachea index.html, app.js, styles.css, manifest ni /api.
+/* Conecta Servicios v6.4.74
+   Service worker seguro:
+   - No cachea app shell ni API.
+   - Evita versiones mezcladas entre app.js/index/styles.
 */
-const CACHE_NAME = 'conecta-servicios-v6-4-73-restaura-appjs-completo';
+const CACHE_NAME = 'conecta-servicios-v6-4-74-render-seguro-feed';
 
 const STATIC_ASSETS = [
   '/assets/icons/icon-192.png',
@@ -45,8 +46,8 @@ self.addEventListener('fetch', event => {
     url.pathname.endsWith('/styles.css') ||
     url.pathname.endsWith('/manifest.json') ||
     url.pathname.endsWith('/service-worker.js') ||
-    url.pathname.startsWith('/api/') ||
-    url.pathname.endsWith('/limpiar-cache.html');
+    url.pathname.endsWith('/limpiar-cache.html') ||
+    url.pathname.startsWith('/api/');
 
   if (noCache) {
     event.respondWith(fetch(req, { cache: 'no-store' }));
