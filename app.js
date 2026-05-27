@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.75-modo-seguro-integrado
+/* Conecta Servicios v6.4.76-restaura-apariencia-original
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.75-modo-seguro-integrado';
+  const VERSION = 'v6.4.76-restaura-apariencia-original';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -43,28 +43,6 @@
   const toastEl = document.getElementById('toast');
   const memoryUrls = new Map();
   let mediaDbPromise = null;
-
-  window.addEventListener('error', event => {
-    try{
-      const appNode = document.getElementById('app');
-      const alreadySafe = !!document.querySelector('.safe-app');
-      if(appNode && !alreadySafe && appNode.textContent.trim().length < 120){
-        console.warn('[Conecta] error global, entrando a modo seguro', event.error || event.message);
-        safeModeStart(event.error || event.message, null);
-      }
-    }catch{}
-  });
-  window.addEventListener('unhandledrejection', event => {
-    try{
-      const appNode = document.getElementById('app');
-      const alreadySafe = !!document.querySelector('.safe-app');
-      if(appNode && !alreadySafe && appNode.textContent.trim().length < 120){
-        console.warn('[Conecta] promesa global, entrando a modo seguro', event.reason);
-        safeModeStart(event.reason, null);
-      }
-    }catch{}
-  });
-
 
   const state = {
     route: '/',
@@ -2511,7 +2489,7 @@
         display:none !important;
       }
 
-      /* v6.4.75-modo-seguro-integrado: bloque consolidado de Home/postCard.
+      /* v6.4.76-restaura-apariencia-original: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2844,7 +2822,7 @@
         min-height:48px;
       }
 
-      /* v6.4.75-modo-seguro-integrado */
+      /* v6.4.76-restaura-apariencia-original */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5622,7 +5600,7 @@
 
 
 
-      /* v6.4.75-modo-seguro-integrado
+      /* v6.4.76-restaura-apariencia-original
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6053,7 +6031,7 @@
 
 
 
-      /* v6.4.75-modo-seguro-integrado
+      /* v6.4.76-restaura-apariencia-original
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6965,7 +6943,7 @@
     const subtitle = searching ? searchResultText() : (state.cloudReady ? 'Publicaciones disponibles' : 'También funciona sin conexión');
     return `<div><h1>${esc(title)}</h1><p>${esc(subtitle)}</p></div>${state.syncing?'<span class="sync-pill">Actualizando...</span>':(state.filter!=='ALL'||state.query?'<button class="small-link" data-clear>Todo</button>':'')}`;
   }
-  function feedMarkup(){ const posts=filteredPosts(); return posts.map(safePostCard).join('') || emptyState('No encontré publicaciones','Prueba otra búsqueda o publica algo con el botón +.'); }
+  function feedMarkup(){ const posts=filteredPosts(); return posts.map(postCard).join('') || emptyState('No encontré publicaciones','Prueba otra búsqueda o publica algo con el botón +.'); }
   function updateFeedOnly(){ const feed=document.getElementById('feed'); if(feed) feed.innerHTML=feedMarkup(); const title=document.getElementById('feedTitle'); if(title) title.innerHTML=feedTitleMarkup(); bindDynamicFeedControls(); setupInternalVideos(); setupGalleries(); }
   function serviceAreaText(post){
     return String(post?.serviceArea || post?.coverageArea || post?.zone || '').trim();
@@ -7533,58 +7511,7 @@
     toast(single ? 'Quedó una sola foto.' : 'Foto quitada.');
   }
 
-  
-  function fallbackPostCard(post={}, error=null){
-    let p = {};
-    try{ p = normalizePost(post || {}); }catch{ p = post || {}; }
-    const mediaUrl = String(p.mediaUrl || (Array.isArray(p.mediaItems) && p.mediaItems[0]?.mediaUrl) || '').trim();
-    const title = esc(String(p.title || p.description || 'Publicación disponible').slice(0, 120));
-    const descRaw = String(p.description || p.details || p.content || '').trim();
-    const desc = esc(descRaw ? (descRaw.length > 120 ? descRaw.slice(0,120) + '...' : descRaw) : 'Toca mensaje para pedir información.');
-    const cat = esc(normalizeCategory(p.category || 'OFREZCO'));
-    const zone = esc(String(p.serviceArea || p.zone || 'Tu zona').trim() || 'Tu zona');
-    const owner = esc(String(p.ownerName || 'Usuario local').trim() || 'Usuario local');
-    const date = esc(shortDate(p.createdAt || p.updatedAt || new Date().toISOString()));
-    try{
-      console.warn('[Conecta] Tarjeta recuperada con fallback', error, p?.id || '');
-      localStorage.setItem('cs_v6475_last_card_error', JSON.stringify({
-        id:p?.id || '',
-        message:error?.message || String(error || ''),
-        at:new Date().toISOString()
-      }));
-    }catch{}
-    return `<article class="post-card fallback-post-card" style="position:relative;min-height:100dvh;background:#111827;color:white;overflow:hidden">
-      ${mediaUrl ? `<img src="${esc(mediaUrl)}" alt="${title}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;background:#111827">` : `<div style="position:absolute;inset:0;background:linear-gradient(135deg,#111827,#1d4ed8)"></div>`}
-      <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(17,24,39,.08),rgba(17,24,39,.2) 45%,rgba(17,24,39,.95))"></div>
-      <div style="position:absolute;left:16px;top:calc(env(safe-area-inset-top) + 150px);z-index:2;background:#1d4ed8;border-radius:999px;padding:8px 14px;font-weight:900;font-size:12px">${cat}</div>
-      <div style="position:absolute;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom) + 96px);z-index:2">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-          <div style="width:42px;height:42px;border-radius:999px;border:2px solid white;display:grid;place-items:center;background:linear-gradient(135deg,#1d4ed8,#14b8a6);font-weight:900">${owner.slice(0,1).toUpperCase()}</div>
-          <strong style="font-size:16px">${owner}</strong>
-        </div>
-        <div style="display:inline-flex;padding:6px 11px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.18);font-size:12px;font-weight:800;margin-bottom:8px">📍 Atiende en: <strong style="margin-left:4px">${zone}</strong></div>
-        <h2 style="margin:0 0 6px;font-size:22px;line-height:1.12;font-weight:900">${title}</h2>
-        <p style="margin:0;font-size:15px;line-height:1.3;color:rgba(255,255,255,.92)">${desc}</p>
-        <div style="margin-top:8px;color:rgba(255,255,255,.72);font-size:12px;text-align:right">${date}</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px">
-          <button data-like="${esc(p.id || '')}" style="height:46px;border:1px solid rgba(255,255,255,.26);border-radius:14px;background:rgba(255,255,255,.92);color:#1e3a8a;font-size:22px;font-weight:900">♡</button>
-          <button data-message-post="${esc(p.id || '')}" style="height:46px;border:1px solid rgba(255,255,255,.26);border-radius:14px;background:rgba(255,255,255,.92);color:#1e3a8a;font-size:22px;font-weight:900">✉️</button>
-          <button data-share-post="${esc(p.id || '')}" style="height:46px;border:1px solid rgba(255,255,255,.26);border-radius:14px;background:rgba(255,255,255,.92);color:#1e3a8a;font-size:22px;font-weight:900">↗️</button>
-        </div>
-      </div>
-    </article>`;
-  }
-
-  function safePostCard(post){
-    try{
-      if(!post || typeof post !== 'object') return '';
-      return postCard(post);
-    }catch(error){
-      return fallbackPostCard(post, error);
-    }
-  }
-
-function postCard(post){
+  function postCard(post){
     post = normalizePost(post);
     const ownerPost = isMeId(post.ownerId);
     const adminFramePost = !ownerPost && adminFrameMode();
@@ -7664,7 +7591,7 @@ function postCard(post){
       </div>
       ${summary.isMe && !vendo.length ? '<div class="local-note">Publica algo en categoría VENDO para empezar tu tienda.</div>' : ''}
     </section>
-    <section class="feed store-feed">${vendo.map(safePostCard).join('') || emptyState('Esta tienda aún no tiene productos','Cuando publique en VENDO, aparecerá aquí.')}</section>
+    <section class="feed store-feed">${vendo.map(postCard).join('') || emptyState('Esta tienda aún no tiene productos','Cuando publique en VENDO, aparecerá aquí.')}</section>
     ${suggestions.length ? `<section class="panel owner-directory"><h2>Otras tiendas locales</h2><div class="owner-list">${suggestions.map(s => ownerCard(s)).join('')}</div></section>` : ''}`);
   }
 
@@ -7683,7 +7610,7 @@ function postCard(post){
       <h2>Guardados para ti</h2>
       <p>Publicaciones marcadas con corazón.</p>
     </section>
-    <section class="feed following-liked-feed">${liked.map(safePostCard).join('') || emptyState('Todavía no guardas publicaciones','Toca el corazón en una publicación para verla aquí.')}</section>
+    <section class="feed following-liked-feed">${liked.map(postCard).join('') || emptyState('Todavía no guardas publicaciones','Toca el corazón en una publicación para verla aquí.')}</section>
     <section class="panel owner-directory">
       <h2>Cuentas que sigues</h2>
       <div class="owner-list">${summaries.map(s => ownerCard(s)).join('') || emptyState('Todavía no sigues cuentas','Cuando sigas a un publicante, aparecerá aquí.')}</div>
@@ -7744,7 +7671,7 @@ ${esc(shortDiagnosticText(diag))}</code>
         </div>
         <button type="button" data-nav="/confianza">Ver</button>
       </div>
-    </section>${diagnosticsPanel()}<section class="feed">${mine.map(safePostCard).join('')||emptyState('No has publicado','Toca + para crear tu primera publicación.')}</section>`);
+    </section>${diagnosticsPanel()}<section class="feed">${mine.map(postCard).join('')||emptyState('No has publicado','Toca + para crear tu primera publicación.')}</section>`);
   }
 
   function confidencePage(){
@@ -7904,256 +7831,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     </section>`);
   }
 
-  
-  function safeModeStart(primaryError=null, recoveryError=null){
-    try{
-      const safeEsc = value => String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
-      const safeCategory = post => {
-        const c = String(post?.category || 'OFREZCO').toUpperCase();
-        return ['VENDO','OFREZCO','NECESITO'].includes(c) ? c : 'OFREZCO';
-      };
-      const safeText = (...values) => values.map(v => String(v || '').trim()).find(Boolean) || '';
-      const safeMedia = post => {
-        if(post?.mediaUrl) return String(post.mediaUrl);
-        const items = Array.isArray(post?.mediaItems) ? post.mediaItems : [];
-        const item = items.find(x => x && x.mediaUrl);
-        return item ? String(item.mediaUrl) : '';
-      };
-      const safeIsVideo = (post, url) => String(post?.mediaType || '').toLowerCase() === 'video' || /\.(mp4|mov|webm|m4v)(\?|$)/i.test(String(url || ''));
-      const safeDate = value => {
-        try{ return value ? new Date(value).toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'}) : ''; }catch{ return ''; }
-      };
-      const safeUser = () => {
-        try{
-          const raw = localStorage.getItem('cs_v634_user');
-          if(raw) return JSON.parse(raw);
-        }catch{}
-        try{
-          const raw = localStorage.getItem('cs_v634_user');
-          if(raw) return String(raw).replace(/^"|"$/g,'');
-        }catch{}
-        try{
-          const id = 'u-safe-' + Math.random().toString(16).slice(2) + '-' + Date.now();
-          localStorage.setItem('cs_v634_user', JSON.stringify(id));
-          return id;
-        }catch{
-          return 'u-safe-temp';
-        }
-      };
-      const safeProfile = () => {
-        try{
-          return JSON.parse(localStorage.getItem('cs_v634_profile') || '{}') || {};
-        }catch{
-          return {};
-        }
-      };
-
-      try{
-        localStorage.setItem('cs_v6475_last_safe_mode_error', JSON.stringify({
-          primary: primaryError?.message || String(primaryError || ''),
-          recovery: recoveryError?.message || String(recoveryError || ''),
-          primaryStack: String(primaryError?.stack || '').slice(0, 900),
-          recoveryStack: String(recoveryError?.stack || '').slice(0, 900),
-          at: new Date().toISOString()
-        }));
-      }catch{}
-
-      const css = `<style id="safe-mode-v6475-css">
-        body{margin:0;background:#050507;color:white;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-        .safe-app{min-height:100dvh;background:#050507;padding-bottom:calc(env(safe-area-inset-bottom) + 88px)}
-        .safe-top{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 8px);z-index:30;display:flex;gap:8px;align-items:center}
-        .safe-zone{flex:1;min-height:48px;border-radius:24px;background:rgba(17,24,39,.7);backdrop-filter:blur(14px);display:flex;align-items:center;padding:0 18px;font-weight:900;box-shadow:0 10px 25px rgba(0,0,0,.22)}
-        .safe-icon{width:48px;height:48px;border:0;border-radius:24px;background:rgba(17,24,39,.72);color:white;font-size:22px;font-weight:900}
-        .safe-icon.active{background:#1d4ed8}
-        .safe-filters{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 68px);transform:translateX(-50%);z-index:31;display:flex;gap:6px;padding:5px;border-radius:999px;background:rgba(17,24,39,.38);backdrop-filter:blur(10px)}
-        .safe-filters button{border:0;border-radius:999px;padding:10px 15px;background:rgba(255,255,255,.78);color:#111827;font-weight:900}
-        .safe-filters button.active{background:#1d4ed8;color:white}
-        .safe-feed{min-height:100dvh}
-        .safe-card{position:relative;height:100dvh;min-height:100dvh;overflow:hidden;background:#111827}
-        @supports(height:100svh){.safe-card{height:100svh;min-height:100svh}}
-        .safe-media,.safe-media img,.safe-media video,.safe-no-media{position:absolute;inset:0;width:100%;height:100%}
-        .safe-media img,.safe-media video{object-fit:cover;object-position:center;background:#050507;display:block}
-        .safe-no-media{display:grid;place-items:center;background:linear-gradient(135deg,#111827,#1d4ed8);text-align:center}
-        .safe-grad{position:absolute;inset:0;background:linear-gradient(180deg,rgba(17,24,39,.05),rgba(17,24,39,.18) 38%,rgba(17,24,39,.75) 70%,#111827)}
-        .safe-chip{position:absolute;left:16px;top:calc(env(safe-area-inset-top) + 150px);z-index:3;border-radius:999px;background:#1d4ed8;padding:8px 14px;font-size:12px;font-weight:900}
-        .safe-body{position:absolute;left:0;right:0;bottom:0;z-index:4;padding:70px 16px calc(env(safe-area-inset-bottom) + 104px);background:linear-gradient(180deg,rgba(17,24,39,0),rgba(17,24,39,.96))}
-        .safe-owner{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-        .safe-avatar{width:42px;height:42px;border-radius:999px;border:2px solid white;display:grid;place-items:center;background:linear-gradient(135deg,#1d4ed8,#14b8a6);font-weight:900}
-        .safe-service{display:inline-flex;max-width:100%;padding:6px 11px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.18);font-size:12px;font-weight:800;margin-bottom:8px}
-        .safe-card h2{font-size:22px;line-height:1.12;margin:0 0 6px;font-weight:900}
-        .safe-card p{font-size:15px;line-height:1.3;margin:0;color:rgba(255,255,255,.92)}
-        .safe-date{font-size:12px;color:rgba(255,255,255,.72);text-align:right;margin-top:8px}
-        .safe-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
-        .safe-actions button{height:46px;border:1px solid rgba(255,255,255,.26);border-radius:14px;background:rgba(255,255,255,.92);color:#1e3a8a;font-size:21px;font-weight:900}
-        .safe-bottom{position:fixed;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom) + 10px);z-index:40;height:70px;border-radius:28px;background:rgba(255,255,255,.9);backdrop-filter:blur(16px);display:grid;grid-template-columns:1fr 1fr 76px 1fr 1fr;align-items:center;box-shadow:0 14px 34px rgba(0,0,0,.22)}
-        .safe-bottom button{border:0;background:transparent;color:#1e3a8a;font-weight:900;font-size:12px;display:grid;gap:2px;place-items:center}
-        .safe-bottom .plus{width:68px;height:68px;border-radius:999px;background:#1d4ed8;color:white;font-size:36px;transform:translateY(-16px);border:5px solid white;box-shadow:0 12px 24px rgba(0,0,0,.22)}
-        .safe-panel{min-height:100dvh;padding:calc(env(safe-area-inset-top) + 126px) 18px calc(env(safe-area-inset-bottom) + 98px);background:#f8fafc;color:#111827}
-        .safe-panel-card{background:white;border-radius:24px;padding:20px;box-shadow:0 14px 34px rgba(15,23,42,.12);margin-bottom:14px}
-        .safe-panel-card h1,.safe-panel-card h2{margin:0 0 8px}
-        .safe-panel-card p{color:#4b5563;line-height:1.45}
-        .safe-list{display:grid;gap:10px}
-        .safe-message{border:1px solid #e5e7eb;border-radius:18px;padding:14px;background:white}
-        .safe-note{font-size:12px;color:#6b7280;margin-top:10px}
-      </style>`;
-
-      let safeState = {
-        route:'home',
-        filter:'ALL',
-        posts:[],
-        messages:[],
-        loading:true,
-        error:''
-      };
-
-      function bottom(){
-        return `<nav class="safe-bottom">
-          <button type="button" data-safe-route="home"><span>🏠</span><small>Inicio</small></button>
-          <button type="button" data-safe-route="following"><span>👥</span><small>Siguiendo</small></button>
-          <button type="button" class="plus" data-safe-route="publish">+</button>
-          <button type="button" data-safe-route="messages"><span>✉️</span><small>Mensajes</small></button>
-          <button type="button" data-safe-route="profile"><span>👤</span><small>Perfil</small></button>
-        </nav>`;
-      }
-
-      function top(){
-        const zone = safeText(safeState.posts[0]?.zone, safeState.posts[0]?.serviceArea, 'Conecta Servicios');
-        const f = safeState.filter;
-        return `<header class="safe-top">
-          <div class="safe-zone">${safeEsc(zone)}</div>
-          <button type="button" class="safe-icon" data-safe-route="store">🛒</button>
-          <button type="button" class="safe-icon ${safeState.route==='following'?'active':''}" data-safe-route="following">♥</button>
-          <button type="button" class="safe-icon" data-safe-route="home">🔎</button>
-        </header>
-        <div class="safe-filters">
-          <button type="button" data-safe-filter="VENDO" class="${f==='VENDO'?'active':''}">Vendo</button>
-          <button type="button" data-safe-filter="OFREZCO" class="${f==='OFREZCO'?'active':''}">Ofrezco</button>
-          <button type="button" data-safe-filter="NECESITO" class="${f==='NECESITO'?'active':''}">Necesito</button>
-        </div>`;
-      }
-
-      function postCard(post){
-        const m = safeMedia(post);
-        const video = safeIsVideo(post, m);
-        const c = safeCategory(post);
-        const t = safeText(post.title, post.description, 'Publicación');
-        const d = safeText(post.description, 'Toca mensaje para pedir información.');
-        const o = safeText(post.ownerName, post.name, 'Usuario local');
-        const z = safeText(post.serviceArea, post.zone, 'Tu zona');
-        return `<article class="safe-card">
-          <div class="safe-media">${m ? (video ? `<video src="${safeEsc(m)}" muted loop playsinline preload="metadata"></video>` : `<img src="${safeEsc(m)}" alt="${safeEsc(t)}">`) : `<div class="safe-no-media"><div><strong>${safeEsc(c)}</strong><br><span>Conecta Servicios</span></div></div>`}</div>
-          <div class="safe-grad"></div>
-          <div class="safe-chip">${safeEsc(c)}</div>
-          <div class="safe-body">
-            <div class="safe-owner"><div class="safe-avatar">${safeEsc(o.slice(0,1).toUpperCase() || 'C')}</div><strong>${safeEsc(o)}</strong></div>
-            <div class="safe-service">📍 Atiende en: <strong style="margin-left:4px">${safeEsc(z)}</strong></div>
-            <h2>${safeEsc(t)}</h2>
-            <p>${safeEsc(d.length > 135 ? d.slice(0,135).trim() + '...' : d)}</p>
-            <div class="safe-date">${safeEsc(safeDate(post.createdAt || post.updatedAt))}</div>
-            <div class="safe-actions">
-              <button type="button">♡</button>
-              <button type="button" data-safe-route="messages">✉️</button>
-              <button type="button">↗️</button>
-            </div>
-          </div>
-        </article>`;
-      }
-
-      function visiblePosts(){
-        const list = (Array.isArray(safeState.posts) ? safeState.posts : []).filter(p => p && String(p.status || 'activa').toLowerCase() !== 'eliminada');
-        if(['VENDO','OFREZCO','NECESITO'].includes(safeState.filter)) return list.filter(p => safeCategory(p) === safeState.filter);
-        return list;
-      }
-
-      function home(){
-        const posts = visiblePosts();
-        if(safeState.loading) return `<main class="safe-panel"><div class="safe-panel-card"><h1>Cargando publicaciones</h1><p>Estamos conectando con Supabase...</p></div></main>`;
-        if(!posts.length) return `<main class="safe-panel"><div class="safe-panel-card"><h1>Publicaciones</h1><p>No hay publicaciones para este filtro. Toca Vendo, Ofrezco o Necesito.</p></div></main>`;
-        return `<main class="safe-feed">${posts.map(postCard).join('')}</main>`;
-      }
-
-      function messages(){
-        const rows = safeState.messages || [];
-        return `<main class="safe-panel">
-          <div class="safe-panel-card"><h1>Mensajes</h1><p>Modo seguro activo. Estos mensajes se leen desde la nube si existen para este celular.</p></div>
-          <div class="safe-list">${rows.length ? rows.map(m => `<div class="safe-message"><strong>${safeEsc(m.senderName || m.receiverName || 'Usuario local')}</strong><p>${safeEsc(m.text || '')}</p><small>${safeEsc(safeDate(m.createdAt))}</small></div>`).join('') : `<div class="safe-panel-card"><h2>Sin mensajes cargados</h2><p>Si tus mensajes no aparecen en este celular, prueba en el celular donde la app ya abrió bien.</p></div>`}</div>
-        </main>`;
-      }
-
-      function profilePageSafe(){
-        const prof = safeProfile();
-        const id = safeUser();
-        return `<main class="safe-panel">
-          <div class="safe-panel-card"><h1>Perfil</h1><p><strong>${safeEsc(prof.name || 'Usuario local')}</strong></p><p class="safe-note">ID de este celular: ${safeEsc(String(id).slice(-14))}</p></div>
-          <div class="safe-panel-card"><h2>Publicaciones visibles</h2><p>${visiblePosts().length} publicaciones cargadas desde Supabase.</p></div>
-          <div class="safe-panel-card"><h2>Modo seguro</h2><p>La app principal tuvo un error de render en este dispositivo. Este modo mantiene visible el contenido mientras revisamos el error exacto.</p></div>
-        </main>`;
-      }
-
-      function publishSafe(){
-        return `<main class="safe-panel"><div class="safe-panel-card"><h1>Publicar</h1><p>Para no arriesgar datos durante la presentación, publica desde el celular donde la app ya abrió completa. Este teléfono está en modo seguro.</p></div></main>`;
-      }
-
-      function renderSafe(){
-        const content = safeState.route === 'messages'
-          ? messages()
-          : safeState.route === 'profile'
-            ? profilePageSafe()
-            : safeState.route === 'publish'
-              ? publishSafe()
-              : home();
-
-        app.innerHTML = `${css}<div class="safe-app">${top()}${content}${bottom()}</div>`;
-        app.querySelectorAll('[data-safe-route]').forEach(btn => btn.onclick = () => {
-          safeState.route = btn.dataset.safeRoute || 'home';
-          renderSafe();
-          if(safeState.route === 'messages') loadMessages();
-        });
-        app.querySelectorAll('[data-safe-filter]').forEach(btn => btn.onclick = () => {
-          const f = btn.dataset.safeFilter || 'ALL';
-          safeState.filter = safeState.filter === f ? 'ALL' : f;
-          safeState.route = 'home';
-          renderSafe();
-        });
-        app.querySelectorAll('video').forEach(v => { v.muted = true; v.loop = true; v.play?.().catch(()=>null); });
-      }
-
-      async function loadPosts(){
-        safeState.loading = true;
-        renderSafe();
-        try{
-          const res = await fetch('/api/publications?t=' + Date.now(), {cache:'no-store'});
-          const data = await res.json();
-          safeState.posts = Array.isArray(data?.posts) ? data.posts : [];
-          safeState.error = '';
-        }catch(error){
-          safeState.error = error?.message || String(error);
-        }finally{
-          safeState.loading = false;
-          renderSafe();
-        }
-      }
-
-      async function loadMessages(){
-        try{
-          const id = safeUser();
-          const res = await fetch('/api/messages?userId=' + encodeURIComponent(id) + '&t=' + Date.now(), {cache:'no-store'});
-          const data = await res.json();
-          safeState.messages = Array.isArray(data?.messages) ? data.messages : [];
-          renderSafe();
-        }catch{}
-      }
-
-      renderSafe();
-      loadPosts();
-      loadMessages();
-    }catch(fatalSafeModeError){
-      console.error('[Conecta] Safe mode failed', fatalSafeModeError);
-      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>No se pudo cargar en este navegador. Usa el otro celular para la presentación y revisaremos este dispositivo después.</p><button class="big-button" onclick="location.href='/api/publications'">Ver datos de publicaciones</button></section></main>`;
-    }
-  }
-
-function render(){
+  function render(){
     try{
       injectRootStyles();
       const routes = {'/':homePage, '/tienda':storePage, '/siguiendo':followingPage, '/mensajes':messagesPage, '/perfil':profilePage, '/confianza':confidencePage, '/publicar':composerPage, '/chat':chatPage};
@@ -8165,30 +7843,8 @@ function render(){
       setupDirectFrameEditors();
       if(state.route === '/publicar') setupFrameTouchEditor();
     }catch(error){
-      console.error('[Conecta] Error de render recuperado', error);
-      try{
-        localStorage.setItem('cs_v6475_last_render_error', JSON.stringify({
-          route: state.route,
-          message: error?.message || String(error),
-          stack: String(error?.stack || '').slice(0, 500),
-          at: new Date().toISOString()
-        }));
-      }catch{}
-      try{
-        injectRootStyles();
-        const posts = dedupePosts(Array.isArray(state.posts) ? state.posts : localPosts()).filter(p => !isDeleted(p));
-        const body = posts.length
-          ? posts.map(safePostCard).join('')
-          : emptyState('Publicaciones disponibles','Toca + para publicar o espera la sincronización.');
-        app.innerHTML = shell(`${homeHeader()}<section class="feed" id="feed">${body}</section>`);
-        bind();
-        setupInternalVideos();
-        setupGalleries();
-        setupDirectFrameEditors();
-      }catch(recoveryError){
-        console.error('[Conecta] Error de recuperación final', recoveryError);
-        safeModeStart(error, recoveryError);
-      }
+      console.error('[Conecta] Error de render', error);
+      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6476 o recarga.</p><button class="big-button" onclick="location.href='/?v=6476'">Recargar app</button></section></main>`;
     }
   }
 
