@@ -1,11 +1,17 @@
 // api/publications.js
-// Conecta Servicios v6.4.78
-// Corrección crítica:
-// El feed estaba cayendo incluso en deployments viejos porque Supabase estaba devolviendo
-// publicaciones con campos pesados/locales como mediaData y mediaPreviewUrl blob:.
-// Esos datos NO deben viajar al navegador en el muro público.
-// Variables oficiales: NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY.
-// Compatibilidad: SUPABASE_URL, SUPABASE_ANON_KEY y SUPABASE_SERVICE_ROLE_KEY.
+// Conecta Servicios v6.4.79
+// Sanitización profunda del muro público.
+// Corrección crítica: también elimina ownerAvatar/base64/blob y cualquier data:/blob:
+// en cualquier nivel del objeto antes de enviarlo al navegador.
+//
+// Variables oficiales:
+// NEXT_PUBLIC_SUPABASE_URL
+// NEXT_PUBLIC_SUPABASE_ANON_KEY
+//
+// Compatibilidad:
+// SUPABASE_URL
+// SUPABASE_ANON_KEY
+// SUPABASE_SERVICE_ROLE_KEY
 
 function send(res,status,payload){
   res.statusCode=status;
@@ -19,7 +25,7 @@ function readBody(req){
     let body='';
     req.on('data',chunk=>{
       body+=chunk;
-      if(body.length>6000000) req.destroy();
+      if(body.length>6_000_000) req.destroy();
     });
     req.on('end',()=>{try{resolve(body?JSON.parse(body):{});}catch(e){reject(e);}});
     req.on('error',reject);
@@ -104,47 +110,109 @@ function isVideoUrl(url=''){
 
 function isUnsafeLocalUrl(value=''){
   const s=String(value||'').trim().toLowerCase();
-  return s.startsWith('blob:') || s.startsWith('data:');
+  return (
+    s.startsWith('blob:') ||
+    s.startsWith('data:') ||
+    s.startsWith('filesystem:') ||
+    s.startsWith('capacitor://localhost/_capacitor_file_') ||
+    s.startsWith('file:')
+  );
 }
 
-function stripHeavyPublicationFields(input){
-  const p={...(input||{})};
+function looksLikeHugeEncodedString(value=''){
+  const s=String(value||'');
+  if(s.length < 5000) return false;
+  if(/^data:/i.test(s)) return true;
+  // Muchos base64 largos no empiezan con data:, pero tienen este patrón.
+  const sample=s.slice(0,300);
+  return /^[A-Za-z0-9+/=\r\n]+$/.test(sample) && s.length > 12000;
+}
 
-  // Nunca mandar ni guardar base64/blob locales en el muro público.
-  delete p.mediaData;
-  delete p.mediaBase64;
-  delete p.mediaBlob;
-  delete p.localFile;
-  delete p.file;
-  delete p.rawFile;
+const BLOCKED_KEYS = new Set([
+  'mediaData',
+  'mediaBase64',
+  'mediaBlob',
+  'base64',
+  'blob',
+  'rawFile',
+  'localFile',
+  'file',
+  'fileData',
+  'previewData',
+  'imageData',
+  'videoData',
+  'thumbnailData',
+  'originalFile',
+  'ownerAvatarData'
+]);
 
-  if(isUnsafeLocalUrl(p.mediaPreviewUrl)) delete p.mediaPreviewUrl;
-  if(isUnsafeLocalUrl(p.previewUrl)) delete p.previewUrl;
+function deepSanitize(value, stats, path=[]){
+  if(value === null || value === undefined) return value;
 
-  if(Array.isArray(p.mediaItems)){
-    p.mediaItems = p.mediaItems.map(item => {
-      const clean={...(item||{})};
-      delete clean.mediaData;
-      delete clean.mediaBase64;
-      delete clean.mediaBlob;
-      delete clean.localFile;
-      delete clean.file;
-      delete clean.rawFile;
-
-      if(isUnsafeLocalUrl(clean.mediaPreviewUrl)) delete clean.mediaPreviewUrl;
-      if(isUnsafeLocalUrl(clean.previewUrl)) delete clean.previewUrl;
-      if(isUnsafeLocalUrl(clean.mediaUrl)) delete clean.mediaUrl;
-      return clean;
-    }).filter(item => item && (item.mediaUrl || item.mediaRef || item.mediaType || item.mediaName));
+  if(typeof value === 'string'){
+    if(isUnsafeLocalUrl(value) || looksLikeHugeEncodedString(value)){
+      stats.removedUnsafeStrings += 1;
+      stats.removedUnsafePaths.push(path.join('.') || 'root');
+      return '';
+    }
+    return value;
   }
 
-  if(isUnsafeLocalUrl(p.mediaUrl)) delete p.mediaUrl;
+  if(typeof value !== 'object') return value;
 
+  if(Array.isArray(value)){
+    return value
+      .map((item,index)=>deepSanitize(item, stats, [...path, String(index)]))
+      .filter(item => item !== undefined && item !== null);
+  }
+
+  const out={};
+
+  for(const [key, raw] of Object.entries(value)){
+    if(BLOCKED_KEYS.has(key)){
+      stats.removedBlockedKeys += 1;
+      stats.removedUnsafePaths.push([...path,key].join('.'));
+      continue;
+    }
+
+    // Campos de preview/avatar locales: conservar solo si son https.
+    if((key === 'mediaPreviewUrl' || key === 'previewUrl' || key === 'ownerAvatar' || key === 'avatar') && typeof raw === 'string'){
+      if(isUnsafeLocalUrl(raw) || looksLikeHugeEncodedString(raw)){
+        stats.removedUnsafeStrings += 1;
+        stats.removedUnsafePaths.push([...path,key].join('.'));
+        out[key] = '';
+        continue;
+      }
+    }
+
+    const cleaned = deepSanitize(raw, stats, [...path,key]);
+
+    if(cleaned !== undefined){
+      out[key]=cleaned;
+    }
+  }
+
+  return out;
+}
+
+function stripEmptyMediaItems(p){
+  if(Array.isArray(p.mediaItems)){
+    p.mediaItems = p.mediaItems
+      .map(item => item && typeof item === 'object' ? item : null)
+      .filter(Boolean)
+      .filter(item => item.mediaUrl || item.mediaRef || item.mediaType || item.mediaName);
+  }
   return p;
 }
 
-function normalizePost(post,row={}){
-  const p=stripHeavyPublicationFields(post||{});
+function normalizePost(post,row={},stats=null){
+  const localStats = stats || {
+    removedBlockedKeys:0,
+    removedUnsafeStrings:0,
+    removedUnsafePaths:[]
+  };
+
+  const p=stripEmptyMediaItems(deepSanitize(post||{}, localStats));
   const mediaUrl=String(p.mediaUrl||'').trim();
 
   p.id=p.id || row.client_id;
@@ -168,6 +236,15 @@ function normalizePost(post,row={}){
 
 function payloadSizeOf(value){
   try{return JSON.stringify(value).length;}catch{return 0;}
+}
+
+function containsUnsafeValue(value){
+  try{
+    const text=JSON.stringify(value);
+    return /data:|blob:|filesystem:|file:|mediaData|mediaBase64|ownerAvatarData/i.test(text);
+  }catch{
+    return false;
+  }
 }
 
 module.exports=async function handler(req,res){
@@ -195,9 +272,22 @@ module.exports=async function handler(req,res){
       const r=await supabaseFetch(`${cfg.table}?select=client_id,owner_id,status,data,created_at,updated_at&order=created_at.desc`);
       const rows=await r.json().catch(()=>[]);
 
-      if(!r.ok) return send(res,r.status,{ok:false,error:'SUPABASE_GET_FAILED',detail:rows,diagnostics:diagnostics({httpStatus:r.status})});
+      if(!r.ok){
+        return send(res,r.status,{
+          ok:false,
+          error:'SUPABASE_GET_FAILED',
+          detail:rows,
+          diagnostics:diagnostics({httpStatus:r.status})
+        });
+      }
 
-      const posts=rows.map(row=>normalizePost(row.data||{},row));
+      const stats={
+        removedBlockedKeys:0,
+        removedUnsafeStrings:0,
+        removedUnsafePaths:[]
+      };
+
+      const posts=rows.map(row=>normalizePost(row.data||{},row,stats));
 
       if(String(req.url||'').includes('sizes=1')){
         return send(res,200,{
@@ -205,9 +295,22 @@ module.exports=async function handler(req,res){
           count:posts.length,
           diagnostics:diagnostics({
             sanitized:true,
+            deepSanitized:true,
             totalPayloadBytes:payloadSizeOf(posts),
+            containsUnsafeValue:containsUnsafeValue(posts),
+            removedBlockedKeys:stats.removedBlockedKeys,
+            removedUnsafeStrings:stats.removedUnsafeStrings,
+            removedUnsafePaths:stats.removedUnsafePaths.slice(0,50),
             largest:posts
-              .map(p=>({id:p.id,title:p.title||'',bytes:payloadSizeOf(p),hasMediaData:!!p.mediaData,mediaItems:Array.isArray(p.mediaItems)?p.mediaItems.length:0}))
+              .map(p=>({
+                id:p.id,
+                title:p.title||'',
+                bytes:payloadSizeOf(p),
+                hasMediaData:!!p.mediaData,
+                hasUnsafeValue:containsUnsafeValue(p),
+                ownerAvatarType:p.ownerAvatar ? (String(p.ownerAvatar).startsWith('http') ? 'https' : 'other') : 'empty',
+                mediaItems:Array.isArray(p.mediaItems)?p.mediaItems.length:0
+              }))
               .sort((a,b)=>b.bytes-a.bytes)
               .slice(0,10)
           }),
@@ -220,7 +323,8 @@ module.exports=async function handler(req,res){
 
     if(req.method==='POST'){
       const body=await readBody(req);
-      const post=normalizePost(body.post||{});
+      const stats={removedBlockedKeys:0,removedUnsafeStrings:0,removedUnsafePaths:[]};
+      const post=normalizePost(body.post||{}, {}, stats);
 
       if(!post || !post.id) return send(res,400,{ok:false,error:'MISSING_POST'});
 
@@ -240,9 +344,22 @@ module.exports=async function handler(req,res){
 
       const data=await r.json().catch(()=>null);
 
-      if(!r.ok) return send(res,r.status,{ok:false,error:'SUPABASE_UPSERT_FAILED',detail:data,diagnostics:diagnostics({httpStatus:r.status})});
+      if(!r.ok){
+        return send(res,r.status,{
+          ok:false,
+          error:'SUPABASE_UPSERT_FAILED',
+          detail:data,
+          diagnostics:diagnostics({httpStatus:r.status})
+        });
+      }
 
-      return send(res,200,{ok:true,post:normalizePost(data?.[0]?.data || post,data?.[0] || row)});
+      return send(res,200,{
+        ok:true,
+        sanitized:true,
+        removedBlockedKeys:stats.removedBlockedKeys,
+        removedUnsafeStrings:stats.removedUnsafeStrings,
+        post:normalizePost(data?.[0]?.data || post,data?.[0] || row)
+      });
     }
 
     if(req.method==='DELETE'){
@@ -261,7 +378,13 @@ module.exports=async function handler(req,res){
 
       const r=await supabaseFetch(`${cfg.table}?client_id=eq.${encodeURIComponent(id)}`,{method:'DELETE'});
 
-      if(!r.ok) return send(res,r.status,{ok:false,error:'SUPABASE_DELETE_FAILED',diagnostics:diagnostics({httpStatus:r.status})});
+      if(!r.ok){
+        return send(res,r.status,{
+          ok:false,
+          error:'SUPABASE_DELETE_FAILED',
+          diagnostics:diagnostics({httpStatus:r.status})
+        });
+      }
 
       return send(res,200,{ok:true});
     }
@@ -269,6 +392,11 @@ module.exports=async function handler(req,res){
     res.setHeader('Allow','GET, POST, DELETE');
     return send(res,405,{ok:false,error:'METHOD_NOT_ALLOWED'});
   }catch(error){
-    return send(res,500,{ok:false,error:'PUBLICATIONS_API_ERROR',message:error?.message || String(error),diagnostics:diagnostics()});
+    return send(res,500,{
+      ok:false,
+      error:'PUBLICATIONS_API_ERROR',
+      message:error?.message || String(error),
+      diagnostics:diagnostics()
+    });
   }
 };
