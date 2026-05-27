@@ -1,10 +1,9 @@
-/* Conecta Servicios v6.4.71
-   Solución definitiva de caché:
-   - No cachea index.html, app.js, styles.css ni /api.
-   - Evita que un celular quede atrapado con una versión rota.
-   - Limpia caches viejos de Conecta en activate.
+/* Conecta Servicios v6.4.72
+   Service Worker seguro:
+   - No cachea index, app, estilos, manifest ni API.
+   - Limpia versiones viejas.
 */
-const CACHE_NAME = 'conecta-servicios-v6-4-71-cache-definitivo';
+const CACHE_NAME = 'conecta-servicios-v6-4-72-cache-seguro';
 
 const STATIC_ASSETS = [
   '/assets/icons/icon-192.png',
@@ -39,7 +38,7 @@ self.addEventListener('fetch', event => {
 
   if (req.method !== 'GET') return;
 
-  const mustAlwaysUseNetwork =
+  const noCache =
     req.mode === 'navigate' ||
     url.pathname === '/' ||
     url.pathname.endsWith('/index.html') ||
@@ -47,24 +46,17 @@ self.addEventListener('fetch', event => {
     url.pathname.endsWith('/styles.css') ||
     url.pathname.endsWith('/manifest.json') ||
     url.pathname.endsWith('/service-worker.js') ||
-    url.pathname.startsWith('/api/');
+    url.pathname.startsWith('/api/') ||
+    url.pathname.endsWith('/limpiar-cache.html');
 
-  if (mustAlwaysUseNetwork) {
-    event.respondWith(
-      fetch(req, { cache: 'no-store' }).catch(() => {
-        if (req.mode === 'navigate') {
-          return caches.match('/index.html');
-        }
-        return new Response('', { status: 503, statusText: 'Offline' });
-      })
-    );
+  if (noCache) {
+    event.respondWith(fetch(req, { cache: 'no-store' }));
     return;
   }
 
   event.respondWith(
     caches.match(req).then(cached => {
       if (cached) return cached;
-
       return fetch(req).then(res => {
         const copy = res.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(req, copy)).catch(() => null);
