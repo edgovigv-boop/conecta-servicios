@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.76-restaura-apariencia-original
+/* Conecta Servicios v6.4.77-render-no-borra-app
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.76-restaura-apariencia-original';
+  const VERSION = 'v6.4.77-render-no-borra-app';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2489,7 +2489,7 @@
         display:none !important;
       }
 
-      /* v6.4.76-restaura-apariencia-original: bloque consolidado de Home/postCard.
+      /* v6.4.77-render-no-borra-app: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2822,7 +2822,7 @@
         min-height:48px;
       }
 
-      /* v6.4.76-restaura-apariencia-original */
+      /* v6.4.77-render-no-borra-app */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5600,7 +5600,7 @@
 
 
 
-      /* v6.4.76-restaura-apariencia-original
+      /* v6.4.77-render-no-borra-app
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6031,7 +6031,7 @@
 
 
 
-      /* v6.4.76-restaura-apariencia-original
+      /* v6.4.77-render-no-borra-app
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -7832,22 +7832,53 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function render(){
-    try{
-      injectRootStyles();
-      const routes = {'/':homePage, '/tienda':storePage, '/siguiendo':followingPage, '/mensajes':messagesPage, '/perfil':profilePage, '/confianza':confidencePage, '/publicar':composerPage, '/chat':chatPage};
-      app.innerHTML = (routes[state.route] || homePage)();
-      bind();
-      if(state.route === '/chat') scrollChatToBottom('auto');
-      setupInternalVideos();
-      setupGalleries();
-      setupDirectFrameEditors();
-      if(state.route === '/publicar') setupFrameTouchEditor();
-    }catch(error){
-      console.error('[Conecta] Error de render', error);
-      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6476 o recarga.</p><button class="big-button" onclick="location.href='/?v=6476'">Recargar app</button></section></main>`;
-    }
-  }
+    injectRootStyles();
 
+    const routes = {'/':homePage, '/tienda':storePage, '/siguiendo':followingPage, '/mensajes':messagesPage, '/perfil':profilePage, '/confianza':confidencePage, '/publicar':composerPage, '/chat':chatPage};
+    let html = '';
+
+    try{
+      html = (routes[state.route] || homePage)();
+      app.innerHTML = html;
+    }catch(error){
+      console.error('[Conecta] Error creando pantalla', error);
+      try{
+        localStorage.setItem('cs_v6477_last_route_error', JSON.stringify({
+          route: state.route,
+          message: error?.message || String(error),
+          stack: String(error?.stack || '').slice(0, 900),
+          at: new Date().toISOString()
+        }));
+      }catch{}
+      app.innerHTML = shell(`<section class="feed" id="feed">
+        ${emptyState('Cargando publicaciones','Hubo un problema con una pantalla. Vuelve a Inicio o recarga la app.')}
+      </section>`);
+    }
+
+    const safeStep = (name, fn) => {
+      try{
+        fn();
+      }catch(error){
+        console.warn(`[Conecta] Paso visual omitido: ${name}`, error);
+        try{
+          localStorage.setItem('cs_v6477_last_visual_error', JSON.stringify({
+            route: state.route,
+            step: name,
+            message: error?.message || String(error),
+            stack: String(error?.stack || '').slice(0, 900),
+            at: new Date().toISOString()
+          }));
+        }catch{}
+      }
+    };
+
+    safeStep('bind', () => bind());
+    if(state.route === '/chat') safeStep('scrollChatToBottom', () => scrollChatToBottom('auto'));
+    safeStep('setupInternalVideos', () => setupInternalVideos());
+    safeStep('setupGalleries', () => setupGalleries());
+    safeStep('setupDirectFrameEditors', () => setupDirectFrameEditors());
+    if(state.route === '/publicar') safeStep('setupFrameTouchEditor', () => setupFrameTouchEditor());
+  }
   function routeUrl(route){
     const base = location.pathname + location.search;
     return route === '/' ? base.replace(/#.*/, '') : `${base.replace(/#.*/, '')}#${route.replace(/^\//,'')}`;

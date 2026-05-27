@@ -1,9 +1,9 @@
-/* Conecta Servicios v6.4.76
-   Cache seguro sin modificar la app visual:
+/* Conecta Servicios v6.4.77
+   Cache seguro:
    - No cachea index.html, app.js, styles.css, manifest ni /api.
    - Borra caches viejos de Conecta.
 */
-const CACHE_NAME = 'conecta-servicios-v6-4-76-restaura-apariencia-original';
+const CACHE_NAME = 'conecta-servicios-v6-4-77-render-no-borra-app';
 
 const STATIC_ASSETS = [
   '/assets/icons/icon-192.png',
