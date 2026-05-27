@@ -1,9 +1,8 @@
-/* Conecta Servicios v6.4.72
-   Service Worker seguro:
-   - No cachea index, app, estilos, manifest ni API.
-   - Limpia versiones viejas.
+/* Conecta Servicios v6.4.73
+   Service worker seguro para evitar versiones mezcladas.
+   No cachea index.html, app.js, styles.css, manifest ni /api.
 */
-const CACHE_NAME = 'conecta-servicios-v6-4-72-cache-seguro';
+const CACHE_NAME = 'conecta-servicios-v6-4-73-restaura-appjs-completo';
 
 const STATIC_ASSETS = [
   '/assets/icons/icon-192.png',
