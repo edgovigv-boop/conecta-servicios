@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.66-corazon-sigue-publicante';
+  const VERSION = 'v6.4.67-arranque-sin-pantalla-proteccion';
   window.CONNECTA_BOOT_VERSION = VERSION;
   window.CONNETA_BOOT_VERSION = VERSION;
 
@@ -45,9 +45,11 @@
   };
 
   const params = new URLSearchParams(location.search);
-  if (params.get('reset') === '1' || params.get('hardreset') === '1') {
+  if (params.get('clearcache') === '1') {
+    clearConectaCache().then(() => location.replace('/?v=6467&fresh=' + Date.now()));
+  } else if (params.get('reset') === '1' || params.get('hardreset') === '1') {
     window.conectaBootReset({ hard: true }).then(() => {
-      location.replace('/?v=6323-after-reset-' + Date.now());
+      location.replace('/?v=6467-after-reset-' + Date.now());
     });
   } else {
     clearConectaCache();

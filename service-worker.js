@@ -1,11 +1,11 @@
-const CACHE_NAME = 'conecta-servicios-v6-4-66-corazon-sigue-publicante';
+const CACHE_NAME = 'conecta-servicios-v6-4-67-arranque-sin-pantalla-proteccion';
 
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=6466',
-  '/app.js?v=6466',
-  '/manifest.json?v=6466',
+  '/styles.css?v=6.3.12-publicaciones-video-sync',
+  '/app.js?v=6.3.41-video-tus-resumable',
+  '/manifest.json?v=6.3.41-video-tus-resumable',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'
@@ -36,7 +36,7 @@ self.addEventListener('fetch', event => {
     url.pathname.endsWith('/index.html') ||
     url.pathname.endsWith('/app.js') ||
     url.pathname.endsWith('/service-worker.js') ||
-    url.search.includes('v=6466') ||
+    url.search.includes('v=6467') ||
     url.search.includes('v=6.3.41');
 
   if (networkFirst) {
