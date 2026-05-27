@@ -12,17 +12,15 @@
     p{margin:0 0 16px;color:#6b7280;line-height:1.45}
     .status{margin:14px 0;padding:12px 14px;border-radius:16px;background:#eef2ff;color:#1e3a8a;font-weight:800}
     a,button{width:100%;min-height:52px;border:0;border-radius:999px;display:flex;align-items:center;justify-content:center;text-decoration:none;background:linear-gradient(135deg,#5b2eea,#3b0b9f);color:white;font-weight:900;font-size:16px;margin-top:10px}
-    button.secondary{background:#e5e7eb;color:#111827}
     small{display:block;margin-top:12px;color:#6b7280;line-height:1.35}
   </style>
 </head>
 <body>
   <main>
     <h1>Conecta Servicios</h1>
-    <p>Se aplicó render seguro para que una publicación dañada no tumbe toda la app.</p>
+    <p>Se agregó modo seguro integrado para que este celular no quede en blanco.</p>
     <div class="status" id="status">Limpiando versión anterior...</div>
-    <a href="/?v=6474&fresh=1">Entrar a la app</a>
-    <button class="secondary" type="button" id="again">Limpiar otra vez</button>
+    <a href="/?v=6475&fresh=1">Entrar a la app</a>
     <small>Esto no borra Supabase ni publicaciones de la nube.</small>
   </main>
   <script>
@@ -31,9 +29,8 @@
       try{ if('serviceWorker' in navigator){ const regs=await navigator.serviceWorker.getRegistrations(); await Promise.all(regs.map(r=>r.unregister())); } }catch(e){}
       try{ sessionStorage.clear(); }catch(e){}
       document.getElementById('status').textContent='Listo. Entrando a la app...';
-      setTimeout(()=>location.replace('/?v=6474&fresh='+Date.now()), 1000);
+      setTimeout(()=>location.replace('/?v=6475&fresh='+Date.now()), 1000);
     }
-    document.getElementById('again').addEventListener('click', clean);
     clean();
   </script>
 </body>
