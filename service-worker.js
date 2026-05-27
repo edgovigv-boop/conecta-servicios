@@ -1,11 +1,11 @@
-const CACHE_NAME = 'conecta-servicios-v6-4-65-carrusel-tactil-completo';
+const CACHE_NAME = 'conecta-servicios-v6-4-66-corazon-sigue-publicante';
 
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css?v=6465',
-  '/app.js?v=6465',
-  '/manifest.json?v=6465',
+  '/styles.css?v=6466',
+  '/app.js?v=6466',
+  '/manifest.json?v=6466',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/conecta-logo-oficial.png'
@@ -36,7 +36,7 @@ self.addEventListener('fetch', event => {
     url.pathname.endsWith('/index.html') ||
     url.pathname.endsWith('/app.js') ||
     url.pathname.endsWith('/service-worker.js') ||
-    url.search.includes('v=6465') ||
+    url.search.includes('v=6466') ||
     url.search.includes('v=6.3.41');
 
   if (networkFirst) {

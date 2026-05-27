@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.65-carrusel-tactil-completo
+/* Conecta Servicios v6.4.66-corazon-sigue-publicante
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.65-carrusel-tactil-completo';
+  const VERSION = 'v6.4.66-corazon-sigue-publicante';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -925,7 +925,7 @@
       ofrezco: posts.filter(p => normalizeCategory(p.category) === 'OFREZCO').length,
       necesito: posts.filter(p => normalizeCategory(p.category) === 'NECESITO').length,
       lastAt: posts[0]?.createdAt || '',
-      isFollowing: follows().includes(ownerId),
+      isFollowing: follows().map(String).includes(String(ownerId)) || filteredAll().some(p => String(p.ownerId || '') === String(ownerId) && likedPostIds().map(String).includes(String(p.id))),
       isMe: ownerId === userId()
     };
   }
@@ -2155,7 +2155,7 @@
 
       /* v6.3.37: corrección precisa de menú y puntitos */
 
-      /* v6.4.65: puntitos fuera del encuadre y foto única al encuadrar */
+      /* v6.4.66: puntitos fuera del encuadre y foto única al encuadrar */
       .direct-frame-active .post-body-gallery-dots,
       .direct-frame-active .gallery-dots{
         display:none !important;
@@ -2163,7 +2163,7 @@
       }
 
 
-      /* v6.4.65: encuadre independiente por foto */
+      /* v6.4.66: encuadre independiente por foto */
       .direct-frame-active .direct-frame-hint{
         max-width:calc(100% - 44px) !important;
       }
@@ -2494,7 +2494,7 @@
         background:rgba(0,0,0,.48) !important;
         border-color:rgba(255,255,255,.44) !important;
       }
-      /* v6.4.65: acciones icon-only y perfil simple */
+      /* v6.4.66: acciones icon-only y perfil simple */
       .post-action-row{
         grid-template-columns:repeat(3, 1fr) !important;
         gap:10px !important;
@@ -2526,7 +2526,7 @@
         display:none !important;
       }
 
-      /* v6.4.65-carrusel-tactil-completo: bloque consolidado de Home/postCard.
+      /* v6.4.66-corazon-sigue-publicante: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2705,7 +2705,7 @@
         border-color:rgba(255,255,255,.48) !important;
       }
 
-      /* v6.4.65: asegurar ...leer visible y evitar mutaciones de ownerId */
+      /* v6.4.66: asegurar ...leer visible y evitar mutaciones de ownerId */
       .post-description-short.is-collapsed{
         display:block !important;
         max-height:2.65em !important;
@@ -2724,7 +2724,7 @@
         pointer-events:auto !important;
       }
 
-      /* v6.4.65: descripción visible, ...leer separado del texto */
+      /* v6.4.66: descripción visible, ...leer separado del texto */
       .post-description-collapsed{
         display:grid !important;
         grid-template-columns:1fr auto !important;
@@ -2859,7 +2859,7 @@
         min-height:48px;
       }
 
-      /* v6.4.65-carrusel-tactil-completo */
+      /* v6.4.66-corazon-sigue-publicante */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -3121,7 +3121,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.65: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.66: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -3267,7 +3267,7 @@
 
 
 
-      /* v6.4.65: encuadre táctil libre sin controles inferiores */
+      /* v6.4.66: encuadre táctil libre sin controles inferiores */
       .media-frame-editor .frame-mode-row,
       .media-frame-editor .frame-actions-grid{
         display:none !important;
@@ -3314,9 +3314,9 @@
       }
 
 
-      /* v6.4.65: encuadre táctil tipo redes sociales */
+      /* v6.4.66: encuadre táctil tipo redes sociales */
       
-      /* v6.4.65: editor de encuadre compacto, acorde a la publicación */
+      /* v6.4.66: editor de encuadre compacto, acorde a la publicación */
       .composer{
         padding-bottom:120px !important;
       }
@@ -3324,13 +3324,13 @@
 
 
 
-      /* v6.4.65: encuadre directo táctil fino */
+      /* v6.4.66: encuadre directo táctil fino */
 
-      /* v6.4.65: edición directa desde la publicación */
+      /* v6.4.66: edición directa desde la publicación */
 
-      /* v6.4.65: zona/cobertura libre visible */
+      /* v6.4.66: zona/cobertura libre visible */
 
-      /* v6.4.65: carrusel más suave y encuadre por foto */
+      /* v6.4.66: carrusel más suave y encuadre por foto */
       .gallery-stage{
         touch-action:pan-y !important;
       }
@@ -3387,15 +3387,15 @@
       }
 
 
-      /* v6.4.65: multimedia directa básica e instrucciones visibles */
+      /* v6.4.66: multimedia directa básica e instrucciones visibles */
 
-      /* v6.4.65: puntitos centrados arriba del usuario */
+      /* v6.4.66: puntitos centrados arriba del usuario */
 
-      /* v6.4.65: carrusel táctil y edición limpia */
+      /* v6.4.66: carrusel táctil y edición limpia */
 
-      /* v6.4.65: carrusel Android, categoría completa y puntitos pequeños */
+      /* v6.4.66: carrusel Android, categoría completa y puntitos pequeños */
 
-      /* v6.4.65: zona legible, encuadre simple y carrusel por swipe */
+      /* v6.4.66: zona legible, encuadre simple y carrusel por swipe */
       .service-area-row{
         background:rgba(0,0,0,.56) !important;
         color:#fff !important;
@@ -3508,7 +3508,7 @@
       }
 
 
-      /* v6.4.65 final override dentro del CSS */
+      /* v6.4.66 final override dentro del CSS */
       .service-area-row{
         background:rgba(0,0,0,.56)!important;
         color:#fff!important;
@@ -4152,7 +4152,7 @@
         pointer-events:none !important;
       }
 
-      /* v6.4.65: encuadre directo desde la publicación */
+      /* v6.4.66: encuadre directo desde la publicación */
       .frame-direct-btn{
         background:linear-gradient(135deg,#5b2eea,#14b8a6) !important;
         color:#fff !important;
@@ -4244,7 +4244,7 @@
         display:none !important;
       }
 
-      /* v6.4.65: recuperación de scroll global */
+      /* v6.4.66: recuperación de scroll global */
       html,
       body{
         overflow-x:hidden !important;
@@ -4446,7 +4446,7 @@
         }
       }
 
-      /* v6.4.65: encuadre editable de multimedia */
+      /* v6.4.66: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -4679,7 +4679,7 @@
       }
 
 
-      /* v6.4.65: encuadre editable de multimedia */
+      /* v6.4.66: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5138,7 +5138,7 @@
         padding:8px 0;
       }
 
-      /* v6.4.65: estabilidad horizontal en Mensajes y Chat */
+      /* v6.4.66: estabilidad horizontal en Mensajes y Chat */
       html,
       body,
       #app,
@@ -5282,7 +5282,7 @@
       }
 
 
-      /* v6.4.65: encuadre editable de multimedia */
+      /* v6.4.66: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5515,7 +5515,7 @@
       }
 
 
-      /* v6.4.65: encuadre editable de multimedia */
+      /* v6.4.66: encuadre editable de multimedia */
       .framed-media,
       .frame-preview-media{
         object-fit:var(--media-fit, contain) !important;
@@ -5637,7 +5637,7 @@
 
 
 
-      /* v6.4.65-carrusel-tactil-completo
+      /* v6.4.66-corazon-sigue-publicante
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6068,7 +6068,7 @@
 
 
 
-      /* v6.4.65-carrusel-tactil-completo
+      /* v6.4.66-corazon-sigue-publicante
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6151,7 +6151,7 @@
 
 
 
-      /* v6.4.65: ajustes post diseño según revisión real en celular.
+      /* v6.4.66: ajustes post diseño según revisión real en celular.
          Mantiene funciones, corrige encabezado, barra inferior, corazón, puntitos y orden visual. */
 
       /* Restaurar encabezado oscuro/transparente: se deben ver Municipio / Tienda / Para ti. */
@@ -6375,7 +6375,7 @@
 
 
 
-      /* v6.4.65: menú flotante por publicación.
+      /* v6.4.66: menú flotante por publicación.
          Orden pedido: Municipio/Zona + Carrito + Corazón + Lupa.
          Se elimina Siguiendo de arriba porque ya existe abajo. */
       .glass-top.tiktok-top.floating-post-menu{
@@ -6572,7 +6572,7 @@
 
 
 
-      /* v6.4.65: corrige el hueco inferior entre publicaciones.
+      /* v6.4.66: corrige el hueco inferior entre publicaciones.
          El menú superior es flotante, por eso cada publicación debe ocupar 100% de la pantalla.
          No toca mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6651,7 +6651,7 @@
 
 
 
-      /* v6.4.65: admin de encuadre y video auto-ajustado.
+      /* v6.4.66: admin de encuadre y video auto-ajustado.
          El admin local solo muestra Encuadre admin, no borrar ni editar contenido. */
       .admin-frame-row{
         justify-content:flex-start !important;
@@ -6680,7 +6680,7 @@
 
 
 
-      /* v6.4.65: controles de encuadre visibles.
+      /* v6.4.66: controles de encuadre visibles.
          Corrige Guardar/Cancelar tapados por barra inferior y mejora escritura en paneles. */
 
       .direct-frame-active .direct-frame-controls{
@@ -6788,7 +6788,7 @@
 
 
 
-      /* v6.4.65: encuadre con botones arriba y barra inferior oculta realmente.
+      /* v6.4.66: encuadre con botones arriba y barra inferior oculta realmente.
          La barra inferior es hermana del main, por eso se usa :has() y selector de hermano. */
 
       body:has(.post-card.direct-frame-active) .bottom-nav,
@@ -6917,7 +6917,7 @@
 
 
 
-      /* v6.4.65: editor/publicar más compacto y fácil de scrollear.
+      /* v6.4.66: editor/publicar más compacto y fácil de scrollear.
          El recuadro de multimedia ya no ocupa casi toda la pantalla. */
       .composer{
         padding-bottom:calc(env(safe-area-inset-bottom) + 150px) !important;
@@ -6982,7 +6982,7 @@
         }
       }
 
-      /* v6.4.65: al encuadrar como admin, guardar/cancelar deben quedar tocables. */
+      /* v6.4.66: al encuadrar como admin, guardar/cancelar deben quedar tocables. */
       body:has(.post-card.direct-frame-active) .bottom-nav,
       .app-page:has(.post-card.direct-frame-active) + .bottom-nav{
         display:none !important;
@@ -7026,7 +7026,7 @@
 
 
 
-      /* v6.4.65: admin piloto y opción instalar app */
+      /* v6.4.66: admin piloto y opción instalar app */
       .admin-entry-card{
         border-color:rgba(29,78,216,.18) !important;
         background:linear-gradient(135deg,rgba(29,78,216,.08),rgba(20,184,166,.08)) !important;
@@ -7116,7 +7116,7 @@
 
 
 
-      /* v6.4.65: Admin limpio, solo analítica.
+      /* v6.4.66: Admin limpio, solo analítica.
          La lista de publicaciones se elimina del panel porque las acciones ya están en cada publicación. */
       .admin-analytics-only{
         padding-bottom:calc(env(safe-area-inset-bottom) + 120px) !important;
@@ -7142,7 +7142,7 @@
 
 
 
-      /* v6.4.65: carrusel manual.
+      /* v6.4.66: carrusel manual.
          Las fotos no avanzan solas; el usuario decide con swipe o con los puntitos. */
       .media-carousel[data-carousel-mode="manual"]{
         scroll-behavior:auto !important;
@@ -7168,7 +7168,7 @@
 
 
 
-      /* v6.4.65: carrusel táctil completo.
+      /* v6.4.66: carrusel táctil completo.
          La zona sombreada inferior también permite iniciar el swipe, sin afectar botones. */
       .post-card:has(.media-carousel) .post-body{
         touch-action:pan-y !important;
@@ -7913,15 +7913,16 @@
   }
 
   function followingPage(){
-    const ids = follows();
     const likedIds = new Set(likedPostIds().map(String));
     const liked = filteredAll().filter(p => likedIds.has(String(p.id)));
+    const ownerIdsFromLikes = liked.map(p => String(p.ownerId || '')).filter(Boolean);
+    const ids = [...new Set([...follows().map(String), ...ownerIdsFromLikes])];
     const summaries = ids.map(ownerSummary).filter(s => s.total > 0);
 
     return shell(`<section class="panel following-panel">
       <button class="small-link" data-nav="/">← Volver al Home</button>
       <h1>Siguiendo</h1>
-      <p>Aquí aparecen las publicaciones que marcaste con corazón y las cuentas que sigues.</p>
+      <p>Aquí aparecen tus publicaciones con corazón y los publicantes que sigues.</p>
     </section>
     <section class="panel following-panel">
       <h2>Guardados para ti</h2>
@@ -7930,7 +7931,7 @@
     <section class="feed following-liked-feed">${liked.map(postCard).join('') || emptyState('Todavía no guardas publicaciones','Toca el corazón en una publicación para verla aquí.')}</section>
     <section class="panel owner-directory">
       <h2>Cuentas que sigues</h2>
-      <div class="owner-list">${summaries.map(s => ownerCard(s)).join('') || emptyState('Todavía no sigues cuentas','Cuando sigas a un publicante, aparecerá aquí.')}</div>
+      <div class="owner-list">${summaries.map(s => ownerCard(s)).join('') || emptyState('Aún no hay cuentas guardadas','Toca el corazón en una publicación o sigue a un publicante para verlo aquí.')}</div>
     </section>`);
   }
 
@@ -8009,7 +8010,7 @@ ${esc(shortDiagnosticText(diag))}</code>
         <button class="small-link" data-nav="/perfil">← Volver al Perfil</button>
         <h1>Admin</h1>
         <p>El acceso admin no está activo en este navegador.</p>
-        <div class="local-note">Abre la app con <strong>?v=6465&admin=media#admin</strong> para activar el panel de piloto.</div>
+        <div class="local-note">Abre la app con <strong>?v=6466&admin=media#admin</strong> para activar el panel de piloto.</div>
       </section>`);
     }
 
@@ -8261,7 +8262,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       if(state.route === '/publicar') setupFrameTouchEditor();
     }catch(error){
       console.error('[Conecta] Error de render', error);
-      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6465 o recarga.</p><button class="big-button" onclick="location.href='/?v=6465'">Recargar app</button></section></main>`;
+      if(app) app.innerHTML = `<main class="app-page"><section class="panel"><h1>Conecta Servicios</h1><p>La app se protegió de una pantalla en blanco. Abre con ?v=6466 o recarga.</p><button class="big-button" onclick="location.href='/?v=6466'">Recargar app</button></section></main>`;
     }
   }
 
@@ -8745,7 +8746,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     const id = gallery.dataset.gallery;
     const total = Number(gallery.dataset.galleryTotal || gallery.querySelectorAll('img').length || 1);
     const width = Math.max(1, gallery.clientWidth);
-    // v6.4.65: el carrusel es manual. La foto activa se toma del scroll real del usuario,
+    // v6.4.66: el carrusel es manual. La foto activa se toma del scroll real del usuario,
     // no de un dato guardado que pueda moverlo o dejarlo avanzando solo.
     const index = Math.min(total - 1, Math.max(0, Math.round(gallery.scrollLeft / width)));
     gallery.dataset.galleryIndex = String(index);
@@ -8881,7 +8882,7 @@ ${esc(shortDiagnosticText(diag))}</code>
         endSwipe(e);
       }, {passive:false});
 
-      // v6.4.65: también permitir swipe desde la parte baja sombreada de la publicación.
+      // v6.4.66: también permitir swipe desde la parte baja sombreada de la publicación.
       // Antes el usuario solo podía deslizar arriba de la información; ahora puede iniciar el gesto en texto/overlay,
       // excepto sobre botones y controles.
       if(bodySurface && bodySurface.dataset.galleryBodyBound !== '1'){
@@ -8925,7 +8926,7 @@ ${esc(shortDiagnosticText(diag))}</code>
         }, {passive:false});
       }
 
-      // v6.4.65: no iniciar ni mover el carrusel automáticamente.
+      // v6.4.66: no iniciar ni mover el carrusel automáticamente.
       // Solo se coloca sin animación en el último índice conocido del usuario.
       const initialIndex = Math.min(total() - 1, Math.max(0, activeGalleryIndex(id)));
       gallery.dataset.galleryIndex = String(initialIndex);
@@ -9060,12 +9061,26 @@ ${esc(shortDiagnosticText(diag))}</code>
 
   function likePost(id){
     const postId = String(id || '');
+    const post = state.posts.find(p => String(p.id) === postId);
     const cur = likedPostIds().map(String);
     const already = cur.includes(postId);
     const next = already ? cur.filter(x => x !== postId) : [...cur, postId];
     set(K.likedPosts, next);
+
+    // v6.4.66: dar corazón también sigue al publicante.
+    // Así en "Siguiendo" no aparece el mensaje de "Todavía no sigues cuentas"
+    // cuando el usuario ya marcó una publicación con corazón.
+    let followedNow = false;
+    if(!already && post?.ownerId && post.ownerId !== userId()){
+      const currentFollows = follows().map(String);
+      if(!currentFollows.includes(String(post.ownerId))){
+        set(K.follows, [...currentFollows, String(post.ownerId)]);
+        followedNow = true;
+      }
+    }
+
     saveLocalPosts(state.posts.map(p => String(p.id) === postId ? {...p, reactions:Math.max(0,(p.reactions||0)+(already?-1:1))} : p));
-    toast(already ? 'Quitado de Para ti.' : 'Agregado a Para ti.');
+    toast(already ? 'Quitado de Para ti.' : (followedNow ? 'Agregado a Para ti y ahora sigues al publicante.' : 'Agregado a Para ti.'));
     render();
   }
   function toggleFollow(ownerId){ if(ownerId===userId()) return toast('Esta publicación es tuya.'); const cur=follows(); const next=cur.includes(ownerId)?cur.filter(id=>id!==ownerId):[...cur,ownerId]; set(K.follows,next); toast(cur.includes(ownerId)?'Dejaste de seguir.':'Ahora lo sigues.'); render(); }
@@ -9093,7 +9108,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function applyProfileToVisiblePosts(options={}){
-    // v6.4.65: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
+    // v6.4.66: esta función queda segura. Ya no cambia ownerId ni reclama publicaciones visibles.
     // Solo actualiza nombre/foto de publicaciones que ya son realmente del usuario actual.
     const prof = profile();
     const ownVisible = filteredAll().filter(p => !isDeleted(p) && !isSeed(p) && p.ownerId === userId());
@@ -9811,7 +9826,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
       const end = e => {
         const p = pointers.get(e.pointerId);
-        // v6.4.65: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
+        // v6.4.66: el encuadre directo solo usa un dedo para mover y pellizco para tamaño.
         // Se desactiva doble toque para no interferir con el uso normal de la publicación.
 
         if(pointers.has(e.pointerId)) pointers.delete(e.pointerId);
