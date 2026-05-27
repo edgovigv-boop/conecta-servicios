@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import ChunkLoadRecoveryBoundary from '../components/ChunkLoadRecoveryBoundary';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -14,11 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body>
-        <ChunkLoadRecoveryBoundary>
-          {children}
-        </ChunkLoadRecoveryBoundary>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
