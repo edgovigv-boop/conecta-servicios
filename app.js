@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.77-render-no-borra-app
+/* Conecta Servicios v6.4.80-safe-post-card
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.77-render-no-borra-app';
+  const VERSION = 'v6.4.80-safe-post-card';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2489,7 +2489,7 @@
         display:none !important;
       }
 
-      /* v6.4.77-render-no-borra-app: bloque consolidado de Home/postCard.
+      /* v6.4.80-safe-post-card: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2822,7 +2822,7 @@
         min-height:48px;
       }
 
-      /* v6.4.77-render-no-borra-app */
+      /* v6.4.80-safe-post-card */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5600,7 +5600,7 @@
 
 
 
-      /* v6.4.77-render-no-borra-app
+      /* v6.4.80-safe-post-card
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6031,7 +6031,7 @@
 
 
 
-      /* v6.4.77-render-no-borra-app
+      /* v6.4.80-safe-post-card
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -6943,7 +6943,19 @@
     const subtitle = searching ? searchResultText() : (state.cloudReady ? 'Publicaciones disponibles' : 'También funciona sin conexión');
     return `<div><h1>${esc(title)}</h1><p>${esc(subtitle)}</p></div>${state.syncing?'<span class="sync-pill">Actualizando...</span>':(state.filter!=='ALL'||state.query?'<button class="small-link" data-clear>Todo</button>':'')}`;
   }
-  function feedMarkup(){ const posts=filteredPosts(); return posts.map(postCard).join('') || emptyState('No encontré publicaciones','Prueba otra búsqueda o publica algo con el botón +.'); }
+  function feedMarkup(){
+    try{
+      const posts=filteredPosts();
+      const cards = posts.map(safePostCard).filter(Boolean).join('');
+      return cards || emptyState('No encontré publicaciones','Prueba otra búsqueda o publica algo con el botón +.');
+    }catch(error){
+      console.warn('[Conecta] feedMarkup recuperado', error);
+      try{ set('cs_v6480_last_feed_error', {message:error?.message || String(error), stack:String(error?.stack || '').slice(0,600), at:new Date().toISOString()}); }catch{}
+      const fallbackPosts = (Array.isArray(state.posts) ? state.posts : []).slice(0,20);
+      const cards = fallbackPosts.map(safePostCard).filter(Boolean).join('');
+      return cards || emptyState('Cargando publicaciones','Vuelve a Inicio o recarga la app.');
+    }
+  }
   function updateFeedOnly(){ const feed=document.getElementById('feed'); if(feed) feed.innerHTML=feedMarkup(); const title=document.getElementById('feedTitle'); if(title) title.innerHTML=feedTitleMarkup(); bindDynamicFeedControls(); setupInternalVideos(); setupGalleries(); }
   function serviceAreaText(post){
     return String(post?.serviceArea || post?.coverageArea || post?.zone || '').trim();
@@ -7511,7 +7523,59 @@
     toast(single ? 'Quedó una sola foto.' : 'Foto quitada.');
   }
 
-  function postCard(post){
+  
+  function minimalSafePostCard(post={}, error=null){
+    const p = post && typeof post === 'object' ? post : {};
+    const id = String(p.id || uid('safe-post'));
+    const title = String(p.title || p.description || 'Publicación disponible').slice(0, 120);
+    const description = String(p.description || p.details || p.content || 'Toca mensaje para pedir información.').slice(0, 180);
+    const category = normalizeCategory(p.category || 'OFREZCO');
+    const zone = serviceAreaText(p) || p.zone || 'Tu zona';
+    const owner = String(p.ownerName || 'Usuario local').trim() || 'Usuario local';
+    const media = (() => {
+      try { return resolveMedia(p) || ''; } catch { return String(p.mediaUrl || ''); }
+    })();
+
+    try{
+      console.warn('[Conecta] Tarjeta omitió datos dañados', error, id);
+      set('cs_v6480_last_bad_post', {
+        id,
+        title,
+        message: error?.message || String(error || ''),
+        stack: String(error?.stack || '').slice(0, 600),
+        at: new Date().toISOString()
+      });
+    }catch{}
+
+    return `<article class="post-card safe-post-card" data-post-card="${esc(id)}">
+      <div class="media-area">
+        ${media ? `<img class="framed-media" style="object-fit:cover;object-position:center;" src="${esc(media)}" alt="${esc(title)}">` : '<div class="no-media">Conecta Servicios</div>'}
+        <div class="media-top"><span class="chip ${categoryClass(category)}">${esc(category)}</span></div>
+      </div>
+      <div class="post-body">
+        <div class="owner-row"><div class="avatar-fallback">${esc(owner.slice(0,1).toUpperCase())}</div><span>${esc(owner)}</span></div>
+        <div class="service-area-row">📍 Atiende en: <strong>${esc(String(zone))}</strong></div>
+        <h2>${esc(title)}</h2>
+        <div class="post-description-short">${esc(description)}</div>
+        <div class="post-action-row">
+          <button type="button" class="icon-only-action heart-action ${heartClass(id)}" data-like="${esc(id)}" aria-label="Preferir" title="Para ti">${heartIcon(id)}</button>
+          <button type="button" class="icon-only-action" data-message="${esc(id)}" aria-label="Mensaje" title="Mensaje">✉️</button>
+          <button type="button" class="icon-only-action" data-share="${esc(id)}" aria-label="Compartir" title="Compartir">↗️</button>
+        </div>
+        <div class="local-note">Esta tarjeta fue recuperada porque tenía datos incompatibles.</div>
+      </div>
+    </article>`;
+  }
+
+  function safePostCard(post){
+    try{
+      return postCard(post);
+    }catch(error){
+      return minimalSafePostCard(post, error);
+    }
+  }
+
+function postCard(post){
     post = normalizePost(post);
     const ownerPost = isMeId(post.ownerId);
     const adminFramePost = !ownerPost && adminFrameMode();
@@ -7591,7 +7655,7 @@
       </div>
       ${summary.isMe && !vendo.length ? '<div class="local-note">Publica algo en categoría VENDO para empezar tu tienda.</div>' : ''}
     </section>
-    <section class="feed store-feed">${vendo.map(postCard).join('') || emptyState('Esta tienda aún no tiene productos','Cuando publique en VENDO, aparecerá aquí.')}</section>
+    <section class="feed store-feed">${vendo.map(safePostCard).join('') || emptyState('Esta tienda aún no tiene productos','Cuando publique en VENDO, aparecerá aquí.')}</section>
     ${suggestions.length ? `<section class="panel owner-directory"><h2>Otras tiendas locales</h2><div class="owner-list">${suggestions.map(s => ownerCard(s)).join('')}</div></section>` : ''}`);
   }
 
@@ -7610,7 +7674,7 @@
       <h2>Guardados para ti</h2>
       <p>Publicaciones marcadas con corazón.</p>
     </section>
-    <section class="feed following-liked-feed">${liked.map(postCard).join('') || emptyState('Todavía no guardas publicaciones','Toca el corazón en una publicación para verla aquí.')}</section>
+    <section class="feed following-liked-feed">${liked.map(safePostCard).join('') || emptyState('Todavía no guardas publicaciones','Toca el corazón en una publicación para verla aquí.')}</section>
     <section class="panel owner-directory">
       <h2>Cuentas que sigues</h2>
       <div class="owner-list">${summaries.map(s => ownerCard(s)).join('') || emptyState('Todavía no sigues cuentas','Cuando sigas a un publicante, aparecerá aquí.')}</div>
@@ -7671,7 +7735,7 @@ ${esc(shortDiagnosticText(diag))}</code>
         </div>
         <button type="button" data-nav="/confianza">Ver</button>
       </div>
-    </section>${diagnosticsPanel()}<section class="feed">${mine.map(postCard).join('')||emptyState('No has publicado','Toca + para crear tu primera publicación.')}</section>`);
+    </section>${diagnosticsPanel()}<section class="feed">${mine.map(safePostCard).join('')||emptyState('No has publicado','Toca + para crear tu primera publicación.')}</section>`);
   }
 
   function confidencePage(){
