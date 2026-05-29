@@ -1,5 +1,5 @@
-/* Conecta Servicios v6.4.81 */
-const CACHE_NAME = 'conecta-servicios-v6-4-81-profile-null-safe';
+/* Conecta Servicios v6.4.82 */
+const CACHE_NAME = 'conecta-servicios-v6-4-82-admin-gestion-completa';
 const STATIC_ASSETS = [
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
@@ -33,6 +33,7 @@ self.addEventListener('fetch', event => {
     url.pathname.endsWith('/manifest.json') ||
     url.pathname.endsWith('/service-worker.js') ||
     url.pathname.endsWith('/limpiar-cache.html') ||
+    url.pathname.endsWith('/activar-admin.html') ||
     url.pathname.startsWith('/api/');
 
   if(noCache){

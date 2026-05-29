@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.81-profile-null-safe
+/* Conecta Servicios v6.4.82-admin-gestion-completa
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.81-profile-null-safe';
+  const VERSION = 'v6.4.82-admin-gestion-completa';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2494,7 +2494,7 @@
         display:none !important;
       }
 
-      /* v6.4.81-profile-null-safe: bloque consolidado de Home/postCard.
+      /* v6.4.82-admin-gestion-completa: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2827,7 +2827,7 @@
         min-height:48px;
       }
 
-      /* v6.4.81-profile-null-safe */
+      /* v6.4.82-admin-gestion-completa */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5605,7 +5605,7 @@
 
 
 
-      /* v6.4.81-profile-null-safe
+      /* v6.4.82-admin-gestion-completa
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6036,7 +6036,7 @@
 
 
 
-      /* v6.4.81-profile-null-safe
+      /* v6.4.82-admin-gestion-completa
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -7175,7 +7175,7 @@
 
   function startDirectEdit(postId){
     const post = state.posts.find(p => String(p.id) === String(postId));
-    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes editar tus publicaciones.');
+    if(!post || !canFramePostAsAdmin(post)) return toast('Solo puedes editar publicaciones propias o activar modo admin.');
     state.directFramePostId = '';
     state.directMediaPostId = '';
     state.directEditPostId = String(postId);
@@ -7282,7 +7282,7 @@
 
   function startDirectMedia(postId){
     const post = state.posts.find(p => String(p.id) === String(postId));
-    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes cambiar multimedia de tus publicaciones.');
+    if(!post || !canFramePostAsAdmin(post)) return toast('Solo puedes cambiar multimedia propia o activar modo admin.');
     state.directFramePostId = '';
     state.directEditPostId = '';
     state.directMediaPostId = String(postId);
@@ -7303,7 +7303,7 @@
 
   function pickDirectMedia(postId, mode='replace'){
     const post = state.posts.find(p => String(p.id) === String(postId));
-    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes cambiar multimedia de tus publicaciones.');
+    if(!post || !canFramePostAsAdmin(post)) return toast('Solo puedes cambiar multimedia propia o activar modo admin.');
     state.directMediaPostId = String(postId);
     state.directMediaMode = mode;
     const picker = document.getElementById('directMediaPicker');
@@ -7450,7 +7450,7 @@
 
     const postId = state.directMediaPostId;
     const post = state.posts.find(p => String(p.id) === String(postId));
-    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes cambiar multimedia de tus publicaciones.');
+    if(!post || !canFramePostAsAdmin(post)) return toast('Solo puedes cambiar multimedia propia o activar modo admin.');
 
     try{
       state.directMediaSaving = true;
@@ -7494,7 +7494,7 @@
 
   function removeDirectMediaItem(postId, index){
     const post = state.posts.find(p => String(p.id) === String(postId));
-    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes cambiar multimedia de tus publicaciones.');
+    if(!post || !canFramePostAsAdmin(post)) return toast('Solo puedes cambiar multimedia propia o activar modo admin.');
     const items = directMediaItemsForPost(post).filter(item => String(item.mediaType || 'image').toLowerCase() !== 'video');
     if(items.length <= 1) return toast('Deja al menos una foto o usa Cambiar todo.');
     const nextItems = items.filter((_, i) => i !== Number(index));
@@ -7584,10 +7584,11 @@ function postCard(post){
     post = normalizePost(post);
     const ownerPost = isMeId(post.ownerId);
     const adminFramePost = !ownerPost && adminFrameMode();
-    const own = ownerPost;
+    const adminManagePost = !ownerPost && adminFrameMode();
+    const own = ownerPost || adminManagePost;
     const pending = isVideoPost(post) && !post.mediaUrl;
     const expandedDesc = isDescriptionExpanded(post.id);
-    const canFrameDirect = (ownerPost || adminFramePost) && !pending && !!resolveMedia(post);
+    const canFrameDirect = (ownerPost || adminFramePost || adminManagePost) && !pending && !!resolveMedia(post);
     const directFrameActive = state.directFramePostId === post.id;
     const directEditActive = state.directEditPostId === post.id;
     const directMediaActive = state.directMediaPostId === post.id;
@@ -8382,7 +8383,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     state.directFramePostId = '';
     state.directMediaPostId = '';
     const post = state.posts.find(x=>x.id===id);
-    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes editar tus publicaciones.');
+    if(!post || !canFramePostAsAdmin(post)) return toast('Solo puedes editar publicaciones propias o activar modo admin.');
     state.editing = {...post};
     state.composerId = post.id;
     state.preview = resolveMedia(post);
@@ -8399,7 +8400,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
   async function deletePost(id){
     const post = state.posts.find(x=>x.id===id);
-    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes borrar tus publicaciones.');
+    if(!post || !canFramePostAsAdmin(post)) return toast('Solo puedes borrar publicaciones propias o activar modo admin.');
     if(!confirm('¿Borrar esta publicación?')) return;
 
     const tombstone = normalizePost({...post, status:'eliminada', cloudStatus:'publica', deletedAt:new Date().toISOString(), updatedAt:new Date().toISOString()});
@@ -9290,7 +9291,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
   async function saveDirectFrame(postId){
     const post = state.posts.find(p => String(p.id) === String(postId));
-    if(!post || !isMeId(post.ownerId)) return toast('Solo puedes guardar tus publicaciones.');
+    if(!post || !canFramePostAsAdmin(post)) return toast('Solo puedes guardar publicaciones propias o activar modo admin.');
     state.directFrameSaving = true;
     render();
     const updated = normalizePost({...post, updatedAt:new Date().toISOString(), cloudStatus: post.cloudStatus || 'publica'});
