@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.82-admin-gestion-completa
+/* Conecta Servicios v6.4.83-bandeja-global-mensajes-admin
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.82-admin-gestion-completa';
+  const VERSION = 'v6.4.83-bandeja-global-mensajes-admin';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -252,10 +252,24 @@
   }
 
   async function fetchMessagesForIdentity(params={}){
-    const aliases = identityAliases();
+    const adminInbox = adminFrameMode();
     const map = new Map();
     let lastError = null;
 
+    if(adminInbox){
+      try{
+        const list = await fetchPublicMessages({...params, admin:'1', all:'1', t:Date.now()});
+        (Array.isArray(list) ? list : []).forEach(m => {
+          if(m && m.id) map.set(m.id, {...m, adminVisible:true});
+        });
+      }catch(error){
+        lastError = error;
+      }
+      if(!map.size && lastError) throw lastError;
+      return [...map.values()].sort((a,b)=>new Date(a.createdAt||0)-new Date(b.createdAt||0));
+    }
+
+    const aliases = identityAliases();
     for(const id of aliases){
       try{
         const list = await fetchPublicMessages({...params, userId:id, t:Date.now()});
@@ -2494,7 +2508,7 @@
         display:none !important;
       }
 
-      /* v6.4.82-admin-gestion-completa: bloque consolidado de Home/postCard.
+      /* v6.4.83-bandeja-global-mensajes-admin: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2827,7 +2841,7 @@
         min-height:48px;
       }
 
-      /* v6.4.82-admin-gestion-completa */
+      /* v6.4.83-bandeja-global-mensajes-admin */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5605,7 +5619,7 @@
 
 
 
-      /* v6.4.82-admin-gestion-completa
+      /* v6.4.83-bandeja-global-mensajes-admin
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6036,7 +6050,7 @@
 
 
 
-      /* v6.4.82-admin-gestion-completa
+      /* v6.4.83-bandeja-global-mensajes-admin
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -8834,8 +8848,19 @@ ${esc(shortDiagnosticText(diag))}</code>
     return changed;
   }
 
+  function adminThreadKeyForMessage(m){
+    const postId = String(m?.postId || '');
+    const a = String(m?.senderId || '');
+    const b = String(m?.receiverId || '');
+    const pair = [a,b].sort().join('::');
+    return `admin::${postId}::${pair || m?.id || ''}`;
+  }
+
   function chatMatchesMessage(m, chat=state.chat){
     if(!m || !chat) return false;
+    if(adminFrameMode() && chat.adminThreadKey){
+      return adminThreadKeyForMessage(m) === chat.adminThreadKey;
+    }
     return (m.postId||'') === (chat.postId||'') &&
       ((isMeId(m.senderId) && m.receiverId === chat.peerId) || (m.senderId === chat.peerId && isMeId(m.receiverId)));
   }
@@ -8926,19 +8951,20 @@ ${esc(shortDiagnosticText(diag))}</code>
 
   function messageVisibleCard(m){
     const me = userId();
-    const incoming = m.receiverId === me && m.senderId !== me;
-    const peerId = incoming ? m.senderId : m.receiverId;
-    const peerName = incoming ? (m.senderName || 'Usuario local') : (m.receiverName || 'Usuario local');
-    const direction = incoming ? 'Recibido' : 'Enviado';
+    const admin = adminFrameMode();
+    const incoming = admin ? true : (m.receiverId === me && m.senderId !== me);
+    const peerId = admin ? (m.senderId && !isMeId(m.senderId) ? m.senderId : (m.receiverId || m.senderId || '')) : (incoming ? m.senderId : m.receiverId);
+    const peerName = admin ? `${m.senderName || 'Usuario'} → ${m.receiverName || 'Usuario'}` : (incoming ? (m.senderName || 'Usuario local') : (m.receiverName || 'Usuario local'));
+    const direction = admin ? 'Admin' : (incoming ? 'Recibido' : 'Enviado');
     return `<article class="message-visible-card ${incoming ? 'incoming' : 'outgoing'}">
       <div class="message-visible-head">
-        <span class="message-visible-badge">${incoming ? '📩' : '↗️'} ${direction}</span>
+        <span class="message-visible-badge">${admin ? '🛡️' : (incoming ? '📩' : '↗️')} ${direction}</span>
         <small>${esc(shortDateTime(m.createdAt))}</small>
       </div>
       <strong>${esc(peerName || 'Usuario local')}</strong>
       <em>${esc(m.postTitle || 'Publicación')}</em>
       <p>${esc(m.text || '')}</p>
-      <button type="button" class="reply-visible-btn" data-open-chat="1" data-post="${esc(m.postId||'')}" data-peer="${esc(peerId||'')}" data-title="${esc(m.postTitle||'Publicación')}" data-name="${esc(peerName || 'Usuario local')}">Responder</button>
+      <button type="button" class="reply-visible-btn" data-open-chat="1" data-post="${esc(m.postId||'')}" data-peer="${esc(peerId||'')}" data-title="${esc(m.postTitle||'Publicación')}" data-name="${esc(peerName || 'Usuario local')}" data-admin-thread="${esc(admin ? adminThreadKeyForMessage(m) : '')}" data-admin-sender="${esc(m.senderId || '')}" data-admin-receiver="${esc(m.receiverId || '')}">Responder</button>
     </article>`;
   }
 
@@ -8978,30 +9004,43 @@ ${esc(shortDiagnosticText(diag))}</code>
 
   function conversationGroups(list){
     const map = new Map();
+    const admin = adminFrameMode();
 
     (list || []).forEach(m => {
       if(!m || !m.id) return;
 
-      const incoming = isMeId(m.receiverId) && !isMeId(m.senderId);
-      const outgoing = isMeId(m.senderId) && !isMeId(m.receiverId);
-      if(!incoming && !outgoing) return;
-
-      const peerId = incoming ? m.senderId : m.receiverId;
-      const peerName = incoming ? (m.senderName || 'Usuario local') : (m.receiverName || 'Usuario local');
+      let incoming = false;
+      let outgoing = false;
+      let peerId = '';
+      let peerName = '';
+      let key = '';
+      let adminThreadKey = '';
+      let adminSenderId = '';
+      let adminReceiverId = '';
       const postId = m.postId || '';
-      const key = `${postId}::${peerId || ''}`;
+
+      if(admin){
+        adminThreadKey = adminThreadKeyForMessage(m);
+        adminSenderId = m.senderId || '';
+        adminReceiverId = m.receiverId || '';
+        key = adminThreadKey;
+        incoming = !isMeId(m.senderId);
+        outgoing = isMeId(m.senderId);
+        peerId = m.senderId && !isMeId(m.senderId) ? m.senderId : (m.receiverId || m.senderId || '');
+        peerName = m.senderName && !isMeId(m.senderId) ? m.senderName : (m.receiverName || m.senderName || 'Usuario local');
+      }else{
+        incoming = isMeId(m.receiverId) && !isMeId(m.senderId);
+        outgoing = isMeId(m.senderId) && !isMeId(m.receiverId);
+        if(!incoming && !outgoing) return;
+        peerId = incoming ? m.senderId : m.receiverId;
+        peerName = incoming ? (m.senderName || 'Usuario local') : (m.receiverName || 'Usuario local');
+        key = `${postId}::${peerId || ''}`;
+      }
+
       const prev = map.get(key) || {
-        key,
-        postId,
-        postTitle: m.postTitle || 'Publicación',
-        peerId,
-        peerName,
-        messages: [],
-        incoming: 0,
-        outgoing: 0,
-        unread: 0,
-        lastText: '',
-        lastAt: ''
+        key, postId, postTitle: m.postTitle || 'Publicación', peerId, peerName,
+        messages: [], incoming: 0, outgoing: 0, unread: 0, lastText: '', lastAt: '',
+        adminThreadKey, adminSenderId, adminReceiverId, adminMode: admin
       };
 
       const nextMessages = [...prev.messages, m].sort((a,b)=>new Date(a.createdAt||0)-new Date(b.createdAt||0));
@@ -9016,7 +9055,11 @@ ${esc(shortDiagnosticText(diag))}</code>
         outgoing: prev.outgoing + (outgoing ? 1 : 0),
         unread: prev.unread + (incoming && !state.readMessageIds.has(m.id) ? 1 : 0),
         lastText: last.text || '',
-        lastAt: last.createdAt || ''
+        lastAt: last.createdAt || '',
+        adminThreadKey,
+        adminSenderId,
+        adminReceiverId,
+        adminMode: admin
       });
     });
 
@@ -9027,8 +9070,8 @@ ${esc(shortDiagnosticText(diag))}</code>
     const unread = item.unread || 0;
     const count = item.messages?.length || item.count || 0;
     const last = item.lastText || '';
-    return `<button class="conversation-card stable-conversation-card ${unread?'has-unread':''}" data-open-chat="1" data-post="${esc(item.postId)}" data-peer="${esc(item.peerId)}" data-title="${esc(item.postTitle)}" data-name="${esc(item.peerName)}">
-      <div class="conversation-avatar">${unread ? '📩' : '💬'}</div>
+    return `<button class="conversation-card stable-conversation-card ${unread?'has-unread':''}" data-open-chat="1" data-post="${esc(item.postId)}" data-peer="${esc(item.peerId)}" data-title="${esc(item.postTitle)}" data-name="${esc(item.peerName)}" data-admin-thread="${esc(item.adminThreadKey || '')}" data-admin-sender="${esc(item.adminSenderId || '')}" data-admin-receiver="${esc(item.adminReceiverId || '')}">
+      <div class="conversation-avatar">${item.adminMode ? '🛡️' : (unread ? '📩' : '💬')}</div>
       <div class="conversation-main">
         <div class="conversation-line">
           <strong>${esc(item.peerName || 'Usuario local')}</strong>
@@ -9036,7 +9079,7 @@ ${esc(shortDiagnosticText(diag))}</code>
         </div>
         <em>${esc(item.postTitle || 'Publicación')}</em>
         <p>${esc(last)}</p>
-        <span class="conversation-mini">${count} mensaje${count===1?'':'s'} · ${item.incoming || 0} recibido${(item.incoming||0)===1?'':'s'}</span>
+        <span class="conversation-mini">${item.adminMode ? 'Admin · ' : ''}${count} mensaje${count===1?'':'s'} · ${item.incoming || 0} recibido${(item.incoming||0)===1?'':'s'}</span>
       </div>
       ${unread ? `<span class="conversation-count unread">${unread>99?'99+':unread}</span>` : '<span class="conversation-chevron">›</span>'}
     </button>`;
@@ -9062,6 +9105,7 @@ ${esc(shortDiagnosticText(diag))}</code>
 
   function messagesPage(){
     const activeUserId = userId();
+    const adminInbox = adminFrameMode();
     const stale = Date.now() - (state.messagesLastFetchedAt || 0) > 2500;
     if(!state.messagesLoading && (!state.messagesLoaded || state.messagesUserId !== activeUserId || stale)){
       loadMessagesForInbox({silent:state.messagesLoaded && state.messagesUserId === activeUserId});
@@ -9073,13 +9117,14 @@ ${esc(shortDiagnosticText(diag))}</code>
 
     return shell(`<section class="panel messages-panel">
       <h1>Mensajes</h1>
-      <p>Aquí aparecen las conversaciones de tus publicaciones.</p>
+      <p>${adminInbox ? 'Modo admin: aquí aparecen conversaciones globales de publicaciones.' : 'Aquí aparecen las conversaciones de tus publicaciones.'}</p>
+      ${adminInbox ? '<div class="local-note">🛡️ Bandeja global admin activa en este celular.</div>' : ''}
       <div class="message-toolbar">
-        <button type="button" class="small-link refresh-messages-btn" data-refresh-messages>Actualizar mensajes</button>
+        <button type="button" class="small-link refresh-messages-btn" data-refresh-messages>${adminInbox ? 'Actualizar bandeja admin' : 'Actualizar mensajes'}</button>
         <small>${state.messagesLoading ? 'Cargando...' : `${state.messagesLastCount || 0} mensajes · ${esc(lastFetch)}`}</small>
       </div>
       <div class="message-debug-mini">
-        <small>Este celular: <strong>${esc(activeUserId.slice(-10))}</strong> · IDs: ${identityAliases().length}</small>
+        <small>Este celular: <strong>${esc(activeUserId.slice(-10))}</strong> · IDs: ${identityAliases().length}${adminInbox ? ' · admin global' : ''}</small>
         <small>API: ${state.messagesError ? 'con error' : (state.messagesLoaded ? 'cargada' : 'pendiente')}</small>
       </div>
       ${state.messagesError ? `<div class="local-note">${esc(state.messagesError)}</div>` : ''}
@@ -9100,7 +9145,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     return shell(`<section class="panel chat-panel">
       <div class="chat-topbar">
         <button class="back-btn" data-nav="/mensajes">←</button>
-        <div><h1>${esc(chat.peerName || 'Usuario local')}</h1><small>${esc(chat.postTitle || 'Publicación')} · ${state.chatMessages.length || 0} mensaje${state.chatMessages.length===1?'':'s'}</small></div>
+        <div><h1>${esc(chat.peerName || 'Usuario local')}</h1><small>${adminFrameMode() && chat.adminThreadKey ? 'Admin · ' : ''}${esc(chat.postTitle || 'Publicación')} · ${state.chatMessages.length || 0} mensaje${state.chatMessages.length===1?'':'s'}</small></div>
         <button type="button" class="chat-refresh-btn" data-refresh-chat>Actualizar</button>
       </div>
       <div class="chat-feed" id="chatFeed">${state.chatLoading ? '<div class="empty compact-empty"><strong>Cargando...</strong></div>' : ''}${state.chatMessages.map(chatBubble).join('') || (!state.chatLoading ? '<div class="empty compact-empty"><strong>Empieza la conversación</strong></div>' : '')}</div>
@@ -9124,7 +9169,15 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
 
   function openChatFromConversation(button){
-    const chat = {postId:button.dataset.post||'', postTitle:button.dataset.title||'Publicación', peerId:button.dataset.peer||'', peerName:button.dataset.name||'Usuario local'};
+    const chat = {
+      postId:button.dataset.post||'',
+      postTitle:button.dataset.title||'Publicación',
+      peerId:button.dataset.peer||'',
+      peerName:button.dataset.name||'Usuario local',
+      adminThreadKey:button.dataset.adminThread || '',
+      adminSenderId:button.dataset.adminSender || '',
+      adminReceiverId:button.dataset.adminReceiver || ''
+    };
     state.chat = chat;
     state.chatMessages = (state.publicMessages || []).filter(m => chatMatchesMessage(m, chat)).sort((a,b)=>new Date(a.createdAt||0)-new Date(b.createdAt||0));
     state.chatLoaded = state.chatMessages.length > 0;
