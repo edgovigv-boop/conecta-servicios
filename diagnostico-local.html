@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1d4ed8" />
+  <title>Diagnóstico local · Conecta Servicios</title>
+  <style>
+    :root{
+      --blue:#1d4ed8;
+      --ink:#111827;
+      --muted:#6b7280;
+      --bg:#f8fafc;
+      --card:#fff;
+      --bad:#dc2626;
+      --ok:#16a34a;
+      --warn:#d97706;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100dvh;
+      background:linear-gradient(180deg,#f8fafc,#eef2ff);
+      color:var(--ink);
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      padding:18px;
+    }
+    main{max-width:720px;margin:0 auto;padding-bottom:40px}
+    .card{
+      background:var(--card);
+      border-radius:22px;
+      padding:18px;
+      box-shadow:0 16px 40px rgba(15,23,42,.12);
+      margin:12px 0;
+      border:1px solid rgba(148,163,184,.22);
+    }
+    h1{margin:0 0 6px;font-size:26px;line-height:1.1}
+    h2{margin:0 0 8px;font-size:19px}
+    p{color:var(--muted);line-height:1.45;margin:6px 0 12px}
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:7px 11px;
+      border-radius:999px;
+      font-weight:900;
+      font-size:13px;
+      margin:3px 5px 3px 0;
+      background:#e5e7eb;
+    }
+    .ok{background:#dcfce7;color:#166534}
+    .warn{background:#fef3c7;color:#92400e}
+    .bad{background:#fee2e2;color:#991b1b}
+    .grid{display:grid;gap:8px}
+    .row{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      padding:10px 0;
+      border-bottom:1px solid #e5e7eb;
+      align-items:flex-start;
+    }
+    .row:last-child{border-bottom:0}
+    .row strong{font-size:14px}
+    .row span{font-size:13px;color:#374151;text-align:right;word-break:break-word;max-width:60%}
+    pre{
+      white-space:pre-wrap;
+      word-break:break-word;
+      background:#0f172a;
+      color:#e5e7eb;
+      border-radius:16px;
+      padding:14px;
+      font-size:12px;
+      line-height:1.4;
+      max-height:300px;
+      overflow:auto;
+    }
+    button,a.button{
+      width:100%;
+      min-height:50px;
+      border:0;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-decoration:none;
+      background:linear-gradient(135deg,#1d4ed8,#312e81);
+      color:white;
+      font-weight:900;
+      font-size:15px;
+      margin-top:9px;
+      padding:0 14px;
+    }
+    button.secondary{background:#e5e7eb;color:#111827}
+    button.warnbtn{background:#f59e0b;color:#111827}
+    button.danger{background:#dc2626;color:#fff}
+    small{display:block;color:#6b7280;line-height:1.35;margin-top:8px}
+    .hidden{display:none}
+  </style>
+</head>
+<body>
+<main>
+  <section class="card">
+    <h1>Diagnóstico local</h1>
+    <p>Esta página no modifica Supabase ni borra publicaciones de la nube. Solo revisa datos guardados en este navegador/celular.</p>
+    <div id="summary"></div>
+    <a class="button" href="/?v=6480&fresh=1">Entrar a Conecta Servicios</a>
+  </section>
+
+  <section class="card">
+    <h2>Resultado rápido</h2>
+    <div id="quick"></div>
+  </section>
+
+  <section class="card">
+    <h2>Datos revisados</h2>
+    <div id="details" class="grid"></div>
+  </section>
+
+  <section class="card">
+    <h2>Acciones seguras para este celular</h2>
+    <p>Úsalas solo si este celular entra a tarjetas recuperadas, se congela en Siguiendo, Mensajes o Perfil.</p>
+    <button type="button" id="copy">Copiar diagnóstico</button>
+    <button type="button" class="secondary" id="cleanErrors">Limpiar solo errores temporales</button>
+    <button type="button" class="warnbtn" id="cleanProfileAvatar">Quitar foto de perfil local pesada</button>
+    <button type="button" class="warnbtn" id="cleanLocalPosts">Limpiar datos locales pesados de publicaciones</button>
+    <button type="button" class="warnbtn" id="cleanFollowing">Limpiar favoritos/seguidos locales</button>
+    <small>Estas acciones afectan solo este navegador. No eliminan publicaciones de Supabase.</small>
+  </section>
+
+  <section class="card">
+    <h2>Reporte completo</h2>
+    <pre id="report"></pre>
+  </section>
+</main>
+
+<script>
+(() => {
+  const KEYS = {
+    posts:'cs_v634_posts',
+    user:'cs_v634_user',
+    follows:'cs_v634_follows',
+    profile:'cs_v634_profile',
+    profileBackup:'conecta_profile_backup_v1',
+    profileBackup2:'cs_profile_backup_v1',
+    composer:'cs_v634_composer',
+    seenMessages:'cs_v639_seen_messages',
+    readMessages:'cs_v6310_read_messages',
+    deletedPosts:'cs_v6322_deleted_posts',
+    likedPosts:'cs_v6330_liked_posts',
+    municipality:'cs_v6330_municipality'
+  };
+
+  const tempKeys = [
+    'cs_v6480_last_bad_post',
+    'cs_v6480_last_feed_error',
+    'cs_v6477_last_visual_error',
+    'cs_v6477_last_route_error',
+    'cs_v6475_last_safe_mode_error',
+    'cs_v6474_last_render_error',
+    'cs_v6474_last_card_error'
+  ];
+
+  const $ = id => document.getElementById(id);
+
+  function safeParse(key, fallback){
+    try{
+      const raw = localStorage.getItem(key);
+      if(!raw) return fallback;
+      return JSON.parse(raw);
+    }catch(error){
+      return fallback;
+    }
+  }
+
+  function byteLen(value){
+    try{return new Blob([typeof value === 'string' ? value : JSON.stringify(value)]).size;}catch{return 0;}
+  }
+
+  function isUnsafeString(value){
+    const s = String(value || '').trim().toLowerCase();
+    return s.startsWith('data:') || s.startsWith('blob:') || s.startsWith('file:') || s.startsWith('filesystem:');
+  }
+
+  function walk(value, path = [], out = []){
+    if(value === null || value === undefined) return out;
+    if(typeof value === 'string'){
+      if(isUnsafeString(value) || value.length > 12000){
+        out.push({path:path.join('.') || 'root', length:value.length, starts:value.slice(0,40)});
+      }
+      return out;
+    }
+    if(typeof value !== 'object') return out;
+    if(Array.isArray(value)){
+      value.forEach((item, index) => walk(item, [...path, String(index)], out));
+      return out;
+    }
+    Object.entries(value).forEach(([key, val]) => walk(val, [...path, key], out));
+    return out;
+  }
+
+  function sanitizeObject(value){
+    if(value === null || value === undefined) return value;
+    if(typeof value === 'string'){
+      if(isUnsafeString(value) || value.length > 12000) return '';
+      return value;
+    }
+    if(typeof value !== 'object') return value;
+    if(Array.isArray(value)) return value.map(sanitizeObject).filter(Boolean);
+    const blocked = new Set(['mediaData','mediaBase64','mediaBlob','rawFile','localFile','file','fileData','previewData','imageData','videoData','thumbnailData','ownerAvatarData']);
+    const out = {};
+    for(const [key,val] of Object.entries(value)){
+      if(blocked.has(key)) continue;
+      out[key] = sanitizeObject(val);
+    }
+    return out;
+  }
+
+  function collect(){
+    const posts = safeParse(KEYS.posts, []);
+    const profile = safeParse(KEYS.profile, {});
+    const liked = safeParse(KEYS.likedPosts, []);
+    const follows = safeParse(KEYS.follows, []);
+    const composer = safeParse(KEYS.composer, null);
+    const seen = safeParse(KEYS.seenMessages, []);
+    const read = safeParse(KEYS.readMessages, []);
+    const localStorageBytes = Object.keys(localStorage).reduce((sum,key)=>sum + byteLen(localStorage.getItem(key) || ''), 0);
+
+    const postRisks = walk(posts);
+    const profileRisks = walk(profile);
+    const composerRisks = walk(composer);
+
+    const lastBadPost = safeParse('cs_v6480_last_bad_post', null);
+    const lastFeedError = safeParse('cs_v6480_last_feed_error', null);
+    const lastVisualError = safeParse('cs_v6477_last_visual_error', null);
+    const lastRouteError = safeParse('cs_v6477_last_route_error', null);
+
+    return {
+      at:new Date().toISOString(),
+      href:location.href,
+      ua:navigator.userAgent,
+      localStorageBytes,
+      serviceWorkerControlled:!!navigator.serviceWorker?.controller,
+      userId:String(localStorage.getItem(KEYS.user) || '').slice(-16),
+      counts:{
+        posts:Array.isArray(posts) ? posts.length : 0,
+        liked:Array.isArray(liked) ? liked.length : 0,
+        follows:Array.isArray(follows) ? follows.length : 0,
+        seenMessages:Array.isArray(seen) ? seen.length : 0,
+        readMessages:Array.isArray(read) ? read.length : 0
+      },
+      profile:{
+        bytes:byteLen(profile),
+        hasAvatarData:!!profile.avatarData,
+        avatarLength:String(profile.avatarData || '').length,
+        risks:profileRisks.slice(0,20)
+      },
+      posts:{
+        bytes:byteLen(posts),
+        risks:postRisks.slice(0,30),
+        largest:Array.isArray(posts) ? posts.map(p=>({
+          id:p && p.id,
+          title:p && p.title,
+          bytes:byteLen(p),
+          hasMediaData:!!(p && p.mediaData),
+          hasPreview:!!(p && p.mediaPreviewUrl),
+          mediaItems:Array.isArray(p && p.mediaItems) ? p.mediaItems.length : 0
+        })).sort((a,b)=>b.bytes-a.bytes).slice(0,10) : []
+      },
+      composer:{
+        bytes:byteLen(composer),
+        risks:composerRisks.slice(0,20)
+      },
+      errors:{
+        lastBadPost,
+        lastFeedError,
+        lastVisualError,
+        lastRouteError
+      }
+    };
+  }
+
+  let report = collect();
+
+  function pill(text, type){
+    return `<span class="pill ${type || ''}">${text}</span>`;
+  }
+
+  function render(){
+    const risks = report.posts.risks.length + report.profile.risks.length + report.composer.risks.length;
+    const errorCount = Object.values(report.errors).filter(Boolean).length;
+
+    $('summary').innerHTML = [
+      pill(`Publicaciones locales: ${report.counts.posts}`, 'ok'),
+      pill(`Favoritos: ${report.counts.liked}`, report.counts.liked ? 'warn' : ''),
+      pill(`Riesgos: ${risks}`, risks ? 'bad' : 'ok'),
+      pill(`Errores guardados: ${errorCount}`, errorCount ? 'warn' : 'ok')
+    ].join('');
+
+    const quick = [];
+    if(report.profile.hasAvatarData && report.profile.avatarLength > 12000){
+      quick.push(pill('Perfil con avatar local pesado', 'bad'));
+    }
+    if(report.posts.risks.length){
+      quick.push(pill('Publicaciones locales con data/blob/base64', 'bad'));
+    }
+    if(report.counts.liked || report.counts.follows){
+      quick.push(pill('Siguiendo depende de datos locales', 'warn'));
+    }
+    if(report.errors.lastBadPost){
+      quick.push(pill('Hay tarjeta recuperada registrada', 'warn'));
+    }
+    if(!quick.length) quick.push(pill('No se detectó riesgo local fuerte', 'ok'));
+    $('quick').innerHTML = quick.join('');
+
+    const rows = [
+      ['Navegador controlado por Service Worker', report.serviceWorkerControlled ? 'Sí' : 'No'],
+      ['Tamaño localStorage', `${Math.round(report.localStorageBytes/1024)} KB`],
+      ['Perfil avatarData', report.profile.hasAvatarData ? `${report.profile.avatarLength} caracteres` : 'No'],
+      ['Riesgos en perfil', report.profile.risks.length],
+      ['Riesgos en publicaciones locales', report.posts.risks.length],
+      ['Riesgos en borrador/publicación actual', report.composer.risks.length],
+      ['Última tarjeta recuperada', report.errors.lastBadPost ? `${report.errors.lastBadPost.id || ''} ${report.errors.lastBadPost.title || ''}` : 'No registrada'],
+      ['Último error de feed', report.errors.lastFeedError ? report.errors.lastFeedError.message : 'No registrado']
+    ];
+
+    $('details').innerHTML = rows.map(([a,b]) => `<div class="row"><strong>${a}</strong><span>${String(b)}</span></div>`).join('');
+    $('report').textContent = JSON.stringify(report, null, 2);
+  }
+
+  function refresh(){
+    report = collect();
+    render();
+  }
+
+  async function copy(){
+    const text = JSON.stringify(report, null, 2);
+    try{
+      await navigator.clipboard.writeText(text);
+      alert('Diagnóstico copiado.');
+    }catch{
+      prompt('Copia este diagnóstico:', text);
+    }
+  }
+
+  function cleanTempErrors(){
+    tempKeys.forEach(key => localStorage.removeItem(key));
+    refresh();
+    alert('Errores temporales limpiados en este celular.');
+  }
+
+  function cleanProfileAvatar(){
+    const profile = safeParse(KEYS.profile, {});
+    if(profile && typeof profile === 'object'){
+      profile.avatarData = '';
+      localStorage.setItem(KEYS.profile, JSON.stringify(profile));
+    }
+    refresh();
+    alert('Foto de perfil local pesada quitada en este celular. No se tocó Supabase.');
+  }
+
+  function cleanLocalPosts(){
+    const posts = safeParse(KEYS.posts, []);
+    if(Array.isArray(posts)){
+      const cleaned = posts.map(sanitizeObject);
+      localStorage.setItem(KEYS.posts, JSON.stringify(cleaned));
+    }
+    const composer = safeParse(KEYS.composer, null);
+    if(composer) localStorage.setItem(KEYS.composer, JSON.stringify(sanitizeObject(composer)));
+    refresh();
+    alert('Datos locales pesados de publicaciones limpiados en este celular. No se tocó Supabase.');
+  }
+
+  function cleanFollowing(){
+    localStorage.setItem(KEYS.likedPosts, JSON.stringify([]));
+    localStorage.setItem(KEYS.follows, JSON.stringify([]));
+    refresh();
+    alert('Favoritos y seguidos locales limpiados en este celular. No se tocó Supabase.');
+  }
+
+  $('copy').onclick = copy;
+  $('cleanErrors').onclick = cleanTempErrors;
+  $('cleanProfileAvatar').onclick = cleanProfileAvatar;
+  $('cleanLocalPosts').onclick = cleanLocalPosts;
+  $('cleanFollowing').onclick = cleanFollowing;
+
+  render();
+})();
+</script>
+</body>
+</html>
