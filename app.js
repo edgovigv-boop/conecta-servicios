@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.83-bandeja-global-mensajes-admin
+/* Conecta Servicios v6.4.84-admin-sin-contaminar-usuario
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.83-bandeja-global-mensajes-admin';
+  const VERSION = 'v6.4.84-admin-sin-contaminar-usuario';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -77,6 +77,8 @@
     messagesUserId: '',
     messagesLastFetchedAt: 0,
     messagesLastCount: 0,
+    messagesPostFilter: '',
+    messagesPostTitle: '',
     chat: null,
     chatMessages: [],
     chatLoading: false,
@@ -2508,7 +2510,7 @@
         display:none !important;
       }
 
-      /* v6.4.83-bandeja-global-mensajes-admin: bloque consolidado de Home/postCard.
+      /* v6.4.84-admin-sin-contaminar-usuario: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2841,7 +2843,7 @@
         min-height:48px;
       }
 
-      /* v6.4.83-bandeja-global-mensajes-admin */
+      /* v6.4.84-admin-sin-contaminar-usuario */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5619,7 +5621,7 @@
 
 
 
-      /* v6.4.83-bandeja-global-mensajes-admin
+      /* v6.4.84-admin-sin-contaminar-usuario
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6050,7 +6052,7 @@
 
 
 
-      /* v6.4.83-bandeja-global-mensajes-admin
+      /* v6.4.84-admin-sin-contaminar-usuario
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -7653,6 +7655,30 @@ function postCard(post){
   }
 
   function storePage(){
+    const adminStore = adminFrameMode() && !state.storeOwnerId;
+    if(adminStore){
+      const vendoAll = filteredAll().filter(p => !isDeleted(p) && normalizeCategory(p.category) === 'VENDO');
+      const suggestionsAll = allOwnerSummaries().filter(s => s.vendo > 0).slice(0, 10);
+      return shell(`<section class="panel store-panel">
+        <button class="small-link" data-nav="/">← Volver al Home</button>
+        <div class="store-hero">
+          <div class="store-avatar">🛒</div>
+          <div>
+            <p class="store-kicker">Modo admin</p>
+            <h1>Tienda global</h1>
+            <p>Publicaciones VENDO visibles para revisar productos sin depender del userId local de este celular.</p>
+          </div>
+        </div>
+        <div class="store-stats">
+          <span><strong>${vendoAll.length}</strong> en venta</span>
+          <span><strong>${suggestionsAll.length}</strong> cuentas</span>
+          <span><strong>Admin</strong> activo</span>
+        </div>
+      </section>
+      <section class="feed store-feed">${vendoAll.map(safePostCard).join('') || emptyState('No hay productos VENDO','Cuando alguien publique en VENDO, aparecerá aquí.')}</section>
+      ${suggestionsAll.length ? `<section class="panel owner-directory"><h2>Tiendas locales</h2><div class="owner-list">${suggestionsAll.map(s => ownerCard(s)).join('')}</div></section>` : ''}`);
+    }
+
     const ownerId = state.storeOwnerId || userId();
     const summary = ownerSummary(ownerId);
     const vendo = ownerVendoPosts(ownerId);
@@ -7730,11 +7756,13 @@ ${esc(shortDiagnosticText(diag))}</code>
 
   function profilePage(){
     const prof=profile();
-    const mine=myPosts();
+    const adminProfile = adminFrameMode();
+    const mine = adminProfile ? filteredAll().filter(p => !isDeleted(p) && !isSeed(p)) : myPosts();
     const avatar = prof.avatarData || '';
     return shell(`<section class="panel profile-panel">
       <h1>Perfil</h1>
-      <p>Guarda tu nombre visible y foto de perfil. Esa imagen aparecerá como anunciante en tus publicaciones.</p>
+      <p>${adminProfile ? 'Modo admin activo: este perfil es local de este celular, pero abajo puedes revisar publicaciones administrables.' : 'Guarda tu nombre visible y foto de perfil. Esa imagen aparecerá como anunciante en tus publicaciones.'}</p>
+      ${adminProfile ? '<div class="local-note">🛡️ Admin activo. No se mezclan identidades: “Usuario local” es solo el perfil de este navegador.</div>' : ''}
       <div class="profile-avatar-editor">
         <button class="profile-avatar-button" type="button" data-pick-profile-photo>${avatar ? `<img src="${esc(avatar)}" alt="Foto de perfil">` : '👤'}</button>
         <div>
@@ -7747,7 +7775,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       <label>Nombre visible</label>
       <input id="profileName" type="text" inputmode="text" autocomplete="off" autocapitalize="words" value="${esc(prof.name||'Usuario local')}" placeholder="Tu nombre o negocio">
       <button class="big-button" data-save-profile>Guardar perfil</button>
-      <div class="profile-grid"><div class="stat"><strong>${mine.length}</strong><span>Publicaciones</span></div><div class="stat"><strong>${follows().length}</strong><span>Siguiendo</span></div><div class="stat"><strong>${unreadCount()}</strong><span>Sin leer</span></div></div>
+      <div class="profile-grid"><div class="stat"><strong>${mine.length}</strong><span>${adminProfile ? 'Administrables' : 'Publicaciones'}</span></div><div class="stat"><strong>${follows().length}</strong><span>Siguiendo</span></div><div class="stat"><strong>${unreadCount()}</strong><span>Sin leer</span></div></div>
       <div class="trust-entry-card">
         <div>
           <strong>Privacidad y seguridad</strong>
@@ -7755,7 +7783,7 @@ ${esc(shortDiagnosticText(diag))}</code>
         </div>
         <button type="button" data-nav="/confianza">Ver</button>
       </div>
-    </section>${diagnosticsPanel()}<section class="feed">${mine.map(safePostCard).join('')||emptyState('No has publicado','Toca + para crear tu primera publicación.')}</section>`);
+    </section>${diagnosticsPanel()}<section class="feed">${mine.map(safePostCard).join('')||emptyState(adminProfile ? 'No hay publicaciones administrables' : 'No has publicado', adminProfile ? 'Cuando haya publicaciones visibles, aparecerán aquí.' : 'Toca + para crear tu primera publicación.')}</section>`);
   }
 
   function confidencePage(){
@@ -7968,6 +7996,14 @@ ${esc(shortDiagnosticText(diag))}</code>
     return route === '/' ? base.replace(/#.*/, '') : `${base.replace(/#.*/, '')}#${route.replace(/^\//,'')}`;
   }
   function nav(route, options={}){
+    if(route === '/mensajes' && !options.keepMessageFilter){
+      state.messagesPostFilter = '';
+      state.messagesPostTitle = '';
+    }
+    if(route !== '/mensajes' && route !== '/chat' && !options.keepMessageFilter){
+      state.messagesPostFilter = '';
+      state.messagesPostTitle = '';
+    }
     state.route = route;
     if(route !== '/publicar' && !state.publishing) state.editing = null;
     if(options.push !== false && history.pushState){
@@ -9085,17 +9121,27 @@ ${esc(shortDiagnosticText(diag))}</code>
     </button>`;
   }
 
+  function messagesScopedList(){
+    const all = state.publicMessages || [];
+    const filter = String(state.messagesPostFilter || '');
+    return filter ? all.filter(m => String(m?.postId || '') === filter) : all;
+  }
+
   function conversationListMarkup(){
-    const groups = conversationGroups(state.publicMessages || []);
+    const scoped = messagesScopedList();
+    const groups = conversationGroups(scoped);
     if(!groups.length) return '';
     return `<div class="conversation-section">
-      <h2>Conversaciones</h2>
+      <h2>${state.messagesPostFilter ? 'Conversaciones de esta publicación' : 'Conversaciones'}</h2>
       <div class="list conversation-list">${groups.map(conversationCard).join('')}</div>
     </div>`;
   }
 
   function directMessagesBackupMarkup(){
+    const original = state.publicMessages;
+    state.publicMessages = messagesScopedList();
     const direct = messageVisibleList();
+    state.publicMessages = original;
     if(!direct) return '';
     return `<details class="message-backup-details">
       <summary>Ver mensajes individuales</summary>
@@ -9114,11 +9160,14 @@ ${esc(shortDiagnosticText(diag))}</code>
     const lastFetch = state.messagesLastFetchedAt ? shortTime(state.messagesLastFetchedAt) : 'sin cargar';
     const conversations = conversationListMarkup();
     const backup = directMessagesBackupMarkup();
+    const filteredPost = !!state.messagesPostFilter;
+    const filteredPostTitle = state.messagesPostTitle || 'esta publicación';
 
     return shell(`<section class="panel messages-panel">
       <h1>Mensajes</h1>
-      <p>${adminInbox ? 'Modo admin: aquí aparecen conversaciones globales de publicaciones.' : 'Aquí aparecen las conversaciones de tus publicaciones.'}</p>
-      ${adminInbox ? '<div class="local-note">🛡️ Bandeja global admin activa en este celular.</div>' : ''}
+      <p>${filteredPost ? `Viendo solo conversaciones de: ${esc(filteredPostTitle)}` : (adminInbox ? 'Modo admin: aquí aparecen conversaciones globales de publicaciones.' : 'Aquí aparecen las conversaciones de tus publicaciones.')}</p>
+      ${adminInbox && !filteredPost ? '<div class="local-note">🛡️ Bandeja global admin activa en este celular.</div>' : ''}
+      ${filteredPost ? '<div class="local-note">Filtro por publicación activo. <button type="button" class="small-link" data-clear-message-filter>Ver todas las conversaciones</button></div>' : ''}
       <div class="message-toolbar">
         <button type="button" class="small-link refresh-messages-btn" data-refresh-messages>${adminInbox ? 'Actualizar bandeja admin' : 'Actualizar mensajes'}</button>
         <small>${state.messagesLoading ? 'Cargando...' : `${state.messagesLastCount || 0} mensajes · ${esc(lastFetch)}`}</small>
@@ -9156,9 +9205,11 @@ ${esc(shortDiagnosticText(diag))}</code>
   function openChat(postId){
     const p = state.posts.find(x=>x.id===postId);
     if(!p) return;
-    if(isMeId(p.ownerId)){
-      toast('Esta publicación es tuya. Revisa Mensajes para responder.');
-      nav('/mensajes');
+    if(isMeId(p.ownerId) || adminFrameMode()){
+      state.messagesPostFilter = p.id;
+      state.messagesPostTitle = p.title || 'Publicación';
+      toast('Mostrando mensajes de esta publicación.');
+      nav('/mensajes', {keepMessageFilter:true});
       return;
     }
     state.chat = {postId:p.id, postTitle:p.title || 'Publicación', peerId:p.ownerId, peerName:p.ownerName || 'Usuario local'};
@@ -9559,6 +9610,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     });
     setupInternalVideos();
     setupGalleries();
+    document.querySelectorAll('[data-clear-message-filter]').forEach(b=>b.onclick=()=>{state.messagesPostFilter='';state.messagesPostTitle='';render();});
     document.querySelectorAll('[data-open-chat]').forEach(b=>b.onclick=()=>openChatFromConversation(b));
     document.querySelectorAll('[data-send-chat]').forEach(b=>b.onclick=sendChatMessage);
     document.querySelectorAll('[data-refresh-chat]').forEach(b=>b.onclick=()=>loadChatMessages({silent:false}));
