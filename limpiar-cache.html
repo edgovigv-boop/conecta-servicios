@@ -17,9 +17,9 @@
 <body>
   <main>
     <h1>Conecta Servicios</h1>
-    <p>Se agregó protección por tarjeta para que una publicación dañada no tumbe el feed.</p>
+    <p>Se agregó protección de perfil para que respaldos locales dañados no tumben el feed ni mensajes.</p>
     <div class="status" id="status">Limpiando versión anterior...</div>
-    <a href="/?v=6480&fresh=1">Entrar a la app</a>
+    <a href="/?v=6481&fresh=1">Entrar a la app</a>
   </main>
   <script>
     async function clean(){
@@ -27,7 +27,7 @@
       try{ if('serviceWorker' in navigator){ const regs=await navigator.serviceWorker.getRegistrations(); await Promise.all(regs.map(r=>r.unregister())); } }catch(e){}
       try{ sessionStorage.clear(); }catch(e){}
       document.getElementById('status').textContent='Listo. Entrando a la app...';
-      setTimeout(()=>location.replace('/?v=6480&fresh='+Date.now()), 1000);
+      setTimeout(()=>location.replace('/?v=6481&fresh='+Date.now()), 1000);
     }
     clean();
   </script>

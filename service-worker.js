@@ -1,5 +1,5 @@
-/* Conecta Servicios v6.4.80 */
-const CACHE_NAME = 'conecta-servicios-v6-4-80-safe-post-card';
+/* Conecta Servicios v6.4.81 */
+const CACHE_NAME = 'conecta-servicios-v6-4-81-profile-null-safe';
 const STATIC_ASSETS = [
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',

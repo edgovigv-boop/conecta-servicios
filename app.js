@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.80-safe-post-card
+/* Conecta Servicios v6.4.81-profile-null-safe
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.80-safe-post-card';
+  const VERSION = 'v6.4.81-profile-null-safe';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -124,6 +124,9 @@
   }
 
   function normalizeProfile(prof={}){
+    // v6.4.81: algunos celulares quedaron con respaldos de perfil en null.
+    // Antes, profileFromBackups().map(normalizeProfile) podía romper al leer prof.name.
+    if(!prof || typeof prof !== 'object') prof = {};
     return {
       name: String(prof.name || '').trim() || 'Usuario local',
       avatarData: String(prof.avatarData || prof.avatar || '').trim(),
@@ -148,7 +151,9 @@
       get(K.profileBackup2, null),
       get(K.profile, null),
       {name: localStorage.getItem('conecta_profile_name_backup') || '', avatarData: localStorage.getItem('conecta_profile_avatar_backup') || ''}
-    ].map(normalizeProfile);
+    ]
+      .filter(item => item && typeof item === 'object')
+      .map(normalizeProfile);
     return candidates.find(isPersonalProfile) || null;
   }
 
@@ -2489,7 +2494,7 @@
         display:none !important;
       }
 
-      /* v6.4.80-safe-post-card: bloque consolidado de Home/postCard.
+      /* v6.4.81-profile-null-safe: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2822,7 +2827,7 @@
         min-height:48px;
       }
 
-      /* v6.4.80-safe-post-card */
+      /* v6.4.81-profile-null-safe */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5600,7 +5605,7 @@
 
 
 
-      /* v6.4.80-safe-post-card
+      /* v6.4.81-profile-null-safe
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6031,7 +6036,7 @@
 
 
 
-      /* v6.4.80-safe-post-card
+      /* v6.4.81-profile-null-safe
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
