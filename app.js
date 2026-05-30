@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.92-carrusel-arriba-y-fondo-limpio
+/* Conecta Servicios v6.5.1-layout-publicacion-limpio
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.92-carrusel-arriba-y-fondo-limpio';
+  const VERSION = 'v6.5.1-layout-publicacion-limpio';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2653,7 +2653,7 @@
         display:none !important;
       }
 
-      /* v6.4.92-carrusel-arriba-y-fondo-limpio: bloque consolidado de Home/postCard.
+      /* v6.5.1-layout-publicacion-limpio: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2986,7 +2986,7 @@
         min-height:48px;
       }
 
-      /* v6.4.92-carrusel-arriba-y-fondo-limpio */
+      /* v6.5.1-layout-publicacion-limpio */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5764,7 +5764,7 @@
 
 
 
-      /* v6.4.92-carrusel-arriba-y-fondo-limpio
+      /* v6.5.1-layout-publicacion-limpio
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6195,7 +6195,7 @@
 
 
 
-      /* v6.4.92-carrusel-arriba-y-fondo-limpio
+      /* v6.5.1-layout-publicacion-limpio
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -7286,6 +7286,336 @@
         }
       }
 
+      /* v6.5.1: layout real limpio de publicación.
+         Jerarquía:
+         post-card
+           media-area  -> imagen/carrusel/video limpio + contador dentro
+           post-body   -> texto normal debajo, sin overlay absoluto */
+      .feed > .post-card,
+      .store-feed > .post-card,
+      .following-liked-feed > .post-card{
+        position:relative !important;
+        display:flex !important;
+        flex-direction:column !important;
+        width:100% !important;
+        height:auto !important;
+        min-height:0 !important;
+        max-height:none !important;
+        margin:0 0 14px 0 !important;
+        padding:0 !important;
+        overflow:visible !important;
+        border-radius:0 !important;
+        background:#f3f4f6 !important;
+        box-shadow:none !important;
+        scroll-margin-top:calc(env(safe-area-inset-top) + 152px) !important;
+      }
+
+      .post-card .media-area{
+        position:relative !important;
+        inset:auto !important;
+        z-index:1 !important;
+        display:block !important;
+        width:100% !important;
+        height:62dvh !important;
+        min-height:390px !important;
+        max-height:620px !important;
+        overflow:hidden !important;
+        border-radius:0 !important;
+        background:#050507 !important;
+        box-shadow:none !important;
+      }
+
+      @supports (height:100svh){
+        .post-card .media-area{
+          height:62svh !important;
+        }
+      }
+
+      .post-card .gallery-stage,
+      .post-card .media-carousel,
+      .post-card .video-inline-wrap,
+      .post-card .direct-frame-single{
+        position:relative !important;
+        width:100% !important;
+        height:100% !important;
+        min-height:100% !important;
+        max-height:100% !important;
+        overflow:hidden !important;
+        background:#050507 !important;
+      }
+
+      .post-card .media-area > img,
+      .post-card .media-area .framed-media,
+      .post-card .media-carousel img,
+      .post-card .video-inline-wrap video,
+      .post-card .media-area video.feed-video-player,
+      .post-card .direct-frame-single img,
+      .post-card .media-area .no-media{
+        width:100% !important;
+        min-width:100% !important;
+        max-width:100% !important;
+        height:100% !important;
+        min-height:100% !important;
+        max-height:100% !important;
+        display:block !important;
+        border-radius:0 !important;
+        background:#050507 !important;
+      }
+
+      .post-card:not(.direct-frame-active) .media-area > img,
+      .post-card:not(.direct-frame-active) .media-carousel img{
+        object-fit:cover !important;
+        object-position:center center !important;
+      }
+
+      .media-area::before,
+      .media-area::after,
+      .gallery-stage::before,
+      .gallery-stage::after,
+      .media-carousel::before,
+      .media-carousel::after{
+        content:none !important;
+        display:none !important;
+        background:none !important;
+        box-shadow:none !important;
+      }
+
+      .post-card .post-body,
+      .post-card.description-open .post-body,
+      .post-card.direct-edit-active .post-body,
+      .post-card.direct-media-active .post-body{
+        position:relative !important;
+        left:auto !important;
+        right:auto !important;
+        top:auto !important;
+        bottom:auto !important;
+        z-index:2 !important;
+        display:block !important;
+        box-sizing:border-box !important;
+        width:100% !important;
+        min-height:0 !important;
+        max-height:none !important;
+        overflow:visible !important;
+        padding:14px 16px calc(env(safe-area-inset-bottom) + 104px) 16px !important;
+        border-radius:0 !important;
+        background:#ffffff !important;
+        background-image:none !important;
+        color:#111827 !important;
+        box-shadow:none !important;
+        backdrop-filter:none !important;
+        pointer-events:auto !important;
+      }
+
+      .post-card.direct-frame-active .post-body{
+        display:none !important;
+      }
+
+      .media-gallery-counter{
+        position:absolute !important;
+        right:10px !important;
+        bottom:10px !important;
+        left:auto !important;
+        top:auto !important;
+        transform:none !important;
+        z-index:120 !important;
+        display:inline-flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        gap:5px !important;
+        min-width:76px !important;
+        height:30px !important;
+        padding:3px 9px !important;
+        border-radius:999px !important;
+        background:rgba(17,24,39,.52) !important;
+        border:1px solid rgba(255,255,255,.22) !important;
+        color:#fff !important;
+        font-size:12px !important;
+        font-weight:900 !important;
+        line-height:1 !important;
+        letter-spacing:.02em !important;
+        text-shadow:0 1px 5px rgba(0,0,0,.55) !important;
+        backdrop-filter:blur(8px) !important;
+        pointer-events:none !important;
+      }
+
+      .media-gallery-counter .gallery-counter-text{
+        min-width:auto !important;
+        color:#fff !important;
+        font-size:12px !important;
+        font-weight:900 !important;
+        line-height:1 !important;
+        text-align:center !important;
+      }
+
+      .media-gallery-counter .gallery-counter-arrow{
+        color:rgba(255,255,255,.92) !important;
+        font-size:15px !important;
+        line-height:1 !important;
+        font-weight:900 !important;
+      }
+
+      .post-body .gallery-dots,
+      .post-body-gallery-dots,
+      .gallery-dots.gallery-counter,
+      .post-body-gallery-dots.gallery-counter{
+        display:none !important;
+      }
+
+      .post-body .owner-row,
+      .post-body .service-area-row,
+      .post-body h2,
+      .post-body p,
+      .post-body .post-meta,
+      .post-description-short,
+      .post-description-collapsed,
+      .post-description-expanded{
+        color:#111827 !important;
+        text-shadow:none !important;
+      }
+
+      .post-body .owner-row{
+        display:inline-flex !important;
+        margin:0 0 8px !important;
+      }
+
+      .post-body .service-area-row{
+        display:inline-flex !important;
+        width:auto !important;
+        max-width:100% !important;
+        margin:2px 0 8px !important;
+        padding:7px 10px !important;
+        border-radius:999px !important;
+        background:#f3f4f6 !important;
+        border:1px solid #e5e7eb !important;
+        color:#374151 !important;
+        backdrop-filter:none !important;
+        box-shadow:none !important;
+      }
+
+      .post-body h2{
+        margin:4px 0 6px !important;
+        font-size:20px !important;
+        line-height:1.12 !important;
+        font-weight:950 !important;
+      }
+
+      .post-description-short,
+      .post-description-collapsed,
+      .post-description-expanded,
+      .post-body p{
+        color:#374151 !important;
+        font-size:15px !important;
+        line-height:1.32 !important;
+      }
+
+      .post-card:not(.description-open) .post-description-short,
+      .post-card:not(.description-open) .post-description-collapsed,
+      .post-card:not(.description-open) .post-body p{
+        max-height:3.9em !important;
+        overflow:hidden !important;
+      }
+
+      .post-card.description-open .post-description-expanded{
+        max-height:none !important;
+        overflow:visible !important;
+        padding:0 !important;
+        margin:0 !important;
+        background:transparent !important;
+        border-radius:0 !important;
+        color:#374151 !important;
+        backdrop-filter:none !important;
+      }
+
+      .post-body .post-meta{
+        margin-top:8px !important;
+        color:#6b7280 !important;
+        font-size:12px !important;
+        text-align:right !important;
+      }
+
+      .post-body .post-action-row{
+        margin-top:12px !important;
+        display:grid !important;
+        grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+        gap:10px !important;
+        width:100% !important;
+      }
+
+      .post-body .post-action-row button{
+        min-height:48px !important;
+        border-radius:18px !important;
+        background:#f3f4f6 !important;
+        border:1px solid #e5e7eb !important;
+        color:#1f2937 !important;
+        box-shadow:none !important;
+      }
+
+      .post-body .heart-action.is-liked,
+      .post-body .heart-action.active{
+        background:#1D4ED8 !important;
+        color:#fff !important;
+        border-color:#1D4ED8 !important;
+      }
+
+      .post-body .manage-row{
+        position:relative !important;
+        z-index:4 !important;
+        display:grid !important;
+        grid-template-columns:repeat(4, minmax(0, 1fr)) !important;
+        gap:8px !important;
+        margin-top:12px !important;
+        width:100% !important;
+      }
+
+      .post-body .manage-row button{
+        min-height:44px !important;
+        border-radius:14px !important;
+        font-size:13px !important;
+      }
+
+      .media-top{
+        position:absolute !important;
+        top:14px !important;
+        left:14px !important;
+        right:auto !important;
+        bottom:auto !important;
+        z-index:110 !important;
+      }
+
+      .media-top .chip{
+        background:rgba(29,78,216,.92) !important;
+        color:#fff !important;
+        border:0 !important;
+        backdrop-filter:blur(8px) !important;
+      }
+
+      .sound-toggle,
+      .sound-toggle-card{
+        position:absolute !important;
+        right:12px !important;
+        top:54px !important;
+        bottom:auto !important;
+        z-index:130 !important;
+      }
+
+      @media (max-height:720px){
+        .post-card .media-area{
+          height:58dvh !important;
+          min-height:330px !important;
+        }
+        @supports (height:100svh){
+          .post-card .media-area{
+            height:58svh !important;
+          }
+        }
+        .post-card .post-body,
+        .post-card.description-open .post-body,
+        .post-card.direct-edit-active .post-body,
+        .post-card.direct-media-active .post-body{
+          padding-bottom:calc(env(safe-area-inset-bottom) + 92px) !important;
+        }
+      }
+
 `;
     document.head.appendChild(style);
   }
@@ -7504,10 +7834,10 @@
     const imageItems = galleryImageItems(post);
     if(imageItems.length <= 1) return '';
     const active = Math.min(imageItems.length - 1, activeGalleryIndex(post.id));
-    return `<div class="gallery-dots gallery-counter post-body-gallery-dots" data-gallery-dots="${esc(post.id)}" aria-label="Fotos de la publicación">
-      <button type="button" class="gallery-counter-btn" data-gallery-prev="${esc(post.id)}" aria-label="Foto anterior">‹</button>
-      <span class="gallery-counter-text" data-gallery-count="${esc(post.id)}">${active + 1}/${imageItems.length}</span>
-      <button type="button" class="gallery-counter-btn" data-gallery-next="${esc(post.id)}" aria-label="Foto siguiente">›</button>
+    return `<div class="gallery-counter media-gallery-counter" data-gallery-dots="${esc(post.id)}" aria-label="Foto ${active + 1} de ${imageItems.length}">
+      <span class="gallery-counter-arrow" aria-hidden="true">‹</span>
+      <span class="gallery-counter-text" data-gallery-count="${esc(post.id)}">${active + 1} / ${imageItems.length}</span>
+      <span class="gallery-counter-arrow" aria-hidden="true">›</span>
     </div>`;
   }
 
@@ -8006,13 +8336,13 @@ function postCard(post){
     return `<article class="post-card ${expandedDesc ? 'description-open' : ''} ${directFrameActive ? 'direct-frame-active' : ''} ${directEditActive ? 'direct-edit-active' : ''} ${directMediaActive ? 'direct-media-active' : ''}" data-post-card="${esc(post.id)}">
       <div class="media-area ${directFrameActive ? 'direct-frame-area-active' : ''}" ${directFrameActive ? `data-direct-frame-area="${esc(post.id)}"` : ''}>
         ${mediaMarkup(post)}
+        ${galleryDotsMarkup(post)}
         ${pending ? '<div class="media-pending">Video en proceso. La publicación ya está visible.</div>' : ''}
         <div class="media-top"><span class="chip ${categoryClass(post.category)}">${esc(normalizeCategory(post.category))}</span></div>
         ${isVideoPost(post) && post.mediaUrl ? `<button class="sound-toggle-card" type="button" data-toggle-video-sound="${esc(post.id)}" aria-label="Activar sonido">🔇</button>` : ''}
         ${directFrameActive ? `<div class="direct-frame-grid" aria-hidden="true"></div><div class="direct-frame-hint">${isVideoPost(post) ? 'Encuadre de video' : 'Encuadre de multimedia'} · Pellizca tamaño</div><div class="direct-frame-controls"><button type="button" data-direct-frame-save="${esc(post.id)}">${state.directFrameSaving ? 'Guardando...' : 'Guardar y volver'}</button><button type="button" data-direct-frame-cancel="${esc(post.id)}">Cancelar</button></div>` : ''}
       </div>
       <div class="post-body ${expandedDesc ? 'expanded-description-body' : ''}">
-        ${galleryDotsMarkup(post)}
         <div class="owner-row" data-open-store="${esc(post.ownerId)}">${avatarMarkup(postAvatar(post), post.ownerName || 'Usuario local')}<span>${esc(post.ownerName || 'Usuario local')}</span></div>
         ${directEditActive ? directEditMarkup(post) : ''}
         ${directMediaActive ? directMediaMarkup(post) : ''}
@@ -8887,15 +9217,9 @@ ${esc(shortDiagnosticText(diag))}</code>
     });
 
     document.querySelectorAll(`[data-gallery-count="${safe}"]`).forEach(el => {
-      el.textContent = `${index + 1}/${total}`;
-    });
-    document.querySelectorAll(`[data-gallery-prev="${safe}"]`).forEach(el => {
-      el.disabled = index <= 0;
-      el.setAttribute('aria-disabled', index <= 0 ? 'true' : 'false');
-    });
-    document.querySelectorAll(`[data-gallery-next="${safe}"]`).forEach(el => {
-      el.disabled = index >= total - 1;
-      el.setAttribute('aria-disabled', index >= total - 1 ? 'true' : 'false');
+      el.textContent = `${index + 1} / ${total}`;
+      const wrap = el.closest('[data-gallery-dots]');
+      if(wrap) wrap.setAttribute('aria-label', `Foto ${index + 1} de ${total}`);
     });
   }
 
@@ -10169,8 +10493,6 @@ function openChatFromConversation(button){
     document.querySelectorAll('[data-reload-video]').forEach(el=>el.onclick=()=>reloadVideo(el.dataset.reloadVideo));
     document.querySelectorAll('[data-toggle-video-sound]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();toggleVideoSound(el.dataset.toggleVideoSound);});
     document.querySelectorAll('[data-gallery-dot]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();goGallery(el.dataset.galleryDot, el.dataset.galleryIndex);});
-    document.querySelectorAll('[data-gallery-prev]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();stepGallery(el.dataset.galleryPrev, -1);});
-    document.querySelectorAll('[data-gallery-next]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();stepGallery(el.dataset.galleryNext, 1);});
     document.querySelectorAll('[data-toggle-description]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();toggleDescription(el.dataset.toggleDescription);});
     document.querySelectorAll('.post-description-expanded').forEach(el=>{
       el.onclick=e=>e.stopPropagation();
