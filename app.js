@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.91-contador-carrusel-arriba
+/* Conecta Servicios v6.4.92-carrusel-arriba-y-fondo-limpio
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.91-contador-carrusel-arriba';
+  const VERSION = 'v6.4.92-carrusel-arriba-y-fondo-limpio';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2653,7 +2653,7 @@
         display:none !important;
       }
 
-      /* v6.4.91-contador-carrusel-arriba: bloque consolidado de Home/postCard.
+      /* v6.4.92-carrusel-arriba-y-fondo-limpio: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2986,7 +2986,7 @@
         min-height:48px;
       }
 
-      /* v6.4.91-contador-carrusel-arriba */
+      /* v6.4.92-carrusel-arriba-y-fondo-limpio */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5764,7 +5764,7 @@
 
 
 
-      /* v6.4.91-contador-carrusel-arriba
+      /* v6.4.92-carrusel-arriba-y-fondo-limpio
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6195,7 +6195,7 @@
 
 
 
-      /* v6.4.91-contador-carrusel-arriba
+      /* v6.4.92-carrusel-arriba-y-fondo-limpio
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -7192,6 +7192,97 @@
         .gallery-dots.gallery-counter,
         .post-body-gallery-dots.gallery-counter{
           top:calc(env(safe-area-inset-top) + 188px) !important;
+        }
+      }
+
+      /* v6.4.92: contador arriba y fondo de texto limpio */
+      .gallery-dots.gallery-counter,
+      .post-body-gallery-dots.gallery-counter{
+        position:absolute !important;
+        left:50% !important;
+        right:auto !important;
+        top:calc(env(safe-area-inset-top) + 176px) !important;
+        bottom:auto !important;
+        transform:translateX(-50%) !important;
+        width:auto !important;
+        min-width:76px !important;
+        max-width:none !important;
+        height:30px !important;
+        padding:3px 6px !important;
+        gap:5px !important;
+        border-radius:999px !important;
+        background:rgba(0,0,0,.26) !important;
+        border:1px solid rgba(255,255,255,.22) !important;
+        box-shadow:0 8px 20px rgba(0,0,0,.16) !important;
+        backdrop-filter:blur(8px) !important;
+        pointer-events:auto !important;
+        z-index:140 !important;
+      }
+
+      .gallery-counter-text{
+        min-width:34px !important;
+        color:#fff !important;
+        font-size:12px !important;
+        line-height:1 !important;
+        font-weight:900 !important;
+        text-align:center !important;
+        letter-spacing:.02em !important;
+        text-shadow:0 1px 5px rgba(0,0,0,.55) !important;
+      }
+
+      .gallery-counter-btn{
+        width:22px !important;
+        height:22px !important;
+        min-width:22px !important;
+        min-height:22px !important;
+        border-radius:999px !important;
+        border:0 !important;
+        background:rgba(255,255,255,.20) !important;
+        color:#fff !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        font-weight:900 !important;
+        font-size:16px !important;
+        line-height:1 !important;
+        padding:0 !important;
+        pointer-events:auto !important;
+      }
+
+      .gallery-counter-btn:disabled{
+        opacity:.30 !important;
+      }
+
+      .post-body{
+        background:transparent !important;
+        background-image:none !important;
+        box-shadow:none !important;
+        backdrop-filter:none !important;
+      }
+
+      .post-body h2,
+      .post-body p,
+      .post-body .post-meta,
+      .service-area-row,
+      .owner-row{
+        text-shadow:
+          0 2px 8px rgba(0,0,0,.86),
+          0 1px 2px rgba(0,0,0,.88) !important;
+      }
+
+      .post-body .post-description-expanded{
+        background:rgba(0,0,0,.24) !important;
+        border-radius:16px !important;
+        padding:10px 12px !important;
+        backdrop-filter:blur(4px) !important;
+      }
+
+      @media (max-height:720px){
+        .gallery-dots.gallery-counter,
+        .post-body-gallery-dots.gallery-counter{
+          top:calc(env(safe-area-inset-top) + 156px) !important;
+          height:28px !important;
+          min-width:72px !important;
         }
       }
 
