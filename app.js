@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.5.1-layout-publicacion-limpio
+/* Conecta Servicios v6.5.2-feed-inmersivo
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.5.1-layout-publicacion-limpio';
+  const VERSION = 'v6.5.2-feed-inmersivo';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2653,7 +2653,7 @@
         display:none !important;
       }
 
-      /* v6.5.1-layout-publicacion-limpio: bloque consolidado de Home/postCard.
+      /* v6.5.2-feed-inmersivo: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2986,7 +2986,7 @@
         min-height:48px;
       }
 
-      /* v6.5.1-layout-publicacion-limpio */
+      /* v6.5.2-feed-inmersivo */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5764,7 +5764,7 @@
 
 
 
-      /* v6.5.1-layout-publicacion-limpio
+      /* v6.5.2-feed-inmersivo
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6195,7 +6195,7 @@
 
 
 
-      /* v6.5.1-layout-publicacion-limpio
+      /* v6.5.2-feed-inmersivo
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -7616,6 +7616,501 @@
         }
       }
 
+      /* v6.5.2 Feed inmersivo profesional
+         Estructura sin tocar Supabase:
+         article.post-card.immersive-feed-card
+           .media-area       -> multimedia full screen limpia
+           .post-body        -> interfaz flotante, transparente, sobre multimedia
+           .post-action-row  -> acciones laterales de Conecta
+           .bottom-nav       -> barra inferior translúcida */
+      html,
+      body{
+        overscroll-behavior-y:contain !important;
+      }
+
+      .app-shell,
+      main,
+      .feed,
+      .store-feed,
+      .following-liked-feed{
+        background:#050507 !important;
+      }
+
+      .feed,
+      .store-feed,
+      .following-liked-feed{
+        width:100vw !important;
+        max-width:100vw !important;
+        margin:0 !important;
+        padding:0 !important;
+        overflow-x:hidden !important;
+        scroll-snap-type:y mandatory !important;
+        scroll-behavior:smooth !important;
+      }
+
+      .feed > .post-card.immersive-feed-card,
+      .store-feed > .post-card.immersive-feed-card,
+      .following-liked-feed > .post-card.immersive-feed-card{
+        position:relative !important;
+        display:block !important;
+        width:100vw !important;
+        height:100dvh !important;
+        min-height:100dvh !important;
+        max-height:100dvh !important;
+        margin:0 !important;
+        padding:0 !important;
+        overflow:hidden !important;
+        border-radius:0 !important;
+        background:#050507 !important;
+        box-shadow:none !important;
+        scroll-snap-align:start !important;
+        scroll-snap-stop:always !important;
+        scroll-margin-top:0 !important;
+      }
+
+      @supports (height:100svh){
+        .feed > .post-card.immersive-feed-card,
+        .store-feed > .post-card.immersive-feed-card,
+        .following-liked-feed > .post-card.immersive-feed-card{
+          height:100svh !important;
+          min-height:100svh !important;
+          max-height:100svh !important;
+        }
+      }
+
+      .post-card.immersive-feed-card .media-area{
+        position:absolute !important;
+        inset:0 !important;
+        z-index:1 !important;
+        display:block !important;
+        width:100% !important;
+        height:100% !important;
+        min-height:100% !important;
+        max-height:100% !important;
+        overflow:hidden !important;
+        border-radius:0 !important;
+        background:#050507 !important;
+        box-shadow:none !important;
+      }
+
+      .post-card.immersive-feed-card .gallery-stage,
+      .post-card.immersive-feed-card .media-carousel,
+      .post-card.immersive-feed-card .video-inline-wrap,
+      .post-card.immersive-feed-card .direct-frame-single{
+        position:absolute !important;
+        inset:0 !important;
+        width:100% !important;
+        height:100% !important;
+        min-height:100% !important;
+        max-height:100% !important;
+        overflow:hidden !important;
+        background:#050507 !important;
+      }
+
+      .post-card.immersive-feed-card .media-area > img,
+      .post-card.immersive-feed-card .media-area .framed-media,
+      .post-card.immersive-feed-card .media-carousel img,
+      .post-card.immersive-feed-card .video-inline-wrap video,
+      .post-card.immersive-feed-card .media-area video.feed-video-player,
+      .post-card.immersive-feed-card .direct-frame-single img,
+      .post-card.immersive-feed-card .media-area .no-media{
+        width:100% !important;
+        min-width:100% !important;
+        max-width:100% !important;
+        height:100% !important;
+        min-height:100% !important;
+        max-height:100% !important;
+        display:block !important;
+        object-fit:cover !important;
+        object-position:center center !important;
+        border-radius:0 !important;
+        background:#050507 !important;
+      }
+
+      .post-card.immersive-feed-card .media-area::before,
+      .post-card.immersive-feed-card .media-area::after,
+      .post-card.immersive-feed-card .gallery-stage::before,
+      .post-card.immersive-feed-card .gallery-stage::after,
+      .post-card.immersive-feed-card .media-carousel::before,
+      .post-card.immersive-feed-card .media-carousel::after,
+      .post-card.immersive-feed-card .post-body::before,
+      .post-card.immersive-feed-card .post-body::after{
+        content:none !important;
+        display:none !important;
+        background:none !important;
+        box-shadow:none !important;
+      }
+
+      .post-card.immersive-feed-card .post-body,
+      .post-card.immersive-feed-card.description-open .post-body,
+      .post-card.immersive-feed-card.direct-edit-active .post-body,
+      .post-card.immersive-feed-card.direct-media-active .post-body{
+        position:absolute !important;
+        left:0 !important;
+        right:0 !important;
+        top:auto !important;
+        bottom:0 !important;
+        z-index:45 !important;
+        display:block !important;
+        width:100% !important;
+        min-height:0 !important;
+        max-height:none !important;
+        overflow:visible !important;
+        box-sizing:border-box !important;
+        padding:
+          0
+          calc(92px + env(safe-area-inset-right))
+          calc(env(safe-area-inset-bottom) + 112px)
+          calc(18px + env(safe-area-inset-left)) !important;
+        border-radius:0 !important;
+        background:transparent !important;
+        background-image:none !important;
+        box-shadow:none !important;
+        backdrop-filter:none !important;
+        color:#fff !important;
+        pointer-events:none !important;
+      }
+
+      .post-card.immersive-feed-card.direct-frame-active .post-body{
+        display:none !important;
+      }
+
+      .post-card.immersive-feed-card .owner-row,
+      .post-card.immersive-feed-card .service-area-row,
+      .post-card.immersive-feed-card h2,
+      .post-card.immersive-feed-card .post-description-short,
+      .post-card.immersive-feed-card .post-description-collapsed,
+      .post-card.immersive-feed-card .post-description-expanded,
+      .post-card.immersive-feed-card .post-body p,
+      .post-card.immersive-feed-card .post-meta,
+      .post-card.immersive-feed-card .local-note,
+      .post-card.immersive-feed-card .status-label{
+        pointer-events:auto !important;
+      }
+
+      .post-card.immersive-feed-card .owner-row{
+        display:inline-flex !important;
+        align-items:center !important;
+        gap:8px !important;
+        width:auto !important;
+        max-width:calc(100vw - 128px) !important;
+        margin:0 0 8px !important;
+        color:#fff !important;
+        background:transparent !important;
+        text-shadow:0 2px 12px rgba(0,0,0,.72) !important;
+        cursor:pointer !important;
+      }
+
+      .post-card.immersive-feed-card .owner-row span{
+        color:#fff !important;
+        font-weight:900 !important;
+        text-shadow:0 2px 12px rgba(0,0,0,.72) !important;
+      }
+
+      .post-card.immersive-feed-card .owner-row .avatar,
+      .post-card.immersive-feed-card .owner-row img{
+        box-shadow:0 6px 22px rgba(0,0,0,.34) !important;
+        border:2px solid rgba(255,255,255,.82) !important;
+      }
+
+      .post-card.immersive-feed-card .service-area-row{
+        display:inline-flex !important;
+        align-items:center !important;
+        max-width:calc(100vw - 128px) !important;
+        margin:0 0 8px !important;
+        padding:6px 10px !important;
+        border-radius:999px !important;
+        background:rgba(255,255,255,.14) !important;
+        border:1px solid rgba(255,255,255,.20) !important;
+        color:#fff !important;
+        backdrop-filter:blur(10px) !important;
+        -webkit-backdrop-filter:blur(10px) !important;
+        box-shadow:0 8px 24px rgba(0,0,0,.18) !important;
+        text-shadow:0 2px 10px rgba(0,0,0,.72) !important;
+      }
+
+      .post-card.immersive-feed-card .service-area-row strong{
+        color:#fff !important;
+      }
+
+      .post-card.immersive-feed-card h2{
+        max-width:calc(100vw - 128px) !important;
+        margin:4px 0 7px !important;
+        color:#fff !important;
+        font-size:21px !important;
+        line-height:1.1 !important;
+        font-weight:950 !important;
+        letter-spacing:-.02em !important;
+        text-shadow:0 3px 14px rgba(0,0,0,.82), 0 1px 2px rgba(0,0,0,.84) !important;
+      }
+
+      .post-card.immersive-feed-card .post-description-short,
+      .post-card.immersive-feed-card .post-description-collapsed,
+      .post-card.immersive-feed-card .post-description-expanded,
+      .post-card.immersive-feed-card .post-body p{
+        max-width:calc(100vw - 128px) !important;
+        margin:0 !important;
+        color:#fff !important;
+        font-size:15px !important;
+        line-height:1.28 !important;
+        text-shadow:0 2px 12px rgba(0,0,0,.82), 0 1px 2px rgba(0,0,0,.84) !important;
+        background:transparent !important;
+        border-radius:0 !important;
+        padding:0 !important;
+        backdrop-filter:none !important;
+      }
+
+      .post-card.immersive-feed-card:not(.description-open) .post-description-short,
+      .post-card.immersive-feed-card:not(.description-open) .post-description-collapsed,
+      .post-card.immersive-feed-card:not(.description-open) .post-body p{
+        max-height:3.9em !important;
+        overflow:hidden !important;
+      }
+
+      .post-card.immersive-feed-card.description-open .post-description-expanded{
+        max-height:28dvh !important;
+        overflow:auto !important;
+        padding-right:8px !important;
+        -webkit-overflow-scrolling:touch !important;
+      }
+
+      .post-card.immersive-feed-card .post-meta{
+        max-width:calc(100vw - 128px) !important;
+        margin-top:6px !important;
+        color:rgba(255,255,255,.86) !important;
+        font-size:12px !important;
+        text-align:left !important;
+        text-shadow:0 2px 10px rgba(0,0,0,.80) !important;
+      }
+
+      .post-card.immersive-feed-card .post-action-row{
+        position:absolute !important;
+        right:calc(14px + env(safe-area-inset-right)) !important;
+        bottom:calc(env(safe-area-inset-bottom) + 132px) !important;
+        z-index:60 !important;
+        display:flex !important;
+        flex-direction:column !important;
+        align-items:center !important;
+        justify-content:flex-end !important;
+        gap:12px !important;
+        width:auto !important;
+        margin:0 !important;
+        pointer-events:auto !important;
+      }
+
+      .post-card.immersive-feed-card .post-action-row button,
+      .post-card.immersive-feed-card .icon-only-action{
+        width:54px !important;
+        height:54px !important;
+        min-width:54px !important;
+        min-height:54px !important;
+        border-radius:999px !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        padding:0 !important;
+        font-size:24px !important;
+        color:#fff !important;
+        background:rgba(255,255,255,.16) !important;
+        border:1px solid rgba(255,255,255,.24) !important;
+        box-shadow:0 10px 26px rgba(0,0,0,.28) !important;
+        backdrop-filter:blur(12px) !important;
+        -webkit-backdrop-filter:blur(12px) !important;
+        text-shadow:0 2px 8px rgba(0,0,0,.60) !important;
+      }
+
+      .post-card.immersive-feed-card .heart-action.is-liked,
+      .post-card.immersive-feed-card .heart-action.active{
+        background:rgba(29,78,216,.88) !important;
+        color:#fff !important;
+        border-color:rgba(255,255,255,.35) !important;
+      }
+
+      .post-card.immersive-feed-card .manage-row{
+        pointer-events:auto !important;
+        display:flex !important;
+        gap:8px !important;
+        width:calc(100vw - 36px) !important;
+        max-width:calc(100vw - 36px) !important;
+        overflow-x:auto !important;
+        margin:12px 0 0 !important;
+        padding-bottom:4px !important;
+      }
+
+      .post-card.immersive-feed-card .manage-row button{
+        min-width:max-content !important;
+        min-height:42px !important;
+        border-radius:14px !important;
+        padding:0 13px !important;
+        color:#fff !important;
+        background:rgba(29,78,216,.72) !important;
+        border:1px solid rgba(255,255,255,.26) !important;
+        box-shadow:0 10px 22px rgba(0,0,0,.20) !important;
+        backdrop-filter:blur(10px) !important;
+      }
+
+      .post-card.immersive-feed-card .media-top{
+        position:absolute !important;
+        top:calc(env(safe-area-inset-top) + 146px) !important;
+        left:calc(16px + env(safe-area-inset-left)) !important;
+        right:auto !important;
+        bottom:auto !important;
+        z-index:45 !important;
+        pointer-events:none !important;
+      }
+
+      .post-card.immersive-feed-card .media-top .chip{
+        color:#fff !important;
+        background:rgba(29,78,216,.82) !important;
+        border:1px solid rgba(255,255,255,.25) !important;
+        box-shadow:0 8px 22px rgba(0,0,0,.20) !important;
+        backdrop-filter:blur(10px) !important;
+        text-shadow:0 2px 10px rgba(0,0,0,.55) !important;
+      }
+
+      .post-card.immersive-feed-card .media-gallery-counter{
+        position:absolute !important;
+        right:calc(14px + env(safe-area-inset-right)) !important;
+        top:calc(env(safe-area-inset-top) + 146px) !important;
+        bottom:auto !important;
+        left:auto !important;
+        transform:none !important;
+        z-index:50 !important;
+        display:inline-flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        gap:6px !important;
+        width:auto !important;
+        min-width:74px !important;
+        height:30px !important;
+        padding:3px 9px !important;
+        border-radius:999px !important;
+        background:rgba(17,24,39,.34) !important;
+        border:1px solid rgba(255,255,255,.18) !important;
+        color:#fff !important;
+        font-size:12px !important;
+        font-weight:900 !important;
+        line-height:1 !important;
+        backdrop-filter:blur(10px) !important;
+        -webkit-backdrop-filter:blur(10px) !important;
+        box-shadow:0 8px 20px rgba(0,0,0,.18) !important;
+        text-shadow:0 1px 5px rgba(0,0,0,.55) !important;
+        pointer-events:none !important;
+      }
+
+      .post-card.immersive-feed-card .media-gallery-counter .gallery-counter-arrow,
+      .post-card.immersive-feed-card .media-gallery-counter .gallery-counter-text{
+        color:#fff !important;
+        font-size:12px !important;
+        font-weight:900 !important;
+      }
+
+      .post-card.immersive-feed-card .sound-toggle,
+      .post-card.immersive-feed-card .sound-toggle-card{
+        position:absolute !important;
+        right:calc(14px + env(safe-area-inset-right)) !important;
+        top:calc(env(safe-area-inset-top) + 188px) !important;
+        bottom:auto !important;
+        z-index:55 !important;
+        width:44px !important;
+        height:44px !important;
+        border-radius:999px !important;
+        background:rgba(255,255,255,.16) !important;
+        border:1px solid rgba(255,255,255,.24) !important;
+        color:#fff !important;
+        box-shadow:0 10px 26px rgba(0,0,0,.26) !important;
+        backdrop-filter:blur(12px) !important;
+      }
+
+      .glass-top,
+      .glass-top.visual-top,
+      .glass-top.tiktok-top{
+        position:fixed !important;
+        top:0 !important;
+        left:0 !important;
+        right:0 !important;
+        z-index:90 !important;
+        background:rgba(5,5,7,.18) !important;
+        background-image:none !important;
+        border:0 !important;
+        box-shadow:none !important;
+        backdrop-filter:blur(14px) saturate(1.15) !important;
+        -webkit-backdrop-filter:blur(14px) saturate(1.15) !important;
+      }
+
+      .floating-filter-bar,
+      .floating-zone,
+      .floating-icon,
+      .visual-tab,
+      .tiktok-filter-row,
+      .tiktok-tabs{
+        backdrop-filter:blur(12px) !important;
+        -webkit-backdrop-filter:blur(12px) !important;
+      }
+
+      .bottom-nav{
+        position:fixed !important;
+        left:14px !important;
+        right:14px !important;
+        bottom:calc(env(safe-area-inset-bottom) + 8px) !important;
+        z-index:95 !important;
+        height:70px !important;
+        min-height:70px !important;
+        padding:6px 9px !important;
+        border-radius:28px !important;
+        background:rgba(255,255,255,.18) !important;
+        border:1px solid rgba(255,255,255,.24) !important;
+        backdrop-filter:blur(18px) saturate(1.18) !important;
+        -webkit-backdrop-filter:blur(18px) saturate(1.18) !important;
+        box-shadow:0 14px 34px rgba(0,0,0,.24) !important;
+      }
+
+      .bottom-nav .nav-item,
+      .bottom-nav .nav-item small,
+      .bottom-nav .nav-icon{
+        color:#fff !important;
+        text-shadow:0 2px 10px rgba(0,0,0,.65) !important;
+      }
+
+      .bottom-nav .nav-plus{
+        width:58px !important;
+        height:58px !important;
+        min-width:58px !important;
+        margin-top:0 !important;
+        transform:none !important;
+        background:rgba(29,78,216,.92) !important;
+        color:#fff !important;
+        border:3px solid rgba(255,255,255,.82) !important;
+        box-shadow:0 10px 26px rgba(0,0,0,.26) !important;
+      }
+
+      @media (max-height:720px){
+        .post-card.immersive-feed-card .post-body,
+        .post-card.immersive-feed-card.description-open .post-body{
+          padding-right:calc(82px + env(safe-area-inset-right)) !important;
+          padding-bottom:calc(env(safe-area-inset-bottom) + 96px) !important;
+        }
+
+        .post-card.immersive-feed-card .post-action-row{
+          bottom:calc(env(safe-area-inset-bottom) + 110px) !important;
+          gap:9px !important;
+        }
+
+        .post-card.immersive-feed-card .post-action-row button,
+        .post-card.immersive-feed-card .icon-only-action{
+          width:48px !important;
+          height:48px !important;
+          min-width:48px !important;
+          min-height:48px !important;
+          font-size:21px !important;
+        }
+
+        .post-card.immersive-feed-card .media-top,
+        .post-card.immersive-feed-card .media-gallery-counter{
+          top:calc(env(safe-area-inset-top) + 130px) !important;
+        }
+      }
+
 `;
     document.head.appendChild(style);
   }
@@ -8333,7 +8828,7 @@ function postCard(post){
     const directFrameActive = state.directFramePostId === post.id;
     const directEditActive = state.directEditPostId === post.id;
     const directMediaActive = state.directMediaPostId === post.id;
-    return `<article class="post-card ${expandedDesc ? 'description-open' : ''} ${directFrameActive ? 'direct-frame-active' : ''} ${directEditActive ? 'direct-edit-active' : ''} ${directMediaActive ? 'direct-media-active' : ''}" data-post-card="${esc(post.id)}">
+    return `<article class="post-card immersive-feed-card ${expandedDesc ? 'description-open' : ''} ${directFrameActive ? 'direct-frame-active' : ''} ${directEditActive ? 'direct-edit-active' : ''} ${directMediaActive ? 'direct-media-active' : ''}" data-post-card="${esc(post.id)}">
       <div class="media-area ${directFrameActive ? 'direct-frame-area-active' : ''}" ${directFrameActive ? `data-direct-frame-area="${esc(post.id)}"` : ''}>
         ${mediaMarkup(post)}
         ${galleryDotsMarkup(post)}
