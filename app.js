@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.88-hilo-admin-dueno-real
+/* Conecta Servicios v6.4.89-lectura-estable-e-intereses
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.88-hilo-admin-dueno-real';
+  const VERSION = 'v6.4.89-lectura-estable-e-intereses';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -94,6 +94,8 @@
     audioCtx: null,
     profileEditing: false,
     expandedDescriptions: new Set(),
+    userReadingUntil: 0,
+    readingListenersBound: false,
     directFramePostId: '',
     directFrameOriginal: null,
     directFrameSaving: false,
@@ -491,8 +493,19 @@
     }
   }
 
+  function markReadingInteraction(ms=9000){
+    if(['/publicar','/mensajes','/chat'].includes(state.route)) return;
+    state.userReadingUntil = Math.max(state.userReadingUntil || 0, Date.now() + ms);
+  }
+
+  function isReadingFeed(){
+    const expanded = !!(state.expandedDescriptions && state.expandedDescriptions.size);
+    const recent = Date.now() < Number(state.userReadingUntil || 0);
+    return expanded || recent;
+  }
+
   function shouldAvoidRender(){
-    return hasMountedFeedVideo() || isAnyVideoPlaying() || isSearchActive() || state.searchTyping || state.profileEditing || isTextInputActive();
+    return hasMountedFeedVideo() || isReadingFeed() || isAnyVideoPlaying() || isSearchActive() || state.searchTyping || state.profileEditing || isTextInputActive();
   }
 
   function isAnyVideoPlaying(){
@@ -2640,7 +2653,7 @@
         display:none !important;
       }
 
-      /* v6.4.88-hilo-admin-dueno-real: bloque consolidado de Home/postCard.
+      /* v6.4.89-lectura-estable-e-intereses: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2973,7 +2986,7 @@
         min-height:48px;
       }
 
-      /* v6.4.88-hilo-admin-dueno-real */
+      /* v6.4.89-lectura-estable-e-intereses */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5751,7 +5764,7 @@
 
 
 
-      /* v6.4.88-hilo-admin-dueno-real
+      /* v6.4.89-lectura-estable-e-intereses
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6182,7 +6195,7 @@
 
 
 
-      /* v6.4.88-hilo-admin-dueno-real
+      /* v6.4.89-lectura-estable-e-intereses
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -7070,7 +7083,7 @@
       <div class="floating-post-nav" aria-label="Menú flotante de publicaciones">
         <button class="floating-zone ${state.topTab === 'municipio' ? 'active' : ''}" data-top-tab="municipio" title="Publicaciones cerca de ${esc(municipio)}">${esc(municipio)}</button>
         <button class="floating-icon floating-cart ${state.route === '/tienda' ? 'active' : ''}" data-open-store="${esc(userId())}" title="Tienda / mandado" aria-label="Tienda y mandados">🛒</button>
-        <button class="floating-icon floating-heart ${state.topTab === 'para-ti' ? 'active' : ''}" data-top-tab="para-ti" title="Para ti / favoritos" aria-label="Para ti">♥</button>
+        <button class="floating-icon floating-heart ${state.topTab === 'para-ti' ? 'active' : ''}" data-top-tab="para-ti" title="Intereses / Para ti" aria-label="Intereses para ti">🎯</button>
         <button class="floating-icon floating-search" data-toggle-search title="Buscar" aria-label="Buscar">🔎</button>
       </div>
       ${state.searchOpen ? `<div class="tiktok-search-panel visual-search-panel floating-search-panel"><span>🔎</span><input id="searchInput" type="search" inputmode="search" value="${esc(state.query)}" placeholder="Buscar: refrigerador, pan, viaje..." autocomplete="off" enterkeyhint="search"><button type="button" data-clear-search>${state.query ? 'Limpiar' : 'Cerrar'}</button></div>` : ''}
@@ -7177,8 +7190,13 @@
     const id = String(postId || '');
     if(!id) return;
     if(!state.expandedDescriptions) state.expandedDescriptions = new Set();
-    if(state.expandedDescriptions.has(id)) state.expandedDescriptions.delete(id);
-    else state.expandedDescriptions.add(id);
+    if(state.expandedDescriptions.has(id)){
+      state.expandedDescriptions.delete(id);
+      state.userReadingUntil = Date.now() + 2500;
+    }else{
+      state.expandedDescriptions.add(id);
+      state.userReadingUntil = Date.now() + 60000;
+    }
     render();
     setTimeout(() => {
       const safeId = (window.CSS && CSS.escape) ? CSS.escape(id) : id.replace(/["\\]/g, '\\$&');
@@ -7188,7 +7206,7 @@
   }
 
   function heartIcon(postId){
-    return likedPostIds().includes(String(postId)) ? '❤️' : '♡';
+    return likedPostIds().includes(String(postId)) ? '⭐' : '☆';
   }
 
   function heartClass(postId){
@@ -7756,7 +7774,7 @@ function postCard(post){
         ${descriptionMarkup(post)}
         <div class="post-meta"><span>${new Date(post.createdAt || Date.now()).toLocaleDateString('es-MX')}</span></div>
         <div class="post-action-row ${isVideoPost(post) && post.mediaUrl ? 'has-audio-action' : ''}">
-          <button type="button" class="icon-only-action heart-action ${heartClass(post.id)}" data-like="${esc(post.id)}" aria-label="Preferir" title="Para ti">${heartIcon(post.id)}</button>
+          <button type="button" class="icon-only-action heart-action ${heartClass(post.id)}" data-like="${esc(post.id)}" aria-label="Guardar para mis intereses" title="Guardar para mis intereses">${heartIcon(post.id)}</button>
           <button type="button" class="icon-only-action" data-message="${esc(post.id)}" aria-label="Mensaje" title="Mensaje">✉️</button>
           <button type="button" class="icon-only-action" data-share="${esc(post.id)}" aria-label="Compartir" title="Compartir">↗️</button>
           ${isVideoPost(post) && post.mediaUrl ? `<button type="button" class="icon-only-action audio-row-btn" data-toggle-video-sound="${esc(post.id)}" aria-label="Audio" title="Audio">🔇</button>` : ''}
@@ -7844,13 +7862,13 @@ function postCard(post){
     return shell(`<section class="panel following-panel">
       <button class="small-link" data-nav="/">← Volver al Home</button>
       <h1>Siguiendo</h1>
-      <p>Aquí aparecen las publicaciones que marcaste con corazón y las cuentas que sigues.</p>
+      <p>Aquí aparecen las publicaciones guardadas para tus intereses y las cuentas que sigues.</p>
     </section>
     <section class="panel following-panel">
       <h2>Guardados para ti</h2>
-      <p>Publicaciones marcadas con corazón.</p>
+      <p>Publicaciones guardadas para tus intereses.</p>
     </section>
-    <section class="feed following-liked-feed">${liked.map(safePostCard).join('') || emptyState('Todavía no guardas publicaciones','Toca el corazón en una publicación para verla aquí.')}</section>
+    <section class="feed following-liked-feed">${liked.map(safePostCard).join('') || emptyState('Todavía no guardas publicaciones','Toca la estrella en una publicación para verla aquí.')}</section>
     <section class="panel owner-directory">
       <h2>Cuentas que sigues</h2>
       <div class="owner-list">${summaries.map(s => ownerCard(s)).join('') || emptyState('Todavía no sigues cuentas','Cuando sigas a un publicante, aparecerá aquí.')}</div>
@@ -9991,7 +10009,20 @@ function openChatFromConversation(button){
     else { loadMessagesForInbox({silent:true}); if(!state.syncing && state.route !== '/publicar') syncFromCloud({render:!shouldAvoidRender()}); }
   }
 
+  function setupReadingProtection(){
+    if(state.readingListenersBound) return;
+    state.readingListenersBound = true;
+    const mark = () => markReadingInteraction(9000);
+    window.addEventListener('scroll', mark, {passive:true});
+    document.addEventListener('touchmove', mark, {passive:true});
+    document.addEventListener('wheel', mark, {passive:true});
+    document.addEventListener('pointerdown', event => {
+      if(event.target?.closest?.('.post-card, .feed, [data-description-box]')) markReadingInteraction(9000);
+    }, {passive:true});
+  }
+
   function startPolling(){
+    setupReadingProtection();
     if(state.syncTimer) clearInterval(state.syncTimer);
     if(state.messageTimer) clearInterval(state.messageTimer);
     state.syncTimer = setInterval(()=>{ if(document.visibilityState==='visible' && !state.syncing && !state.publishing && !['/publicar','/mensajes','/chat'].includes(state.route)) syncFromCloud({render:!shouldAvoidRender()}); }, POLL_MS);
