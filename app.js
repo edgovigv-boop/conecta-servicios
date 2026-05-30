@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.84-admin-sin-contaminar-usuario
+/* Conecta Servicios v6.4.85-tienda-admin-y-avatar-nube
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.84-admin-sin-contaminar-usuario';
+  const VERSION = 'v6.4.85-tienda-admin-y-avatar-nube';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -923,7 +923,18 @@
   }
 
   function openStore(ownerId){
-    const id = ownerId || userId();
+    const requestedId = String(ownerId || '').trim();
+    if(adminFrameMode() && (!requestedId || requestedId === userId())){
+      state.storeOwnerId = '';
+      state.storeOwnerName = 'Tienda global';
+      state.topTab = 'tienda';
+      state.filter = 'ALL';
+      state.query = '';
+      nav('/tienda');
+      return;
+    }
+
+    const id = requestedId || userId();
     const summary = ownerSummary(id);
     state.storeOwnerId = id;
     state.storeOwnerName = summary.ownerName;
@@ -1036,6 +1047,54 @@
     for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
     return new Blob([bytes], {type:mime});
   }
+
+  function isHttpAvatarUrl(value=''){
+    return /^https:\/\/.+/i.test(String(value || '').trim());
+  }
+
+  async function uploadProfileAvatarToCloud(prof=profile()){
+    prof = normalizeProfile(prof);
+    const currentAvatar = String(prof.avatarData || '').trim();
+
+    if(!currentAvatar || isHttpAvatarUrl(currentAvatar)) return prof;
+    if(!/^data:image\//i.test(currentAvatar)) return prof;
+
+    const cfg = await getPublicConfig();
+    if(!cfg.ok || !cfg.supabaseUrl || !cfg.supabaseAnonKey) return prof;
+
+    const blob = dataUrlToBlob(currentAvatar);
+    if(!blob) return prof;
+
+    const supabaseBase = String(cfg.supabaseUrl || '').trim().replace(/\/rest\/v1\/?$/i,'').replace(/\/+$/g,'');
+    const bucket = cfg.storageBucket || STORAGE_BUCKET;
+    const ext = (blob.type || 'image/jpeg').includes('png') ? 'png' : 'jpg';
+    const path = `${encodeURIComponent(userId())}/profile/${Date.now()}-avatar.${ext}`;
+    const url = `${supabaseBase}/storage/v1/object/${bucket}/${path}`;
+
+    const res = await fetch(url, {
+      method:'POST',
+      headers:{
+        apikey: cfg.supabaseAnonKey,
+        Authorization: `Bearer ${cfg.supabaseAnonKey}`,
+        'Content-Type': blob.type || 'image/jpeg',
+        'x-upsert':'true'
+      },
+      body: blob
+    });
+
+    if(!res.ok){
+      const detail = await res.text().catch(()=>'');
+      console.warn('[Conecta perfil] No se pudo subir avatar', detail || res.status);
+      return prof;
+    }
+
+    return normalizeProfile({
+      ...prof,
+      avatarData: `${supabaseBase}/storage/v1/object/public/${bucket}/${path}`,
+      updatedAt: new Date().toISOString()
+    });
+  }
+
 
 
   function toTusMetadataValue(value){
@@ -2510,7 +2569,7 @@
         display:none !important;
       }
 
-      /* v6.4.84-admin-sin-contaminar-usuario: bloque consolidado de Home/postCard.
+      /* v6.4.85-tienda-admin-y-avatar-nube: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2843,7 +2902,7 @@
         min-height:48px;
       }
 
-      /* v6.4.84-admin-sin-contaminar-usuario */
+      /* v6.4.85-tienda-admin-y-avatar-nube */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5621,7 +5680,7 @@
 
 
 
-      /* v6.4.84-admin-sin-contaminar-usuario
+      /* v6.4.85-tienda-admin-y-avatar-nube
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6052,7 +6111,7 @@
 
 
 
-      /* v6.4.84-admin-sin-contaminar-usuario
+      /* v6.4.85-tienda-admin-y-avatar-nube
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -7761,7 +7820,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     const avatar = prof.avatarData || '';
     return shell(`<section class="panel profile-panel">
       <h1>Perfil</h1>
-      <p>${adminProfile ? 'Modo admin activo: este perfil es local de este celular, pero abajo puedes revisar publicaciones administrables.' : 'Guarda tu nombre visible y foto de perfil. Esa imagen aparecerá como anunciante en tus publicaciones.'}</p>
+      <p>${adminProfile ? 'Modo admin activo: este perfil es local de este celular, pero abajo puedes revisar publicaciones administrables.' : 'Guarda tu nombre visible y foto de perfil. La nueva foto se sube a la nube para verse en otros celulares.'}</p>
       ${adminProfile ? '<div class="local-note">🛡️ Admin activo. No se mezclan identidades: “Usuario local” es solo el perfil de este navegador.</div>' : ''}
       <div class="profile-avatar-editor">
         <button class="profile-avatar-button" type="button" data-pick-profile-photo>${avatar ? `<img src="${esc(avatar)}" alt="Foto de perfil">` : '👤'}</button>
@@ -8743,13 +8802,18 @@ ${esc(shortDiagnosticText(diag))}</code>
   }
   function toggleFollow(ownerId){ if(ownerId===userId()) return toast('Esta publicación es tuya.'); const cur=follows(); const next=cur.includes(ownerId)?cur.filter(id=>id!==ownerId):[...cur,ownerId]; set(K.follows,next); toast(cur.includes(ownerId)?'Dejaste de seguir.':'Ahora lo sigues.'); render(); }
   function sharePost(id){ const p=state.posts.find(x=>x.id===id); if(!p) return; const text=`${p.title}\n\n${p.description}\n\n${p.category} · ${p.zone}\n\n${APP_URL}`; if(navigator.share) navigator.share({title:p.title,text,url:APP_URL}).catch(()=>{}); else navigator.clipboard?.writeText(text).then(()=>toast('Copiado para compartir.')); }
-  function saveProfile(){
+  async function saveProfile(){
     const current = profile();
     const name=document.getElementById('profileName')?.value.trim()||'Usuario local';
-    const nextProfile = saveProfileEverywhere({...current, name, updatedAt:new Date().toISOString()});
+    let nextProfile = saveProfileEverywhere({...current, name, updatedAt:new Date().toISOString()});
+    if(/^data:image\//i.test(String(nextProfile.avatarData || ''))){
+      toast('Subiendo foto de perfil a la nube...');
+      nextProfile = await uploadProfileAvatarToCloud(nextProfile);
+      saveProfileEverywhere(nextProfile);
+    }
     applyProfileToOwnPosts(nextProfile);
     state.profileEditing=false;
-    toast('Perfil guardado y aplicado a tus publicaciones.');
+    toast(isHttpAvatarUrl(nextProfile.avatarData) ? 'Perfil guardado con foto visible en otros celulares.' : 'Perfil guardado y aplicado a tus publicaciones.');
     render();
   }
 
@@ -8802,9 +8866,12 @@ ${esc(shortDiagnosticText(diag))}</code>
       const avatarData = await blobToDataURL(resized);
       const current = profile();
       const name = document.getElementById('profileName')?.value.trim() || current.name || 'Usuario local';
-      const nextProfile = saveProfileEverywhere({...current, name, avatarData, updatedAt:new Date().toISOString()});
+      let nextProfile = saveProfileEverywhere({...current, name, avatarData, updatedAt:new Date().toISOString()});
+      toast('Subiendo foto de perfil a la nube...');
+      nextProfile = await uploadProfileAvatarToCloud(nextProfile);
+      saveProfileEverywhere(nextProfile);
       applyProfileToOwnPosts(nextProfile);
-      toast('Foto de perfil guardada y aplicada a tus publicaciones propias.');
+      toast(isHttpAvatarUrl(nextProfile.avatarData) ? 'Foto de perfil visible en otros celulares.' : 'Foto guardada localmente. Revisa conexión para nube.');
       render();
     }catch{
       toast('No se pudo guardar la foto de perfil.');
