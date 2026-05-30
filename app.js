@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.86-avatar-publico-y-video-estable
+/* Conecta Servicios v6.4.87-respuesta-admin-mismo-chat
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.86-avatar-publico-y-video-estable';
+  const VERSION = 'v6.4.87-respuesta-admin-mismo-chat';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2640,7 +2640,7 @@
         display:none !important;
       }
 
-      /* v6.4.86-avatar-publico-y-video-estable: bloque consolidado de Home/postCard.
+      /* v6.4.87-respuesta-admin-mismo-chat: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2973,7 +2973,7 @@
         min-height:48px;
       }
 
-      /* v6.4.86-avatar-publico-y-video-estable */
+      /* v6.4.87-respuesta-admin-mismo-chat */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5751,7 +5751,7 @@
 
 
 
-      /* v6.4.86-avatar-publico-y-video-estable
+      /* v6.4.87-respuesta-admin-mismo-chat
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6182,7 +6182,7 @@
 
 
 
-      /* v6.4.86-avatar-publico-y-video-estable
+      /* v6.4.87-respuesta-admin-mismo-chat
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -9387,7 +9387,57 @@ ${esc(shortDiagnosticText(diag))}</code>
     nav('/chat');
   }
 
-  function openChatFromConversation(button){
+  
+  function postForChat(chat=state.chat){
+    if(!chat?.postId) return null;
+    return (state.posts || []).find(p => String(p.id || '') === String(chat.postId || '')) || null;
+  }
+
+  function nameForMessageParticipant(participantId, fallback='Usuario local'){
+    participantId = String(participantId || '').trim();
+    if(!participantId) return fallback;
+
+    const messages = [
+      ...(state.chatMessages || []),
+      ...(state.publicMessages || [])
+    ];
+
+    for(const m of messages){
+      if(!m) continue;
+      if(String(m.senderId || '') === participantId && m.senderName) return m.senderName;
+      if(String(m.receiverId || '') === participantId && m.receiverName) return m.receiverName;
+    }
+
+    const post = (state.posts || []).find(p => String(p.ownerId || '') === participantId);
+    if(post?.ownerName) return post.ownerName;
+
+    return fallback;
+  }
+
+  function adminReplyIdentity(chat=state.chat){
+    const post = postForChat(chat);
+    const ownerId = String(post?.ownerId || chat?.adminReceiverId || chat?.peerId || '').trim();
+    const ownerName = String(post?.ownerName || nameForMessageParticipant(ownerId, profile().name || 'Usuario local') || 'Usuario local').trim();
+
+    const possibleIds = [
+      chat?.peerId,
+      chat?.adminSenderId,
+      chat?.adminReceiverId,
+      ...(state.chatMessages || []).flatMap(m => [m?.senderId, m?.receiverId])
+    ].map(id => String(id || '').trim()).filter(Boolean);
+
+    const receiverId = possibleIds.find(id => id && id !== ownerId) || String(chat?.peerId || chat?.adminSenderId || '').trim();
+    const receiverName = nameForMessageParticipant(receiverId, chat?.peerName || 'Usuario local');
+
+    return {
+      senderId: ownerId || userId(),
+      senderName: ownerName || profile().name || 'Usuario local',
+      receiverId: receiverId || chat?.peerId || '',
+      receiverName: receiverName || chat?.peerName || 'Usuario local'
+    };
+  }
+
+function openChatFromConversation(button){
     const chat = {
       postId:button.dataset.post||'',
       postTitle:button.dataset.title||'Publicación',
@@ -9409,8 +9459,34 @@ ${esc(shortDiagnosticText(diag))}</code>
     const input = document.getElementById('chatText');
     const text = (input?.value || '').trim();
     if(!text) return toast('Escribe un mensaje.');
+
     const prof = profile();
-    const msg = {id:uid('msg'), postId:state.chat.postId, postTitle:state.chat.postTitle, senderId:userId(), senderName:prof.name||'Usuario local', receiverId:state.chat.peerId, receiverName:state.chat.peerName||'Usuario local', text, status:'sent', createdAt:new Date().toISOString()};
+    let senderId = userId();
+    let senderName = prof.name || 'Usuario local';
+    let receiverId = state.chat.peerId;
+    let receiverName = state.chat.peerName || 'Usuario local';
+
+    if(adminFrameMode() && state.chat.adminThreadKey){
+      const adminIdentity = adminReplyIdentity(state.chat);
+      senderId = adminIdentity.senderId || senderId;
+      senderName = adminIdentity.senderName || senderName;
+      receiverId = adminIdentity.receiverId || receiverId;
+      receiverName = adminIdentity.receiverName || receiverName;
+    }
+
+    const msg = {
+      id:uid('msg'),
+      postId:state.chat.postId,
+      postTitle:state.chat.postTitle,
+      senderId,
+      senderName,
+      receiverId,
+      receiverName,
+      text,
+      status:'sent',
+      createdAt:new Date().toISOString()
+    };
+
     if(input) input.value = '';
     state.chatMessages = [...state.chatMessages, msg];
     render(); scrollChatToBottom('smooth');
