@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.90-carrusel-compacto
+/* Conecta Servicios v6.4.91-contador-carrusel-arriba
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.90-carrusel-compacto';
+  const VERSION = 'v6.4.91-contador-carrusel-arriba';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2653,7 +2653,7 @@
         display:none !important;
       }
 
-      /* v6.4.90-carrusel-compacto: bloque consolidado de Home/postCard.
+      /* v6.4.91-contador-carrusel-arriba: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2986,7 +2986,7 @@
         min-height:48px;
       }
 
-      /* v6.4.90-carrusel-compacto */
+      /* v6.4.91-contador-carrusel-arriba */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5764,7 +5764,7 @@
 
 
 
-      /* v6.4.90-carrusel-compacto
+      /* v6.4.91-contador-carrusel-arriba
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6195,7 +6195,7 @@
 
 
 
-      /* v6.4.90-carrusel-compacto
+      /* v6.4.91-contador-carrusel-arriba
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -7114,6 +7114,84 @@
         .gallery-counter-text{
           font-size:11px !important;
           min-width:30px !important;
+        }
+      }
+
+      /* v6.4.91: contador del carrusel arriba, centrado, fuera del título/descripción */
+      .gallery-dots.gallery-counter,
+      .post-body-gallery-dots.gallery-counter{
+        left:50% !important;
+        right:auto !important;
+        top:calc(env(safe-area-inset-top) + 198px) !important;
+        bottom:auto !important;
+        transform:translateX(-50%) !important;
+        width:auto !important;
+        min-width:70px !important;
+        max-width:none !important;
+        height:30px !important;
+        padding:3px 6px !important;
+        gap:4px !important;
+        border-radius:999px !important;
+        background:rgba(0,0,0,.28) !important;
+        border:1px solid rgba(255,255,255,.20) !important;
+        box-shadow:0 8px 20px rgba(0,0,0,.16) !important;
+        backdrop-filter:blur(9px) !important;
+        z-index:92 !important;
+        pointer-events:auto !important;
+      }
+      .gallery-counter-text{
+        min-width:32px !important;
+        color:#fff !important;
+        font-size:11px !important;
+        line-height:1 !important;
+        font-weight:900 !important;
+        text-align:center !important;
+        letter-spacing:.02em !important;
+      }
+      .gallery-counter-btn{
+        width:22px !important;
+        height:22px !important;
+        min-width:22px !important;
+        min-height:22px !important;
+        border-radius:999px !important;
+        border:0 !important;
+        background:rgba(255,255,255,.18) !important;
+        color:#fff !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        font-weight:900 !important;
+        font-size:15px !important;
+        line-height:1 !important;
+        padding:0 !important;
+        pointer-events:auto !important;
+      }
+      .gallery-counter-btn:disabled{
+        opacity:.28 !important;
+      }
+      @media (max-height:720px){
+        .gallery-dots.gallery-counter,
+        .post-body-gallery-dots.gallery-counter{
+          top:calc(env(safe-area-inset-top) + 174px) !important;
+          height:28px !important;
+          min-width:66px !important;
+        }
+        .gallery-counter-btn{
+          width:20px !important;
+          height:20px !important;
+          min-width:20px !important;
+          min-height:20px !important;
+          font-size:14px !important;
+        }
+        .gallery-counter-text{
+          min-width:30px !important;
+          font-size:10px !important;
+        }
+      }
+      @media (max-width:380px){
+        .gallery-dots.gallery-counter,
+        .post-body-gallery-dots.gallery-counter{
+          top:calc(env(safe-area-inset-top) + 188px) !important;
         }
       }
 
