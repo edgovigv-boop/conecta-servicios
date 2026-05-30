@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.87-respuesta-admin-mismo-chat
+/* Conecta Servicios v6.4.88-hilo-admin-dueno-real
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.87-respuesta-admin-mismo-chat';
+  const VERSION = 'v6.4.88-hilo-admin-dueno-real';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2640,7 +2640,7 @@
         display:none !important;
       }
 
-      /* v6.4.87-respuesta-admin-mismo-chat: bloque consolidado de Home/postCard.
+      /* v6.4.88-hilo-admin-dueno-real: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2973,7 +2973,7 @@
         min-height:48px;
       }
 
-      /* v6.4.87-respuesta-admin-mismo-chat */
+      /* v6.4.88-hilo-admin-dueno-real */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5751,7 +5751,7 @@
 
 
 
-      /* v6.4.87-respuesta-admin-mismo-chat
+      /* v6.4.88-hilo-admin-dueno-real
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6182,7 +6182,7 @@
 
 
 
-      /* v6.4.87-respuesta-admin-mismo-chat
+      /* v6.4.88-hilo-admin-dueno-real
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -9052,18 +9052,52 @@ ${esc(shortDiagnosticText(diag))}</code>
     return changed;
   }
 
-  function adminThreadKeyForMessage(m){
+  function postOwnerIdFromMessage(m){
+    const post = (state.posts || []).find(p => String(p.id || '') === String(m?.postId || ''));
+    return String(post?.ownerId || '').trim();
+  }
+
+  function adminThreadPartsForMessage(m){
     const postId = String(m?.postId || '');
-    const a = String(m?.senderId || '');
-    const b = String(m?.receiverId || '');
-    const pair = [a,b].sort().join('::');
-    return `admin::${postId}::${pair || m?.id || ''}`;
+    let ownerId = postOwnerIdFromMessage(m);
+    const senderId = String(m?.senderId || '').trim();
+    const receiverId = String(m?.receiverId || '').trim();
+
+    if(!ownerId){
+      // En mensajes iniciados desde una publicación, el primer receptor normalmente es el dueño real.
+      ownerId = receiverId || senderId;
+    }
+
+    let peerId = senderId === ownerId ? receiverId : senderId;
+    if(!peerId || peerId === ownerId){
+      peerId = [senderId, receiverId].find(id => id && id !== ownerId) || senderId || receiverId;
+    }
+
+    const pair = [ownerId, peerId].filter(Boolean).sort().join('::');
+    return {
+      postId,
+      ownerId,
+      peerId,
+      key:`admin::${postId}::${pair || m?.id || ''}`
+    };
+  }
+
+  function adminThreadKeyForMessage(m){
+    return adminThreadPartsForMessage(m).key;
   }
 
   function chatMatchesMessage(m, chat=state.chat){
     if(!m || !chat) return false;
     if(adminFrameMode() && chat.adminThreadKey){
-      return adminThreadKeyForMessage(m) === chat.adminThreadKey;
+      const parts = adminThreadPartsForMessage(m);
+      const chatOwnerId = String(chat.adminOwnerId || '').trim();
+      const chatPeerId = String(chat.adminPeerId || chat.peerId || '').trim();
+      if(chatOwnerId && chatPeerId){
+        return String(m.postId || '') === String(chat.postId || '') &&
+          ((String(m.senderId || '') === chatOwnerId && String(m.receiverId || '') === chatPeerId) ||
+           (String(m.senderId || '') === chatPeerId && String(m.receiverId || '') === chatOwnerId));
+      }
+      return parts.key === chat.adminThreadKey;
     }
     return (m.postId||'') === (chat.postId||'') &&
       ((isMeId(m.senderId) && m.receiverId === chat.peerId) || (m.senderId === chat.peerId && isMeId(m.receiverId)));
@@ -9168,7 +9202,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       <strong>${esc(peerName || 'Usuario local')}</strong>
       <em>${esc(m.postTitle || 'Publicación')}</em>
       <p>${esc(m.text || '')}</p>
-      <button type="button" class="reply-visible-btn" data-open-chat="1" data-post="${esc(m.postId||'')}" data-peer="${esc(peerId||'')}" data-title="${esc(m.postTitle||'Publicación')}" data-name="${esc(peerName || 'Usuario local')}" data-admin-thread="${esc(admin ? adminThreadKeyForMessage(m) : '')}" data-admin-sender="${esc(m.senderId || '')}" data-admin-receiver="${esc(m.receiverId || '')}">Responder</button>
+      <button type="button" class="reply-visible-btn" data-open-chat="1" data-post="${esc(m.postId||'')}" data-peer="${esc(peerId||'')}" data-title="${esc(m.postTitle||'Publicación')}" data-name="${esc(peerName || 'Usuario local')}" data-admin-thread="${esc(admin ? adminThreadKeyForMessage(m) : '')}" data-admin-sender="${esc(m.senderId || '')}" data-admin-receiver="${esc(m.receiverId || '')}" data-admin-owner="${esc(admin ? adminThreadPartsForMessage(m).ownerId : '')}" data-admin-peer="${esc(admin ? adminThreadPartsForMessage(m).peerId : '')}">Responder</button>
     </article>`;
   }
 
@@ -9221,17 +9255,22 @@ ${esc(shortDiagnosticText(diag))}</code>
       let adminThreadKey = '';
       let adminSenderId = '';
       let adminReceiverId = '';
+      let adminOwnerId = '';
+      let adminPeerId = '';
       const postId = m.postId || '';
 
       if(admin){
-        adminThreadKey = adminThreadKeyForMessage(m);
+        const parts = adminThreadPartsForMessage(m);
+        adminThreadKey = parts.key;
+        adminOwnerId = parts.ownerId;
+        adminPeerId = parts.peerId;
         adminSenderId = m.senderId || '';
         adminReceiverId = m.receiverId || '';
         key = adminThreadKey;
-        incoming = !isMeId(m.senderId);
-        outgoing = isMeId(m.senderId);
-        peerId = m.senderId && !isMeId(m.senderId) ? m.senderId : (m.receiverId || m.senderId || '');
-        peerName = m.senderName && !isMeId(m.senderId) ? m.senderName : (m.receiverName || m.senderName || 'Usuario local');
+        incoming = String(m.senderId || '') !== adminOwnerId;
+        outgoing = String(m.senderId || '') === adminOwnerId;
+        peerId = adminPeerId || parts.peerId || '';
+        peerName = nameForMessageParticipant(peerId, 'Usuario local');
       }else{
         incoming = isMeId(m.receiverId) && !isMeId(m.senderId);
         outgoing = isMeId(m.senderId) && !isMeId(m.receiverId);
@@ -9244,7 +9283,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       const prev = map.get(key) || {
         key, postId, postTitle: m.postTitle || 'Publicación', peerId, peerName,
         messages: [], incoming: 0, outgoing: 0, unread: 0, lastText: '', lastAt: '',
-        adminThreadKey, adminSenderId, adminReceiverId, adminMode: admin
+        adminThreadKey, adminSenderId, adminReceiverId, adminOwnerId, adminPeerId, adminMode: admin
       };
 
       const nextMessages = [...prev.messages, m].sort((a,b)=>new Date(a.createdAt||0)-new Date(b.createdAt||0));
@@ -9254,15 +9293,18 @@ ${esc(shortDiagnosticText(diag))}</code>
         ...prev,
         postTitle: last.postTitle || prev.postTitle || 'Publicación',
         peerName: peerName || prev.peerName || 'Usuario local',
+        peerId: peerId || prev.peerId || '',
         messages: nextMessages,
         incoming: prev.incoming + (incoming ? 1 : 0),
         outgoing: prev.outgoing + (outgoing ? 1 : 0),
         unread: prev.unread + (incoming && !state.readMessageIds.has(m.id) ? 1 : 0),
         lastText: last.text || '',
         lastAt: last.createdAt || '',
-        adminThreadKey,
+        adminThreadKey: adminThreadKey || prev.adminThreadKey || '',
         adminSenderId,
         adminReceiverId,
+        adminOwnerId: adminOwnerId || prev.adminOwnerId || '',
+        adminPeerId: adminPeerId || prev.adminPeerId || '',
         adminMode: admin
       });
     });
@@ -9274,7 +9316,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     const unread = item.unread || 0;
     const count = item.messages?.length || item.count || 0;
     const last = item.lastText || '';
-    return `<button class="conversation-card stable-conversation-card ${unread?'has-unread':''}" data-open-chat="1" data-post="${esc(item.postId)}" data-peer="${esc(item.peerId)}" data-title="${esc(item.postTitle)}" data-name="${esc(item.peerName)}" data-admin-thread="${esc(item.adminThreadKey || '')}" data-admin-sender="${esc(item.adminSenderId || '')}" data-admin-receiver="${esc(item.adminReceiverId || '')}">
+    return `<button class="conversation-card stable-conversation-card ${unread?'has-unread':''}" data-open-chat="1" data-post="${esc(item.postId)}" data-peer="${esc(item.peerId)}" data-title="${esc(item.postTitle)}" data-name="${esc(item.peerName)}" data-admin-thread="${esc(item.adminThreadKey || '')}" data-admin-sender="${esc(item.adminSenderId || '')}" data-admin-receiver="${esc(item.adminReceiverId || '')}" data-admin-owner="${esc(item.adminOwnerId || '')}" data-admin-peer="${esc(item.adminPeerId || item.peerId || '')}">
       <div class="conversation-avatar">${item.adminMode ? '🛡️' : (unread ? '📩' : '💬')}</div>
       <div class="conversation-main">
         <div class="conversation-line">
@@ -9416,17 +9458,13 @@ ${esc(shortDiagnosticText(diag))}</code>
 
   function adminReplyIdentity(chat=state.chat){
     const post = postForChat(chat);
-    const ownerId = String(post?.ownerId || chat?.adminReceiverId || chat?.peerId || '').trim();
+    const explicitOwnerId = String(chat?.adminOwnerId || '').trim();
+    const explicitPeerId = String(chat?.adminPeerId || chat?.peerId || '').trim();
+
+    const ownerId = explicitOwnerId || String(post?.ownerId || '').trim() || String(chat?.adminReceiverId || '').trim();
     const ownerName = String(post?.ownerName || nameForMessageParticipant(ownerId, profile().name || 'Usuario local') || 'Usuario local').trim();
 
-    const possibleIds = [
-      chat?.peerId,
-      chat?.adminSenderId,
-      chat?.adminReceiverId,
-      ...(state.chatMessages || []).flatMap(m => [m?.senderId, m?.receiverId])
-    ].map(id => String(id || '').trim()).filter(Boolean);
-
-    const receiverId = possibleIds.find(id => id && id !== ownerId) || String(chat?.peerId || chat?.adminSenderId || '').trim();
+    const receiverId = explicitPeerId || String(chat?.adminSenderId || '').trim() || String(chat?.peerId || '').trim();
     const receiverName = nameForMessageParticipant(receiverId, chat?.peerName || 'Usuario local');
 
     return {
@@ -9441,11 +9479,13 @@ function openChatFromConversation(button){
     const chat = {
       postId:button.dataset.post||'',
       postTitle:button.dataset.title||'Publicación',
-      peerId:button.dataset.peer||'',
+      peerId:button.dataset.adminPeer || button.dataset.peer || '',
       peerName:button.dataset.name||'Usuario local',
       adminThreadKey:button.dataset.adminThread || '',
       adminSenderId:button.dataset.adminSender || '',
-      adminReceiverId:button.dataset.adminReceiver || ''
+      adminReceiverId:button.dataset.adminReceiver || '',
+      adminOwnerId:button.dataset.adminOwner || '',
+      adminPeerId:button.dataset.adminPeer || ''
     };
     state.chat = chat;
     state.chatMessages = (state.publicMessages || []).filter(m => chatMatchesMessage(m, chat)).sort((a,b)=>new Date(a.createdAt||0)-new Date(b.createdAt||0));
