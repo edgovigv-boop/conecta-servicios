@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.89-lectura-estable-e-intereses
+/* Conecta Servicios v6.4.90-carrusel-compacto
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.89-lectura-estable-e-intereses';
+  const VERSION = 'v6.4.90-carrusel-compacto';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2653,7 +2653,7 @@
         display:none !important;
       }
 
-      /* v6.4.89-lectura-estable-e-intereses: bloque consolidado de Home/postCard.
+      /* v6.4.90-carrusel-compacto: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2986,7 +2986,7 @@
         min-height:48px;
       }
 
-      /* v6.4.89-lectura-estable-e-intereses */
+      /* v6.4.90-carrusel-compacto */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5764,7 +5764,7 @@
 
 
 
-      /* v6.4.89-lectura-estable-e-intereses
+      /* v6.4.90-carrusel-compacto
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6195,7 +6195,7 @@
 
 
 
-      /* v6.4.89-lectura-estable-e-intereses
+      /* v6.4.90-carrusel-compacto
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -7042,6 +7042,81 @@
         }
       }
 
+      /* v6.4.90: carrusel compacto sin división visual sobre la foto */
+      .gallery-dots.gallery-counter,
+      .post-body-gallery-dots.gallery-counter{
+        left:auto !important;
+        right:18px !important;
+        top:auto !important;
+        bottom:calc(env(safe-area-inset-bottom) + 214px) !important;
+        transform:none !important;
+        width:auto !important;
+        min-width:74px !important;
+        max-width:none !important;
+        height:34px !important;
+        padding:4px 6px !important;
+        gap:5px !important;
+        border-radius:999px !important;
+        background:rgba(0,0,0,.34) !important;
+        border:1px solid rgba(255,255,255,.24) !important;
+        box-shadow:0 10px 26px rgba(0,0,0,.18) !important;
+        backdrop-filter:blur(10px) !important;
+        pointer-events:auto !important;
+      }
+      .gallery-counter-text{
+        min-width:34px !important;
+        color:#fff !important;
+        font-size:12px !important;
+        line-height:1 !important;
+        font-weight:900 !important;
+        text-align:center !important;
+        letter-spacing:.02em !important;
+      }
+      .gallery-counter-btn{
+        width:24px !important;
+        height:24px !important;
+        min-width:24px !important;
+        min-height:24px !important;
+        border-radius:999px !important;
+        border:0 !important;
+        background:rgba(255,255,255,.20) !important;
+        color:#fff !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        font-weight:900 !important;
+        font-size:18px !important;
+        line-height:1 !important;
+        padding:0 !important;
+        pointer-events:auto !important;
+      }
+      .gallery-counter-btn:disabled{
+        opacity:.32 !important;
+      }
+      .gallery-dots.gallery-counter .gallery-dot{
+        display:none !important;
+      }
+      @media (max-height:720px){
+        .gallery-dots.gallery-counter,
+        .post-body-gallery-dots.gallery-counter{
+          bottom:calc(env(safe-area-inset-bottom) + 190px) !important;
+          right:14px !important;
+          height:30px !important;
+          min-width:68px !important;
+        }
+        .gallery-counter-btn{
+          width:22px !important;
+          height:22px !important;
+          min-width:22px !important;
+          min-height:22px !important;
+          font-size:16px !important;
+        }
+        .gallery-counter-text{
+          font-size:11px !important;
+          min-width:30px !important;
+        }
+      }
+
 `;
     document.head.appendChild(style);
   }
@@ -7259,9 +7334,12 @@
   function galleryDotsMarkup(post){
     const imageItems = galleryImageItems(post);
     if(imageItems.length <= 1) return '';
-    const active = activeGalleryIndex(post.id);
-    const dots = imageItems.map((_, index) => `<button type="button" class="gallery-dot ${index === active ? 'active' : ''}" data-gallery-dot="${esc(post.id)}" data-gallery-index="${index}" aria-label="Ver foto ${index+1}"><span></span></button>`).join('');
-    return `<div class="gallery-dots post-body-gallery-dots" data-gallery-dots="${esc(post.id)}" aria-label="Fotos de la publicación">${dots}</div>`;
+    const active = Math.min(imageItems.length - 1, activeGalleryIndex(post.id));
+    return `<div class="gallery-dots gallery-counter post-body-gallery-dots" data-gallery-dots="${esc(post.id)}" aria-label="Fotos de la publicación">
+      <button type="button" class="gallery-counter-btn" data-gallery-prev="${esc(post.id)}" aria-label="Foto anterior">‹</button>
+      <span class="gallery-counter-text" data-gallery-count="${esc(post.id)}">${active + 1}/${imageItems.length}</span>
+      <button type="button" class="gallery-counter-btn" data-gallery-next="${esc(post.id)}" aria-label="Foto siguiente">›</button>
+    </div>`;
   }
 
   function mediaMarkup(post){
@@ -8633,9 +8711,22 @@ ${esc(shortDiagnosticText(diag))}</code>
     gallery.dataset.galleryIndex = String(index);
     state.galleryIndex[String(id)] = index;
     const safe = (window.CSS && CSS.escape) ? CSS.escape(id) : String(id).replace(/["\\]/g, '\\$&');
+
     document.querySelectorAll(`[data-gallery-dot="${safe}"]`).forEach((dot, i) => {
       dot.classList.toggle('active', i === index);
       dot.setAttribute('aria-current', i === index ? 'true' : 'false');
+    });
+
+    document.querySelectorAll(`[data-gallery-count="${safe}"]`).forEach(el => {
+      el.textContent = `${index + 1}/${total}`;
+    });
+    document.querySelectorAll(`[data-gallery-prev="${safe}"]`).forEach(el => {
+      el.disabled = index <= 0;
+      el.setAttribute('aria-disabled', index <= 0 ? 'true' : 'false');
+    });
+    document.querySelectorAll(`[data-gallery-next="${safe}"]`).forEach(el => {
+      el.disabled = index >= total - 1;
+      el.setAttribute('aria-disabled', index >= total - 1 ? 'true' : 'false');
     });
   }
 
@@ -8650,6 +8741,11 @@ ${esc(shortDiagnosticText(diag))}</code>
     state.galleryIndex[String(id)] = nextIndex;
     gallery.scrollTo({left: target, behavior:'smooth'});
     setTimeout(()=>{ gallery.scrollLeft = target; updateGalleryCounter(gallery); }, 180);
+  }
+
+  function stepGallery(id, delta){
+    const current = activeGalleryIndex(id);
+    goGallery(id, current + Number(delta || 0));
   }
 
   function setupGalleries(){
@@ -9904,6 +10000,8 @@ function openChatFromConversation(button){
     document.querySelectorAll('[data-reload-video]').forEach(el=>el.onclick=()=>reloadVideo(el.dataset.reloadVideo));
     document.querySelectorAll('[data-toggle-video-sound]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();toggleVideoSound(el.dataset.toggleVideoSound);});
     document.querySelectorAll('[data-gallery-dot]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();goGallery(el.dataset.galleryDot, el.dataset.galleryIndex);});
+    document.querySelectorAll('[data-gallery-prev]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();stepGallery(el.dataset.galleryPrev, -1);});
+    document.querySelectorAll('[data-gallery-next]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();stepGallery(el.dataset.galleryNext, 1);});
     document.querySelectorAll('[data-toggle-description]').forEach(el=>el.onclick=(e)=>{e.preventDefault();e.stopPropagation();toggleDescription(el.dataset.toggleDescription);});
     document.querySelectorAll('.post-description-expanded').forEach(el=>{
       el.onclick=e=>e.stopPropagation();
