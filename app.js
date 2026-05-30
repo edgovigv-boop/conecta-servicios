@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.4.85-tienda-admin-y-avatar-nube
+/* Conecta Servicios v6.4.86-avatar-publico-y-video-estable
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.4.85-tienda-admin-y-avatar-nube';
+  const VERSION = 'v6.4.86-avatar-publico-y-video-estable';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -88,6 +88,7 @@
     videoViewer: null,
     videoPlayingId: '',
     videoIsPlaying: false,
+    videoObserver: null,
     lastUploadDiagnostic: null,
     runtimeDiagnostic: null,
     audioCtx: null,
@@ -482,8 +483,16 @@
     return !!el.isContentEditable;
   }
 
+  function hasMountedFeedVideo(){
+    try{
+      return !!document.querySelector('video.feed-video-player');
+    }catch{
+      return false;
+    }
+  }
+
   function shouldAvoidRender(){
-    return isAnyVideoPlaying() || isSearchActive() || state.searchTyping || state.profileEditing || isTextInputActive();
+    return hasMountedFeedVideo() || isAnyVideoPlaying() || isSearchActive() || state.searchTyping || state.profileEditing || isTextInputActive();
   }
 
   function isAnyVideoPlaying(){
@@ -1052,15 +1061,49 @@
     return /^https:\/\/.+/i.test(String(value || '').trim());
   }
 
+  function isDataImageAvatar(value=''){
+    return /^data:image\//i.test(String(value || '').trim());
+  }
+
+  function bestLocalProfileAvatar(){
+    const candidates = [];
+    try{ candidates.push(profile().avatarData); }catch{}
+    try{ candidates.push(get(K.profile, {})?.avatarData); }catch{}
+    try{ candidates.push(get(K.profileBackup, {})?.avatarData); }catch{}
+    try{ candidates.push(get(K.profileBackup2, {})?.avatarData); }catch{}
+    try{ candidates.push(localStorage.getItem('conecta_profile_avatar_backup') || ''); }catch{}
+
+    try{
+      (Array.isArray(state.posts) && state.posts.length ? state.posts : get(K.posts, [])).forEach(p => {
+        if(!p) return;
+        if(isMeId(p.ownerId)) candidates.push(p.ownerAvatar || '', p.avatar || '');
+      });
+    }catch{}
+
+    const http = candidates.find(isHttpAvatarUrl);
+    if(http) return String(http).trim();
+
+    const data = candidates.find(isDataImageAvatar);
+    if(data) return String(data).trim();
+
+    return '';
+  }
+
   async function uploadProfileAvatarToCloud(prof=profile()){
     prof = normalizeProfile(prof);
-    const currentAvatar = String(prof.avatarData || '').trim();
+    let currentAvatar = String(prof.avatarData || '').trim() || bestLocalProfileAvatar();
 
-    if(!currentAvatar || isHttpAvatarUrl(currentAvatar)) return prof;
-    if(!/^data:image\//i.test(currentAvatar)) return prof;
+    if(!currentAvatar) return prof;
+    if(isHttpAvatarUrl(currentAvatar)){
+      return normalizeProfile({...prof, avatarData:currentAvatar, updatedAt:new Date().toISOString()});
+    }
+    if(!isDataImageAvatar(currentAvatar)) return prof;
 
     const cfg = await getPublicConfig();
-    if(!cfg.ok || !cfg.supabaseUrl || !cfg.supabaseAnonKey) return prof;
+    if(!cfg.ok || !cfg.supabaseUrl || !cfg.supabaseAnonKey){
+      toast('No se pudo leer configuración de Supabase para foto.');
+      return prof;
+    }
 
     const blob = dataUrlToBlob(currentAvatar);
     if(!blob) return prof;
@@ -1069,23 +1112,35 @@
     const bucket = cfg.storageBucket || STORAGE_BUCKET;
     const ext = (blob.type || 'image/jpeg').includes('png') ? 'png' : 'jpg';
     const path = `${encodeURIComponent(userId())}/profile/${Date.now()}-avatar.${ext}`;
-    const url = `${supabaseBase}/storage/v1/object/${bucket}/${path}`;
 
-    const res = await fetch(url, {
-      method:'POST',
-      headers:{
-        apikey: cfg.supabaseAnonKey,
-        Authorization: `Bearer ${cfg.supabaseAnonKey}`,
-        'Content-Type': blob.type || 'image/jpeg',
-        'x-upsert':'true'
-      },
-      body: blob
-    });
+    try{
+      await uploadMediaTus({
+        blob,
+        supabaseBase,
+        bucket,
+        path,
+        anonKey: cfg.supabaseAnonKey,
+        contentType: blob.type || 'image/jpeg'
+      });
+    }catch(tusError){
+      const url = `${supabaseBase}/storage/v1/object/${bucket}/${path}`;
+      const res = await fetch(url, {
+        method:'POST',
+        headers:{
+          apikey: cfg.supabaseAnonKey,
+          Authorization: `Bearer ${cfg.supabaseAnonKey}`,
+          'Content-Type': blob.type || 'image/jpeg',
+          'x-upsert':'true'
+        },
+        body: blob
+      });
 
-    if(!res.ok){
-      const detail = await res.text().catch(()=>'');
-      console.warn('[Conecta perfil] No se pudo subir avatar', detail || res.status);
-      return prof;
+      if(!res.ok){
+        const detail = await res.text().catch(()=>'');
+        console.warn('[Conecta perfil] No se pudo subir avatar', tusError, detail || res.status);
+        toast('No se pudo subir la foto a la nube. Revisa Storage/políticas.');
+        return prof;
+      }
     }
 
     return normalizeProfile({
@@ -1095,6 +1150,22 @@
     });
   }
 
+  async function repairPublicProfileAvatar(){
+    let prof = profile();
+    const localAvatar = bestLocalProfileAvatar();
+    if(localAvatar && !prof.avatarData) prof = {...prof, avatarData:localAvatar};
+    const before = String(prof.avatarData || localAvatar || '');
+    if(!before) return toast('Este celular no tiene una foto local para subir.');
+    toast('Reparando foto pública del anunciante...');
+    const nextProfile = await uploadProfileAvatarToCloud(prof);
+    if(!isHttpAvatarUrl(nextProfile.avatarData)){
+      return toast('No se pudo convertir la foto a URL pública.');
+    }
+    saveProfileEverywhere(nextProfile);
+    applyProfileToOwnPosts(nextProfile);
+    toast('Foto pública reparada. Revisa desde otro celular en unos segundos.');
+    render();
+  }
 
 
   function toTusMetadataValue(value){
@@ -2569,7 +2640,7 @@
         display:none !important;
       }
 
-      /* v6.4.85-tienda-admin-y-avatar-nube: bloque consolidado de Home/postCard.
+      /* v6.4.86-avatar-publico-y-video-estable: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2902,7 +2973,7 @@
         min-height:48px;
       }
 
-      /* v6.4.85-tienda-admin-y-avatar-nube */
+      /* v6.4.86-avatar-publico-y-video-estable */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5680,7 +5751,7 @@
 
 
 
-      /* v6.4.85-tienda-admin-y-avatar-nube
+      /* v6.4.86-avatar-publico-y-video-estable
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6111,7 +6182,7 @@
 
 
 
-      /* v6.4.85-tienda-admin-y-avatar-nube
+      /* v6.4.86-avatar-publico-y-video-estable
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -7833,7 +7904,7 @@ ${esc(shortDiagnosticText(diag))}</code>
       <input id="profilePhotoInput" type="file" accept="image/*" hidden>
       <label>Nombre visible</label>
       <input id="profileName" type="text" inputmode="text" autocomplete="off" autocapitalize="words" value="${esc(prof.name||'Usuario local')}" placeholder="Tu nombre o negocio">
-      <button class="big-button" data-save-profile>Guardar perfil</button>
+      <button class="big-button" data-save-profile>Guardar perfil</button><button class="small-link" type="button" data-repair-avatar>Reparar foto pública</button>
       <div class="profile-grid"><div class="stat"><strong>${mine.length}</strong><span>${adminProfile ? 'Administrables' : 'Publicaciones'}</span></div><div class="stat"><strong>${follows().length}</strong><span>Siguiendo</span></div><div class="stat"><strong>${unreadCount()}</strong><span>Sin leer</span></div></div>
       <div class="trust-entry-card">
         <div>
@@ -8683,7 +8754,33 @@ ${esc(shortDiagnosticText(diag))}</code>
 
 
   function setupInternalVideos(){
-    document.querySelectorAll('video.feed-video-player').forEach(video => {
+    const videos = [...document.querySelectorAll('video.feed-video-player')];
+
+    if(!state.videoObserver && 'IntersectionObserver' in window){
+      state.videoObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          const video = entry.target;
+          if(!video || !video.matches?.('video.feed-video-player')) return;
+          if(entry.isIntersecting && entry.intersectionRatio > 0.45){
+            video.muted = true;
+            video.loop = true;
+            video.playsInline = true;
+            document.querySelectorAll('video.feed-video-player').forEach(other => {
+              if(other !== video) { try{ other.pause(); }catch{} }
+            });
+            video.play?.().catch(()=>null);
+          }else{
+            try{ video.pause(); }catch{}
+          }
+        });
+      }, {threshold:[0, .45, .75]});
+    }
+
+    videos.forEach(video => {
+      if(video.dataset.csObserved !== '1' && state.videoObserver){
+        state.videoObserver.observe(video);
+        video.dataset.csObserved = '1';
+      }
       if(video.dataset.csBound === '1') return;
       video.dataset.csBound = '1';
 
@@ -8805,8 +8902,9 @@ ${esc(shortDiagnosticText(diag))}</code>
   async function saveProfile(){
     const current = profile();
     const name=document.getElementById('profileName')?.value.trim()||'Usuario local';
-    let nextProfile = saveProfileEverywhere({...current, name, updatedAt:new Date().toISOString()});
-    if(/^data:image\//i.test(String(nextProfile.avatarData || ''))){
+    const bestAvatar = String(current.avatarData || '').trim() || bestLocalProfileAvatar();
+    let nextProfile = saveProfileEverywhere({...current, name, avatarData:bestAvatar, updatedAt:new Date().toISOString()});
+    if(bestAvatar && !isHttpAvatarUrl(bestAvatar)){
       toast('Subiendo foto de perfil a la nube...');
       nextProfile = await uploadProfileAvatarToCloud(nextProfile);
       saveProfileEverywhere(nextProfile);
@@ -8820,13 +8918,16 @@ ${esc(shortDiagnosticText(diag))}</code>
   function applyProfileToOwnPosts(prof=profile()){
     prof = normalizeProfile(prof);
     if(!isPersonalProfile(prof)) return;
-    saveProfileEverywhere(prof);
+    const avatar = String(prof.avatarData || '').trim() || bestLocalProfileAvatar();
+    const cleanProf = normalizeProfile({...prof, avatarData:avatar});
+    saveProfileEverywhere(cleanProf);
     const mine = state.posts.filter(p => p.ownerId === userId());
     if(!mine.length) return;
     const now = new Date().toISOString();
-    const updated = state.posts.map(p => p.ownerId === userId() ? {...p, ownerName:prof.name || 'Usuario local', ownerAvatar:prof.avatarData || '', updatedAt:now} : p);
+    const updated = state.posts.map(p => p.ownerId === userId() ? {...p, ownerName:cleanProf.name || 'Usuario local', ownerAvatar:cleanProf.avatarData || '', updatedAt:now} : p);
     saveLocalPosts(updated);
-    mine.forEach(p => syncPost({...p, ownerName:prof.name || 'Usuario local', ownerAvatar:prof.avatarData || '', updatedAt:now}).catch(()=>null));
+    state.posts = updated;
+    mine.forEach(p => syncPost({...p, ownerName:cleanProf.name || 'Usuario local', ownerAvatar:cleanProf.avatarData || '', updatedAt:now}).catch(()=>null));
   }
 
   function applyProfileToVisiblePosts(options={}){
@@ -9717,6 +9818,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     document.querySelectorAll('[data-publish]').forEach(b=>b.onclick=publish);
     document.querySelectorAll('[data-frame-action]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();adjustComposerFrame(b.dataset.frameAction);});
     document.querySelectorAll('[data-save-profile]').forEach(b=>b.onclick=saveProfile);
+    document.querySelectorAll('[data-repair-avatar]').forEach(b=>b.onclick=repairPublicProfileAvatar);
     document.querySelectorAll('[data-pick-profile-photo]').forEach(b=>b.onclick=openProfilePhotoPicker);
     const profilePhotoInput=document.getElementById('profilePhotoInput');
     if(profilePhotoInput) profilePhotoInput.onchange=profilePhotoChosen;
