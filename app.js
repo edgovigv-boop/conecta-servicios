@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.5.2-feed-inmersivo
+/* Conecta Servicios v6.5.3-scroll-restaurado
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.5.2-feed-inmersivo';
+  const VERSION = 'v6.5.3-scroll-restaurado';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2653,7 +2653,7 @@
         display:none !important;
       }
 
-      /* v6.5.2-feed-inmersivo: bloque consolidado de Home/postCard.
+      /* v6.5.3-scroll-restaurado: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2986,7 +2986,7 @@
         min-height:48px;
       }
 
-      /* v6.5.2-feed-inmersivo */
+      /* v6.5.3-scroll-restaurado */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5764,7 +5764,7 @@
 
 
 
-      /* v6.5.2-feed-inmersivo
+      /* v6.5.3-scroll-restaurado
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6195,7 +6195,7 @@
 
 
 
-      /* v6.5.2-feed-inmersivo
+      /* v6.5.3-scroll-restaurado
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -8109,6 +8109,123 @@
         .post-card.immersive-feed-card .media-gallery-counter{
           top:calc(env(safe-area-inset-top) + 130px) !important;
         }
+      }
+
+      /* v6.5.3: restauración de scroll global sin tocar Supabase ni lógica.
+         El feed inmersivo queda full-screen, pero el scroll vertical vuelve a pertenecer al documento.
+         Los carruseles permiten gesto horizontal sin bloquear el gesto vertical del feed. */
+      html,
+      body{
+        height:auto !important;
+        min-height:100% !important;
+        max-height:none !important;
+        overflow-x:hidden !important;
+        overflow-y:auto !important;
+        position:relative !important;
+        touch-action:pan-y !important;
+        overscroll-behavior-y:auto !important;
+        -webkit-overflow-scrolling:touch !important;
+      }
+
+      #app,
+      .app-shell,
+      main,
+      main.app-page,
+      .screen{
+        height:auto !important;
+        min-height:100dvh !important;
+        max-height:none !important;
+        overflow-x:hidden !important;
+        overflow-y:visible !important;
+        touch-action:pan-y !important;
+        overscroll-behavior-y:auto !important;
+        -webkit-overflow-scrolling:touch !important;
+      }
+
+      .feed,
+      .store-feed,
+      .following-liked-feed{
+        height:auto !important;
+        min-height:100dvh !important;
+        max-height:none !important;
+        overflow-x:hidden !important;
+        overflow-y:visible !important;
+        touch-action:pan-y !important;
+        overscroll-behavior-y:auto !important;
+        -webkit-overflow-scrolling:touch !important;
+        scroll-snap-type:y proximity !important;
+      }
+
+      .feed > .post-card.immersive-feed-card,
+      .store-feed > .post-card.immersive-feed-card,
+      .following-liked-feed > .post-card.immersive-feed-card{
+        position:relative !important;
+        height:100dvh !important;
+        min-height:100dvh !important;
+        max-height:none !important;
+        overflow:hidden !important;
+        touch-action:pan-y !important;
+        scroll-snap-align:start !important;
+      }
+
+      @supports (height:100svh){
+        .feed > .post-card.immersive-feed-card,
+        .store-feed > .post-card.immersive-feed-card,
+        .following-liked-feed > .post-card.immersive-feed-card{
+          height:100svh !important;
+          min-height:100svh !important;
+        }
+      }
+
+      .post-card.immersive-feed-card:not(.direct-frame-active),
+      .post-card.immersive-feed-card:not(.direct-frame-active) .media-area,
+      .post-card.immersive-feed-card:not(.direct-frame-active) .gallery-stage,
+      .post-card.immersive-feed-card:not(.direct-frame-active) .media-carousel,
+      .post-card.immersive-feed-card:not(.direct-frame-active) .video-inline-wrap,
+      .post-card.immersive-feed-card:not(.direct-frame-active) video.feed-video-player,
+      .post-card.immersive-feed-card:not(.direct-frame-active) img{
+        touch-action:pan-y pinch-zoom !important;
+        overscroll-behavior-y:auto !important;
+      }
+
+      .post-card.immersive-feed-card:not(.direct-frame-active) .media-carousel{
+        overflow-x:auto !important;
+        overflow-y:hidden !important;
+        scroll-snap-type:x mandatory !important;
+        -webkit-overflow-scrolling:touch !important;
+      }
+
+      .post-card.immersive-feed-card.description-open .post-description-expanded{
+        touch-action:pan-y !important;
+        overflow-y:auto !important;
+        overscroll-behavior-y:contain !important;
+        -webkit-overflow-scrolling:touch !important;
+      }
+
+      .panel,
+      .composer,
+      .messages-panel,
+      .chat-panel,
+      .profile-panel,
+      .store-panel,
+      .following-panel,
+      .owner-directory,
+      .conversation-list,
+      .visible-message-list,
+      .chat-feed{
+        height:auto !important;
+        max-height:none !important;
+        overflow-y:visible !important;
+        touch-action:pan-y !important;
+        overscroll-behavior-y:auto !important;
+        -webkit-overflow-scrolling:touch !important;
+      }
+
+      .direct-frame-active .media-area,
+      .direct-frame-area-active,
+      .frame-touch-editor{
+        touch-action:none !important;
+        overscroll-behavior:contain !important;
       }
 
 `;
