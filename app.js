@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.5.7-configurador-inteligente
+/* Conecta Servicios v6.5.8-registros-mixtos
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.5.7-configurador-inteligente';
+  const VERSION = 'v6.5.8-registros-mixtos';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2653,7 +2653,7 @@
         display:none !important;
       }
 
-      /* v6.5.7-configurador-inteligente: bloque consolidado de Home/postCard.
+      /* v6.5.8-registros-mixtos: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2986,7 +2986,7 @@
         min-height:48px;
       }
 
-      /* v6.5.7-configurador-inteligente */
+      /* v6.5.8-registros-mixtos */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5764,7 +5764,7 @@
 
 
 
-      /* v6.5.7-configurador-inteligente
+      /* v6.5.8-registros-mixtos
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6195,7 +6195,7 @@
 
 
 
-      /* v6.5.7-configurador-inteligente
+      /* v6.5.8-registros-mixtos
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -8715,6 +8715,8 @@
         }
       }
 
+      /* v6.5.8: Conecta Control separa dictados mixtos en varios movimientos */
+
 `;
     document.head.appendChild(style);
   }
@@ -8851,21 +8853,51 @@
       });
   }
 
+  function controlAliasVariants(nombre=''){
+    const norm = controlNormalize(nombre);
+    const variants = new Set([nombre, norm]);
+
+    // Para negocio de tacos: "Tacos de suadero" también debe entender "suadero".
+    const stripped = norm
+      .replace(/\b(tacos?|taco|de|del|la|el|los|las)\b/g,' ')
+      .replace(/\s+/g,' ')
+      .trim();
+    if(stripped) variants.add(stripped);
+
+    // Si alguien escribió "tripa y al pastor" como un solo producto, crear aliases separados.
+    norm.split(/\sy\s/).map(v=>v.trim()).filter(Boolean).forEach(part => {
+      variants.add(part);
+      const partStripped = part.replace(/\b(tacos?|taco|de|del|la|el|los|las)\b/g,' ').replace(/\s+/g,' ').trim();
+      if(partStripped) variants.add(partStripped);
+    });
+
+    return [...variants].filter(Boolean);
+  }
+
   function controlCatalogFromConfig(config=getControlBusinessConfig()){
     const items = Array.isArray(config?.productosServicios) ? config.productosServicios : [];
     if(!items.length) return getControlDemoCatalog();
+
     const catalog = {};
     items.forEach((item, index) => {
-      const nombre = String(item?.nombre || item || '').trim();
-      if(!nombre) return;
-      const clave = String(item?.clave || `${controlSlug(nombre)}_${index+1}`).replace(/_+/g,'_');
-      const precio = Number(item?.precio || 0);
-      catalog[clave] = {
-        clave,
-        nombre,
-        precio,
-        aliases:[nombre, controlNormalize(nombre), ...(item?.aliases || [])]
-      };
+      const originalName = String(item?.nombre || item || '').trim();
+      if(!originalName) return;
+
+      // Split suave para casos reales: "tripa y al pastor" debe ser 2 productos.
+      const pieces = originalName.includes(' y ') && !Number(item?.precio || 0)
+        ? originalName.split(/\sy\s/).map(p=>p.trim()).filter(Boolean)
+        : [originalName];
+
+      pieces.forEach((nombre, subIndex) => {
+        const clave = String(item?.clave && pieces.length === 1 ? item.clave : `${controlSlug(nombre)}_${index+1}_${subIndex+1}`).replace(/_+/g,'_');
+        const precio = Number(item?.precio || 0);
+        catalog[clave] = {
+          clave,
+          nombre,
+          precio,
+          aliases:controlAliasVariants(nombre)
+        };
+      });
     });
     return Object.keys(catalog).length ? catalog : getControlDemoCatalog();
   }
@@ -9048,6 +9080,13 @@
     });
   }
 
+  function extractControlAmountNear(text='', index=0){
+    const slice = String(text || '').slice(index, index + 80);
+    const match = slice.match(/\b(?:fueron|fue|por|a|en|total|cobre|cobré)?\s*\$?\s*([0-9]+(?:[\.,][0-9]+)?)\s*(?:pesos?)?\b/i);
+    if(!match) return 0;
+    return Number(String(match[1]).replace(',','.')) || 0;
+  }
+
   function extractProductItems(message='', tipo='VENTA'){
     const text = controlNormalize(message)
       .replace(/,/g,' , ')
@@ -9056,40 +9095,52 @@
       .trim();
 
     const found = [];
-    const seen = new Set();
     const qtyPattern = controlQuantityTokenPattern();
 
     controlProductAliases().forEach(({key, product, pattern}) => {
-      const patterns = [
-        // "3 limon", "tres limon", "un fresa", "una fresa", "2 de queso"
-        new RegExp(`(?:^|[\\s,;])(${qtyPattern})\\s*(?:de\\s+)?(?:${pattern})(?:s)?\\b`, 'i'),
-        // "limon 3", "queso tres"
-        new RegExp(`(?:^|[\\s,;])(?:${pattern})(?:s)?\\s*(${qtyPattern})\\b`, 'i')
+      const rxList = [
+        // "4 tacos de suadero", "cuatro tacos de suadero", "2 de queso"
+        new RegExp(`(?:^|[\\s,;])(${qtyPattern})\\s*(?:tacos?\\s+)?(?:de\\s+|al\\s+|a\\s+)?(?:${pattern})(?:s)?\\b`, 'ig'),
+        // "suadero 4", menos común, pero útil.
+        new RegExp(`(?:^|[\\s,;])(?:${pattern})(?:s)?\\s*(${qtyPattern})\\b`, 'ig')
       ];
 
-      let qty = 0;
-      for(const rx of patterns){
-        const match = text.match(rx);
-        if(match){
-          qty = controlParseQuantity(match[1]);
-          break;
+      const matches = [];
+      rxList.forEach(rx => {
+        let match;
+        while((match = rx.exec(text))){
+          const qty = controlParseQuantity(match[1]);
+          if(qty > 0){
+            matches.push({qty, index:match.index, raw:match[0]});
+          }
+          if(match.index === rx.lastIndex) rx.lastIndex++;
         }
-      }
+      });
 
-      if(qty > 0 && !seen.has(key)){
-        seen.add(key);
-        const unit = ['VENTA','PEDIDO'].includes(tipo) ? product.precio : 0;
-        found.push({
-          productoClave:key,
-          productoNombre:product.nombre,
-          cantidad:qty,
-          precioUnitario:unit,
-          total:qty * unit
+      if(matches.length){
+        matches.sort((a,b)=>a.index-b.index).forEach(match => {
+          const amountNear = ['VENTA','PEDIDO'].includes(tipo) ? extractControlAmountNear(text, match.index + match.raw.length) : 0;
+          const unit = ['VENTA','PEDIDO'].includes(tipo)
+            ? (product.precio > 0 ? product.precio : (amountNear > 0 ? amountNear / match.qty : 0))
+            : 0;
+          const total = ['VENTA','PEDIDO'].includes(tipo)
+            ? (amountNear > 0 ? amountNear : match.qty * unit)
+            : 0;
+
+          found.push({
+            productoClave:key,
+            productoNombre:product.nombre,
+            cantidad:match.qty,
+            precioUnitario:unit,
+            total
+          });
         });
       }
     });
 
-    return found;
+    // Orden aproximado al texto y compactación si se repite producto sin monto especial.
+    const ordered = found.sort((a,b)=>String(a.productoNombre).localeCompare(String(b.productoNombre)));
+    return ordered;
   }
 
   function extractExpenseItems(message=''){
@@ -9099,7 +9150,6 @@
       .replace(/\s+/g,' ')
       .trim();
 
-    // Separar conceptos naturales: "leche 120, azúcar 80 y vasos 150".
     const parts = normalized
       .split(/,|\sy\s/gi)
       .map(p => p.trim())
@@ -9107,11 +9157,18 @@
 
     const items = [];
     parts.forEach(part => {
-      // Caso válido: "azucar 80", "vasos $150", "un kilo de azucar 45".
-      // Caso NO válido como dinero: "3 kg de limon", "un kilo de azucar".
-      const match = part.match(/^(.+?)\s+\$?\s*([0-9]+(?:[\.,][0-9]+)?)\s*(?:pesos?)?\s*$/i);
+      const cleanedPart = part
+        .replace(/^(tambien\s+)?(compre|compramos|gaste|gastamos|gasto|pague|pago|inverti|inversion)\s+/i,'')
+        .trim();
+
+      // Casos:
+      // "tortillas fueron 75"
+      // "5 kg de tortillas fueron 75"
+      // "caja de refrescos con 24 piezas a 400"
+      // "azúcar 80"
+      const match = cleanedPart.match(/^(.+?)\s+(?:fueron|fue|por|a|en|total)?\s*\$?\s*([0-9]+(?:[\.,][0-9]+)?)\s*(?:pesos?)?\s*$/i);
       if(match){
-        const concepto = match[1].trim();
+        let concepto = match[1].trim().replace(/\b(fueron|fue|por|a|en|total)$/i,'').trim();
         const monto = Number(String(match[2]).replace(',','.'));
         const amountWasUnit = /\b(kg|kilo|kilos|kilogramo|kilogramos|g|gr|gramo|gramos|litro|litros|l|ml|pieza|piezas|pz|pzs|paquete|paquetes|caja|cajas)\s*$/i.test(concepto);
         if(concepto && monto > 0 && !amountWasUnit){
@@ -9122,7 +9179,6 @@
 
     if(items.length) return items;
 
-    // Caso "gasté 350 en ingredientes" o "pagué $120 de luz".
     const totalMoney = normalized.match(/(?:^|\s)(?:\$|mxn\s*)\s*([0-9]+(?:[\.,][0-9]+)?)(?:\s|$)|(?:^|\s)([0-9]+(?:[\.,][0-9]+)?)\s*pesos(?:\s|$)|^(?:[0-9]+(?:[\.,][0-9]+)?)\s+en\s+(.+)$/i);
     if(totalMoney){
       const n = Number(String(totalMoney[1] || totalMoney[2] || normalized.match(/^[0-9]+(?:[\.,][0-9]+)?/)?.[0] || 0).replace(',','.'));
@@ -9241,6 +9297,41 @@
     }
     return 'Nota guardada.';
   }
+
+
+  function splitControlMixedMessage(message=''){
+    const original = String(message || '').trim();
+    if(!original) return [];
+
+    const normalized = controlNormalize(original);
+    const markerRx = /\b(inventario inicial|vendi|vendimos|venta|ventas|salieron|compre|compramos|gaste|gastamos|gasto|pague|produje|conte|merma|pedido|me deben|deben|cobre)\b/g;
+    const markers = [];
+    let match;
+    while((match = markerRx.exec(normalized))){
+      markers.push({index:match.index, word:match[0]});
+    }
+
+    if(markers.length <= 1) return [original];
+
+    const segments = [];
+    markers.forEach((marker, idx) => {
+      const start = marker.index;
+      const end = idx + 1 < markers.length ? markers[idx+1].index : original.length;
+      const seg = original.slice(start, end)
+        .replace(/^\s*(y|tambien|también|ademas|además)\s+/i,'')
+        .trim();
+      if(seg) segments.push(seg);
+    });
+
+    return segments.length ? segments : [original];
+  }
+
+  function createControlRecordsFromMessage(message=''){
+    const segments = splitControlMixedMessage(message);
+    const records = segments.map(segment => createControlRecord(segment));
+    return records.length ? records : [createControlRecord(message)];
+  }
+
 
   function createControlRecord(message=''){
     const parsed = parseControlMessage(message);
@@ -9524,7 +9615,7 @@
       <section class="control-panel">
         <h2>Registro inteligente</h2>
         <p>Escribe lo que pasó en tu negocio. Ejemplo: “Vendí 4 tacos, compré tortillas 120, me deben 200 de Ana”.</p>
-        <textarea id="controlMessageInput" rows="3" placeholder="Ej: Vendí 4 tacos o Compré insumos 120"></textarea>
+        <textarea id="controlMessageInput" rows="3" placeholder="Ej: Vendí cuatro tacos fueron 120 y compré tortillas 75"></textarea>
         <button type="button" class="control-main-btn" data-control-process>Procesar registro</button>
         ${config?.demo ? `<div class="control-examples">${examples}</div>` : ''}
       </section>
@@ -9674,9 +9765,14 @@
     const input = document.getElementById('controlMessageInput');
     const message = String(input?.value || '').trim();
     if(!message) return toast('Escribe un mensaje para procesar.');
-    const record = createControlRecord(message);
-    saveControlRecord(record);
-    toast(record.estado === 'confirmado' ? 'Movimiento registrado.' : 'Registro pendiente de datos.');
+    const records = createControlRecordsFromMessage(message);
+    records.forEach(saveControlRecord);
+    const pending = records.filter(r => r.estado !== 'confirmado').length;
+    if(records.length > 1){
+      toast(pending ? `${records.length} movimientos procesados; ${pending} pendiente(s).` : `${records.length} movimientos registrados.`);
+    }else{
+      toast(records[0].estado === 'confirmado' ? 'Movimiento registrado.' : 'Registro pendiente de datos.');
+    }
     render();
     setTimeout(() => {
       const history = document.querySelector('.control-chat-history');
