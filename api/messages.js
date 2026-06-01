@@ -1,5 +1,5 @@
 // api/messages.js
-// Conecta Servicios v6.5.5 - Mensajes públicos + bandeja global admin
+// Conecta Servicios v6.5.7 - Mensajes públicos + bandeja global admin
 // Requiere SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY en Vercel.
 // Tabla: connecta_messages
 

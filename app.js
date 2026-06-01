@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.5.5-cantidades-en-letras
+/* Conecta Servicios v6.5.7-configurador-inteligente
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.5.5-cantidades-en-letras';
+  const VERSION = 'v6.5.7-configurador-inteligente';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2653,7 +2653,7 @@
         display:none !important;
       }
 
-      /* v6.5.5-cantidades-en-letras: bloque consolidado de Home/postCard.
+      /* v6.5.7-configurador-inteligente: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2986,7 +2986,7 @@
         min-height:48px;
       }
 
-      /* v6.5.5-cantidades-en-letras */
+      /* v6.5.7-configurador-inteligente */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5764,7 +5764,7 @@
 
 
 
-      /* v6.5.5-cantidades-en-letras
+      /* v6.5.7-configurador-inteligente
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6195,7 +6195,7 @@
 
 
 
-      /* v6.5.5-cantidades-en-letras
+      /* v6.5.7-configurador-inteligente
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -8552,6 +8552,169 @@
 
       /* v6.5.5: Conecta Control entiende cantidades en letras: un, una, dos, tres... */
 
+      /* v6.5.7 Conecta Control — configurador inteligente universal */
+      .control-welcome-hero h1,
+      .control-setup-page h1{
+        font-size:30px;
+      }
+
+      .control-onboarding-card{
+        background:linear-gradient(135deg,#ffffff,#ecfdf5);
+      }
+
+      .control-secondary-btn,
+      .control-soft-btn{
+        width:100%;
+        min-height:50px;
+        margin-top:10px;
+        border-radius:18px;
+        border:1px solid #d1fae5;
+        font-weight:950;
+        font-size:15px;
+      }
+
+      .control-secondary-btn{
+        background:#ecfdf5;
+        color:#047857;
+      }
+
+      .control-soft-btn{
+        background:#f8fafc;
+        color:#334155;
+        border-color:#e2e8f0;
+      }
+
+      .control-soft-btn.danger{
+        color:#b91c1c;
+        border-color:#fecaca;
+        background:#fff7f7;
+      }
+
+      .control-feature-grid{
+        display:grid;
+        grid-template-columns:repeat(2, minmax(0,1fr));
+        gap:8px;
+      }
+
+      .control-feature-grid span{
+        padding:10px 12px;
+        border-radius:14px;
+        background:#f8fafc;
+        color:#0f172a;
+        font-weight:900;
+        border:1px solid #e2e8f0;
+      }
+
+      .control-demo-lines{
+        display:flex;
+        flex-direction:column;
+        gap:8px;
+      }
+
+      .control-demo-lines b{
+        display:block;
+        padding:10px 12px;
+        border-radius:14px;
+        background:#eef2ff;
+        color:#312e81;
+        font-size:14px;
+        line-height:1.3;
+      }
+
+      .control-progress{
+        width:100%;
+        height:8px;
+        background:#e2e8f0;
+        border-radius:999px;
+        overflow:hidden;
+        margin-bottom:8px;
+      }
+
+      .control-progress span{
+        display:block;
+        height:100%;
+        background:linear-gradient(135deg,#059669,#10b981);
+        border-radius:999px;
+      }
+
+      .control-step-count{
+        margin:0 0 12px !important;
+        color:#059669 !important;
+        font-size:12px !important;
+        font-weight:950;
+        text-transform:uppercase;
+        letter-spacing:.06em;
+      }
+
+      .control-setup-input,
+      .control-setup-textarea{
+        width:100%;
+        box-sizing:border-box;
+        padding:14px;
+        border-radius:18px;
+        border:1px solid #cbd5e1;
+        background:#f8fafc;
+        color:#111827;
+        font-size:16px;
+        outline:none;
+      }
+
+      .control-setup-input:focus,
+      .control-setup-textarea:focus{
+        border-color:#10b981;
+        box-shadow:0 0 0 4px rgba(16,185,129,.16);
+        background:#fff;
+      }
+
+      .control-choice-grid{
+        display:grid;
+        grid-template-columns:repeat(2, minmax(0,1fr));
+        gap:8px;
+      }
+
+      .control-choice{
+        min-height:48px;
+        border-radius:16px;
+        border:1px solid #e2e8f0;
+        background:#f8fafc;
+        color:#334155;
+        font-weight:900;
+        padding:10px 12px;
+        text-align:left;
+      }
+
+      .control-choice.selected{
+        background:#dcfce7;
+        border-color:#10b981;
+        color:#065f46;
+        box-shadow:0 8px 18px rgba(16,185,129,.12);
+      }
+
+      .control-setup-actions{
+        margin-top:14px;
+        display:grid;
+        grid-template-columns:1fr;
+        gap:8px;
+      }
+
+      .control-setup-actions .control-soft-btn,
+      .control-setup-actions .control-main-btn{
+        margin-top:0;
+      }
+
+      @media (min-width:430px){
+        .control-setup-actions{
+          grid-template-columns:1fr 1fr;
+        }
+      }
+
+      @media (max-width:380px){
+        .control-choice-grid,
+        .control-feature-grid{
+          grid-template-columns:1fr;
+        }
+      }
+
 `;
     document.head.appendChild(style);
   }
@@ -8577,7 +8740,11 @@
      Módulo aislado. No toca Supabase, publicaciones ni mensajes.
      ========================================================= */
 
-  const CONTROL_STORAGE_KEY = 'conecta_control_postres_fer_records';
+  const CONTROL_DEMO_STORAGE_KEY = 'conecta_control_postres_fer_records';
+  const CONTROL_RECORDS_KEY = 'conecta_control_business_records';
+  const CONTROL_CONFIG_KEY = 'conecta_control_business_config';
+  const CONTROL_SETUP_DRAFT_KEY = 'conecta_control_setup_draft';
+  const CONTROL_SETUP_STEP_KEY = 'conecta_control_setup_step';
   const CONTROL_BUSINESS_ID = 'postres_fer';
 
   function controlNormalize(value=''){
@@ -8625,7 +8792,7 @@
     return Number(controlQuantityWords()[token] || 0);
   }
 
-  function getControlCatalog(){
+  function getControlDemoCatalog(){
     return {
       limon: {
         clave:'limon',
@@ -8654,11 +8821,196 @@
     };
   }
 
+  function controlSlug(value='producto'){
+    const base = controlNormalize(value)
+      .replace(/[^a-z0-9\s]/g,'')
+      .trim()
+      .split(/\s+/)
+      .slice(0, 4)
+      .join('_');
+    return base || `producto_${Date.now()}`;
+  }
+
+  function parseControlProductsFromText(text=''){
+    const raw = String(text || '').trim();
+    if(!raw) return [];
+    return raw
+      .split(/\n|,|;/)
+      .map(item => item.trim())
+      .filter(Boolean)
+      .map((item, index) => {
+        const match = item.match(/^(.+?)\s+\$?\s*([0-9]+(?:[\.,][0-9]+)?)\s*$/);
+        const nombre = (match ? match[1] : item).trim();
+        const precio = match ? Number(String(match[2]).replace(',','.')) : 0;
+        return {
+          clave: `${controlSlug(nombre)}_${index+1}`.replace(/_+/g,'_'),
+          nombre,
+          precio,
+          aliases:[nombre, controlNormalize(nombre)]
+        };
+      });
+  }
+
+  function controlCatalogFromConfig(config=getControlBusinessConfig()){
+    const items = Array.isArray(config?.productosServicios) ? config.productosServicios : [];
+    if(!items.length) return getControlDemoCatalog();
+    const catalog = {};
+    items.forEach((item, index) => {
+      const nombre = String(item?.nombre || item || '').trim();
+      if(!nombre) return;
+      const clave = String(item?.clave || `${controlSlug(nombre)}_${index+1}`).replace(/_+/g,'_');
+      const precio = Number(item?.precio || 0);
+      catalog[clave] = {
+        clave,
+        nombre,
+        precio,
+        aliases:[nombre, controlNormalize(nombre), ...(item?.aliases || [])]
+      };
+    });
+    return Object.keys(catalog).length ? catalog : getControlDemoCatalog();
+  }
+
+  function getControlCatalog(){
+    return controlCatalogFromConfig();
+  }
+
+
+  function getControlBusinessConfig(){
+    try{
+      const raw = JSON.parse(localStorage.getItem(CONTROL_CONFIG_KEY) || 'null');
+      return raw && typeof raw === 'object' ? raw : null;
+    }catch{
+      return null;
+    }
+  }
+
+  function saveControlBusinessConfig(config){
+    const now = new Date().toISOString();
+    const next = {
+      id: config?.id || `business_local_${Date.now()}`,
+      nombreNegocio: String(config?.nombreNegocio || '').trim() || 'Mi negocio',
+      tipoNegocio: String(config?.tipoNegocio || '').trim() || 'Otro',
+      productosServicios: Array.isArray(config?.productosServicios) ? config.productosServicios : [],
+      controlesActivos: Array.isArray(config?.controlesActivos) ? config.controlesActivos : ['VENTA','GASTO'],
+      modeloOperacion: String(config?.modeloOperacion || 'No estoy seguro'),
+      ayudaGananciaDiaria: String(config?.ayudaGananciaDiaria || 'Sí'),
+      demo: !!config?.demo,
+      creadoEn: config?.creadoEn || now,
+      actualizadoEn: now
+    };
+    localStorage.setItem(CONTROL_CONFIG_KEY, JSON.stringify(next));
+    localStorage.removeItem(CONTROL_SETUP_DRAFT_KEY);
+    localStorage.removeItem(CONTROL_SETUP_STEP_KEY);
+    return next;
+  }
+
+  function clearControlBusinessConfig(){
+    localStorage.removeItem(CONTROL_CONFIG_KEY);
+    localStorage.removeItem(CONTROL_SETUP_DRAFT_KEY);
+    localStorage.removeItem(CONTROL_SETUP_STEP_KEY);
+  }
+
+  function controlRecordsKey(){
+    const config = getControlBusinessConfig();
+    return config?.demo ? CONTROL_DEMO_STORAGE_KEY : CONTROL_RECORDS_KEY;
+  }
+
+  function getControlSetupDraft(){
+    try{
+      const raw = JSON.parse(localStorage.getItem(CONTROL_SETUP_DRAFT_KEY) || '{}');
+      return raw && typeof raw === 'object' ? raw : {};
+    }catch{
+      return {};
+    }
+  }
+
+  function saveControlSetupDraft(draft){
+    localStorage.setItem(CONTROL_SETUP_DRAFT_KEY, JSON.stringify(draft || {}));
+  }
+
+  function getControlSetupStep(){
+    const n = Number(localStorage.getItem(CONTROL_SETUP_STEP_KEY) || '0');
+    return n > 0 ? n : 0;
+  }
+
+  function setControlSetupStep(step){
+    localStorage.setItem(CONTROL_SETUP_STEP_KEY, String(step));
+  }
+
+  function startControlSetup(){
+    saveControlSetupDraft({});
+    setControlSetupStep(1);
+    render();
+  }
+
+  function createDemoPostresFerConfig(){
+    const catalog = getControlDemoCatalog();
+    return saveControlBusinessConfig({
+      id:'postres_fer_demo',
+      nombreNegocio:'Postres Fer',
+      tipoNegocio:'Postres',
+      demo:true,
+      productosServicios:Object.values(catalog).map(p => ({
+        clave:p.clave,
+        nombre:p.nombre,
+        precio:p.precio,
+        aliases:p.aliases || []
+      })),
+      controlesActivos:['VENTA','GASTO','PRODUCCION','INVENTARIO','MERMA','PEDIDO','COBRO','DEUDA'],
+      modeloOperacion:'Productos',
+      ayudaGananciaDiaria:'Sí'
+    });
+  }
+
+  function controlSuggestedControls(type=''){
+    const t = controlNormalize(type);
+    if(/comida|postre|taco|restaurante|antojito/.test(t)) return ['VENTA','GASTO','PRODUCCION','INVENTARIO','MERMA','PEDIDO'];
+    if(/salud|doctor|consultorio|medico|medica|terapia/.test(t)) return ['CITA','CLIENTE','COBRO','DEUDA','GASTO','SEGUIMIENTO'];
+    if(/ferreteria|farmacia|tienda|abarrote/.test(t)) return ['VENTA','GASTO','INVENTARIO','PEDIDO','COBRO','DEUDA'];
+    if(/carpinteria|oficio|mueble|herreria|plomeria|electricidad/.test(t)) return ['TRABAJO','COTIZACION','ANTICIPO','MATERIAL','ENTREGA','CLIENTE','COBRO'];
+    if(/servicio|belleza|mascota|perro/.test(t)) return ['SERVICIO','CITA','CLIENTE','COBRO','DEUDA','GASTO'];
+    return ['VENTA','GASTO','PEDIDO','COBRO','DEUDA'];
+  }
+
+  function controlTypeOptions(){
+    return ['Comida','Postres','Tienda / abarrotes','Ferretería','Farmacia','Servicios','Salud / consultorio','Belleza','Carpintería / oficio','Mascotas','Otro'];
+  }
+
+  function controlAvailableControls(){
+    return [
+      ['VENTA','Ventas'],
+      ['GASTO','Gastos'],
+      ['INVENTARIO','Inventario'],
+      ['PEDIDO','Pedidos'],
+      ['CITA','Citas'],
+      ['CLIENTE','Clientes'],
+      ['DEUDA','Lo que me deben'],
+      ['COBRO','Cobros'],
+      ['PRODUCCION','Producción'],
+      ['MERMA','Mermas'],
+      ['TODO','Todo poco a poco']
+    ];
+  }
+
+  function controlLabelsForConfig(config=getControlBusinessConfig()){
+    const type = controlNormalize(config?.tipoNegocio || '');
+    if(/salud|doctor|consultorio|medico|medica|terapia/.test(type)){
+      return {item:'servicio/consulta', sold:'Servicios/consultas de hoy', top:'Servicio más solicitado'};
+    }
+    if(/carpinteria|oficio|servicio|belleza|mascota|perro/.test(type)){
+      return {item:'servicio/trabajo', sold:'Servicios realizados', top:'Servicio más solicitado'};
+    }
+    return {item:'producto', sold:'Productos vendidos', top:'Producto más vendido'};
+  }
+
+
   function getControlExamples(){
     return [
       'Vendí 3 limón, 2 queso y 1 fresas',
       'Vendí un fresa y tres limón',
       'Compré leche 120, azúcar 80 y vasos 150',
+      'Inventario inicial 20 limón, 15 queso y 10 arroz',
+      'Vendí 4 tacos, compré tortillas 120 y me deben 200 de Ana',
       'Produje 20 limón, 15 queso y 10 arroz',
       'Conté 8 limón, 5 queso y 3 arroz',
       'Merma 2 arroz',
@@ -8677,9 +9029,10 @@
     if(/\b(deben|me deben|debe|pendiente de pago|por cobrar)\b/.test(text)) return 'DEUDA';
     if(/\b(pedido|pidieron|me pidieron|encargo|encargaron|quiere|quieren)\b/.test(text)) return 'PEDIDO';
     if(/\b(merma|mermas|se echaron a perder|echaron a perder|se perdieron|perdi|perdio|desperdicie|desperdicio)\b/.test(text)) return 'MERMA';
+    if(/\b(inventario inicial|inicial|inicie con|iniciamos con|arranque con|arrancamos con|empece con|empezamos con)\b/.test(text)) return 'INVENTARIO_INICIAL';
     if(/\b(conte|contar|conteo|contado|me quedan|quedan|tengo en existencia|existencia real)\b/.test(text)) return 'CONTEO_REAL';
     if(/\b(produje|produccion|hice|prepare|preparamos|salieron del horno|elabore)\b/.test(text)) return 'PRODUCCION';
-    if(/\b(compre|gaste|gasto|pague|pago|inverti|inversion)\b/.test(text)) return 'GASTO';
+    if(/\b(compre|compramos|gaste|gastamos|gasto|pague|pago|inverti|inversion)\b/.test(text)) return 'GASTO';
     if(/\b(vendi|vendimos|venta|ventas|vender|salieron|se vendieron)\b/.test(text)) return 'VENTA';
     return 'NOTA';
   }
@@ -8740,34 +9093,43 @@
   }
 
   function extractExpenseItems(message=''){
-    const clean = String(message || '').trim()
-      .replace(/^(compr[eé]|gast[eé]|gasto|pagu[eé]|invert[ií])\s+/i,'')
-      .replace(/\s+/g,' ');
+    const original = String(message || '').trim();
+    const normalized = controlNormalize(original)
+      .replace(/^(compre|compramos|gaste|gastamos|gasto|pague|pago|inverti|inversion)\s+/i,'')
+      .replace(/\s+/g,' ')
+      .trim();
 
-    const parts = clean
+    // Separar conceptos naturales: "leche 120, azúcar 80 y vasos 150".
+    const parts = normalized
       .split(/,|\sy\s/gi)
       .map(p => p.trim())
       .filter(Boolean);
 
     const items = [];
     parts.forEach(part => {
-      const match = part.match(/^(.+?)\s+\$?\s*([0-9]+(?:[\.,][0-9]+)?)\s*$/i);
+      // Caso válido: "azucar 80", "vasos $150", "un kilo de azucar 45".
+      // Caso NO válido como dinero: "3 kg de limon", "un kilo de azucar".
+      const match = part.match(/^(.+?)\s+\$?\s*([0-9]+(?:[\.,][0-9]+)?)\s*(?:pesos?)?\s*$/i);
       if(match){
         const concepto = match[1].trim();
         const monto = Number(String(match[2]).replace(',','.'));
-        if(concepto && monto > 0){
+        const amountWasUnit = /\b(kg|kilo|kilos|kilogramo|kilogramos|g|gr|gramo|gramos|litro|litros|l|ml|pieza|piezas|pz|pzs|paquete|paquetes|caja|cajas)\s*$/i.test(concepto);
+        if(concepto && monto > 0 && !amountWasUnit){
           items.push({concepto, monto});
         }
       }
     });
 
-    if(!items.length){
-      const totalMatch = clean.match(/\$?\s*([0-9]+(?:[\.,][0-9]+)?)/);
-      const total = totalMatch ? Number(String(totalMatch[1]).replace(',','.')) : 0;
-      if(total > 0) items.push({concepto:'Gasto general', monto:total});
+    if(items.length) return items;
+
+    // Caso "gasté 350 en ingredientes" o "pagué $120 de luz".
+    const totalMoney = normalized.match(/(?:^|\s)(?:\$|mxn\s*)\s*([0-9]+(?:[\.,][0-9]+)?)(?:\s|$)|(?:^|\s)([0-9]+(?:[\.,][0-9]+)?)\s*pesos(?:\s|$)|^(?:[0-9]+(?:[\.,][0-9]+)?)\s+en\s+(.+)$/i);
+    if(totalMoney){
+      const n = Number(String(totalMoney[1] || totalMoney[2] || normalized.match(/^[0-9]+(?:[\.,][0-9]+)?/)?.[0] || 0).replace(',','.'));
+      if(n > 0) return [{concepto:'Gasto general', monto:n}];
     }
 
-    return items;
+    return [];
   }
 
   function extractControlAmount(message=''){
@@ -8810,7 +9172,7 @@
     let estado = 'confirmado';
     let alerta = '';
 
-    if(['VENTA','PRODUCCION','CONTEO_REAL','MERMA','PEDIDO'].includes(tipo) && !productItems.length){
+    if(['VENTA','PRODUCCION','INVENTARIO_INICIAL','CONTEO_REAL','MERMA','PEDIDO'].includes(tipo) && !productItems.length){
       estado = 'pendiente';
       alerta = tipo === 'VENTA'
         ? 'Entendí que fue una venta, pero falta cantidad y producto. Ejemplo: Vendí 3 limón.'
@@ -8821,7 +9183,7 @@
 
     if(tipo === 'GASTO' && !expenseItems.length){
       estado = 'pendiente';
-      alerta = 'Entendí que fue un gasto, pero falta monto. Ejemplo: Compré leche 120.';
+      alerta = 'Entendí que fue un gasto o compra, pero falta el monto en pesos. Ejemplo: Compré leche 120 o Compré 3 kg de limón 90.';
     }
 
     if(['COBRO','DEUDA'].includes(tipo) && !amount){
@@ -8853,6 +9215,9 @@
     if(record.tipo === 'GASTO'){
       const lines = record.gastos.map(g => `${g.concepto}: ${controlMoney(g.monto)}`);
       return `Listo, registré gasto:\n${lines.join('\n')}\nTotal gastos: ${controlMoney(record.total)}.`;
+    }
+    if(record.tipo === 'INVENTARIO_INICIAL'){
+      return `Inventario inicial registrado:\n${record.items.map(i=>`${controlNumber(i.cantidad)} ${i.productoNombre}`).join('\n')}.`;
     }
     if(record.tipo === 'PRODUCCION'){
       return `Producción registrada:\n${record.items.map(i=>`+${controlNumber(i.cantidad)} ${i.productoNombre}`).join('\n')}.`;
@@ -8892,7 +9257,7 @@
 
   function getControlRecords(){
     try{
-      const raw = JSON.parse(localStorage.getItem(CONTROL_STORAGE_KEY) || '[]');
+      const raw = JSON.parse(localStorage.getItem(controlRecordsKey()) || '[]');
       return Array.isArray(raw) ? raw : [];
     }catch{
       return [];
@@ -8902,12 +9267,12 @@
   function saveControlRecord(record){
     const records = getControlRecords();
     records.push(record);
-    localStorage.setItem(CONTROL_STORAGE_KEY, JSON.stringify(records));
+    localStorage.setItem(controlRecordsKey(), JSON.stringify(records));
     return records;
   }
 
   function clearControlRecords(){
-    localStorage.removeItem(CONTROL_STORAGE_KEY);
+    localStorage.removeItem(controlRecordsKey());
   }
 
   function controlIsToday(iso=''){
@@ -8930,7 +9295,7 @@
 
     Object.keys(catalog).forEach(key => {
       productStats[key] = {clave:key, nombre:catalog[key].nombre, vendidos:0, ventas:0};
-      inventory[key] = {clave:key, nombre:catalog[key].nombre, producido:0, vendido:0, merma:0, esperado:0, conteo:null, diferencia:null};
+      inventory[key] = {clave:key, nombre:catalog[key].nombre, inicial:0, producido:0, vendido:0, merma:0, esperado:0, conteo:null, diferencia:null};
     });
 
     const ventas = today.filter(r=>r.tipo==='VENTA').reduce((sum,r)=>sum + Number(r.total || 0), 0);
@@ -8951,6 +9316,7 @@
           productStats[key].vendidos += qty;
           productStats[key].ventas += Number(item.total || 0);
         }
+        if(r.tipo === 'INVENTARIO_INICIAL') inventory[key].inicial += qty;
         if(r.tipo === 'PRODUCCION') inventory[key].producido += qty;
         if(r.tipo === 'MERMA') inventory[key].merma += qty;
         if(r.tipo === 'CONTEO_REAL') latestCount[key] = qty;
@@ -8958,7 +9324,7 @@
     });
 
     Object.keys(inventory).forEach(key => {
-      inventory[key].esperado = inventory[key].producido - inventory[key].vendido - inventory[key].merma;
+      inventory[key].esperado = inventory[key].inicial + inventory[key].producido - inventory[key].vendido - inventory[key].merma;
       if(Object.prototype.hasOwnProperty.call(latestCount, key)){
         inventory[key].conteo = latestCount[key];
         inventory[key].diferencia = inventory[key].esperado - latestCount[key];
@@ -8993,7 +9359,9 @@
   function controlInventoryTable(stats){
     const rows = stats.inventory.map(item => {
       const diff = item.diferencia;
-      const diffText = diff === null ? 'Sin conteo' : (diff === 0 ? 'Cuadra' : (diff > 0 ? `Faltan ${controlNumber(diff)}` : `Sobran ${controlNumber(Math.abs(diff))}`));
+      const diffText = item.esperado < 0
+        ? `Falta inicial/prod. (${controlNumber(item.esperado)})`
+        : diff === null ? 'Sin conteo' : (diff === 0 ? 'Cuadra' : (diff > 0 ? `Faltan ${controlNumber(diff)}` : `Sobran ${controlNumber(Math.abs(diff))}`));
       return `<tr>
         <td>${esc(item.nombre)}</td>
         <td>${controlNumber(item.esperado)}</td>
@@ -9012,51 +9380,295 @@
     </div>`;
   }
 
-  function renderConectaControlPage(){
+  function renderControlWelcomePage(){
+    return shell(`<section class="control-page control-welcome-page">
+      <div class="control-hero control-welcome-hero">
+        <button type="button" class="small-link control-back" data-nav="/">← Volver</button>
+        <div>
+          <p class="control-kicker">Organiza tu negocio</p>
+          <h1>Conecta Control</h1>
+          <p>Organiza tu negocio sin Excel, sin contabilidad y sin sistemas complicados.</p>
+        </div>
+      </div>
+
+      <section class="control-panel control-onboarding-card">
+        <h2>Tu negocio, más claro desde hoy</h2>
+        <p>Solo responde unas preguntas y después escribe lo que pasa en tu negocio como normalmente lo dirías.</p>
+        <button type="button" class="control-main-btn" data-control-start-setup>Empezar mi control</button>
+        <button type="button" class="control-secondary-btn" data-control-demo>Probar con ejemplo de postres</button>
+        <button type="button" class="control-soft-btn" data-control-existing>Ya tengo un control creado</button>
+      </section>
+
+      <section class="control-panel">
+        <h2>¿Qué puede organizar?</h2>
+        <div class="control-feature-grid">
+          <span>Ventas</span><span>Gastos</span><span>Inventario</span><span>Pedidos</span><span>Citas</span><span>Cobros</span><span>Deudas</span><span>Mermas</span>
+        </div>
+      </section>
+
+      <section class="control-panel">
+        <h2>Registro inteligente</h2>
+        <p>Cuando tu negocio esté configurado, podrás escribir cosas como:</p>
+        <div class="control-demo-lines">
+          <b>Vendí cuatro tacos y dos refrescos.</b>
+          <b>Compré tortillas 120.</b>
+          <b>Me deben 200 de Ana.</b>
+        </div>
+      </section>
+    </section>`);
+  }
+
+  function renderControlSetupPage(){
+    const draft = getControlSetupDraft();
+    const step = getControlSetupStep() || 1;
+    const total = 6;
+
+    const progress = `<div class="control-progress"><span style="width:${Math.round((step/total)*100)}%"></span></div><p class="control-step-count">Paso ${step} de ${total}</p>`;
+
+    let body = '';
+    if(step === 1){
+      body = `<h2>¿Cómo se llama tu negocio o emprendimiento?</h2>
+        <p>Puede ser tu nombre comercial o como te conocen tus clientes.</p>
+        <input class="control-setup-input" id="controlSetupValue" value="${esc(draft.nombreNegocio || '')}" placeholder="Ej: Tacos Lupita, Consultorio San José, Ferretería El Centro">`;
+    }else if(step === 2){
+      const options = controlTypeOptions().map(opt => `<button type="button" class="control-choice ${draft.tipoNegocio===opt?'selected':''}" data-control-setup-option="${esc(opt)}">${esc(opt)}</button>`).join('');
+      body = `<h2>¿Qué tipo de negocio tienes?</h2><p>Elige la opción más cercana.</p><div class="control-choice-grid">${options}</div>`;
+    }else if(step === 3){
+      body = `<h2>¿Qué vendes u ofreces?</h2>
+        <p>Escribe productos, servicios o trabajos. Si sabes precios, puedes agregarlos: “taco pastor 20, refresco 18”.</p>
+        <textarea class="control-setup-textarea" id="controlSetupValue" rows="4" placeholder="Ej: Pay de limón 25, arroz con leche 25, fresas con crema 35">${esc(draft.productosTexto || '')}</textarea>`;
+    }else if(step === 4){
+      const suggested = controlSuggestedControls(draft.tipoNegocio);
+      const selected = Array.isArray(draft.controlesActivos) && draft.controlesActivos.length ? draft.controlesActivos : suggested;
+      const options = controlAvailableControls().map(([key,label]) => `<button type="button" class="control-choice ${selected.includes(key)?'selected':''}" data-control-setup-toggle="${esc(key)}">${esc(label)}</button>`).join('');
+      body = `<h2>¿Qué quieres controlar primero?</h2><p>Selecciona uno o varios. Podemos empezar poco a poco.</p><div class="control-choice-grid">${options}</div>`;
+    }else if(step === 5){
+      const opts = ['Productos','Servicios','Citas','Pedidos','Productos y servicios','No estoy seguro'];
+      body = `<h2>¿Tu negocio maneja productos, servicios, citas o pedidos?</h2><div class="control-choice-grid">${opts.map(opt=>`<button type="button" class="control-choice ${draft.modeloOperacion===opt?'selected':''}" data-control-setup-option="${esc(opt)}">${esc(opt)}</button>`).join('')}</div>`;
+    }else{
+      const opts = ['Sí','Después','No estoy seguro'];
+      body = `<h2>¿Quieres que Conecta te ayude a saber cuánto ganas al día?</h2><p>Con esto podemos mostrar ventas, gastos y ganancia estimada.</p><div class="control-choice-grid">${opts.map(opt=>`<button type="button" class="control-choice ${draft.ayudaGananciaDiaria===opt?'selected':''}" data-control-setup-option="${esc(opt)}">${esc(opt)}</button>`).join('')}</div>`;
+    }
+
+    return shell(`<section class="control-page control-setup-page">
+      <div class="control-hero">
+        <button type="button" class="small-link control-back" data-control-cancel-setup>← Salir</button>
+        <div><p class="control-kicker">Configurador inteligente</p><h1>Organiza tu negocio</h1><p>No es una encuesta complicada. Conecta aprende cómo trabajas para crear tu panel.</p></div>
+      </div>
+      <section class="control-panel control-setup-card">
+        ${progress}
+        ${body}
+        <div class="control-setup-actions">
+          ${step > 1 ? '<button type="button" class="control-soft-btn" data-control-setup-prev>Anterior</button>' : ''}
+          <button type="button" class="control-main-btn" data-control-setup-next>${step === total ? 'Crear mi control' : 'Siguiente'}</button>
+        </div>
+      </section>
+    </section>`);
+  }
+
+  function renderControlSetupSuccessPage(config){
+    const controls = (config.controlesActivos || []).map(c => controlAvailableControls().find(([key])=>key===c)?.[1] || c).join(', ');
+    return shell(`<section class="control-page">
+      <div class="control-hero">
+        <button type="button" class="small-link control-back" data-nav="/">← Volver</button>
+        <div>
+          <p class="control-kicker">Listo</p>
+          <h1>Ya creamos tu control</h1>
+          <p>Ahora puedes empezar a registrar lo que pasa en tu negocio.</p>
+        </div>
+      </div>
+      <section class="control-panel">
+        <h2>${esc(config.nombreNegocio)}</h2>
+        <p><b>Tipo:</b> ${esc(config.tipoNegocio)}</p>
+        <p><b>Controlará:</b> ${esc(controls || 'Todo poco a poco')}</p>
+        <p><b>Registro inteligente:</b> escribe frases como “Vendí 4 tacos”, “Compré insumos 120” o “Me deben 200 de Ana”.</p>
+        <button type="button" class="control-main-btn" data-control-finish-setup>Ir a mi control diario</button>
+      </section>
+    </section>`);
+  }
+
+  function renderControlDailyPage(config=getControlBusinessConfig()){
     const records = getControlRecords();
     const stats = calculateControlDashboard(records);
     const examples = getControlExamples().map(ex => `<button type="button" data-control-example="${esc(ex)}">${esc(ex)}</button>`).join('');
+    const labels = controlLabelsForConfig(config);
+    const controls = config?.controlesActivos || [];
+    const has = (...keys) => keys.some(k => controls.includes(k) || controls.includes('TODO'));
+
+    const cards = [
+      controlCard('Registros', String(stats.totalRegistros), 'Movimientos guardados')
+    ];
+    if(has('VENTA')) cards.push(controlCard('Ventas hoy', controlMoney(stats.ventas), 'Ingresos registrados'));
+    if(has('GASTO')) cards.push(controlCard('Gastos hoy', controlMoney(stats.gastos), 'Egresos registrados'));
+    if(has('VENTA','GASTO')) cards.push(controlCard('Ganancia estimada', controlMoney(stats.ganancia), 'Ventas - gastos'));
+    if(has('VENTA')) cards.push(controlCard(labels.top, stats.productoMasVendido, 'Más vendido'));
+    if(has('COBRO')) cards.push(controlCard('Cobros hoy', controlMoney(stats.cobros), 'Pagos recibidos'));
+    if(has('DEUDA')) cards.push(controlCard('Te deben', controlMoney(stats.deudas), 'Pendientes registrados'));
+    if(has('PEDIDO')) cards.push(controlCard('Pedidos', String(stats.pedidos.length), 'Pendientes registrados'));
+    if(has('MERMA')) cards.push(controlCard('Mermas', String(stats.mermas.length), 'Eventos registrados'));
 
     return shell(`<section class="control-page">
       <div class="control-hero">
         <button type="button" class="small-link control-back" data-nav="/">← Volver</button>
         <div>
-          <p class="control-kicker">Piloto · Postres Fer</p>
-          <h1>Conecta Control</h1>
-          <p>Simulador tipo WhatsApp para registrar ventas, gastos, producción, mermas, conteos, pedidos, cobros y deudas.</p>
+          <p class="control-kicker">${esc(config?.tipoNegocio || 'Negocio')}</p>
+          <h1>${esc(config?.nombreNegocio || 'Conecta Control')}</h1>
+          <p>Escribe lo que pasó en tu negocio y Conecta lo organiza por ti.</p>
         </div>
       </div>
 
       <section class="control-stats-grid">
-        ${controlCard('Ventas hoy', controlMoney(stats.ventas), 'Ingresos registrados')}
-        ${controlCard('Gastos hoy', controlMoney(stats.gastos), 'Egresos registrados')}
-        ${controlCard('Ganancia estimada', controlMoney(stats.ganancia), 'Ventas - gastos')}
-        ${controlCard('Producto estrella', stats.productoMasVendido, 'Más vendido')}
-        ${controlCard('Cobros hoy', controlMoney(stats.cobros), 'Pagos recibidos')}
-        ${controlCard('Deudas', controlMoney(stats.deudas), 'Pendientes registrados')}
+        ${cards.join('')}
       </section>
 
       <section class="control-panel">
-        <h2>Mensaje tipo WhatsApp</h2>
-        <p>Escribe como hablarías normalmente: “Vendí 3 limón” o “Vendí un fresa y tres limón”.</p>
-        <textarea id="controlMessageInput" rows="3" placeholder="Ej: Vendí un fresa y tres limón"></textarea>
-        <button type="button" class="control-main-btn" data-control-process>Procesar mensaje</button>
-        <div class="control-examples">${examples}</div>
+        <h2>Registro inteligente</h2>
+        <p>Escribe lo que pasó en tu negocio. Ejemplo: “Vendí 4 tacos, compré tortillas 120, me deben 200 de Ana”.</p>
+        <textarea id="controlMessageInput" rows="3" placeholder="Ej: Vendí 4 tacos o Compré insumos 120"></textarea>
+        <button type="button" class="control-main-btn" data-control-process>Procesar registro</button>
+        ${config?.demo ? `<div class="control-examples">${examples}</div>` : ''}
       </section>
 
-      <section class="control-panel">
+      ${has('INVENTARIO','PRODUCCION','MERMA') ? `<section class="control-panel">
         <div class="control-section-head"><h2>Inventario esperado vs conteo real</h2><span>${stats.totalRegistros} registros</span></div>
         ${controlInventoryTable(stats)}
-      </section>
+      </section>` : ''}
 
       <section class="control-panel">
         <div class="control-section-head"><h2>Historial del asistente</h2><button type="button" class="small-link danger" data-control-clear>Limpiar registros de prueba</button></div>
         <div class="control-chat-history">
-          ${stats.recientes.length ? stats.recientes.map(controlRecordMarkup).join('') : '<div class="control-empty">Todavía no hay movimientos. Prueba con un ejemplo.</div>'}
+          ${stats.recientes.length ? stats.recientes.map(controlRecordMarkup).join('') : '<div class="control-empty">Todavía no hay movimientos. Escribe tu primer registro.</div>'}
         </div>
+      </section>
+
+      <section class="control-panel control-settings-panel">
+        <h2>Configuración</h2>
+        <p>Puedes reiniciar este control si quieres probar otro negocio.</p>
+        <button type="button" class="control-soft-btn danger" data-control-reset-config>Reiniciar mi control</button>
       </section>
     </section>`);
   }
+
+  function renderConectaControlPage(){
+    const step = getControlSetupStep();
+    const config = getControlBusinessConfig();
+    if(step > 0) return renderControlSetupPage();
+    if(!config) return renderControlWelcomePage();
+    if(config.__justCreated) return renderControlSetupSuccessPage(config);
+    return renderControlDailyPage(config);
+  }
+
+
+  function handleControlSetupOption(value){
+    const step = getControlSetupStep() || 1;
+    const draft = getControlSetupDraft();
+    if(step === 2){
+      draft.tipoNegocio = value;
+      if(!Array.isArray(draft.controlesActivos) || !draft.controlesActivos.length){
+        draft.controlesActivos = controlSuggestedControls(value);
+      }
+    }
+    if(step === 5) draft.modeloOperacion = value;
+    if(step === 6) draft.ayudaGananciaDiaria = value;
+    saveControlSetupDraft(draft);
+    render();
+  }
+
+  function handleControlSetupToggle(value){
+    const draft = getControlSetupDraft();
+    let selected = Array.isArray(draft.controlesActivos) ? draft.controlesActivos.slice() : controlSuggestedControls(draft.tipoNegocio);
+    if(value === 'TODO'){
+      selected = selected.includes('TODO') ? [] : ['TODO','VENTA','GASTO','INVENTARIO','PEDIDO','COBRO','DEUDA'];
+    }else{
+      selected = selected.includes(value) ? selected.filter(v=>v!==value) : [...selected, value];
+    }
+    draft.controlesActivos = [...new Set(selected)];
+    saveControlSetupDraft(draft);
+    render();
+  }
+
+  function handleControlSetupPrev(){
+    const step = Math.max(1, (getControlSetupStep() || 1) - 1);
+    setControlSetupStep(step);
+    render();
+  }
+
+  function handleControlSetupNext(){
+    const step = getControlSetupStep() || 1;
+    const draft = getControlSetupDraft();
+    const input = document.getElementById('controlSetupValue');
+    const value = String(input?.value || '').trim();
+
+    if(step === 1){
+      if(!value) return toast('Escribe el nombre de tu negocio.');
+      draft.nombreNegocio = value;
+    }
+    if(step === 2){
+      if(!draft.tipoNegocio) return toast('Elige el tipo de negocio.');
+    }
+    if(step === 3){
+      if(!value) return toast('Escribe qué vendes u ofreces.');
+      draft.productosTexto = value;
+      draft.productosServicios = parseControlProductsFromText(value);
+    }
+    if(step === 4){
+      if(!Array.isArray(draft.controlesActivos) || !draft.controlesActivos.length) return toast('Elige al menos una opción para controlar.');
+    }
+    if(step === 5){
+      if(!draft.modeloOperacion) return toast('Elige cómo trabaja tu negocio.');
+    }
+    if(step === 6){
+      if(!draft.ayudaGananciaDiaria) return toast('Elige una opción.');
+      const config = saveControlBusinessConfig({
+        nombreNegocio:draft.nombreNegocio,
+        tipoNegocio:draft.tipoNegocio,
+        productosServicios:draft.productosServicios || [],
+        controlesActivos:draft.controlesActivos || controlSuggestedControls(draft.tipoNegocio),
+        modeloOperacion:draft.modeloOperacion,
+        ayudaGananciaDiaria:draft.ayudaGananciaDiaria
+      });
+      localStorage.setItem(CONTROL_CONFIG_KEY, JSON.stringify({...config, __justCreated:true}));
+      toast('Control creado.');
+      render();
+      return;
+    }
+
+    saveControlSetupDraft(draft);
+    setControlSetupStep(step + 1);
+    render();
+  }
+
+  function finishControlSetup(){
+    const config = getControlBusinessConfig();
+    if(config?.__justCreated){
+      const clean = {...config};
+      delete clean.__justCreated;
+      localStorage.setItem(CONTROL_CONFIG_KEY, JSON.stringify(clean));
+    }
+    render();
+  }
+
+  function cancelControlSetup(){
+    localStorage.removeItem(CONTROL_SETUP_DRAFT_KEY);
+    localStorage.removeItem(CONTROL_SETUP_STEP_KEY);
+    render();
+  }
+
+  function loadControlDemo(){
+    createDemoPostresFerConfig();
+    toast('Demo de Postres Fer cargada.');
+    render();
+  }
+
+  function resetControlConfigWithConfirm(){
+    if(!confirm('¿Reiniciar Conecta Control y borrar la configuración de este negocio? Los registros de prueba también se borrarán.')) return;
+    clearControlBusinessConfig();
+    localStorage.removeItem(CONTROL_RECORDS_KEY);
+    localStorage.removeItem(CONTROL_DEMO_STORAGE_KEY);
+    toast('Control reiniciado.');
+    render();
+  }
+
 
   function processControlMessage(){
     const input = document.getElementById('controlMessageInput');
@@ -11984,6 +12596,16 @@ function openChatFromConversation(button){
 
   function bind(){
     document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>nav(b.dataset.nav));
+    document.querySelectorAll('[data-control-start-setup]').forEach(b=>b.onclick=startControlSetup);
+    document.querySelectorAll('[data-control-demo]').forEach(b=>b.onclick=loadControlDemo);
+    document.querySelectorAll('[data-control-existing]').forEach(b=>b.onclick=()=>toast('Todavía no hay un control guardado. Empieza creando uno o prueba la demo.'));
+    document.querySelectorAll('[data-control-setup-option]').forEach(b=>b.onclick=()=>handleControlSetupOption(b.dataset.controlSetupOption || ''));
+    document.querySelectorAll('[data-control-setup-toggle]').forEach(b=>b.onclick=()=>handleControlSetupToggle(b.dataset.controlSetupToggle || ''));
+    document.querySelectorAll('[data-control-setup-prev]').forEach(b=>b.onclick=handleControlSetupPrev);
+    document.querySelectorAll('[data-control-setup-next]').forEach(b=>b.onclick=handleControlSetupNext);
+    document.querySelectorAll('[data-control-cancel-setup]').forEach(b=>b.onclick=cancelControlSetup);
+    document.querySelectorAll('[data-control-finish-setup]').forEach(b=>b.onclick=finishControlSetup);
+    document.querySelectorAll('[data-control-reset-config]').forEach(b=>b.onclick=resetControlConfigWithConfirm);
     document.querySelectorAll('[data-control-process]').forEach(b=>b.onclick=processControlMessage);
     document.querySelectorAll('[data-control-clear]').forEach(b=>b.onclick=clearControlRecordsWithConfirm);
     document.querySelectorAll('[data-control-example]').forEach(b=>b.onclick=()=>{ const input=document.getElementById('controlMessageInput'); if(input){input.value=b.dataset.controlExample||''; input.focus({preventScroll:true});} });
