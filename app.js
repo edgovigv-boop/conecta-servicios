@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.5.8-registros-mixtos
+/* Conecta Servicios v6.5.9-precios-no-cantidades
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.5.8-registros-mixtos';
+  const VERSION = 'v6.5.9-precios-no-cantidades';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2653,7 +2653,7 @@
         display:none !important;
       }
 
-      /* v6.5.8-registros-mixtos: bloque consolidado de Home/postCard.
+      /* v6.5.9-precios-no-cantidades: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2986,7 +2986,7 @@
         min-height:48px;
       }
 
-      /* v6.5.8-registros-mixtos */
+      /* v6.5.9-precios-no-cantidades */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5764,7 +5764,7 @@
 
 
 
-      /* v6.5.8-registros-mixtos
+      /* v6.5.9-precios-no-cantidades
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6195,7 +6195,7 @@
 
 
 
-      /* v6.5.8-registros-mixtos
+      /* v6.5.9-precios-no-cantidades
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -8717,6 +8717,8 @@
 
       /* v6.5.8: Conecta Control separa dictados mixtos en varios movimientos */
 
+      /* v6.5.9: evita confundir precios/total con cantidades en ventas */
+
 `;
     document.head.appendChild(style);
   }
@@ -9098,24 +9100,33 @@
     const qtyPattern = controlQuantityTokenPattern();
 
     controlProductAliases().forEach(({key, product, pattern}) => {
-      const rxList = [
-        // "4 tacos de suadero", "cuatro tacos de suadero", "2 de queso"
-        new RegExp(`(?:^|[\\s,;])(${qtyPattern})\\s*(?:tacos?\\s+)?(?:de\\s+|al\\s+|a\\s+)?(?:${pattern})(?:s)?\\b`, 'ig'),
-        // "suadero 4", menos común, pero útil.
-        new RegExp(`(?:^|[\\s,;])(?:${pattern})(?:s)?\\s*(${qtyPattern})\\b`, 'ig')
-      ];
+      const beforeRx = new RegExp(`(?:^|[\\s,;])(${qtyPattern})\\s*(?:tacos?\\s+)?(?:de\\s+|del\\s+|al\\s+|a\\s+)?(?:${pattern})(?:s)?\\b`, 'ig');
+      const afterRx = new RegExp(`(?:^|[\\s,;])(?:${pattern})(?:s)?\\s*(${qtyPattern})\\b`, 'ig');
 
       const matches = [];
-      rxList.forEach(rx => {
-        let match;
-        while((match = rx.exec(text))){
+      let match;
+
+      // Caso normal de voz: "dos tacos al pastor 60".
+      // Aquí "dos" es cantidad y "60" es precio/total cercano, NO otra cantidad.
+      while((match = beforeRx.exec(text))){
+        const qty = controlParseQuantity(match[1]);
+        if(qty > 0){
+          matches.push({qty, index:match.index, raw:match[0], source:'before'});
+        }
+        if(match.index === beforeRx.lastIndex) beforeRx.lastIndex++;
+      }
+
+      // Solo aceptar "producto + cantidad" cuando NO hubo coincidencia "cantidad + producto".
+      // Esto evita que "dos tacos al pastor 60" se convierta en 2 + 60 tacos.
+      if(!matches.length && !['VENTA','PEDIDO'].includes(tipo)){
+        while((match = afterRx.exec(text))){
           const qty = controlParseQuantity(match[1]);
           if(qty > 0){
-            matches.push({qty, index:match.index, raw:match[0]});
+            matches.push({qty, index:match.index, raw:match[0], source:'after'});
           }
-          if(match.index === rx.lastIndex) rx.lastIndex++;
+          if(match.index === afterRx.lastIndex) afterRx.lastIndex++;
         }
-      });
+      }
 
       if(matches.length){
         matches.sort((a,b)=>a.index-b.index).forEach(match => {
@@ -9138,9 +9149,8 @@
       }
     });
 
-    // Orden aproximado al texto y compactación si se repite producto sin monto especial.
-    const ordered = found.sort((a,b)=>String(a.productoNombre).localeCompare(String(b.productoNombre)));
-    return ordered;
+    // Conservar el orden de lectura aproximado agrupando por nombre estable.
+    return found.sort((a,b)=>String(a.productoNombre).localeCompare(String(b.productoNombre)));
   }
 
   function extractExpenseItems(message=''){
@@ -9159,6 +9169,7 @@
     parts.forEach(part => {
       const cleanedPart = part
         .replace(/^(tambien\s+)?(compre|compramos|gaste|gastamos|gasto|pague|pago|inverti|inversion)\s+/i,'')
+        .replace(/\s+(y|tambien|ademas)\s*$/i,'')
         .trim();
 
       // Casos:
@@ -9166,7 +9177,7 @@
       // "5 kg de tortillas fueron 75"
       // "caja de refrescos con 24 piezas a 400"
       // "azúcar 80"
-      const match = cleanedPart.match(/^(.+?)\s+(?:fueron|fue|por|a|en|total)?\s*\$?\s*([0-9]+(?:[\.,][0-9]+)?)\s*(?:pesos?)?\s*$/i);
+      const match = cleanedPart.match(/^(.+?)\s+(?:fueron|fue|por|a|en|total)?\s*\$?\s*([0-9]+(?:[\.,][0-9]+)?)\s*(?:pesos?)?\s*(?:y|tambien|ademas)?\s*$/i);
       if(match){
         let concepto = match[1].trim().replace(/\b(fueron|fue|por|a|en|total)$/i,'').trim();
         const monto = Number(String(match[2]).replace(',','.'));
