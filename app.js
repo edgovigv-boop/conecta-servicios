@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.5.4-conecta-control-piloto
+/* Conecta Servicios v6.5.5-cantidades-en-letras
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.5.4-conecta-control-piloto';
+  const VERSION = 'v6.5.5-cantidades-en-letras';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2653,7 +2653,7 @@
         display:none !important;
       }
 
-      /* v6.5.4-conecta-control-piloto: bloque consolidado de Home/postCard.
+      /* v6.5.5-cantidades-en-letras: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2986,7 +2986,7 @@
         min-height:48px;
       }
 
-      /* v6.5.4-conecta-control-piloto */
+      /* v6.5.5-cantidades-en-letras */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5764,7 +5764,7 @@
 
 
 
-      /* v6.5.4-conecta-control-piloto
+      /* v6.5.5-cantidades-en-letras
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6195,7 +6195,7 @@
 
 
 
-      /* v6.5.4-conecta-control-piloto
+      /* v6.5.5-cantidades-en-letras
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -8550,6 +8550,8 @@
         }
       }
 
+      /* v6.5.5: Conecta Control entiende cantidades en letras: un, una, dos, tres... */
+
 `;
     document.head.appendChild(style);
   }
@@ -8598,6 +8600,31 @@
     return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.00$/,'');
   }
 
+  function controlQuantityWords(){
+    return {
+      un:1, uno:1, una:1,
+      dos:2, tres:3, cuatro:4, cinco:5, seis:6, siete:7, ocho:8, nueve:9, diez:10,
+      once:11, doce:12, trece:13, catorce:14, quince:15, dieciseis:16, diecisiete:17, dieciocho:18, diecinueve:19,
+      veinte:20, veintiuno:21, veintiuna:21, veintidos:22, veintitres:23, veinticuatro:24, veinticinco:25,
+      veintiseis:26, veintisiete:27, veintiocho:28, veintinueve:29, treinta:30,
+      medio:0.5, media:0.5
+    };
+  }
+
+  function controlQuantityTokenPattern(){
+    return [
+      '[0-9]+(?:[\\.,][0-9]+)?',
+      ...Object.keys(controlQuantityWords()).sort((a,b)=>b.length-a.length)
+    ].join('|');
+  }
+
+  function controlParseQuantity(value=''){
+    const token = controlNormalize(value);
+    if(!token) return 0;
+    if(/^[0-9]/.test(token)) return Number(token.replace(',','.')) || 0;
+    return Number(controlQuantityWords()[token] || 0);
+  }
+
   function getControlCatalog(){
     return {
       limon: {
@@ -8630,6 +8657,7 @@
   function getControlExamples(){
     return [
       'Vendí 3 limón, 2 queso y 1 fresas',
+      'Vendí un fresa y tres limón',
       'Compré leche 120, azúcar 80 y vasos 150',
       'Produje 20 limón, 15 queso y 10 arroz',
       'Conté 8 limón, 5 queso y 3 arroz',
@@ -8668,21 +8696,29 @@
   }
 
   function extractProductItems(message='', tipo='VENTA'){
-    const text = controlNormalize(message).replace(/,/g,' , ').replace(/\by\b/g,' y ');
+    const text = controlNormalize(message)
+      .replace(/,/g,' , ')
+      .replace(/\by\b/g,' y ')
+      .replace(/\s+/g,' ')
+      .trim();
+
     const found = [];
     const seen = new Set();
+    const qtyPattern = controlQuantityTokenPattern();
 
     controlProductAliases().forEach(({key, product, pattern}) => {
       const patterns = [
-        new RegExp(`(?:^|[\\s,;])([0-9]+(?:[\\.,][0-9]+)?)\\s*(?:de\\s+)?(?:${pattern})(?:s)?\\b`, 'i'),
-        new RegExp(`(?:^|[\\s,;])(?:${pattern})(?:s)?\\s*([0-9]+(?:[\\.,][0-9]+)?)\\b`, 'i')
+        // "3 limon", "tres limon", "un fresa", "una fresa", "2 de queso"
+        new RegExp(`(?:^|[\\s,;])(${qtyPattern})\\s*(?:de\\s+)?(?:${pattern})(?:s)?\\b`, 'i'),
+        // "limon 3", "queso tres"
+        new RegExp(`(?:^|[\\s,;])(?:${pattern})(?:s)?\\s*(${qtyPattern})\\b`, 'i')
       ];
 
       let qty = 0;
       for(const rx of patterns){
         const match = text.match(rx);
         if(match){
-          qty = Number(String(match[1] || '0').replace(',','.'));
+          qty = controlParseQuantity(match[1]);
           break;
         }
       }
@@ -9002,8 +9038,8 @@
 
       <section class="control-panel">
         <h2>Mensaje tipo WhatsApp</h2>
-        <p>Escribe como hablarías normalmente: “Vendí 3 limón, 2 queso y 1 fresas”.</p>
-        <textarea id="controlMessageInput" rows="3" placeholder="Ej: Vendí 3 limón, 2 queso y 1 fresas"></textarea>
+        <p>Escribe como hablarías normalmente: “Vendí 3 limón” o “Vendí un fresa y tres limón”.</p>
+        <textarea id="controlMessageInput" rows="3" placeholder="Ej: Vendí un fresa y tres limón"></textarea>
         <button type="button" class="control-main-btn" data-control-process>Procesar mensaje</button>
         <div class="control-examples">${examples}</div>
       </section>
