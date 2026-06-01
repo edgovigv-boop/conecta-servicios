@@ -1,5 +1,5 @@
-/* Conecta Servicios v6.5.3 */
-const CACHE_NAME = 'conecta-servicios-v6-5-3-scroll-restaurado';
+/* Conecta Servicios v6.5.4 */
+const CACHE_NAME = 'conecta-servicios-v6-5-4-conecta-control-piloto';
 const STATIC_ASSETS = ['/assets/icons/icon-192.png','/assets/icons/icon-512.png','/assets/icons/conecta-logo-oficial.png'];
 self.addEventListener('install', event => { self.skipWaiting(); event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS).catch(() => null)).catch(() => null)); });
 self.addEventListener('activate', event => { event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('conecta-servicios-') && key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim())); });

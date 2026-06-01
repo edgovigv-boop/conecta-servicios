@@ -1,4 +1,4 @@
-/* Conecta Servicios v6.5.3-scroll-restaurado
+/* Conecta Servicios v6.5.4-conecta-control-piloto
    Arreglo de raíz para video móvil:
    - La versión remota de Supabase gana sobre copias locales viejas.
    - Si un video tiene mediaUrl válida, nunca se muestra como pendiente.
@@ -8,7 +8,7 @@
 (() => {
   'use strict';
 
-  const VERSION = 'v6.5.3-scroll-restaurado';
+  const VERSION = 'v6.5.4-conecta-control-piloto';
   const APP_URL = 'https://conecta-servicios.vercel.app/';
   const IMAGE_MAX_SIDE = 1280;
   const MAX_IMAGE_MB = 18;
@@ -2653,7 +2653,7 @@
         display:none !important;
       }
 
-      /* v6.5.3-scroll-restaurado: bloque consolidado de Home/postCard.
+      /* v6.5.4-conecta-control-piloto: bloque consolidado de Home/postCard.
          No tocar APIs ni multimedia; esta capa neutraliza contradicciones anteriores del Home. */
       .media-bottom{
         display:none !important;
@@ -2986,7 +2986,7 @@
         min-height:48px;
       }
 
-      /* v6.5.3-scroll-restaurado */
+      /* v6.5.4-conecta-control-piloto */
       .trust-entry-card{
         display:flex;
         align-items:center;
@@ -5764,7 +5764,7 @@
 
 
 
-      /* v6.5.3-scroll-restaurado
+      /* v6.5.4-conecta-control-piloto
          Layout móvil consolidado.
          Este bloque reemplaza las capas visuales conflictivas del feed.
          No cambia mensajes, perfil, identidad, Supabase, Storage ni SQL. */
@@ -6195,7 +6195,7 @@
 
 
 
-      /* v6.5.3-scroll-restaurado
+      /* v6.5.4-conecta-control-piloto
          Aplicación del lenguaje visual del prototipo HTML sobre la app real.
          No cambia lógica, mensajes, perfil, Supabase, Storage ni SQL. */
       :root{
@@ -8228,6 +8228,328 @@
         overscroll-behavior:contain !important;
       }
 
+      /* v6.5.4 Conecta Control — módulo aislado */
+      .control-page{
+        min-height:100dvh !important;
+        padding:calc(env(safe-area-inset-top) + 86px) 16px calc(env(safe-area-inset-bottom) + 104px) !important;
+        background:
+          radial-gradient(circle at top left, rgba(16,185,129,.24), transparent 38%),
+          linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%) !important;
+        color:#111827 !important;
+        overflow-y:auto !important;
+        touch-action:pan-y !important;
+      }
+
+      .control-hero{
+        display:flex;
+        align-items:flex-start;
+        gap:12px;
+        padding:16px;
+        border-radius:24px;
+        background:rgba(255,255,255,.88);
+        border:1px solid rgba(148,163,184,.26);
+        box-shadow:0 16px 38px rgba(15,23,42,.12);
+        margin-bottom:14px;
+      }
+
+      .control-back{
+        flex:0 0 auto;
+        margin-top:2px;
+      }
+
+      .control-kicker{
+        margin:0 0 4px;
+        color:#059669 !important;
+        font-weight:900;
+        font-size:12px;
+        letter-spacing:.08em;
+        text-transform:uppercase;
+      }
+
+      .control-hero h1{
+        margin:0;
+        font-size:28px;
+        line-height:1.05;
+        letter-spacing:-.04em;
+        color:#111827;
+      }
+
+      .control-hero p{
+        margin:6px 0 0;
+        color:#475569 !important;
+        line-height:1.35;
+        font-size:14px;
+      }
+
+      .control-stats-grid{
+        display:grid;
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+        gap:10px;
+        margin:0 0 14px;
+      }
+
+      .control-stat-card{
+        padding:14px;
+        border-radius:20px;
+        background:#fff;
+        border:1px solid rgba(148,163,184,.22);
+        box-shadow:0 12px 28px rgba(15,23,42,.08);
+        min-height:96px;
+      }
+
+      .control-stat-card span{
+        display:block;
+        color:#64748b;
+        font-size:12px;
+        font-weight:900;
+        text-transform:uppercase;
+        letter-spacing:.05em;
+      }
+
+      .control-stat-card strong{
+        display:block;
+        margin-top:8px;
+        color:#111827;
+        font-size:21px;
+        line-height:1.08;
+        font-weight:950;
+      }
+
+      .control-stat-card small{
+        display:block;
+        margin-top:6px;
+        color:#64748b;
+        font-size:12px;
+      }
+
+      .control-panel{
+        padding:16px;
+        border-radius:24px;
+        background:#fff;
+        border:1px solid rgba(148,163,184,.22);
+        box-shadow:0 14px 34px rgba(15,23,42,.09);
+        margin:0 0 14px;
+      }
+
+      .control-panel h2{
+        margin:0 0 6px;
+        font-size:18px;
+        color:#111827;
+      }
+
+      .control-panel p{
+        margin:0 0 12px;
+        color:#64748b !important;
+        font-size:14px;
+        line-height:1.35;
+      }
+
+      #controlMessageInput{
+        width:100%;
+        box-sizing:border-box;
+        min-height:86px;
+        padding:13px 14px;
+        border-radius:18px;
+        border:1px solid #cbd5e1;
+        background:#f8fafc;
+        color:#111827;
+        font-size:16px;
+        resize:vertical;
+        outline:none;
+      }
+
+      #controlMessageInput:focus{
+        border-color:#10b981;
+        box-shadow:0 0 0 4px rgba(16,185,129,.16);
+        background:#fff;
+      }
+
+      .control-main-btn{
+        width:100%;
+        min-height:52px;
+        margin-top:10px;
+        border:0;
+        border-radius:18px;
+        background:linear-gradient(135deg,#059669,#047857);
+        color:#fff;
+        font-weight:950;
+        font-size:16px;
+        box-shadow:0 14px 28px rgba(5,150,105,.24);
+      }
+
+      .control-examples{
+        display:flex;
+        gap:8px;
+        overflow-x:auto;
+        padding:12px 0 2px;
+        -webkit-overflow-scrolling:touch;
+      }
+
+      .control-examples button{
+        flex:0 0 auto;
+        border:1px solid #d1fae5;
+        background:#ecfdf5;
+        color:#065f46;
+        border-radius:999px;
+        padding:9px 12px;
+        font-size:13px;
+        font-weight:800;
+        white-space:nowrap;
+      }
+
+      .control-section-head{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:12px;
+        margin-bottom:10px;
+      }
+
+      .control-section-head h2{
+        margin:0;
+      }
+
+      .control-section-head span{
+        color:#64748b;
+        font-size:12px;
+        font-weight:800;
+      }
+
+      .control-table-wrap{
+        overflow-x:auto;
+        -webkit-overflow-scrolling:touch;
+      }
+
+      .control-table{
+        width:100%;
+        border-collapse:separate;
+        border-spacing:0 8px;
+        font-size:13px;
+      }
+
+      .control-table th{
+        text-align:left;
+        color:#64748b;
+        font-size:11px;
+        text-transform:uppercase;
+        letter-spacing:.05em;
+        padding:0 8px 4px;
+      }
+
+      .control-table td{
+        background:#f8fafc;
+        padding:10px 8px;
+        color:#111827;
+        font-weight:800;
+      }
+
+      .control-table td:first-child{
+        border-radius:12px 0 0 12px;
+      }
+
+      .control-table td:last-child{
+        border-radius:0 12px 12px 0;
+      }
+
+      .control-table .ok{
+        color:#047857;
+      }
+
+      .control-table .warn{
+        color:#b45309;
+      }
+
+      .control-chat-history{
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+        max-height:48dvh;
+        overflow-y:auto;
+        padding:4px;
+        -webkit-overflow-scrolling:touch;
+      }
+
+      .control-chat-row{
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+      }
+
+      .control-bubble{
+        max-width:88%;
+        padding:10px 12px;
+        border-radius:18px;
+        font-size:14px;
+        line-height:1.32;
+        white-space:normal;
+      }
+
+      .control-bubble small{
+        display:block;
+        margin-bottom:4px;
+        font-size:11px;
+        font-weight:900;
+        opacity:.72;
+        text-transform:uppercase;
+        letter-spacing:.05em;
+      }
+
+      .control-bubble.user{
+        align-self:flex-end;
+        background:#dcfce7;
+        color:#064e3b;
+        border-bottom-right-radius:6px;
+      }
+
+      .control-bubble.bot{
+        align-self:flex-start;
+        background:#eef2ff;
+        color:#1e1b4b;
+        border-bottom-left-radius:6px;
+      }
+
+      .control-bubble.bot.pendiente{
+        background:#fffbeb;
+        color:#78350f;
+      }
+
+      .control-empty{
+        padding:18px;
+        border-radius:18px;
+        background:#f8fafc;
+        color:#64748b;
+        text-align:center;
+        font-weight:800;
+      }
+
+      .small-link.danger{
+        color:#b91c1c !important;
+      }
+
+      .floating-control{
+        background:rgba(5,150,105,.82) !important;
+      }
+
+      .bottom-nav .nav-control.active .nav-icon,
+      .bottom-nav .nav-control.active small{
+        color:#34d399 !important;
+      }
+
+      @media (max-width:380px){
+        .control-page{
+          padding-left:12px !important;
+          padding-right:12px !important;
+        }
+
+        .control-stats-grid{
+          grid-template-columns:1fr;
+        }
+
+        .control-bubble{
+          max-width:94%;
+        }
+      }
+
 `;
     document.head.appendChild(style);
   }
@@ -8247,6 +8569,482 @@
     </div>`;
   }
 
+
+  /* =========================================================
+     Conecta Control v6.5.4 — Piloto Postres Fer
+     Módulo aislado. No toca Supabase, publicaciones ni mensajes.
+     ========================================================= */
+
+  const CONTROL_STORAGE_KEY = 'conecta_control_postres_fer_records';
+  const CONTROL_BUSINESS_ID = 'postres_fer';
+
+  function controlNormalize(value=''){
+    return String(value || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .replace(/[“”"']/g,'')
+      .replace(/\s+/g,' ')
+      .trim();
+  }
+
+  function controlMoney(value=0){
+    const n = Number(value || 0);
+    return n.toLocaleString('es-MX', {style:'currency', currency:'MXN', maximumFractionDigits:0});
+  }
+
+  function controlNumber(value=0){
+    const n = Number(value || 0);
+    return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.00$/,'');
+  }
+
+  function getControlCatalog(){
+    return {
+      limon: {
+        clave:'limon',
+        nombre:'Pay de limón',
+        precio:25,
+        aliases:['limon','limones','pay de limon','pays de limon','pay limon','pays limon']
+      },
+      arroz: {
+        clave:'arroz',
+        nombre:'Arroz con leche',
+        precio:25,
+        aliases:['arroz','arroz con leche']
+      },
+      queso: {
+        clave:'queso',
+        nombre:'Pay de queso',
+        precio:25,
+        aliases:['queso','pay de queso','pays de queso','pay queso','pays queso']
+      },
+      fresas: {
+        clave:'fresas',
+        nombre:'Fresas con crema',
+        precio:35,
+        aliases:['fresas con crema','fresa con crema','fresas','fresa']
+      }
+    };
+  }
+
+  function getControlExamples(){
+    return [
+      'Vendí 3 limón, 2 queso y 1 fresas',
+      'Compré leche 120, azúcar 80 y vasos 150',
+      'Produje 20 limón, 15 queso y 10 arroz',
+      'Conté 8 limón, 5 queso y 3 arroz',
+      'Merma 2 arroz',
+      'Pedido para mañana: Ana quiere 10 queso',
+      'Me deben 150 de Ana',
+      'Cobré 200 de Ana',
+      'Nota: mañana comprar más vasos'
+    ];
+  }
+
+  function detectControlIntent(message=''){
+    const text = controlNormalize(message);
+    if(!text) return 'NOTA';
+    if(/^nota\b/.test(text)) return 'NOTA';
+    if(/\b(cobre|cobro|cobrado|me pagaron|pagaron)\b/.test(text)) return 'COBRO';
+    if(/\b(deben|me deben|debe|pendiente de pago|por cobrar)\b/.test(text)) return 'DEUDA';
+    if(/\b(pedido|pidieron|me pidieron|encargo|encargaron|quiere|quieren)\b/.test(text)) return 'PEDIDO';
+    if(/\b(merma|mermas|se echaron a perder|echaron a perder|se perdieron|perdi|perdio|desperdicie|desperdicio)\b/.test(text)) return 'MERMA';
+    if(/\b(conte|contar|conteo|contado|me quedan|quedan|tengo en existencia|existencia real)\b/.test(text)) return 'CONTEO_REAL';
+    if(/\b(produje|produccion|hice|prepare|preparamos|salieron del horno|elabore)\b/.test(text)) return 'PRODUCCION';
+    if(/\b(compre|gaste|gasto|pague|pago|inverti|inversion)\b/.test(text)) return 'GASTO';
+    if(/\b(vendi|vendimos|venta|ventas|vender|salieron|se vendieron)\b/.test(text)) return 'VENTA';
+    return 'NOTA';
+  }
+
+  function controlProductAliases(){
+    const catalog = getControlCatalog();
+    return Object.entries(catalog).map(([key, product]) => {
+      const aliases = [...new Set([key, product.nombre, ...(product.aliases || [])].map(controlNormalize))]
+        .filter(Boolean)
+        .sort((a,b)=>b.length-a.length)
+        .map(a => a.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+      return {key, product, pattern: aliases.join('|')};
+    });
+  }
+
+  function extractProductItems(message='', tipo='VENTA'){
+    const text = controlNormalize(message).replace(/,/g,' , ').replace(/\by\b/g,' y ');
+    const found = [];
+    const seen = new Set();
+
+    controlProductAliases().forEach(({key, product, pattern}) => {
+      const patterns = [
+        new RegExp(`(?:^|[\\s,;])([0-9]+(?:[\\.,][0-9]+)?)\\s*(?:de\\s+)?(?:${pattern})(?:s)?\\b`, 'i'),
+        new RegExp(`(?:^|[\\s,;])(?:${pattern})(?:s)?\\s*([0-9]+(?:[\\.,][0-9]+)?)\\b`, 'i')
+      ];
+
+      let qty = 0;
+      for(const rx of patterns){
+        const match = text.match(rx);
+        if(match){
+          qty = Number(String(match[1] || '0').replace(',','.'));
+          break;
+        }
+      }
+
+      if(qty > 0 && !seen.has(key)){
+        seen.add(key);
+        const unit = ['VENTA','PEDIDO'].includes(tipo) ? product.precio : 0;
+        found.push({
+          productoClave:key,
+          productoNombre:product.nombre,
+          cantidad:qty,
+          precioUnitario:unit,
+          total:qty * unit
+        });
+      }
+    });
+
+    return found;
+  }
+
+  function extractExpenseItems(message=''){
+    const clean = String(message || '').trim()
+      .replace(/^(compr[eé]|gast[eé]|gasto|pagu[eé]|invert[ií])\s+/i,'')
+      .replace(/\s+/g,' ');
+
+    const parts = clean
+      .split(/,|\sy\s/gi)
+      .map(p => p.trim())
+      .filter(Boolean);
+
+    const items = [];
+    parts.forEach(part => {
+      const match = part.match(/^(.+?)\s+\$?\s*([0-9]+(?:[\.,][0-9]+)?)\s*$/i);
+      if(match){
+        const concepto = match[1].trim();
+        const monto = Number(String(match[2]).replace(',','.'));
+        if(concepto && monto > 0){
+          items.push({concepto, monto});
+        }
+      }
+    });
+
+    if(!items.length){
+      const totalMatch = clean.match(/\$?\s*([0-9]+(?:[\.,][0-9]+)?)/);
+      const total = totalMatch ? Number(String(totalMatch[1]).replace(',','.')) : 0;
+      if(total > 0) items.push({concepto:'Gasto general', monto:total});
+    }
+
+    return items;
+  }
+
+  function extractControlAmount(message=''){
+    const match = String(message || '').match(/\$?\s*([0-9]+(?:[\.,][0-9]+)?)/);
+    return match ? Number(String(match[1]).replace(',','.')) : 0;
+  }
+
+  function extractControlPerson(message=''){
+    const raw = String(message || '').trim();
+    const byColon = raw.match(/:\s*([A-ZÁÉÍÓÚÑ][A-Za-zÁÉÍÓÚÑáéíóúñ\s]{1,40}?)\s+(?:quiere|pidi[oó]|pide|encarg[oó])/);
+    if(byColon) return byColon[1].trim();
+
+    const byDe = raw.match(/\b(?:de|a|cliente)\s+([A-ZÁÉÍÓÚÑ][A-Za-zÁÉÍÓÚÑáéíóúñ]{1,30})\b/);
+    if(byDe) return byDe[1].trim();
+
+    return '';
+  }
+
+  function extractDeliveryText(message=''){
+    const text = controlNormalize(message);
+    const options = ['hoy','manana','mañana','pasado manana','lunes','martes','miercoles','jueves','viernes','sabado','domingo','fin de semana'];
+    const found = options.find(o => text.includes(controlNormalize(o)));
+    return found ? (found === 'manana' ? 'mañana' : found) : '';
+  }
+
+  function parseControlMessage(message=''){
+    const original = String(message || '').trim();
+    const tipo = detectControlIntent(original);
+    const productItems = extractProductItems(original, tipo);
+    const expenseItems = tipo === 'GASTO' ? extractExpenseItems(original) : [];
+    const amount = ['COBRO','DEUDA'].includes(tipo) ? extractControlAmount(original) : 0;
+    const person = ['COBRO','DEUDA','PEDIDO'].includes(tipo) ? extractControlPerson(original) : '';
+    const fechaEntregaTexto = tipo === 'PEDIDO' ? extractDeliveryText(original) : '';
+
+    let total = 0;
+    if(tipo === 'VENTA') total = productItems.reduce((sum,item)=>sum + item.total, 0);
+    if(tipo === 'GASTO') total = expenseItems.reduce((sum,item)=>sum + item.monto, 0);
+    if(['COBRO','DEUDA'].includes(tipo)) total = amount;
+
+    let estado = 'confirmado';
+    let alerta = '';
+
+    if(['VENTA','PRODUCCION','CONTEO_REAL','MERMA','PEDIDO'].includes(tipo) && !productItems.length){
+      estado = 'pendiente';
+      alerta = tipo === 'VENTA'
+        ? 'Entendí que fue una venta, pero falta cantidad y producto. Ejemplo: Vendí 3 limón.'
+        : tipo === 'PEDIDO'
+          ? 'Entendí que fue un pedido, pero falta producto o cantidad. Ejemplo: Pedido para mañana: Ana quiere 10 queso.'
+          : 'Falta cantidad y producto. Ejemplo: Produje 10 limón o Conté 8 queso.';
+    }
+
+    if(tipo === 'GASTO' && !expenseItems.length){
+      estado = 'pendiente';
+      alerta = 'Entendí que fue un gasto, pero falta monto. Ejemplo: Compré leche 120.';
+    }
+
+    if(['COBRO','DEUDA'].includes(tipo) && !amount){
+      estado = 'pendiente';
+      alerta = tipo === 'COBRO'
+        ? 'Entendí que fue un cobro, pero falta monto. Ejemplo: Cobré 200 de Ana.'
+        : 'Entendí que es deuda, pero falta monto. Ejemplo: Me deben 150 de Ana.';
+    }
+
+    return {
+      tipo,
+      mensajeOriginal:original,
+      items:productItems,
+      gastos:expenseItems,
+      total,
+      persona:person,
+      fechaEntregaTexto,
+      estado,
+      alerta
+    };
+  }
+
+  function controlResponseForRecord(record){
+    if(record.alerta) return record.alerta;
+    if(record.tipo === 'VENTA'){
+      const lines = record.items.map(i => `${controlNumber(i.cantidad)} ${i.productoNombre} = ${controlMoney(i.total)}`);
+      return `Listo, registré venta:\n${lines.join('\n')}\nTotal: ${controlMoney(record.total)}.`;
+    }
+    if(record.tipo === 'GASTO'){
+      const lines = record.gastos.map(g => `${g.concepto}: ${controlMoney(g.monto)}`);
+      return `Listo, registré gasto:\n${lines.join('\n')}\nTotal gastos: ${controlMoney(record.total)}.`;
+    }
+    if(record.tipo === 'PRODUCCION'){
+      return `Producción registrada:\n${record.items.map(i=>`+${controlNumber(i.cantidad)} ${i.productoNombre}`).join('\n')}.`;
+    }
+    if(record.tipo === 'CONTEO_REAL'){
+      return `Conteo real registrado:\n${record.items.map(i=>`${controlNumber(i.cantidad)} ${i.productoNombre}`).join('\n')}.`;
+    }
+    if(record.tipo === 'MERMA'){
+      return `Merma registrada:\n${record.items.map(i=>`${controlNumber(i.cantidad)} ${i.productoNombre}`).join('\n')}.`;
+    }
+    if(record.tipo === 'PEDIDO'){
+      const who = record.persona ? ` para ${record.persona}` : '';
+      const when = record.fechaEntregaTexto ? ` (${record.fechaEntregaTexto})` : '';
+      return `Pedido pendiente registrado${who}${when}:\n${record.items.map(i=>`${controlNumber(i.cantidad)} ${i.productoNombre}`).join('\n')}.`;
+    }
+    if(record.tipo === 'COBRO'){
+      return `Cobro registrado${record.persona ? ` de ${record.persona}` : ''}: ${controlMoney(record.total)}.`;
+    }
+    if(record.tipo === 'DEUDA'){
+      return `Deuda registrada${record.persona ? ` de ${record.persona}` : ''}: ${controlMoney(record.total)}.`;
+    }
+    return 'Nota guardada.';
+  }
+
+  function createControlRecord(message=''){
+    const parsed = parseControlMessage(message);
+    const record = {
+      id:uid('ctrl'),
+      negocioId:CONTROL_BUSINESS_ID,
+      fecha:new Date().toISOString(),
+      origen:'simulador_whatsapp',
+      ...parsed
+    };
+    record.respuesta = controlResponseForRecord(record);
+    return record;
+  }
+
+  function getControlRecords(){
+    try{
+      const raw = JSON.parse(localStorage.getItem(CONTROL_STORAGE_KEY) || '[]');
+      return Array.isArray(raw) ? raw : [];
+    }catch{
+      return [];
+    }
+  }
+
+  function saveControlRecord(record){
+    const records = getControlRecords();
+    records.push(record);
+    localStorage.setItem(CONTROL_STORAGE_KEY, JSON.stringify(records));
+    return records;
+  }
+
+  function clearControlRecords(){
+    localStorage.removeItem(CONTROL_STORAGE_KEY);
+  }
+
+  function controlIsToday(iso=''){
+    try{
+      const d = new Date(iso);
+      const now = new Date();
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+    }catch{
+      return false;
+    }
+  }
+
+  function calculateControlDashboard(records=getControlRecords()){
+    const catalog = getControlCatalog();
+    const confirmed = records.filter(r => r && r.estado === 'confirmado');
+    const today = confirmed.filter(r => controlIsToday(r.fecha));
+    const productStats = {};
+    const inventory = {};
+    const latestCount = {};
+
+    Object.keys(catalog).forEach(key => {
+      productStats[key] = {clave:key, nombre:catalog[key].nombre, vendidos:0, ventas:0};
+      inventory[key] = {clave:key, nombre:catalog[key].nombre, producido:0, vendido:0, merma:0, esperado:0, conteo:null, diferencia:null};
+    });
+
+    const ventas = today.filter(r=>r.tipo==='VENTA').reduce((sum,r)=>sum + Number(r.total || 0), 0);
+    const gastos = today.filter(r=>r.tipo==='GASTO').reduce((sum,r)=>sum + Number(r.total || 0), 0);
+    const cobros = today.filter(r=>r.tipo==='COBRO').reduce((sum,r)=>sum + Number(r.total || 0), 0);
+    const deudas = confirmed.filter(r=>r.tipo==='DEUDA').reduce((sum,r)=>sum + Number(r.total || 0), 0);
+    const pedidos = confirmed.filter(r=>r.tipo==='PEDIDO');
+    const notas = confirmed.filter(r=>r.tipo==='NOTA');
+
+    confirmed.forEach(r => {
+      (r.items || []).forEach(item => {
+        const key = item.productoClave;
+        if(!inventory[key]) return;
+        const qty = Number(item.cantidad || 0);
+
+        if(r.tipo === 'VENTA'){
+          inventory[key].vendido += qty;
+          productStats[key].vendidos += qty;
+          productStats[key].ventas += Number(item.total || 0);
+        }
+        if(r.tipo === 'PRODUCCION') inventory[key].producido += qty;
+        if(r.tipo === 'MERMA') inventory[key].merma += qty;
+        if(r.tipo === 'CONTEO_REAL') latestCount[key] = qty;
+      });
+    });
+
+    Object.keys(inventory).forEach(key => {
+      inventory[key].esperado = inventory[key].producido - inventory[key].vendido - inventory[key].merma;
+      if(Object.prototype.hasOwnProperty.call(latestCount, key)){
+        inventory[key].conteo = latestCount[key];
+        inventory[key].diferencia = inventory[key].esperado - latestCount[key];
+      }
+    });
+
+    const productList = Object.values(productStats).sort((a,b)=>b.vendidos-a.vendidos);
+    const topProduct = productList.find(p => p.vendidos > 0);
+
+    return {
+      totalRegistros:records.length,
+      pendientes:records.filter(r=>r.estado==='pendiente').length,
+      ventas,
+      gastos,
+      ganancia:ventas - gastos,
+      cobros,
+      deudas,
+      productoMasVendido: topProduct ? `${topProduct.nombre} (${controlNumber(topProduct.vendidos)})` : 'Sin ventas',
+      productStats:productList,
+      inventory:Object.values(inventory),
+      mermas:confirmed.filter(r=>r.tipo==='MERMA'),
+      pedidos,
+      notas,
+      recientes:records.slice().reverse().slice(0, 18)
+    };
+  }
+
+  function controlCard(label, value, hint=''){
+    return `<article class="control-stat-card"><span>${esc(label)}</span><strong>${esc(value)}</strong>${hint ? `<small>${esc(hint)}</small>` : ''}</article>`;
+  }
+
+  function controlInventoryTable(stats){
+    const rows = stats.inventory.map(item => {
+      const diff = item.diferencia;
+      const diffText = diff === null ? 'Sin conteo' : (diff === 0 ? 'Cuadra' : (diff > 0 ? `Faltan ${controlNumber(diff)}` : `Sobran ${controlNumber(Math.abs(diff))}`));
+      return `<tr>
+        <td>${esc(item.nombre)}</td>
+        <td>${controlNumber(item.esperado)}</td>
+        <td>${item.conteo === null ? '—' : controlNumber(item.conteo)}</td>
+        <td class="${diff === 0 ? 'ok' : (diff === null ? '' : 'warn')}">${esc(diffText)}</td>
+      </tr>`;
+    }).join('');
+    return `<div class="control-table-wrap"><table class="control-table"><thead><tr><th>Producto</th><th>Esperado</th><th>Contado</th><th>Diferencia</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+
+  function controlRecordMarkup(record){
+    const status = record.estado === 'pendiente' ? 'pendiente' : 'confirmado';
+    return `<div class="control-chat-row">
+      <div class="control-bubble user"><small>${esc(record.tipo)} · ${new Date(record.fecha).toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'})}</small>${esc(record.mensajeOriginal)}</div>
+      <div class="control-bubble bot ${status}"><small>Conecta Control</small>${esc(record.respuesta || '').replace(/\n/g,'<br>')}</div>
+    </div>`;
+  }
+
+  function renderConectaControlPage(){
+    const records = getControlRecords();
+    const stats = calculateControlDashboard(records);
+    const examples = getControlExamples().map(ex => `<button type="button" data-control-example="${esc(ex)}">${esc(ex)}</button>`).join('');
+
+    return shell(`<section class="control-page">
+      <div class="control-hero">
+        <button type="button" class="small-link control-back" data-nav="/">← Volver</button>
+        <div>
+          <p class="control-kicker">Piloto · Postres Fer</p>
+          <h1>Conecta Control</h1>
+          <p>Simulador tipo WhatsApp para registrar ventas, gastos, producción, mermas, conteos, pedidos, cobros y deudas.</p>
+        </div>
+      </div>
+
+      <section class="control-stats-grid">
+        ${controlCard('Ventas hoy', controlMoney(stats.ventas), 'Ingresos registrados')}
+        ${controlCard('Gastos hoy', controlMoney(stats.gastos), 'Egresos registrados')}
+        ${controlCard('Ganancia estimada', controlMoney(stats.ganancia), 'Ventas - gastos')}
+        ${controlCard('Producto estrella', stats.productoMasVendido, 'Más vendido')}
+        ${controlCard('Cobros hoy', controlMoney(stats.cobros), 'Pagos recibidos')}
+        ${controlCard('Deudas', controlMoney(stats.deudas), 'Pendientes registrados')}
+      </section>
+
+      <section class="control-panel">
+        <h2>Mensaje tipo WhatsApp</h2>
+        <p>Escribe como hablarías normalmente: “Vendí 3 limón, 2 queso y 1 fresas”.</p>
+        <textarea id="controlMessageInput" rows="3" placeholder="Ej: Vendí 3 limón, 2 queso y 1 fresas"></textarea>
+        <button type="button" class="control-main-btn" data-control-process>Procesar mensaje</button>
+        <div class="control-examples">${examples}</div>
+      </section>
+
+      <section class="control-panel">
+        <div class="control-section-head"><h2>Inventario esperado vs conteo real</h2><span>${stats.totalRegistros} registros</span></div>
+        ${controlInventoryTable(stats)}
+      </section>
+
+      <section class="control-panel">
+        <div class="control-section-head"><h2>Historial del asistente</h2><button type="button" class="small-link danger" data-control-clear>Limpiar registros de prueba</button></div>
+        <div class="control-chat-history">
+          ${stats.recientes.length ? stats.recientes.map(controlRecordMarkup).join('') : '<div class="control-empty">Todavía no hay movimientos. Prueba con un ejemplo.</div>'}
+        </div>
+      </section>
+    </section>`);
+  }
+
+  function processControlMessage(){
+    const input = document.getElementById('controlMessageInput');
+    const message = String(input?.value || '').trim();
+    if(!message) return toast('Escribe un mensaje para procesar.');
+    const record = createControlRecord(message);
+    saveControlRecord(record);
+    toast(record.estado === 'confirmado' ? 'Movimiento registrado.' : 'Registro pendiente de datos.');
+    render();
+    setTimeout(() => {
+      const history = document.querySelector('.control-chat-history');
+      history?.scrollTo?.({top:0, behavior:'smooth'});
+      document.getElementById('controlMessageInput')?.focus?.({preventScroll:true});
+    }, 80);
+  }
+
+  function clearControlRecordsWithConfirm(){
+    if(!confirm('¿Borrar todos los registros de prueba de Conecta Control?')) return;
+    clearControlRecords();
+    toast('Registros de prueba borrados.');
+    render();
+  }
+
+
   function shell(content){
     return `
       <main class="app-page"><div class="top-space"></div>${content}</main>
@@ -8255,6 +9053,7 @@
         <button class="nav-item ${state.route==='/siguiendo'?'active':''}" data-nav="/siguiendo"><span class="nav-icon">🫂</span><small>Siguiendo</small></button>
         <button class="nav-plus" data-pick>+</button>
         <button class="nav-item ${state.route==='/mensajes'?'active':''}" data-nav="/mensajes"><span class="nav-icon nav-icon-wrap">✉️${unreadBadge()}</span><small>Mensajes</small></button>
+        <button class="nav-item nav-control ${state.route==='/control'?'active':''}" data-nav="/control"><span class="nav-icon">📊</span><small>Control</small></button>
         <button class="nav-item ${state.route==='/perfil'?'active':''}" data-nav="/perfil"><span class="nav-icon">👤</span><small>Perfil</small></button>
       </nav>
       <input id="mediaPicker" type="file" accept="image/*,video/*" multiple hidden>
@@ -8271,6 +9070,7 @@
         <button class="floating-icon floating-cart ${state.route === '/tienda' ? 'active' : ''}" data-open-store="${esc(userId())}" title="Tienda / mandado" aria-label="Tienda y mandados">🛒</button>
         <button class="floating-icon floating-heart ${state.topTab === 'para-ti' ? 'active' : ''}" data-top-tab="para-ti" title="Intereses / Para ti" aria-label="Intereses para ti">🎯</button>
         <button class="floating-icon floating-search" data-toggle-search title="Buscar" aria-label="Buscar">🔎</button>
+        <button class="floating-icon floating-control" data-nav="/control" title="Conecta Control" aria-label="Conecta Control">📊</button>
       </div>
       ${state.searchOpen ? `<div class="tiktok-search-panel visual-search-panel floating-search-panel"><span>🔎</span><input id="searchInput" type="search" inputmode="search" value="${esc(state.query)}" placeholder="Buscar: refrigerador, pan, viaje..." autocomplete="off" enterkeyhint="search"><button type="button" data-clear-search>${state.query ? 'Limpiar' : 'Cerrar'}</button></div>` : ''}
       <div class="tiktok-filter-row visual-filter-row floating-filter-row">
@@ -9283,7 +10083,7 @@ ${esc(shortDiagnosticText(diag))}</code>
   function render(){
     injectRootStyles();
 
-    const routes = {'/':homePage, '/tienda':storePage, '/siguiendo':followingPage, '/mensajes':messagesPage, '/perfil':profilePage, '/confianza':confidencePage, '/publicar':composerPage, '/chat':chatPage};
+    const routes = {'/':homePage, '/tienda':storePage, '/siguiendo':followingPage, '/mensajes':messagesPage, '/perfil':profilePage, '/control':renderConectaControlPage, '/confianza':confidencePage, '/publicar':composerPage, '/chat':chatPage};
     let html = '';
 
     try{
@@ -9357,7 +10157,7 @@ ${esc(shortDiagnosticText(diag))}</code>
     const initialHash = location.hash.replace('#','');
     if(initialHash){
       const route = '/' + initialHash.replace(/^\//,'');
-      if(['/tienda','/siguiendo','/mensajes','/perfil','/confianza','/publicar','/chat'].includes(route)) state.route = route;
+      if(['/tienda','/siguiendo','/mensajes','/perfil','/control','/confianza','/publicar','/chat'].includes(route)) state.route = route;
     }
     history.replaceState?.({route:state.route || '/'}, '', routeUrl(state.route || '/'));
     window.addEventListener('popstate', e => {
@@ -11148,6 +11948,13 @@ function openChatFromConversation(button){
 
   function bind(){
     document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>nav(b.dataset.nav));
+    document.querySelectorAll('[data-control-process]').forEach(b=>b.onclick=processControlMessage);
+    document.querySelectorAll('[data-control-clear]').forEach(b=>b.onclick=clearControlRecordsWithConfirm);
+    document.querySelectorAll('[data-control-example]').forEach(b=>b.onclick=()=>{ const input=document.getElementById('controlMessageInput'); if(input){input.value=b.dataset.controlExample||''; input.focus({preventScroll:true});} });
+    const controlInput=document.getElementById('controlMessageInput');
+    if(controlInput){
+      controlInput.onkeydown=e=>{ if(e.key==='Enter' && (e.ctrlKey || e.metaKey)){ e.preventDefault(); processControlMessage(); } };
+    }
     document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{state.filter=b.dataset.filter;state.topTab='';state.query='';nav('/', {replace:true});});
     document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=openPicker);
     document.querySelectorAll('[data-publish]').forEach(b=>b.onclick=publish);
@@ -11207,7 +12014,7 @@ function openChatFromConversation(button){
     if(document.visibilityState !== 'visible' || state.publishing) return;
     if(state.route === '/mensajes') loadMessagesForInbox({silent:true});
     else if(state.route === '/chat'){ loadChatMessages({silent:true}); loadMessagesForInbox({silent:true}); }
-    else { loadMessagesForInbox({silent:true}); if(!state.syncing && state.route !== '/publicar') syncFromCloud({render:!shouldAvoidRender()}); }
+    else { loadMessagesForInbox({silent:true}); if(!state.syncing && !['/publicar','/control'].includes(state.route)) syncFromCloud({render:!shouldAvoidRender()}); }
   }
 
   function setupReadingProtection(){
