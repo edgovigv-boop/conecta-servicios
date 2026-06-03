@@ -7,7 +7,8 @@
   <style>
     body{margin:0;background:#fff7ed;color:#172033;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;padding:14px}
     main{max-width:760px;margin:auto}.card{background:#fff;border:1px solid #e8edf3;border-radius:26px;padding:16px;margin:12px 0;box-shadow:0 16px 34px rgba(15,23,42,.08)}
-    h1{font-size:30px;margin:0 0 8px}h2{margin:0 0 10px}.muted{color:#64748b;font-weight:700}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:18px;padding:12px}.box span{display:block;color:#64748b;font-weight:900;font-size:12px}.box strong{display:block;font-size:22px;margin-top:4px}input{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:14px;padding:12px;font-size:16px;font-weight:700}label{display:block;font-weight:900;margin:10px 0 5px}button,a.btn{display:block;width:100%;box-sizing:border-box;text-align:center;text-decoration:none;border:0;border-radius:18px;padding:14px;background:#16a34a;color:#fff;font-weight:1000;font-size:17px;margin-top:12px}.secondary{background:#eef2ff!important;color:#3730a3!important}@media(max-width:520px){.grid{grid-template-columns:1fr}}
+    h1{font-size:30px;margin:0 0 8px}h2{margin:0 0 10px}.muted{color:#64748b;font-weight:700}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:18px;padding:12px}.box span{display:block;color:#64748b;font-weight:900;font-size:12px}.box strong{display:block;font-size:22px;margin-top:4px}
+    input,select{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:14px;padding:12px;font-size:16px;font-weight:700;background:#fff}label{display:block;font-weight:900;margin:10px 0 5px}button,a.btn{display:block;width:100%;box-sizing:border-box;text-align:center;text-decoration:none;border:0;border-radius:18px;padding:14px;background:#16a34a;color:#fff;font-weight:1000;font-size:17px;margin-top:12px}.secondary{background:#eef2ff!important;color:#3730a3!important}.danger{background:#fff1f2!important;color:#be123c!important}.row{display:grid;grid-template-columns:1.3fr .7fr .7fr auto;gap:8px;align-items:end;margin:8px 0}.x{width:44px;height:44px;border-radius:14px;background:#fff1f2;color:#be123c;padding:0;margin:0}.hint{background:#ecfdf5;border:1px solid #86efac;border-radius:18px;padding:12px;color:#065f46;font-weight:800}@media(max-width:620px){.grid,.row{grid-template-columns:1fr}.x{width:100%}}
   </style>
 </head>
 <body>
@@ -16,34 +17,64 @@
   <section class="card">
     <p class="muted">Conecta Control</p>
     <h1>📖 Recetas y fórmulas</h1>
-    <p class="muted">Esta pantalla ayuda a calcular cuánto cuesta preparar una receta y cuánto cuesta cada porción.</p>
+    <p class="muted">Aquí Fer captura sus propios ingredientes. La app no asume la receta: solo calcula con lo que ella escriba.</p>
   </section>
   <section class="card">
-    <h2>🍓 Fresas con crema</h2>
-    <p class="muted">Base: 1 kilo de producto terminado. Rendimiento: 10 vasitos de 100g.</p>
-    <label>Fresa fresca ($)</label><input id="fresa" type="number" value="15" step="0.01">
-    <label>Media crema ($)</label><input id="crema" type="number" value="14.5" step="0.01">
-    <label>Leche condensada ($)</label><input id="leche" type="number" value="11" step="0.01">
-    <label>Vainilla ($)</label><input id="vainilla" type="number" value="1" step="0.01">
-    <label>Porciones / vasitos</label><input id="porciones" type="number" value="10" step="1">
+    <h2>Mi receta</h2>
+    <label>Nombre del producto</label><input id="producto" placeholder="Ej: Fresas con crema">
+    <div class="grid">
+      <div><label>Cantidad base</label><input id="base" type="number" value="1000" step="1"></div>
+      <div><label>Unidad base</label><select id="unidadBase"><option value="g">gramos</option><option value="ml">mililitros</option><option value="pieza">pieza</option><option value="kg">kilo</option><option value="l">litro</option></select></div>
+      <div><label>Rinde cuántas porciones</label><input id="porciones" type="number" value="1" step="1"></div>
+      <div><label>Nombre de porción</label><input id="nombrePorcion" placeholder="Ej: vasitos"></div>
+    </div>
+    <div class="hint">Agrega cada ingrediente como en tu libreta: nombre, cantidad usada y costo de esa cantidad.</div>
+    <div id="ingredientes"></div>
+    <button onclick="agregarIngrediente()">+ Agregar ingrediente</button>
     <button onclick="calcular()">Calcular receta</button>
+    <button class="secondary" onclick="cargarEjemplo()">Ver ejemplo de fresas con crema</button>
+    <button class="danger" onclick="limpiar()">Limpiar plantilla</button>
   </section>
   <section class="card">
     <h2>Resultado</h2>
     <div class="grid">
-      <div class="box"><span>Peso total</span><strong>1000g</strong></div>
-      <div class="box"><span>Costo receta</span><strong id="costo">$41.50</strong></div>
-      <div class="box"><span>Costo por vasito</span><strong id="unidad">$4.15</strong></div>
-      <div class="box"><span>Precio sugerido</span><strong id="precio">$6.23 - $12.45</strong></div>
+      <div class="box"><span>Suma de cantidades</span><strong id="peso">0</strong></div>
+      <div class="box"><span>Costo total</span><strong id="costo">$0.00</strong></div>
+      <div class="box"><span>Costo por porción</span><strong id="unidad">$0.00</strong></div>
+      <div class="box"><span>Precio sugerido</span><strong id="precio">$0.00 - $0.00</strong></div>
     </div>
-    <p class="muted">El rango muestra precio mínimo por margen simple y una referencia más sana para venta al público.</p>
+    <p class="muted" id="alerta">Empieza agregando ingredientes.</p>
   </section>
 </main>
 <script>
 function money(n){return Number(n||0).toLocaleString('es-MX',{style:'currency',currency:'MXN',maximumFractionDigits:2});}
-function val(id){return Number(document.getElementById(id).value||0);}
-function calcular(){var total=val('fresa')+val('crema')+val('leche')+val('vainilla');var p=val('porciones')||1;var unidad=total/p;document.getElementById('costo').textContent=money(total);document.getElementById('unidad').textContent=money(unidad);document.getElementById('precio').textContent=money(unidad*1.5)+' - '+money(unidad*3);}
-calcular();
+function n(v){return Number(v||0);}
+function agregarIngrediente(nombre='', cantidad='', costo=''){
+  var box=document.getElementById('ingredientes');
+  var div=document.createElement('div');
+  div.className='row ingrediente';
+  div.innerHTML='<div><label>Ingrediente</label><input class="ing-nombre" placeholder="Ej: Fresa fresca" value="'+nombre+'"></div><div><label>Cantidad</label><input class="ing-cantidad" type="number" step="0.01" placeholder="g/ml" value="'+cantidad+'"></div><div><label>Costo $</label><input class="ing-costo" type="number" step="0.01" placeholder="0" value="'+costo+'"></div><button class="x" onclick="this.parentElement.remove();calcular()">×</button>';
+  box.appendChild(div);
+}
+function calcular(){
+  var filas=[].slice.call(document.querySelectorAll('.ingrediente'));
+  var peso=0,total=0;
+  filas.forEach(function(row){peso+=n(row.querySelector('.ing-cantidad').value);total+=n(row.querySelector('.ing-costo').value);});
+  var porciones=n(document.getElementById('porciones').value)||1;
+  var base=n(document.getElementById('base').value)||0;
+  var unit=document.getElementById('unidadBase').value;
+  var costoUnidad=total/porciones;
+  document.getElementById('peso').textContent=peso+' '+unit;
+  document.getElementById('costo').textContent=money(total);
+  document.getElementById('unidad').textContent=money(costoUnidad);
+  document.getElementById('precio').textContent=money(costoUnidad*1.5)+' - '+money(costoUnidad*3);
+  var alerta=document.getElementById('alerta');
+  if(!filas.length){alerta.textContent='Empieza agregando ingredientes.';return;}
+  if(base && Math.abs(peso-base)>0.01){alerta.textContent='⚠️ La suma de ingredientes no cuadra con la cantidad base.';}else{alerta.textContent='✅ La suma de ingredientes cuadra con la cantidad base.';}
+}
+function limpiar(){document.getElementById('producto').value='';document.getElementById('porciones').value='1';document.getElementById('nombrePorcion').value='';document.getElementById('ingredientes').innerHTML='';calcular();}
+function cargarEjemplo(){limpiar();document.getElementById('producto').value='Fresas con crema';document.getElementById('base').value='1000';document.getElementById('porciones').value='10';document.getElementById('nombrePorcion').value='vasitos de 100g';agregarIngrediente('Fresa fresca','600','15');agregarIngrediente('Media crema','240','14.5');agregarIngrediente('Leche condensada','150','11');agregarIngrediente('Vainilla','10','1');calcular();}
+agregarIngrediente();calcular();
 </script>
 </body>
 </html>
