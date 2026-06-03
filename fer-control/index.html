@@ -43,6 +43,7 @@
   const controls = [
     {key:'VENTA', icon:'💰', label:'Ventas', short:'Vendí', flow:'entrada'},
     {key:'COMPRA', icon:'🛒', label:'Compras', short:'Compré', flow:'salida'},
+    {key:'RECETA', icon:'📖', label:'Recetas', short:'Fórmulas', flow:'nota'},
     {key:'PRODUCCION', icon:'🍰', label:'Producción', short:'Hice', flow:'nota'},
     {key:'MERMA', icon:'⚠️', label:'Mermas', short:'Se perdió', flow:'salida'},
     {key:'PEDIDO', icon:'📋', label:'Pedidos', short:'Me encargaron', flow:'pendiente'},
@@ -100,6 +101,7 @@
   function intent(message){
     const t=norm(message);
     const custom=customControls().find(c=>t.includes(norm(c.label))); if(custom) return 'CUSTOM:'+custom.id;
+    if(/receta|formula|formulas|preparacion|preparación/.test(t)) return 'RECETA';
     if(/empleado|empleada|ayudante|sueldo|salario|jornal|mano de obra|pague a|le di/.test(t)) return 'EMPLEADO';
     if(/anticipo|adelanto|abono|mitad|deposito|apartar|apartado/.test(t)) return 'ANTICIPO';
     if(/me deben|deben|debe|fiado|falta pagar|saldo|resto|por cobrar/.test(t)) return 'DEUDA';
@@ -118,10 +120,11 @@
   function parse(message){
     const type=intent(message); const d=def(type); const items=extractProducts(message); const amount=extractMoney(message);
     let total=0,status='ok',response='';
-    if(['VENTA','MERMA','PEDIDO'].includes(type)) total=items.reduce((s,i)=>s+i.total,0)||amount;
+    if(type==='RECETA'){response='Abre Recetas para capturar o ajustar la fórmula.';}
+    else if(['VENTA','MERMA','PEDIDO'].includes(type)) total=items.reduce((s,i)=>s+i.total,0)||amount;
     else if(['COMPRA','EMPLEADO','ANTICIPO','DEUDA'].includes(type)||String(type).startsWith('CUSTOM:')) total=amount;
-    if(['VENTA','COMPRA','EMPLEADO','ANTICIPO','DEUDA','MERMA'].includes(type)&&!total){status='pending';response='Falta monto o cantidad. Intenta de nuevo con más detalle.';}
-    else response=d.label+' guardado'+(total?': '+money(total):'')+(items.length?' ('+productLine(items)+')':'')+'.';
+    if(type!=='RECETA' && ['VENTA','COMPRA','EMPLEADO','ANTICIPO','DEUDA','MERMA'].includes(type)&&!total){status='pending';response='Falta monto o cantidad. Intenta de nuevo con más detalle.';}
+    else if(type!=='RECETA') response=d.label+' guardado'+(total?': '+money(total):'')+(items.length?' ('+productLine(items)+')':'')+'.';
     return {id:uid(),date:new Date().toISOString(),day:today(),type,label:d.label,icon:d.icon,flow:d.flow,message,total,items,status,response};
   }
   function records(){const r=get(KEY,[]); return Array.isArray(r)?r:[];}
@@ -138,7 +141,7 @@
     const s=summary(); const allControls=[...controls,...customControls()];
     app.innerHTML=`
       <div class="top"><a href="/">← Conecta</a><button type="button" data-share>Compartir resumen</button></div>
-      <section class="hero"><p class="kicker">Conecta Control</p><h1>🍰 Postres Fer</h1><p>Háblale a tu negocio. Yo lo acomodo en ventas, compras, empleados, pedidos y lo que te quedó.</p></section>
+      <section class="hero"><p class="kicker">Conecta Control</p><h1>🍰 Postres Fer</h1><p>Háblale a tu negocio. Yo lo acomodo en ventas, compras, recetas, empleados, pedidos y lo que te quedó.</p></section>
       <section class="stats">
         <article class="stat good"><span>Entró</span><strong>${money(s.entradas)}</strong></article>
         <article class="stat warn"><span>Salió</span><strong>${money(s.salidas)}</strong></article>
@@ -147,15 +150,21 @@
         <article class="stat"><span>Anticipos</span><strong>${money(s.anticipos)}</strong></article>
         <article class="stat"><span>Más vendido</span><strong>${esc(s.top)}</strong></article>
       </section>
-      <section class="panel"><h2>Botones rápidos</h2><div class="grid">${allControls.map(c=>`<button class="tile" data-prefill="${esc(c.key)}"><span class="ico">${esc(c.icon||'⭐')}</span><strong>${esc(c.label)}</strong><small>${esc(c.short||'Mi botón')}</small></button>`).join('')}<button class="tile active" data-add-custom><span class="ico">➕</span><strong>Otro</strong><small>Agregar botón</small></button></div></section>
+      <section class="panel"><h2>Botones rápidos</h2><div class="grid">${allControls.map(c=>`<button class="tile ${c.key==='RECETA'?'active':''}" data-prefill="${esc(c.key)}"><span class="ico">${esc(c.icon||'⭐')}</span><strong>${esc(c.label)}</strong><small>${esc(c.short||'Mi botón')}</small></button>`).join('')}<button class="tile active" data-add-custom><span class="ico">➕</span><strong>Otro</strong><small>Agregar botón</small></button></div></section>
       <section class="panel"><h2>Escribir o dictar</h2><textarea class="input" id="msg" placeholder="Ej: Vendí 3 pays de limón"></textarea><button class="big" data-process>Guardar</button><div class="chips">${['Vendí 3 pays de limón','Compré leche $80','Pagué a María $300','Merma 2 arroz','Me dieron anticipo $200','Ana me debe $150'].map(e=>`<button class="chip" data-example="${esc(e)}">${esc(e)}</button>`).join('')}</div><div class="note">Si falta cantidad o monto, no lo guardo como confirmado para evitar errores.</div></section>
       <section class="panel"><h2>Hoy</h2><div class="history">${s.all.slice().reverse().slice(0,40).map(recordHTML).join('')||'<div class="empty">Aún no hay movimientos.</div>'}</div><button class="soft share" data-share>Copiar resumen</button><button class="soft danger" data-clear>Limpiar prueba</button></section>
       <div class="footer">© 2026 Conecta Servicios. App piloto para Postres Fer.</div>`;
   }
   function recordHTML(r){const time=new Date(r.date).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});return `<div class="record"><b><span>${esc(r.icon||def(r.type).icon||'📝')}</span>${esc(r.label)} · ${time}</b><p>${esc(r.message)}</p><small>${esc(r.response)}</small></div>`;}
-  function prefill(key){const input=document.getElementById('msg'); if(!input)return; const map={VENTA:'Vendí ',COMPRA:'Compré ',PRODUCCION:'Hice ',MERMA:'Merma ',PEDIDO:'Pedido: ',ANTICIPO:'Me dieron anticipo ',DEUDA:'Me deben ',EMPLEADO:'Pagué a '}; input.value=map[key]||((customControls().find(c=>c.key===key)?.label||'')+' '); input.focus();}
+  function prefill(key){if(key==='RECETA'){window.location.href='recetas-basico.html';return;}const input=document.getElementById('msg'); if(!input)return; const map={VENTA:'Vendí ',COMPRA:'Compré ',PRODUCCION:'Hice ',MERMA:'Merma ',PEDIDO:'Pedido: ',ANTICIPO:'Me dieron anticipo ',DEUDA:'Me deben ',EMPLEADO:'Pagué a '}; input.value=map[key]||((customControls().find(c=>c.key===key)?.label||'')+' '); input.focus();}
   function addCustom(){const label=prompt('¿Cómo quieres llamar este botón? Ej: Entregas, Gasolina, Renta'); if(!label||!label.trim())return; const flowRaw=prompt('¿Es dinero que sale, dinero que entra o solo nota? Escribe: sale, entra o nota','sale')||'nota'; const flow=/entra|entrada|ingreso/i.test(flowRaw)?'entrada':(/sale|salida|gasto|egreso/i.test(flowRaw)?'salida':'nota'); const icon=flow==='entrada'?'💵':flow==='salida'?'💸':'⭐'; const list=customControls(); list.push({key:'CUSTOM:'+uid(),id:uid(),icon,label:label.trim(),short:'Mi botón',flow}); set(CUSTOM_KEY,list); render();}
-  function report(){const s=summary(); return `Postres Fer - Resumen de hoy\nEntró: ${money(s.entradas)}\nSalió: ${money(s.salidas)}\nMe quedó: ${money(s.meQuedo)}\nMe deben: ${money(s.deudas)}\nAnticipos: ${money(s.anticipos)}\nMás vendido: ${s.top}`;}
+  function report(){const s=summary(); return `Postres Fer - Resumen de hoy
+Entró: ${money(s.entradas)}
+Salió: ${money(s.salidas)}
+Me quedó: ${money(s.meQuedo)}
+Me deben: ${money(s.deudas)}
+Anticipos: ${money(s.anticipos)}
+Más vendido: ${s.top}`;}
   document.addEventListener('click',e=>{
     const b=e.target.closest('[data-process],[data-example],[data-prefill],[data-add-custom],[data-clear],[data-share]'); if(!b)return;
     if(b.matches('[data-example]')){const input=document.getElementById('msg'); input.value=b.dataset.example||''; input.focus(); return;}
