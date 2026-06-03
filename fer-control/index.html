@@ -6,25 +6,8 @@
   <meta name="theme-color" content="#16a34a" />
   <title>Postres Fer | Conecta Control</title>
   <style>
-    :root{
-      --bg:#fff7ed;--card:#ffffff;--ink:#172033;--muted:#64748b;--line:#e8edf3;
-      --green:#16a34a;--green2:#059669;--purple:#5b2eea;--warn:#f59e0b;--bad:#ef4444;
-      --shadow:0 18px 42px rgba(15,23,42,.10);--soft:0 10px 24px rgba(15,23,42,.07);
-      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0;min-height:100%;color:var(--ink);background:linear-gradient(180deg,#fff7ed 0%,#f8fafc 36%,#ecfdf5 100%)}
-    body{padding:calc(env(safe-area-inset-top) + 10px) 12px calc(env(safe-area-inset-bottom) + 20px)}
-    button,input,textarea,select{font:inherit}button{cursor:pointer;border:0;-webkit-tap-highlight-color:transparent}
-    .app{width:min(760px,100%);margin:0 auto}.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.top a,.top button{min-height:42px;border-radius:999px;padding:0 13px;background:#fff;border:1px solid #e5e7eb;color:var(--purple);font-weight:950;box-shadow:var(--soft);text-decoration:none}
-    .hero{background:#fff;border:1px solid var(--line);border-radius:30px;padding:16px;box-shadow:var(--shadow);margin-bottom:12px}.kicker{margin:0 0 4px;color:#059669;font-size:12px;font-weight:1000;letter-spacing:.07em;text-transform:uppercase}.hero h1{margin:0;font-size:31px;line-height:1.02;letter-spacing:-.05em}.hero p{margin:8px 0 0;color:var(--muted);font-weight:850;line-height:1.32}
-    .panel{background:#fff;border:1px solid var(--line);border-radius:28px;padding:14px;margin:12px 0;box-shadow:var(--shadow)}.panel h2{font-size:19px;margin:0 0 8px;letter-spacing:-.03em}.panel p{margin:0 0 10px;color:var(--muted);font-weight:800;line-height:1.34}
-    .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}.stat{border-radius:24px;background:#fff;border:1px solid #e2e8f0;padding:13px;box-shadow:var(--soft)}.stat span{display:block;color:var(--muted);font-size:12px;font-weight:950;text-transform:uppercase;letter-spacing:.04em}.stat strong{display:block;font-size:22px;margin-top:4px;letter-spacing:-.03em}.stat.good{background:#ecfdf5;border-color:#86efac}.stat.warn{background:#fff7ed;border-color:#fed7aa}.stat.bad{background:#fff1f2;border-color:#fecdd3}
-    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tile{min-height:104px;border-radius:26px;border:1px solid #e2e8f0;background:#f8fafc;padding:12px;text-align:left;color:#172033;box-shadow:var(--soft)}.tile.active{background:#dcfce7;border-color:#86efac;box-shadow:0 12px 26px rgba(22,163,74,.14)}.tile .ico{display:block;font-size:33px;line-height:1;margin-bottom:8px}.tile strong{display:block;font-size:17px;line-height:1.08}.tile small{display:block;margin-top:4px;color:var(--muted);font-weight:850}
-    .input{width:100%;min-height:118px;border-radius:24px;border:2px solid #dbe4ef;background:#fff;padding:14px;font-size:18px;font-weight:800;outline:none;resize:vertical}.input:focus{border-color:#16a34a;box-shadow:0 0 0 4px rgba(22,163,74,.16)}.big{width:100%;min-height:58px;border-radius:22px;border:0;font-weight:1000;font-size:18px;margin-top:10px;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;box-shadow:0 14px 28px rgba(22,163,74,.26)}.soft{width:100%;min-height:54px;border-radius:20px;border:1px solid #e2e8f0;background:#f1f5f9;color:#334155;font-weight:1000;font-size:16px;margin-top:9px}.soft.danger{background:#fff1f2;color:#be123c;border-color:#fecdd3}.soft.share{background:#eef2ff;color:#3730a3;border-color:#c7d2fe}
-    .chips{display:flex;gap:8px;overflow:auto;padding:8px 2px 2px;-webkit-overflow-scrolling:touch}.chip{flex:0 0 auto;border-radius:999px;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;padding:10px 12px;font-weight:950}
-    .history{display:grid;gap:9px;max-height:430px;overflow:auto;padding-right:2px}.record{border-radius:20px;border:1px solid #e2e8f0;background:#f8fafc;padding:11px}.record b{display:flex;gap:8px;align-items:center;font-size:15px}.record p{margin:6px 0 0;color:#334155}.record small{display:block;margin-top:5px;color:var(--muted);font-weight:850}.empty{padding:18px;border-radius:22px;background:#f8fafc;border:1px dashed #cbd5e1;text-align:center;color:var(--muted);font-weight:900}.note{font-size:13px;color:var(--muted);font-weight:850;margin-top:8px}.footer{padding:14px 0 4px;text-align:center;color:#64748b;font-weight:850;font-size:12px}
-    @media(max-width:380px){.grid,.stats{grid-template-columns:1fr}.hero h1{font-size:27px}.tile{min-height:92px}.tile .ico{font-size:29px}}
+    :root{--bg:#fff7ed;--card:#ffffff;--ink:#172033;--muted:#64748b;--line:#e8edf3;--green:#16a34a;--green2:#059669;--purple:#5b2eea;--warn:#f59e0b;--bad:#ef4444;--shadow:0 18px 42px rgba(15,23,42,.10);--soft:0 10px 24px rgba(15,23,42,.07);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;color:var(--ink);background:linear-gradient(180deg,#fff7ed 0%,#f8fafc 36%,#ecfdf5 100%)}body{padding:calc(env(safe-area-inset-top) + 10px) 12px calc(env(safe-area-inset-bottom) + 20px)}button,input,textarea,select{font:inherit}button{cursor:pointer;border:0;-webkit-tap-highlight-color:transparent}.app{width:min(760px,100%);margin:0 auto}.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.top a,.top button{min-height:42px;border-radius:999px;padding:0 13px;background:#fff;border:1px solid #e5e7eb;color:var(--purple);font-weight:950;box-shadow:var(--soft);text-decoration:none}.hero{background:#fff;border:1px solid var(--line);border-radius:30px;padding:16px;box-shadow:var(--shadow);margin-bottom:12px}.kicker{margin:0 0 4px;color:#059669;font-size:12px;font-weight:1000;letter-spacing:.07em;text-transform:uppercase}.hero h1{margin:0;font-size:31px;line-height:1.02;letter-spacing:-.05em}.hero p{margin:8px 0 0;color:var(--muted);font-weight:850;line-height:1.32}.panel{background:#fff;border:1px solid var(--line);border-radius:28px;padding:14px;margin:12px 0;box-shadow:var(--shadow)}.panel h2{font-size:19px;margin:0 0 8px;letter-spacing:-.03em}.panel p{margin:0 0 10px;color:var(--muted);font-weight:800;line-height:1.34}.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}.stat{border-radius:24px;background:#fff;border:1px solid #e2e8f0;padding:13px;box-shadow:var(--soft)}.stat span{display:block;color:var(--muted);font-size:12px;font-weight:950;text-transform:uppercase;letter-spacing:.04em}.stat strong{display:block;font-size:22px;margin-top:4px;letter-spacing:-.03em}.stat.good{background:#ecfdf5;border-color:#86efac}.stat.warn{background:#fff7ed;border-color:#fed7aa}.stat.bad{background:#fff1f2;border-color:#fecdd3}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tile{min-height:104px;border-radius:26px;border:1px solid #e2e8f0;background:#f8fafc;padding:12px;text-align:left;color:#172033;box-shadow:var(--soft)}.tile.active{background:#dcfce7;border-color:#86efac;box-shadow:0 12px 26px rgba(22,163,74,.14)}.tile.guide{background:#eef2ff;border-color:#c7d2fe}.tile .ico{display:block;font-size:33px;line-height:1;margin-bottom:8px}.tile strong{display:block;font-size:17px;line-height:1.08}.tile small{display:block;margin-top:4px;color:var(--muted);font-weight:850}.input{width:100%;min-height:118px;border-radius:24px;border:2px solid #dbe4ef;background:#fff;padding:14px;font-size:18px;font-weight:800;outline:none;resize:vertical}.input:focus{border-color:#16a34a;box-shadow:0 0 0 4px rgba(22,163,74,.16)}.big{width:100%;min-height:58px;border-radius:22px;border:0;font-weight:1000;font-size:18px;margin-top:10px;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;box-shadow:0 14px 28px rgba(22,163,74,.26)}.soft{width:100%;min-height:54px;border-radius:20px;border:1px solid #e2e8f0;background:#f1f5f9;color:#334155;font-weight:1000;font-size:16px;margin-top:9px}.soft.danger{background:#fff1f2;color:#be123c;border-color:#fecdd3}.soft.share{background:#eef2ff;color:#3730a3;border-color:#c7d2fe}.chips{display:flex;gap:8px;overflow:auto;padding:8px 2px 2px;-webkit-overflow-scrolling:touch}.chip{flex:0 0 auto;border-radius:999px;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;padding:10px 12px;font-weight:950}.history{display:grid;gap:9px;max-height:430px;overflow:auto;padding-right:2px}.record{border-radius:20px;border:1px solid #e2e8f0;background:#f8fafc;padding:11px}.record b{display:flex;gap:8px;align-items:center;font-size:15px}.record p{margin:6px 0 0;color:#334155}.record small{display:block;margin-top:5px;color:var(--muted);font-weight:850}.empty{padding:18px;border-radius:22px;background:#f8fafc;border:1px dashed #cbd5e1;text-align:center;color:var(--muted);font-weight:900}.note{font-size:13px;color:var(--muted);font-weight:850;margin-top:8px}.footer{padding:14px 0 4px;text-align:center;color:#64748b;font-weight:850;font-size:12px}@media(max-width:380px){.grid,.stats{grid-template-columns:1fr}.hero h1{font-size:27px}.tile{min-height:92px}.tile .ico{font-size:29px}}
   </style>
 </head>
 <body>
@@ -41,9 +24,10 @@
     {name:'Fresas con crema', price:35, aliases:['fresas','fresa','fresas con crema','fresa con crema']}
   ];
   const controls = [
+    {key:'GUIA', icon:'🎬', label:'Guía rápida', short:'Orden del día', flow:'nota'},
+    {key:'RECETA', icon:'📖', label:'Recetas', short:'Fórmulas', flow:'nota'},
     {key:'VENTA', icon:'💰', label:'Ventas', short:'Vendí', flow:'entrada'},
     {key:'COMPRA', icon:'🛒', label:'Compras', short:'Compré', flow:'salida'},
-    {key:'RECETA', icon:'📖', label:'Recetas', short:'Fórmulas', flow:'nota'},
     {key:'PRODUCCION', icon:'🍰', label:'Producción', short:'Hice', flow:'nota'},
     {key:'MERMA', icon:'⚠️', label:'Mermas', short:'Se perdió', flow:'salida'},
     {key:'PEDIDO', icon:'📋', label:'Pedidos', short:'Me encargaron', flow:'pendiente'},
@@ -58,122 +42,33 @@
   const today = () => new Date().toISOString().slice(0,10);
   const get = (k,f) => { try{ const raw=JSON.parse(localStorage.getItem(k)||'null'); return raw===null?f:raw; }catch{return f;} };
   const set = (k,v) => localStorage.setItem(k, JSON.stringify(v));
-  function norm(v=''){
-    return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[“”"']/g,'').replace(/\bpays\b/g,'pay').replace(/\s+/g,' ').trim();
-  }
+  function norm(v=''){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[“”"']/g,'').replace(/\bpays\b/g,'pay').replace(/\s+/g,' ').trim();}
   function qWords(){return {un:1,uno:1,una:1,dos:2,tres:3,cuatro:4,cinco:5,seis:6,siete:7,ocho:8,nueve:9,diez:10,once:11,doce:12,trece:13,catorce:14,quince:15,veinte:20,treinta:30,media:0.5,medio:0.5};}
   function qPattern(){return ['[0-9]+(?:[\.,][0-9]+)?',...Object.keys(qWords()).sort((a,b)=>b.length-a.length)].join('|');}
   function parseQty(v=''){const t=norm(v); if(/^[0-9]/.test(t)) return Number(t.replace(',','.'))||0; return Number(qWords()[t]||0);}
   function rx(v=''){return String(v).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
-  function aliases(p){
-    const all = new Set([p.name,...(p.aliases||[])].map(norm).filter(Boolean));
-    norm(p.name).split(/\s+/).filter(w=>w.length>3 && !['leche','crema'].includes(w)).forEach(w=>all.add(w));
-    const out = new Set();
-    all.forEach(a => {out.add(a); if(a.includes('pay')) out.add(a.replace(/\bpay\b/g,'pays')); if(a.endsWith('a')||a.endsWith('o')) out.add(a+'s');});
-    return [...out].sort((a,b)=>b.length-a.length);
-  }
-  function extractProducts(message){
-    const text = norm(message).replace(/,/g,' , ').replace(/\by\b/g,' y ').replace(/\s+/g,' ');
-    const qty = qPattern();
-    const items = [];
-    products.forEach(p=>{
-      const pattern = aliases(p).map(rx).join('|');
-      const hits=[]; let m;
-      const before = new RegExp('(?:^|[\\s,;])('+qty+')\\s*(?:piezas?\\s+|unidades?\\s+)?(?:de\\s+|del\\s+|al\\s+|a\\s+)?(?:'+pattern+')(?:s)?\\b','ig');
-      while((m=before.exec(text))){hits.push({qty:parseQty(m[1])||1,index:m.index}); if(m.index===before.lastIndex) before.lastIndex++;}
-      if(!hits.length){
-        const after = new RegExp('(?:^|[\\s,;])(?:'+pattern+')(?:s)?\\s+('+qty+')\\b','ig');
-        while((m=after.exec(text))){hits.push({qty:parseQty(m[1])||1,index:m.index}); if(m.index===after.lastIndex) after.lastIndex++;}
-      }
-      if(hits.length) hits.forEach(h=>items.push({name:p.name,qty:h.qty,price:p.price,total:h.qty*p.price}));
-      else if(new RegExp('\\b(?:'+pattern+')(?:s)?\\b','i').test(text)) items.push({name:p.name,qty:1,price:p.price,total:p.price});
-    });
-    return items;
-  }
-  function extractMoney(message){
-    const raw=String(message||'');
-    const explicit=raw.match(/\$\s*([0-9]+(?:[\.,][0-9]+)?)/); if(explicit) return Number(explicit[1].replace(',','.'))||0;
-    const t=norm(raw);
-    const contextual=t.match(/(?:fueron|fue|total|costo|costaron|pague|pago|gaste|gasto|compre|cobre|cobro|deben|anticipo|adelanto|abono|sueldo|apoyo)\s+([0-9]+(?:[\.,][0-9]+)?)/); if(contextual) return Number(contextual[1].replace(',','.'))||0;
-    const all=t.match(/[0-9]+(?:[\.,][0-9]+)?/g)||[]; if(!all.length) return 0; return Number(all[all.length-1].replace(',','.'))||0;
-  }
+  function aliases(p){const all = new Set([p.name,...(p.aliases||[])].map(norm).filter(Boolean));norm(p.name).split(/\s+/).filter(w=>w.length>3 && !['leche','crema'].includes(w)).forEach(w=>all.add(w));const out = new Set();all.forEach(a => {out.add(a); if(a.includes('pay')) out.add(a.replace(/\bpay\b/g,'pays')); if(a.endsWith('a')||a.endsWith('o')) out.add(a+'s');});return [...out].sort((a,b)=>b.length-a.length);}
+  function extractProducts(message){const text = norm(message).replace(/,/g,' , ').replace(/\by\b/g,' y ').replace(/\s+/g,' ');const qty = qPattern();const items = [];products.forEach(p=>{const pattern = aliases(p).map(rx).join('|');const hits=[]; let m;const before = new RegExp('(?:^|[\\s,;])('+qty+')\\s*(?:piezas?\\s+|unidades?\\s+)?(?:de\\s+|del\\s+|al\\s+|a\\s+)?(?:'+pattern+')(?:s)?\\b','ig');while((m=before.exec(text))){hits.push({qty:parseQty(m[1])||1,index:m.index}); if(m.index===before.lastIndex) before.lastIndex++;}if(!hits.length){const after = new RegExp('(?:^|[\\s,;])(?:'+pattern+')(?:s)?\\s+('+qty+')\\b','ig');while((m=after.exec(text))){hits.push({qty:parseQty(m[1])||1,index:m.index}); if(m.index===after.lastIndex) after.lastIndex++;}}if(hits.length) hits.forEach(h=>items.push({name:p.name,qty:h.qty,price:p.price,total:h.qty*p.price}));else if(new RegExp('\\b(?:'+pattern+')(?:s)?\\b','i').test(text)) items.push({name:p.name,qty:1,price:p.price,total:p.price});});return items;}
+  function extractMoney(message){const raw=String(message||'');const explicit=raw.match(/\$\s*([0-9]+(?:[\.,][0-9]+)?)/); if(explicit) return Number(explicit[1].replace(',','.'))||0;const t=norm(raw);const contextual=t.match(/(?:fueron|fue|total|costo|costaron|pague|pago|gaste|gasto|compre|cobre|cobro|deben|anticipo|adelanto|abono|sueldo|apoyo)\s+([0-9]+(?:[\.,][0-9]+)?)/); if(contextual) return Number(contextual[1].replace(',','.'))||0;const all=t.match(/[0-9]+(?:[\.,][0-9]+)?/g)||[]; if(!all.length) return 0; return Number(all[all.length-1].replace(',','.'))||0;}
   function customControls(){const list=get(CUSTOM_KEY,[]); return Array.isArray(list)?list:[];}
-  function intent(message){
-    const t=norm(message);
-    const custom=customControls().find(c=>t.includes(norm(c.label))); if(custom) return 'CUSTOM:'+custom.id;
-    if(/receta|formula|formulas|preparacion|preparación/.test(t)) return 'RECETA';
-    if(/empleado|empleada|ayudante|sueldo|salario|jornal|mano de obra|pague a|le di/.test(t)) return 'EMPLEADO';
-    if(/anticipo|adelanto|abono|mitad|deposito|apartar|apartado/.test(t)) return 'ANTICIPO';
-    if(/me deben|deben|debe|fiado|falta pagar|saldo|resto|por cobrar/.test(t)) return 'DEUDA';
-    if(/pedido|pidieron|me pidieron|encargo|encargaron|quiere|quieren/.test(t)) return 'PEDIDO';
-    if(/merma|se echaron a perder|echaron a perder|perdi|perdio|regale|sobro|sobró|desperdicie/.test(t)) return 'MERMA';
-    if(/produje|produccion|hice|prepare|preparamos|elabore/.test(t)) return 'PRODUCCION';
-    if(/compre|compramos|gaste|gastamos|gasto|pague|pago|renta|luz|gasolina|gas/.test(t)) return 'COMPRA';
-    if(/vendi|vendimos|venta|ventas|salieron|se vendieron|cobre|cobro|pagada|pagado/.test(t)) return 'VENTA';
-    return 'NOTA';
-  }
-  function def(type){
-    if(String(type).startsWith('CUSTOM:')){ const id=type.split(':')[1]; const c=customControls().find(x=>x.id===id); return c || {key:type,icon:'⭐',label:'Otro',flow:'nota'}; }
-    return controls.find(c=>c.key===type) || {key:type,icon:'📝',label:'Nota',flow:'nota'};
-  }
+  function intent(message){const t=norm(message);const custom=customControls().find(c=>t.includes(norm(c.label))); if(custom) return 'CUSTOM:'+custom.id;if(/guia|guía|demo|clase/.test(t)) return 'GUIA';if(/receta|formula|formulas|preparacion|preparación/.test(t)) return 'RECETA';if(/empleado|empleada|ayudante|sueldo|salario|jornal|mano de obra|pague a|le di/.test(t)) return 'EMPLEADO';if(/anticipo|adelanto|abono|mitad|deposito|apartar|apartado/.test(t)) return 'ANTICIPO';if(/me deben|deben|debe|fiado|falta pagar|saldo|resto|por cobrar/.test(t)) return 'DEUDA';if(/pedido|pidieron|me pidieron|encargo|encargaron|quiere|quieren/.test(t)) return 'PEDIDO';if(/merma|se echaron a perder|echaron a perder|perdi|perdio|regale|sobro|sobró|desperdicie/.test(t)) return 'MERMA';if(/produje|produccion|hice|prepare|preparamos|elabore/.test(t)) return 'PRODUCCION';if(/compre|compramos|gaste|gastamos|gasto|pague|pago|renta|luz|gasolina|gas/.test(t)) return 'COMPRA';if(/vendi|vendimos|venta|ventas|salieron|se vendieron|cobre|cobro|pagada|pagado/.test(t)) return 'VENTA';return 'NOTA';}
+  function def(type){if(String(type).startsWith('CUSTOM:')){ const id=type.split(':')[1]; const c=customControls().find(x=>x.id===id); return c || {key:type,icon:'⭐',label:'Otro',flow:'nota'}; }return controls.find(c=>c.key===type) || {key:type,icon:'📝',label:'Nota',flow:'nota'};}
   function productLine(items){return items.map(i=>i.qty+' '+i.name).join(', ');}
-  function parse(message){
-    const type=intent(message); const d=def(type); const items=extractProducts(message); const amount=extractMoney(message);
-    let total=0,status='ok',response='';
-    if(type==='RECETA'){response='Abre Recetas para capturar o ajustar la fórmula.';}
-    else if(['VENTA','MERMA','PEDIDO'].includes(type)) total=items.reduce((s,i)=>s+i.total,0)||amount;
-    else if(['COMPRA','EMPLEADO','ANTICIPO','DEUDA'].includes(type)||String(type).startsWith('CUSTOM:')) total=amount;
-    if(type!=='RECETA' && ['VENTA','COMPRA','EMPLEADO','ANTICIPO','DEUDA','MERMA'].includes(type)&&!total){status='pending';response='Falta monto o cantidad. Intenta de nuevo con más detalle.';}
-    else if(type!=='RECETA') response=d.label+' guardado'+(total?': '+money(total):'')+(items.length?' ('+productLine(items)+')':'')+'.';
-    return {id:uid(),date:new Date().toISOString(),day:today(),type,label:d.label,icon:d.icon,flow:d.flow,message,total,items,status,response};
-  }
-  function records(){const r=get(KEY,[]); return Array.isArray(r)?r:[];}
-  function saveRecord(r){const all=records(); all.push(r); set(KEY,all);}
-  function summary(){
-    const all=records(); const okToday=all.filter(r=>r.day===today()&&r.status!=='pending');
-    const byFlow=f=>okToday.filter(r=>r.flow===f).reduce((s,r)=>s+Number(r.total||0),0);
-    const byType=t=>okToday.filter(r=>r.type===t).reduce((s,r)=>s+Number(r.total||0),0);
-    const sold={}; okToday.filter(r=>r.type==='VENTA').forEach(r=>(r.items||[]).forEach(i=>sold[i.name]=(sold[i.name]||0)+Number(i.qty||0)));
-    const top=Object.entries(sold).sort((a,b)=>b[1]-a[1])[0];
-    return {all,entradas:byFlow('entrada'),salidas:byFlow('salida'),meQuedo:byFlow('entrada')-byFlow('salida'),ventas:byType('VENTA'),compras:byType('COMPRA'),empleados:byType('EMPLEADO'),mermas:byType('MERMA'),anticipos:byType('ANTICIPO'),deudas:all.filter(r=>r.type==='DEUDA'&&r.status!=='pending').reduce((s,r)=>s+Number(r.total||0),0),top:top?top[0]+' ('+top[1]+')':'Sin ventas'};
-  }
-  function render(){
-    const s=summary(); const allControls=[...controls,...customControls()];
-    app.innerHTML=`
+  function parse(message){const type=intent(message); const d=def(type); const items=extractProducts(message); const amount=extractMoney(message);let total=0,status='ok',response='';if(type==='GUIA'){response='Abre Guía rápida para ver el orden recomendado del día.';}else if(type==='RECETA'){response='Abre Recetas para capturar o ajustar la fórmula.';}else if(['VENTA','MERMA','PEDIDO'].includes(type)) total=items.reduce((s,i)=>s+i.total,0)||amount;else if(['COMPRA','EMPLEADO','ANTICIPO','DEUDA'].includes(type)||String(type).startsWith('CUSTOM:')) total=amount;if(type!=='RECETA' && type!=='GUIA' && ['VENTA','COMPRA','EMPLEADO','ANTICIPO','DEUDA','MERMA'].includes(type)&&!total){status='pending';response='Falta monto o cantidad. Intenta de nuevo con más detalle.';}else if(type!=='RECETA' && type!=='GUIA') response=d.label+' guardado'+(total?': '+money(total):'')+(items.length?' ('+productLine(items)+')':'')+'.';return {id:uid(),date:new Date().toISOString(),day:today(),type,label:d.label,icon:d.icon,flow:d.flow,message,total,items,status,response};}
+  function records(){const r=get(KEY,[]); return Array.isArray(r)?r:[];}function saveRecord(r){const all=records(); all.push(r); set(KEY,all);}
+  function summary(){const all=records(); const okToday=all.filter(r=>r.day===today()&&r.status!=='pending');const byFlow=f=>okToday.filter(r=>r.flow===f).reduce((s,r)=>s+Number(r.total||0),0);const byType=t=>okToday.filter(r=>r.type===t).reduce((s,r)=>s+Number(r.total||0),0);const sold={}; okToday.filter(r=>r.type==='VENTA').forEach(r=>(r.items||[]).forEach(i=>sold[i.name]=(sold[i.name]||0)+Number(i.qty||0)));const top=Object.entries(sold).sort((a,b)=>b[1]-a[1])[0];return {all,entradas:byFlow('entrada'),salidas:byFlow('salida'),meQuedo:byFlow('entrada')-byFlow('salida'),ventas:byType('VENTA'),compras:byType('COMPRA'),empleados:byType('EMPLEADO'),mermas:byType('MERMA'),anticipos:byType('ANTICIPO'),deudas:all.filter(r=>r.type==='DEUDA'&&r.status!=='pending').reduce((s,r)=>s+Number(r.total||0),0),top:top?top[0]+' ('+top[1]+')':'Sin ventas'};}
+  function render(){const s=summary(); const allControls=[...controls,...customControls()];app.innerHTML=`
       <div class="top"><a href="/">← Conecta</a><button type="button" data-share>Compartir resumen</button></div>
-      <section class="hero"><p class="kicker">Conecta Control</p><h1>🍰 Postres Fer</h1><p>Háblale a tu negocio. Yo lo acomodo en ventas, compras, recetas, empleados, pedidos y lo que te quedó.</p></section>
-      <section class="stats">
-        <article class="stat good"><span>Entró</span><strong>${money(s.entradas)}</strong></article>
-        <article class="stat warn"><span>Salió</span><strong>${money(s.salidas)}</strong></article>
-        <article class="stat ${s.meQuedo>=0?'good':'bad'}"><span>Me quedó</span><strong>${money(s.meQuedo)}</strong></article>
-        <article class="stat"><span>Me deben</span><strong>${money(s.deudas)}</strong></article>
-        <article class="stat"><span>Anticipos</span><strong>${money(s.anticipos)}</strong></article>
-        <article class="stat"><span>Más vendido</span><strong>${esc(s.top)}</strong></article>
-      </section>
-      <section class="panel"><h2>Botones rápidos</h2><div class="grid">${allControls.map(c=>`<button class="tile ${c.key==='RECETA'?'active':''}" data-prefill="${esc(c.key)}"><span class="ico">${esc(c.icon||'⭐')}</span><strong>${esc(c.label)}</strong><small>${esc(c.short||'Mi botón')}</small></button>`).join('')}<button class="tile active" data-add-custom><span class="ico">➕</span><strong>Otro</strong><small>Agregar botón</small></button></div></section>
+      <section class="hero"><p class="kicker">Conecta Control</p><h1>🍰 Postres Fer</h1><p>Orden sugerido: guía, recetas, inventario, compras, producción, ventas y control del día.</p></section>
+      <section class="stats"><article class="stat good"><span>Entró</span><strong>${money(s.entradas)}</strong></article><article class="stat warn"><span>Salió</span><strong>${money(s.salidas)}</strong></article><article class="stat ${s.meQuedo>=0?'good':'bad'}"><span>Me quedó</span><strong>${money(s.meQuedo)}</strong></article><article class="stat"><span>Me deben</span><strong>${money(s.deudas)}</strong></article><article class="stat"><span>Anticipos</span><strong>${money(s.anticipos)}</strong></article><article class="stat"><span>Más vendido</span><strong>${esc(s.top)}</strong></article></section>
+      <section class="panel"><h2>Botones rápidos</h2><div class="grid">${allControls.map(c=>`<button class="tile ${c.key==='RECETA'?'active':''} ${c.key==='GUIA'?'guide':''}" data-prefill="${esc(c.key)}"><span class="ico">${esc(c.icon||'⭐')}</span><strong>${esc(c.label)}</strong><small>${esc(c.short||'Mi botón')}</small></button>`).join('')}<button class="tile active" data-add-custom><span class="ico">➕</span><strong>Otro</strong><small>Agregar botón</small></button></div></section>
       <section class="panel"><h2>Escribir o dictar</h2><textarea class="input" id="msg" placeholder="Ej: Vendí 3 pays de limón"></textarea><button class="big" data-process>Guardar</button><div class="chips">${['Vendí 3 pays de limón','Compré leche $80','Pagué a María $300','Merma 2 arroz','Me dieron anticipo $200','Ana me debe $150'].map(e=>`<button class="chip" data-example="${esc(e)}">${esc(e)}</button>`).join('')}</div><div class="note">Si falta cantidad o monto, no lo guardo como confirmado para evitar errores.</div></section>
-      <section class="panel"><h2>Hoy</h2><div class="history">${s.all.slice().reverse().slice(0,40).map(recordHTML).join('')||'<div class="empty">Aún no hay movimientos.</div>'}</div><button class="soft share" data-share>Copiar resumen</button><button class="soft danger" data-clear>Limpiar prueba</button></section>
-      <div class="footer">© 2026 Conecta Servicios. App piloto para Postres Fer.</div>`;
-  }
+      <section class="panel"><h2>Hoy</h2><div class="history">${s.all.slice().reverse().slice(0,40).map(recordHTML).join('')||'<div class="empty">Aún no hay movimientos.</div>'}</div><button class="soft share" data-share>Copiar resumen</button><button class="soft danger" data-clear>Limpiar prueba</button></section><div class="footer">© 2026 Conecta Servicios. App piloto para Postres Fer.</div>`;}
   function recordHTML(r){const time=new Date(r.date).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});return `<div class="record"><b><span>${esc(r.icon||def(r.type).icon||'📝')}</span>${esc(r.label)} · ${time}</b><p>${esc(r.message)}</p><small>${esc(r.response)}</small></div>`;}
-  function prefill(key){if(key==='RECETA'){window.location.href='recetas-basico.html';return;}const input=document.getElementById('msg'); if(!input)return; const map={VENTA:'Vendí ',COMPRA:'Compré ',PRODUCCION:'Hice ',MERMA:'Merma ',PEDIDO:'Pedido: ',ANTICIPO:'Me dieron anticipo ',DEUDA:'Me deben ',EMPLEADO:'Pagué a '}; input.value=map[key]||((customControls().find(c=>c.key===key)?.label||'')+' '); input.focus();}
+  function prefill(key){if(key==='GUIA'){window.location.href='demo-guia.html';return;}if(key==='RECETA'){window.location.href='recetas-basico.html';return;}const input=document.getElementById('msg'); if(!input)return; const map={VENTA:'Vendí ',COMPRA:'Compré ',PRODUCCION:'Hice ',MERMA:'Merma ',PEDIDO:'Pedido: ',ANTICIPO:'Me dieron anticipo ',DEUDA:'Me deben ',EMPLEADO:'Pagué a '}; input.value=map[key]||((customControls().find(c=>c.key===key)?.label||'')+' '); input.focus();}
   function addCustom(){const label=prompt('¿Cómo quieres llamar este botón? Ej: Entregas, Gasolina, Renta'); if(!label||!label.trim())return; const flowRaw=prompt('¿Es dinero que sale, dinero que entra o solo nota? Escribe: sale, entra o nota','sale')||'nota'; const flow=/entra|entrada|ingreso/i.test(flowRaw)?'entrada':(/sale|salida|gasto|egreso/i.test(flowRaw)?'salida':'nota'); const icon=flow==='entrada'?'💵':flow==='salida'?'💸':'⭐'; const list=customControls(); list.push({key:'CUSTOM:'+uid(),id:uid(),icon,label:label.trim(),short:'Mi botón',flow}); set(CUSTOM_KEY,list); render();}
-  function report(){const s=summary(); return `Postres Fer - Resumen de hoy
-Entró: ${money(s.entradas)}
-Salió: ${money(s.salidas)}
-Me quedó: ${money(s.meQuedo)}
-Me deben: ${money(s.deudas)}
-Anticipos: ${money(s.anticipos)}
-Más vendido: ${s.top}`;}
-  document.addEventListener('click',e=>{
-    const b=e.target.closest('[data-process],[data-example],[data-prefill],[data-add-custom],[data-clear],[data-share]'); if(!b)return;
-    if(b.matches('[data-example]')){const input=document.getElementById('msg'); input.value=b.dataset.example||''; input.focus(); return;}
-    if(b.matches('[data-prefill]')) return prefill(b.dataset.prefill);
-    if(b.matches('[data-add-custom]')) return addCustom();
-    if(b.matches('[data-process]')){const input=document.getElementById('msg'); const msg=String(input.value||'').trim(); if(!msg)return alert('Escribe o dicta lo que pasó.'); saveRecord(parse(msg)); input.value=''; render(); return;}
-    if(b.matches('[data-clear]')){if(confirm('¿Borrar registros de prueba?')){localStorage.removeItem(KEY); render();} return;}
-    if(b.matches('[data-share]')){const text=report(); if(navigator.clipboard){navigator.clipboard.writeText(text).then(()=>alert('Resumen copiado.')).catch(()=>prompt('Copia el resumen:',text));} else prompt('Copia el resumen:',text);}
-  });
+  function report(){const s=summary(); return `Postres Fer - Resumen de hoy\nEntró: ${money(s.entradas)}\nSalió: ${money(s.salidas)}\nMe quedó: ${money(s.meQuedo)}\nMe deben: ${money(s.deudas)}\nAnticipos: ${money(s.anticipos)}\nMás vendido: ${s.top}`;}
+  document.addEventListener('click',e=>{const b=e.target.closest('[data-process],[data-example],[data-prefill],[data-add-custom],[data-clear],[data-share]'); if(!b)return;if(b.matches('[data-example]')){const input=document.getElementById('msg'); input.value=b.dataset.example||''; input.focus(); return;}if(b.matches('[data-prefill]')) return prefill(b.dataset.prefill);if(b.matches('[data-add-custom]')) return addCustom();if(b.matches('[data-process]')){const input=document.getElementById('msg'); const msg=String(input.value||'').trim(); if(!msg)return alert('Escribe o dicta lo que pasó.'); saveRecord(parse(msg)); input.value=''; render(); return;}if(b.matches('[data-clear]')){if(confirm('¿Borrar registros de prueba?')){localStorage.removeItem(KEY); render();} return;}if(b.matches('[data-share]')){const text=report(); if(navigator.clipboard){navigator.clipboard.writeText(text).then(()=>alert('Resumen copiado.')).catch(()=>prompt('Copia el resumen:',text));} else prompt('Copia el resumen:',text);}});
   render();
 })();
   </script>
