@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recetas Postres Fer</title>
+  <style>
+    body{margin:0;background:#fff7ed;color:#172033;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;padding:14px}
+    main{max-width:760px;margin:auto}.card{background:#fff;border:1px solid #e8edf3;border-radius:26px;padding:16px;margin:12px 0;box-shadow:0 16px 34px rgba(15,23,42,.08)}
+    h1{font-size:30px;margin:0 0 8px}h2{margin:0 0 10px}.muted{color:#64748b;font-weight:700}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:18px;padding:12px}.box span{display:block;color:#64748b;font-weight:900;font-size:12px}.box strong{display:block;font-size:22px;margin-top:4px}input{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:14px;padding:12px;font-size:16px;font-weight:700}label{display:block;font-weight:900;margin:10px 0 5px}button,a.btn{display:block;width:100%;box-sizing:border-box;text-align:center;text-decoration:none;border:0;border-radius:18px;padding:14px;background:#16a34a;color:#fff;font-weight:1000;font-size:17px;margin-top:12px}.secondary{background:#eef2ff!important;color:#3730a3!important}@media(max-width:520px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main>
+  <a class="btn secondary" href="./">← Volver a Postres Fer</a>
+  <section class="card">
+    <p class="muted">Conecta Control</p>
+    <h1>📖 Recetas y fórmulas</h1>
+    <p class="muted">Esta pantalla ayuda a calcular cuánto cuesta preparar una receta y cuánto cuesta cada porción.</p>
+  </section>
+  <section class="card">
+    <h2>🍓 Fresas con crema</h2>
+    <p class="muted">Base: 1 kilo de producto terminado. Rendimiento: 10 vasitos de 100g.</p>
+    <label>Fresa fresca ($)</label><input id="fresa" type="number" value="15" step="0.01">
+    <label>Media crema ($)</label><input id="crema" type="number" value="14.5" step="0.01">
+    <label>Leche condensada ($)</label><input id="leche" type="number" value="11" step="0.01">
+    <label>Vainilla ($)</label><input id="vainilla" type="number" value="1" step="0.01">
+    <label>Porciones / vasitos</label><input id="porciones" type="number" value="10" step="1">
+    <button onclick="calcular()">Calcular receta</button>
+  </section>
+  <section class="card">
+    <h2>Resultado</h2>
+    <div class="grid">
+      <div class="box"><span>Peso total</span><strong>1000g</strong></div>
+      <div class="box"><span>Costo receta</span><strong id="costo">$41.50</strong></div>
+      <div class="box"><span>Costo por vasito</span><strong id="unidad">$4.15</strong></div>
+      <div class="box"><span>Precio sugerido</span><strong id="precio">$6.23 - $12.45</strong></div>
+    </div>
+    <p class="muted">El rango muestra precio mínimo por margen simple y una referencia más sana para venta al público.</p>
+  </section>
+</main>
+<script>
+function money(n){return Number(n||0).toLocaleString('es-MX',{style:'currency',currency:'MXN',maximumFractionDigits:2});}
+function val(id){return Number(document.getElementById(id).value||0);}
+function calcular(){var total=val('fresa')+val('crema')+val('leche')+val('vainilla');var p=val('porciones')||1;var unidad=total/p;document.getElementById('costo').textContent=money(total);document.getElementById('unidad').textContent=money(unidad);document.getElementById('precio').textContent=money(unidad*1.5)+' - '+money(unidad*3);}
+calcular();
+</script>
+</body>
+</html>
