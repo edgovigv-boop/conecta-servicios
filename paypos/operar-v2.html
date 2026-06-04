@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Paypos Operar V2</title>
+  <style>
+    body{margin:0;padding:16px;background:#fff7ed;font-family:Arial,sans-serif;color:#172033}
+    main{max-width:820px;margin:auto}.card{background:white;border:1px solid #e5e7eb;border-radius:24px;padding:16px;margin:12px 0;box-shadow:0 12px 28px #0001}
+    h1{font-size:34px;margin:0 0 6px}.muted{color:#64748b;font-weight:700;line-height:1.35}.btn{width:100%;border:0;border-radius:18px;padding:16px;margin:8px 0;font-size:18px;font-weight:900;text-align:left}.green{background:#dcfce7;color:#166534}.orange{background:#ffedd5;color:#9a3412}.blue{background:#e0e7ff;color:#3730a3}.red{background:#fee2e2;color:#991b1b}.white{background:#fff;color:#5b2eea;border:1px solid #e5e7eb}.msg{white-space:pre-wrap;background:#f8fafc;border:1px solid #e5e7eb;border-radius:18px;padding:12px;font-weight:800}.err{background:#fff1f2;color:#be123c;border-color:#fecdd3}.ok{background:#ecfdf5;color:#166534;border-color:#86efac}select,input{width:100%;box-sizing:border-box;border:2px solid #dbe4ef;border-radius:16px;padding:14px;margin:8px 0;font-size:18px;font-weight:800}
+  </style>
+</head>
+<body>
+<main>
+  <section class="card">
+    <h1>Paypos Operar</h1>
+    <p class="muted">Versión segura V2. Si la sesión está guardada, permite registrar venta, compra, producción y arqueo.</p>
+    <a class="btn white" href="/paypos/seguro.html?v=4">← Volver al panel privado</a>
+    <button class="btn white" id="loadBtn">Cargar sesión Paypos</button>
+    <p id="msg" class="msg">Pantalla cargada correctamente.</p>
+  </section>
+
+  <section class="card" id="ops" style="display:none">
+    <button class="btn green" id="saleBtn">💰 Registrar venta</button>
+    <button class="btn orange" id="purchaseBtn">🛒 Registrar compra</button>
+    <button class="btn blue" id="productionBtn">🍰 Registrar producción</button>
+    <button class="btn red" id="auditBtn">✅ Arqueo de caja</button>
+  </section>
+
+  <section class="card" id="formBox"></section>
+</main>
+<script>
+(function(){
+  var TOKEN_KEY='paypos_token_seguro';
+  var state=null;
+  function el(id){return document.getElementById(id);}
+  function money(n){return Number(n||0).toLocaleString('es-MX',{style:'currency',currency:'MXN',maximumFractionDigits:0});}
+  function setMsg(text,kind){el('msg').className='msg '+(kind||'');el('msg').textContent=text;}
+  function token(){return localStorage.getItem(TOKEN_KEY);}
+  async function api(path,options){
+    var opts=options||{};
+    opts.cache='no-store';
+    opts.headers=Object.assign({'Content-Type':'application/json'},opts.headers||{});
+    var r=await fetch(path,opts);
+    var p=await r.json().catch(function(){return {ok:false,error:'Respuesta no JSON'};});
+    if(!r.ok||p.ok===false){throw new Error(p.error||('HTTP '+r.status));}
+    return p;
+  }
+  function optionList(list,labelPrice){
+    var html='';
+    (list||[]).forEach(function(x){html+='<option value="'+x.id+'">'+x.name+(labelPrice&&x.price?' · '+money(x.price):'')+'</option>';});
+    return html;
+  }
+  async function load(){
+    if(!token()){
+      setMsg('No hay sesión guardada. Entra primero al panel privado y luego vuelve a esta pantalla.','err');
+      return;
+    }
+    setMsg('Cargando datos privados de Paypos...');
+    try{
+      state=await api('/api/paypos-snapshot',{headers:{Authorization:'Bearer '+token()}});
+      var caja=0;
+      if(state.snapshot&&state.snapshot.cash&&state.snapshot.cash[0]) caja=state.snapshot.cash[0].calculated_expected_cash||0;
+      el('ops').style.display='block';
+      setMsg('Sesión: '+(state.user&&state.user.email?state.user.email:'')+'\nCaja esperada: '+money(caja)+'\nProductos: '+(state.products||[]).length+'\nInsumos: '+(state.inventory_items||[]).length,'ok');
+    }catch(e){setMsg('Error al cargar: '+e.message,'err');}
+  }
+  async function save(action,payload){
+    setMsg('Guardando movimiento...');
+    try{
+      await api('/api/paypos-operation',{method:'POST',headers:{Authorization:'Bearer '+token()},body:JSON.stringify({action:action,payload:payload})});
+      el('formBox').innerHTML='';
+      await load();
+      setMsg(el('msg').textContent+'\n✅ Movimiento guardado.','ok');
+    }catch(e){setMsg('Error al guardar: '+e.message,'err');}
+  }
+  function sale(){
+    var products=state&&state.products?state.products:[];
+    el('formBox').innerHTML='<h2>💰 Venta</h2><select id="product">'+optionList(products,true)+'</select><input id="qty" type="number" step="0.01" placeholder="Cantidad vendida"><input id="paid" type="number" step="0.01" placeholder="Cobró cuánto? vacío = total"><button class="btn green" id="saveSale">Guardar venta</button>';
+    el('saveSale').onclick=function(){
+      var product=products.find(function(x){return x.id===el('product').value;});
+      save('sale',{product_id:product.id,quantity:el('qty').value,unit_price:product.price,paid_amount:el('paid').value,notes:'Venta desde Paypos'});
+    };
+  }
+  function purchase(){
+    var items=state&&state.inventory_items?state.inventory_items:[];
+    el('formBox').innerHTML='<h2>🛒 Compra</h2><select id="item">'+optionList(items,false)+'</select><input id="qty" type="number" step="0.01" placeholder="Cantidad que entró"><input id="cost" type="number" step="0.01" placeholder="Costo por unidad"><input id="paid" type="number" step="0.01" placeholder="Pagó cuánto? vacío = total"><button class="btn orange" id="savePurchase">Guardar compra</button>';
+    el('savePurchase').onclick=function(){
+      var item=items.find(function(x){return x.id===el('item').value;});
+      save('purchase',{inventory_item_id:item.id,quantity:el('qty').value,unit:item.unit,unit_cost:el('cost').value,paid_amount:el('paid').value,notes:'Compra desde Paypos'});
+    };
+  }
+  function production(){
+    var products=state&&state.products?state.products:[];
+    el('formBox').innerHTML='<h2>🍰 Producción</h2><select id="product">'+optionList(products,false)+'</select><input id="qty" type="number" step="0.01" placeholder="Cantidad preparada"><button class="btn blue" id="saveProd">Guardar producción</button>';
+    el('saveProd').onclick=function(){save('production',{product_id:el('product').value,quantity:el('qty').value,notes:'Producción desde Paypos'});};
+  }
+  function audit(){
+    el('formBox').innerHTML='<h2>✅ Arqueo</h2><input id="cash" type="number" step="0.01" placeholder="Efectivo contado físicamente"><button class="btn red" id="saveAudit">Guardar arqueo</button>';
+    el('saveAudit').onclick=function(){save('cash_audit',{counted_cash:el('cash').value,notes:'Arqueo desde Paypos'});};
+  }
+  el('loadBtn').onclick=load;
+  el('saleBtn').onclick=sale;
+  el('purchaseBtn').onclick=purchase;
+  el('productionBtn').onclick=production;
+  el('auditBtn').onclick=audit;
+})();
+</script>
+</body>
+</html>
