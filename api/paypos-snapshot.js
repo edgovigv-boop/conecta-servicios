@@ -22,6 +22,14 @@ async function supabaseFetch(path, token, options = {}) {
   return payload;
 }
 
+function latestPrices(products, prices) {
+  const byProduct = new Map();
+  for (const price of prices || []) {
+    if (!byProduct.has(price.product_id)) byProduct.set(price.product_id, Number(price.price || 0));
+  }
+  return (products || []).map((p) => ({ ...p, price: byProduct.get(p.id) || 0 }));
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'GET') return res.status(405).json({ ok: false, error: 'Method not allowed' });
@@ -39,6 +47,9 @@ module.exports = async function handler(req, res) {
     });
     const stock = await supabaseFetch(`/rest/v1/cc_stock_balances?select=*&business_id=eq.${PAYPOS_BUSINESS_ID}&order=item_type.asc,item_name.asc`, token);
     const recipes = await supabaseFetch(`/rest/v1/cc_recipes?select=id,name,yield_quantity,yield_unit,cc_products(name)&business_id=eq.${PAYPOS_BUSINESS_ID}&order=name.asc`, token);
+    const productsRaw = await supabaseFetch(`/rest/v1/cc_products?select=id,name,sale_unit,inventory_item_id&business_id=eq.${PAYPOS_BUSINESS_ID}&active=eq.true&order=name.asc`, token);
+    const prices = await supabaseFetch(`/rest/v1/cc_product_prices?select=product_id,price,valid_from,valid_to&business_id=eq.${PAYPOS_BUSINESS_ID}&order=valid_from.desc`, token);
+    const inventoryItems = await supabaseFetch(`/rest/v1/cc_inventory_items?select=id,name,item_type,unit,current_cost&business_id=eq.${PAYPOS_BUSINESS_ID}&active=eq.true&order=name.asc`, token);
 
     return res.status(200).json({
       ok: true,
@@ -46,7 +57,9 @@ module.exports = async function handler(req, res) {
       business: business?.[0] || null,
       snapshot,
       stock,
-      recipes
+      recipes,
+      products: latestPrices(productsRaw, prices),
+      inventory_items: inventoryItems
     });
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message || String(error) });
