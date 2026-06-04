@@ -1,4 +1,4 @@
-const SUPABASE_URL = 'https://qfneazokicmyrtqvukqy.supabase.co';
+const SUPABASE_URL = 'https://qfneazokicmyrtqvukqv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_HixfYyqK2s5dDngKjnS-Dw__SDkZU1K';
 
 module.exports = async function handler(req, res) {
