@@ -9,16 +9,33 @@ module.exports = async function handler(req, res) {
     try {
       const response = await fetch(url, { cache: 'no-store', ...options });
       const text = await response.text();
-      results.push({ name, ok: response.ok, status: response.status, sample: text.slice(0, 240) });
+      results.push({
+        name,
+        ok: response.ok,
+        status: response.status,
+        sample: text.slice(0, 500)
+      });
     } catch (error) {
-      results.push({ name, ok: false, error: error.message || String(error) });
+      results.push({
+        name,
+        ok: false,
+        status: 'fetch_failed',
+        error: error.message || String(error)
+      });
     }
   }
 
   await test('auth_health', `${SUPABASE_URL}/auth/v1/health`);
-  await test('rest_businesses', `${SUPABASE_URL}/rest/v1/cc_businesses?select=id,name&name=eq.Paypos`, {
+  await test('rest_businesses_public_key', `${SUPABASE_URL}/rest/v1/cc_businesses?select=id,name&name=eq.Paypos`, {
     headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
   });
 
-  res.status(200).json({ ok: results.every((r) => r.ok), via: 'vercel-api', results });
+  res.status(200).json({
+    ok: true,
+    bridge_reached: true,
+    supabase_all_ok: results.every((r) => r.ok),
+    via: 'vercel-api',
+    note: 'HTTP 200 here means the phone reached Vercel. If Supabase checks fail, details appear in results.',
+    results
+  });
 };
