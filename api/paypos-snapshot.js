@@ -1,4 +1,4 @@
-const SUPABASE_URL = 'https://qfneazokicmyrtqvukqy.supabase.co';
+const SUPABASE_URL = 'https://qfneazokicmyrtqvukqv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_HixfYyqK2s5dDngKjnS-Dw__SDkZU1K';
 const PAYPOS_BUSINESS_ID = '36a8d71a-f5e4-4ab9-9d48-3a3444b447a7';
 
