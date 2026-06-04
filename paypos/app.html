@@ -4,89 +4,30 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Paypos privado</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root{font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#172033}*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#fff7ed,#f8fafc 42%,#ecfdf5);padding:14px}main{max-width:900px;margin:auto}.top{display:flex;gap:10px;justify-content:space-between}.pill,a.pill{background:#fff;border:1px solid #e5e7eb;border-radius:999px;padding:12px 15px;color:#5b2eea;text-decoration:none;font-weight:950;box-shadow:0 10px 24px #0001}.box{background:#fff;border:1px solid #e8edf3;border-radius:28px;padding:16px;margin:12px 0;box-shadow:0 18px 42px #0f172a1a}.brand{display:flex;gap:12px;align-items:center}.logo{width:76px;height:76px;border-radius:22px;background:linear-gradient(135deg,#d6a94b,#8b5424);color:#fff;font-weight:1000;font-style:italic;display:grid;place-items:center}.k{color:#64748b;font-size:12px;letter-spacing:.07em;text-transform:uppercase;font-weight:1000;margin:0}h1{font-size:32px;margin:2px 0 5px}h2{margin:0 0 10px}.m{color:#64748b;font-weight:800;line-height:1.35}.field{width:100%;border:2px solid #dbe4ef;border-radius:18px;padding:14px;font-size:18px;font-weight:850;margin-top:8px}.big,.soft{width:100%;border:0;border-radius:18px;padding:14px;margin-top:10px;font-weight:1000;font-size:16px}.big{background:#16a34a;color:white}.soft{background:#eef2ff;color:#3730a3}.danger{background:#fff1f2!important;color:#be123c!important}.stats,.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat,.row{border:1px solid #e2e8f0;border-radius:20px;padding:12px;background:#fff}.stat span{display:block;color:#64748b;font-size:12px;font-weight:950;text-transform:uppercase}.stat strong{font-size:24px}.good{background:#ecfdf5!important;border-color:#86efac!important}.bad{background:#fff1f2!important;border-color:#fecdd3!important}.warn{background:#fff7ed!important;border-color:#fed7aa!important}.list{display:grid;gap:9px;max-height:520px;overflow:auto}.row small{display:block;color:#64748b;font-weight:850;margin-top:4px}.tag{display:inline-block;border-radius:999px;background:#eef2ff;color:#3730a3;padding:3px 8px;font-size:12px;font-weight:950;margin-left:4px}.error{background:#fff1f2;border:1px solid #fecdd3;color:#be123c;border-radius:18px;padding:12px;font-weight:850;white-space:pre-wrap}.notice{background:#fff7ed;border:1px solid #fed7aa;color:#92400e;border-radius:18px;padding:12px;font-weight:850;white-space:pre-wrap}.foot{text-align:center;color:#64748b;font-size:12px;font-weight:850;padding:12px}@media(max-width:430px){.grid,.stats{grid-template-columns:1fr}h1{font-size:29px}.top{align-items:stretch}.pill{flex:1}}
+    :root{font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#172033}*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#fff7ed,#f8fafc 42%,#ecfdf5);padding:14px}main{max-width:900px;margin:auto}.top{display:flex;gap:10px;justify-content:space-between}.pill,a.pill{background:#fff;border:1px solid #e5e7eb;border-radius:999px;padding:12px 15px;color:#5b2eea;text-decoration:none;font-weight:950;box-shadow:0 10px 24px #0001}.box{background:#fff;border:1px solid #e8edf3;border-radius:28px;padding:16px;margin:12px 0;box-shadow:0 18px 42px #0f172a1a}.brand{display:flex;gap:12px;align-items:center}.logo{width:76px;height:76px;border-radius:22px;background:linear-gradient(135deg,#d6a94b,#8b5424);color:#fff;font-weight:1000;font-style:italic;display:grid;place-items:center}.k{color:#64748b;font-size:12px;letter-spacing:.07em;text-transform:uppercase;font-weight:1000;margin:0}h1{font-size:32px;margin:2px 0 5px}h2{margin:0 0 10px}.m{color:#64748b;font-weight:800;line-height:1.35}.field{width:100%;border:2px solid #dbe4ef;border-radius:18px;padding:14px;font-size:18px;font-weight:850;margin-top:8px}.big,.soft{width:100%;border:0;border-radius:18px;padding:14px;margin-top:10px;font-weight:1000;font-size:16px}.big{background:#16a34a;color:white}.soft{background:#eef2ff;color:#3730a3}.danger{background:#fff1f2!important;color:#be123c!important}.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat,.row{border:1px solid #e2e8f0;border-radius:20px;padding:12px;background:#fff}.stat span{display:block;color:#64748b;font-size:12px;font-weight:950;text-transform:uppercase}.stat strong{font-size:24px}.good{background:#ecfdf5!important;border-color:#86efac!important}.bad{background:#fff1f2!important;border-color:#fecdd3!important}.warn{background:#fff7ed!important;border-color:#fed7aa!important}.list{display:grid;gap:9px;max-height:520px;overflow:auto}.row small{display:block;color:#64748b;font-weight:850;margin-top:4px}.tag{display:inline-block;border-radius:999px;background:#eef2ff;color:#3730a3;padding:3px 8px;font-size:12px;font-weight:950;margin-left:4px}.error{background:#fff1f2;border:1px solid #fecdd3;color:#be123c;border-radius:18px;padding:12px;font-weight:850;white-space:pre-wrap}.notice{background:#fff7ed;border:1px solid #fed7aa;color:#92400e;border-radius:18px;padding:12px;font-weight:850;white-space:pre-wrap}.foot{text-align:center;color:#64748b;font-size:12px;font-weight:850;padding:12px}@media(max-width:430px){.stats{grid-template-columns:1fr}h1{font-size:29px}.top{align-items:stretch}.pill{flex:1}}
   </style>
 </head>
 <body>
 <main id="app"></main>
 <script>
-const SUPABASE_URL='https://qfneazokicmyrtqvukqy.supabase.co';
-const SUPABASE_KEY='sb_publishable_HixfYyqK2s5dDngKjnS-Dw__SDkZU1K';
-const EMAIL_KEY='paypos_last_email_v1';
-const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const EMAIL_KEY='paypos_last_email_v2';
+const TOKEN_KEY='paypos_token_v2';
 const app=document.getElementById('app');
 const mx=n=>Number(n||0).toLocaleString('es-MX',{style:'currency',currency:'MXN',maximumFractionDigits:0});
 const no=n=>Number(n||0).toLocaleString('es-MX',{maximumFractionDigits:3});
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function errorBox(msg){return '<section class="box"><div class="error">'+esc(msg)+'</div></section>'}
-function loginView(msg='', presetEmail=''){
-  const emailValue=presetEmail||localStorage.getItem(EMAIL_KEY)||'';
-  app.innerHTML='<section class="box"><div class="brand"><div class="logo">Paypos</div><div><p class="k">Acceso privado</p><h1>Conecta Control</h1><p class="m">Entra con tu correo y contraseña.</p></div></div>'+(msg?'<p class="error">'+esc(msg)+'</p>':'')+'<input id="email" class="field" placeholder="Correo" value="'+esc(emailValue)+'"><input id="pass" class="field" placeholder="Contraseña" type="password"><button id="login" class="big">Entrar</button><button id="diag" class="soft">Probar conexión con Supabase</button><p class="m">Los datos se leen desde Supabase con acceso privado por negocio.</p></section>';
-  document.getElementById('login').onclick=async()=>{
-    const email=document.getElementById('email').value.trim();
-    const password=document.getElementById('pass').value;
-    localStorage.setItem(EMAIL_KEY,email);
-    try{
-      const {error}=await client.auth.signInWithPassword({email,password});
-      if(error) return loginView(error.message,email);
-      loadApp();
-    }catch(err){
-      loginView('No se pudo conectar con Supabase Auth. Detalle: '+(err.message||String(err))+'\n\nToca “Probar conexión con Supabase” para ver el diagnóstico.',email);
-    }
-  };
-  document.getElementById('diag').onclick=runDiagnostics;
+async function api(path,opts={}){const r=await fetch(path,{cache:'no-store',...opts,headers:{'Content-Type':'application/json',...(opts.headers||{})}});const p=await r.json().catch(()=>({ok:false,error:'Respuesta no JSON'}));if(!r.ok||p.ok===false)throw new Error(p.error||('HTTP '+r.status));return p;}
+function loginView(msg=''){
+ const email=localStorage.getItem(EMAIL_KEY)||'';
+ app.innerHTML='<section class="box"><div class="brand"><div class="logo">Paypos</div><div><p class="k">Acceso privado</p><h1>Conecta Control</h1><p class="m">Entra con tu correo y contraseña.</p></div></div>'+(msg?'<p class="error">'+esc(msg)+'</p>':'')+'<input id="email" class="field" placeholder="Correo" value="'+esc(email)+'"><input id="pass" class="field" placeholder="Contraseña" type="password"><button id="login" class="big">Entrar</button><button id="diag" class="soft">Probar conexión segura</button><p class="m">La conexión pasa por nuestro dominio de Vercel y luego por Supabase privado.</p></section>';
+ document.getElementById('login').onclick=async()=>{const email=document.getElementById('email').value.trim();const password=document.getElementById('pass').value;localStorage.setItem(EMAIL_KEY,email);try{const r=await api('/api/paypos-login',{method:'POST',body:JSON.stringify({email,password})});localStorage.setItem(TOKEN_KEY,r.access_token);loadApp();}catch(e){loginView(e.message||String(e));}};
+ document.getElementById('diag').onclick=diagnostic;
 }
-async function runDiagnostics(){
-  const email=document.getElementById('email')?.value?.trim()||localStorage.getItem(EMAIL_KEY)||'';
-  localStorage.setItem(EMAIL_KEY,email);
-  app.innerHTML='<section class="box"><h1>Probando conexión...</h1><p class="m">Revisando Supabase desde este navegador.</p></section>';
-  const out=[];
-  async function test(name,url,options={}){
-    try{
-      const res=await fetch(url,{cache:'no-store',...options});
-      const txt=await res.text();
-      out.push(name+': HTTP '+res.status+' '+(res.ok?'OK':'ERROR')+'\n'+txt.slice(0,180));
-    }catch(err){
-      out.push(name+': FALLÓ\n'+(err.name||'Error')+': '+(err.message||String(err)));
-    }
-  }
-  await test('1. Auth health',SUPABASE_URL+'/auth/v1/health');
-  await test('2. REST raíz',SUPABASE_URL+'/rest/v1/',{headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY}});
-  await test('3. Tabla negocios con key pública',SUPABASE_URL+'/rest/v1/cc_businesses?select=id,name&name=eq.Paypos',{headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY}});
-  app.innerHTML='<section class="box"><div class="brand"><div class="logo">Paypos</div><div><p class="k">Diagnóstico</p><h1>Resultado</h1><p class="m">Copia o mándame captura de este resultado si sigue fallando.</p></div></div><pre class="notice">'+esc(out.join('\n\n'))+'</pre><button id="back" class="big">Volver al acceso</button></section>';
-  document.getElementById('back').onclick=()=>loginView('',email);
-}
-async function loadApp(){
-  app.innerHTML='<section class="box"><h1>Cargando Paypos...</h1><p class="m">Leyendo catálogo privado.</p></section>';
-  const {data:{user},error:userError}=await client.auth.getUser();
-  if(userError) return app.innerHTML=errorBox('No se pudo leer el usuario.\n'+userError.message);
-  if(!user) return loginView();
-  const bizRes=await client.from('cc_businesses').select('id,name,business_type,subscription_status').eq('name','Paypos').limit(1).maybeSingle();
-  if(bizRes.error||!bizRes.data) return app.innerHTML=errorBox('No se pudo encontrar Paypos para este usuario. Revisa que el usuario esté en cc_business_users.\n'+(bizRes.error?.message||''));
-  const business=bizRes.data;
-  const snapRes=await client.rpc('cc_private_business_snapshot',{p_business_id:business.id});
-  if(snapRes.error) return app.innerHTML=errorBox('No se pudo cargar el resumen privado.\n'+snapRes.error.message);
-  const stockRes=await client.from('cc_stock_balances').select('*').eq('business_id',business.id).order('item_type').order('item_name');
-  const recipesRes=await client.from('cc_recipes').select('id,name,yield_quantity,yield_unit,cc_products(name)').eq('business_id',business.id).order('name');
-  renderDashboard(user,business,snapRes.data,stockRes.data||[],recipesRes.data||[]);
-}
-function renderDashboard(user,business,snapshot,stock,recipes){
-  const pos=snapshot.position||{};
-  const cash=snapshot.cash?.[0]||{};
-  const receivables=snapshot.receivables||[];
-  const payables=snapshot.payables||[];
-  const sales=snapshot.sales||[];
-  const stockValue=stock.reduce((a,i)=>a+Number(i.estimated_value||0),0);
-  const recTotal=receivables.reduce((a,i)=>a+Number(i.balance||0),0);
-  const payTotal=payables.reduce((a,i)=>a+Number(i.balance||0),0);
-  const salesTotal=sales.reduce((a,i)=>a+Number(i.total||0),0);
-  app.innerHTML='<div class="top"><a class="pill" href="/">← Conecta</a><button id="refresh" class="pill">Actualizar</button></div><section class="box"><div class="brand"><div class="logo">Paypos</div><div><p class="k">Panel privado</p><h1>'+esc(business.name)+'</h1><p class="m">Usuario: '+esc(user.email)+' · Datos protegidos por Supabase Auth y RLS.</p></div></div></section><section class="stats"><div class="stat good"><span>Caja esperada</span><strong>'+mx(cash.calculated_expected_cash||0)+'</strong></div><div class="stat warn"><span>Ventas recientes</span><strong>'+mx(salesTotal)+'</strong></div><div class="stat"><span>Inventario valor</span><strong>'+mx(stockValue)+'</strong></div><div class="stat"><span>Me deben</span><strong>'+mx(recTotal)+'</strong></div><div class="stat bad"><span>Debo</span><strong>'+mx(payTotal)+'</strong></div><div class="stat good"><span>Posición</span><strong>'+mx((pos.assets_value||0)+(pos.inventory_value||0)+(pos.receivables_balance||0)+(pos.cash_net||0)-(pos.payables_balance||0))+'</strong></div></section><section class="box"><h2>Inventario privado</h2><div class="list">'+(stock.map(i=>'<div class="row"><b>'+esc(i.item_name)+' <span class="tag">'+esc(i.item_type)+'</span></b><small>'+no(i.current_quantity)+' '+esc(i.unit)+' · valor '+mx(i.estimated_value)+'</small></div>').join('')||'<div class="row">Sin inventario.</div>')+'</div></section><section class="box"><h2>Recetas</h2><div class="list">'+(recipes.map(r=>'<div class="row"><b>'+esc(r.name)+'</b><small>Producto: '+esc(r.cc_products?.name||'')+' · Rinde '+no(r.yield_quantity)+' '+esc(r.yield_unit)+'</small></div>').join('')||'<div class="row">Sin recetas.</div>')+'</div></section><section class="box"><h2>Deudas y acreedores</h2><div class="list">'+([...receivables.map(r=>'<div class="row"><b>Me debe: '+esc(r.contact_name||'Cliente')+'</b><small>'+esc(r.description)+' · '+mx(r.balance)+'</small></div>'),...payables.map(p=>'<div class="row"><b>Debo a: '+esc(p.contact_name||'Acreedor')+'</b><small>'+esc(p.description)+' · '+mx(p.balance)+'</small></div>')].join('')||'<div class="row">Sin pendientes.</div>')+'</div></section><section class="box"><button id="logout" class="soft danger">Cerrar sesión</button></section><div class="foot">© 2026 Conecta Servicios · Paypos privado.</div>';
-  document.getElementById('refresh').onclick=loadApp;
-  document.getElementById('logout').onclick=async()=>{await client.auth.signOut();loginView();};
-}
-client.auth.getSession().then(({data})=>data.session?loadApp():loginView()).catch(()=>loginView());
+async function diagnostic(){app.innerHTML='<section class="box"><h1>Probando...</h1><p class="m">Revisando puente Vercel → Supabase.</p></section>';try{const r=await api('/api/paypos-health');app.innerHTML='<section class="box"><div class="brand"><div class="logo">Paypos</div><div><p class="k">Diagnóstico</p><h1>Resultado</h1><p class="m">Puente probado desde Vercel.</p></div></div><pre class="notice">'+esc(JSON.stringify(r,null,2))+'</pre><button id="back" class="big">Volver</button></section>';document.getElementById('back').onclick=()=>loginView();}catch(e){app.innerHTML='<section class="box"><p class="error">'+esc(e.message||String(e))+'</p><button id="back" class="big">Volver</button></section>';document.getElementById('back').onclick=()=>loginView();}}
+async function loadApp(){const token=localStorage.getItem(TOKEN_KEY);if(!token)return loginView();app.innerHTML='<section class="box"><h1>Cargando Paypos...</h1><p class="m">Leyendo catálogo privado.</p></section>';try{const data=await api('/api/paypos-snapshot',{headers:{Authorization:'Bearer '+token}});renderDashboard(data);}catch(e){localStorage.removeItem(TOKEN_KEY);loginView(e.message||String(e));}}
+function renderDashboard(data){const snapshot=data.snapshot||{},pos=snapshot.position||{},cash=snapshot.cash?.[0]||{},receivables=snapshot.receivables||[],payables=snapshot.payables||[],sales=snapshot.sales||[],stock=data.stock||[],recipes=data.recipes||[];const stockValue=stock.reduce((a,i)=>a+Number(i.estimated_value||0),0),recTotal=receivables.reduce((a,i)=>a+Number(i.balance||0),0),payTotal=payables.reduce((a,i)=>a+Number(i.balance||0),0),salesTotal=sales.reduce((a,i)=>a+Number(i.total||0),0);app.innerHTML='<div class="top"><a class="pill" href="/">← Conecta</a><button id="refresh" class="pill">Actualizar</button></div><section class="box"><div class="brand"><div class="logo">Paypos</div><div><p class="k">Panel privado</p><h1>'+esc(data.business?.name||'Paypos')+'</h1><p class="m">Usuario: '+esc(data.user?.email||'')+' · Datos protegidos por Supabase y Vercel.</p></div></div></section><section class="stats"><div class="stat good"><span>Caja esperada</span><strong>'+mx(cash.calculated_expected_cash||0)+'</strong></div><div class="stat warn"><span>Ventas recientes</span><strong>'+mx(salesTotal)+'</strong></div><div class="stat"><span>Inventario valor</span><strong>'+mx(stockValue)+'</strong></div><div class="stat"><span>Me deben</span><strong>'+mx(recTotal)+'</strong></div><div class="stat bad"><span>Debo</span><strong>'+mx(payTotal)+'</strong></div><div class="stat good"><span>Posición</span><strong>'+mx((pos.assets_value||0)+(pos.inventory_value||0)+(pos.receivables_balance||0)+(pos.cash_net||0)-(pos.payables_balance||0))+'</strong></div></section><section class="box"><h2>Inventario privado</h2><div class="list">'+(stock.map(i=>'<div class="row"><b>'+esc(i.item_name)+' <span class="tag">'+esc(i.item_type)+'</span></b><small>'+no(i.current_quantity)+' '+esc(i.unit)+' · valor '+mx(i.estimated_value)+'</small></div>').join('')||'<div class="row">Sin inventario.</div>')+'</div></section><section class="box"><h2>Recetas</h2><div class="list">'+(recipes.map(r=>'<div class="row"><b>'+esc(r.name)+'</b><small>Producto: '+esc(r.cc_products?.name||'')+' · Rinde '+no(r.yield_quantity)+' '+esc(r.yield_unit)+'</small></div>').join('')||'<div class="row">Sin recetas.</div>')+'</div></section><section class="box"><h2>Deudas y acreedores</h2><div class="list">'+([...receivables.map(r=>'<div class="row"><b>Me debe: '+esc(r.contact_name||'Cliente')+'</b><small>'+esc(r.description)+' · '+mx(r.balance)+'</small></div>'),...payables.map(p=>'<div class="row"><b>Debo a: '+esc(p.contact_name||'Acreedor')+'</b><small>'+esc(p.description)+' · '+mx(p.balance)+'</small></div>')].join('')||'<div class="row">Sin pendientes.</div>')+'</div></section><section class="box"><button id="logout" class="soft danger">Cerrar sesión</button></section><div class="foot">© 2026 Conecta Servicios · Paypos privado.</div>';document.getElementById('refresh').onclick=loadApp;document.getElementById('logout').onclick=()=>{localStorage.removeItem(TOKEN_KEY);loginView();};}
+loadApp();
 </script>
 </body>
 </html>
