@@ -1,6 +1,6 @@
 const dns = require('dns').promises;
 const https = require('https');
-const SUPABASE_HOST = 'qfneazokicmyrtqvukqy.supabase.co';
+const SUPABASE_HOST = 'qfneazokicmyrtqvukqv.supabase.co';
 const SUPABASE_URL = `https://${SUPABASE_HOST}`;
 
 function httpsProbe(path) {
