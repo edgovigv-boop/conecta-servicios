@@ -14,17 +14,17 @@
 <main>
   <section class="card">
     <h1>Paypos Operar</h1>
-    <p class="muted">Versión segura V2. Si la sesión está guardada, permite registrar venta, compra, producción y arqueo.</p>
-    <a class="btn white" href="/paypos/seguro.html?v=4">← Volver al panel privado</a>
+    <p class="muted">Versión segura V2. Por ahora solo la venta queda conectada. Compra, producción y arqueo siguen en modo prueba.</p>
+    <a class="btn white" href="/paypos/seguro.html?v=5">← Volver al panel privado</a>
     <button class="btn white" id="loadBtn">Cargar sesión Paypos</button>
     <p id="msg" class="msg">Pantalla cargada correctamente.</p>
   </section>
 
   <section class="card" id="ops" style="display:none">
     <button class="btn green" id="saleBtn">💰 Registrar venta</button>
-    <button class="btn orange" id="purchaseBtn">🛒 Registrar compra</button>
-    <button class="btn blue" id="productionBtn">🍰 Registrar producción</button>
-    <button class="btn red" id="auditBtn">✅ Arqueo de caja</button>
+    <button class="btn orange" id="purchaseBtn">🛒 Registrar compra (próximo paso)</button>
+    <button class="btn blue" id="productionBtn">🍰 Registrar producción (próximo paso)</button>
+    <button class="btn red" id="auditBtn">✅ Arqueo de caja (próximo paso)</button>
   </section>
 
   <section class="card" id="formBox"></section>
@@ -65,45 +65,31 @@
       setMsg('Sesión: '+(state.user&&state.user.email?state.user.email:'')+'\nCaja esperada: '+money(caja)+'\nProductos: '+(state.products||[]).length+'\nInsumos: '+(state.inventory_items||[]).length,'ok');
     }catch(e){setMsg('Error al cargar: '+e.message,'err');}
   }
-  async function save(action,payload){
-    setMsg('Guardando movimiento...');
+  async function saveSale(payload){
+    setMsg('Guardando venta...');
     try{
-      await api('/api/paypos-operation',{method:'POST',headers:{Authorization:'Bearer '+token()},body:JSON.stringify({action:action,payload:payload})});
+      await api('/api/paypos-sale',{method:'POST',headers:{Authorization:'Bearer '+token()},body:JSON.stringify(payload)});
       el('formBox').innerHTML='';
       await load();
-      setMsg(el('msg').textContent+'\n✅ Movimiento guardado.','ok');
-    }catch(e){setMsg('Error al guardar: '+e.message,'err');}
+      setMsg(el('msg').textContent+'\n✅ Venta guardada.','ok');
+    }catch(e){setMsg('Error al guardar venta: '+e.message,'err');}
   }
   function sale(){
     var products=state&&state.products?state.products:[];
     el('formBox').innerHTML='<h2>💰 Venta</h2><select id="product">'+optionList(products,true)+'</select><input id="qty" type="number" step="0.01" placeholder="Cantidad vendida"><input id="paid" type="number" step="0.01" placeholder="Cobró cuánto? vacío = total"><button class="btn green" id="saveSale">Guardar venta</button>';
     el('saveSale').onclick=function(){
       var product=products.find(function(x){return x.id===el('product').value;});
-      save('sale',{product_id:product.id,quantity:el('qty').value,unit_price:product.price,paid_amount:el('paid').value,notes:'Venta desde Paypos'});
+      saveSale({product_id:product.id,quantity:el('qty').value,unit_price:product.price,paid_amount:el('paid').value});
     };
   }
-  function purchase(){
-    var items=state&&state.inventory_items?state.inventory_items:[];
-    el('formBox').innerHTML='<h2>🛒 Compra</h2><select id="item">'+optionList(items,false)+'</select><input id="qty" type="number" step="0.01" placeholder="Cantidad que entró"><input id="cost" type="number" step="0.01" placeholder="Costo por unidad"><input id="paid" type="number" step="0.01" placeholder="Pagó cuánto? vacío = total"><button class="btn orange" id="savePurchase">Guardar compra</button>';
-    el('savePurchase').onclick=function(){
-      var item=items.find(function(x){return x.id===el('item').value;});
-      save('purchase',{inventory_item_id:item.id,quantity:el('qty').value,unit:item.unit,unit_cost:el('cost').value,paid_amount:el('paid').value,notes:'Compra desde Paypos'});
-    };
-  }
-  function production(){
-    var products=state&&state.products?state.products:[];
-    el('formBox').innerHTML='<h2>🍰 Producción</h2><select id="product">'+optionList(products,false)+'</select><input id="qty" type="number" step="0.01" placeholder="Cantidad preparada"><button class="btn blue" id="saveProd">Guardar producción</button>';
-    el('saveProd').onclick=function(){save('production',{product_id:el('product').value,quantity:el('qty').value,notes:'Producción desde Paypos'});};
-  }
-  function audit(){
-    el('formBox').innerHTML='<h2>✅ Arqueo</h2><input id="cash" type="number" step="0.01" placeholder="Efectivo contado físicamente"><button class="btn red" id="saveAudit">Guardar arqueo</button>';
-    el('saveAudit').onclick=function(){save('cash_audit',{counted_cash:el('cash').value,notes:'Arqueo desde Paypos'});};
+  function notReady(name){
+    el('formBox').innerHTML='<h2>'+name+'</h2><p class="msg">Este botón ya está visualmente listo, pero lo conectaremos después de probar Venta correctamente.</p>';
   }
   el('loadBtn').onclick=load;
   el('saleBtn').onclick=sale;
-  el('purchaseBtn').onclick=purchase;
-  el('productionBtn').onclick=production;
-  el('auditBtn').onclick=audit;
+  el('purchaseBtn').onclick=function(){notReady('🛒 Compra');};
+  el('productionBtn').onclick=function(){notReady('🍰 Producción');};
+  el('auditBtn').onclick=function(){notReady('✅ Arqueo');};
 })();
 </script>
 </body>
