@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Conecta Servicios"
+rootProject.name = "Sistema Deportivo Pro"
 include ':app'
