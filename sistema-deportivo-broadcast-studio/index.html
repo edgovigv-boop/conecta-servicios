@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#020617">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="SDP Studio">
+  <title>Sistema Deportivo Pro Broadcast Studio</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="studio" id="studio">
+    <section class="camera-stage" aria-label="Cámara y transmisión">
+      <video id="cameraVideo" class="camera-video" playsinline muted autoplay></video>
+      <div id="cameraPlaceholder" class="camera-placeholder">
+        <div class="court-lines"></div>
+        <div class="placeholder-content">
+          <div class="brand-mark">SDP</div>
+          <h1>Broadcast Studio</h1>
+          <p>Activa la cámara para ver el partido real con marcador profesional encima.</p>
+          <button id="startCameraBtn" class="primary-btn">Activar cámara</button>
+        </div>
+      </div>
+      <div class="vignette"></div>
+
+      <header class="scorebug" aria-live="polite">
+        <div class="live-chip"><span></span> LIVE</div>
+        <div class="team-block team-a">
+          <input id="teamAName" class="team-name-input" value="Equipo Azul" aria-label="Nombre Equipo A">
+          <div class="score-row"><strong id="teamAScore">0</strong><small>Faltas <b id="teamAFouls">0</b></small></div>
+        </div>
+        <div class="clock-block">
+          <div id="gameClock" class="clock">10:00</div>
+          <div class="period">Q<span id="periodLabel">1</span></div>
+        </div>
+        <div class="team-block team-b">
+          <input id="teamBName" class="team-name-input" value="Equipo Blanco" aria-label="Nombre Equipo B">
+          <div class="score-row"><strong id="teamBScore">0</strong><small>Faltas <b id="teamBFouls">0</b></small></div>
+        </div>
+      </header>
+
+      <section class="lower-third">
+        <span>Última jugada</span>
+        <strong id="lastPlay">Listo para iniciar transmisión deportiva.</strong>
+      </section>
+
+      <section id="recordingBadge" class="recording-badge hidden">Listo para grabar pantalla · controles ocultos</section>
+    </section>
+
+    <button id="toggleControlsBtn" class="floating-toggle">Ocultar controles</button>
+
+    <aside id="controlsPanel" class="controls-panel" aria-label="Controles de anotación">
+      <div class="panel-header">
+        <div>
+          <p class="eyebrow">Sistema Deportivo Pro</p>
+          <h2>Broadcast Studio</h2>
+        </div>
+        <button id="cleanModeBtn" class="ghost-btn">Modo grabación limpia</button>
+      </div>
+
+      <div class="control-grid teams">
+        <button id="selectA" class="team-select active">Equipo A</button>
+        <button id="selectB" class="team-select">Equipo B</button>
+      </div>
+
+      <div class="player-row">
+        <input id="playerNumber" placeholder="#" inputmode="numeric" maxlength="3" aria-label="Número de jugador">
+        <input id="playerName" placeholder="Jugador/a opcional" aria-label="Nombre de jugador">
+        <label class="switch-line"><input id="femaleSwitch" type="checkbox"> Mujer = 3</label>
+      </div>
+
+      <div class="control-grid actions">
+        <button data-action="freeThrow" class="action-btn green"><b>+1</b><span>Tiro libre</span></button>
+        <button data-action="two" class="action-btn blue"><b>+2</b><span>Canasta</span></button>
+        <button data-action="three" class="action-btn orange"><b>+3</b><span>Triple</span></button>
+        <button data-action="foul" class="action-btn red"><b>F</b><span>Falta</span></button>
+        <button data-action="undo" class="action-btn slate"><b>↶</b><span>Deshacer</span></button>
+        <button data-action="clock" class="action-btn purple"><b id="clockIcon">▶</b><span id="clockText">Reloj</span></button>
+        <button data-action="period" class="action-btn slate"><b>Q+</b><span>Cambiar cuarto</span></button>
+        <button data-action="newGame" class="action-btn dark"><b>NEW</b><span>Nuevo partido</span></button>
+        <button data-action="finish" class="action-btn red wide"><b>FIN</b><span>Finalizar partido</span></button>
+      </div>
+
+      <details class="audio-card" open>
+        <summary>Sonidos, narrador y ambiente</summary>
+        <div class="toggle-list">
+          <label><input id="soundToggle" type="checkbox" checked> Efectos deportivos</label>
+          <label><input id="narratorToggle" type="checkbox" checked> Narrador automático</label>
+          <label><input id="crowdToggle" type="checkbox"> Ambiente de público</label>
+          <label><input id="musicToggle" type="checkbox"> Música de entrada/evento</label>
+        </div>
+      </details>
+
+      <details class="history-card" open>
+        <summary>Historial local</summary>
+        <ol id="eventList" class="event-list"></ol>
+      </details>
+
+      <details class="recording-card">
+        <summary>Grabación futura</summary>
+        <p>La arquitectura queda lista para MediaRecorder. En esta entrega, usa la grabadora de pantalla del celular con el modo limpio.</p>
+        <button id="prepareRecorderBtn" class="ghost-btn full">Preparar MediaRecorder</button>
+        <p id="recorderStatus" class="status-text">MediaRecorder en espera.</p>
+      </details>
+    </aside>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

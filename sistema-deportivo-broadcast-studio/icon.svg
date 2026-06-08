@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#020617"/>
+  <circle cx="256" cy="256" r="178" fill="#a3e635"/>
+  <path d="M84 256h344M256 78c74 75 74 281 0 356M256 78c-74 75-74 281 0 356M130 132c79 48 173 48 252 0M130 380c79-48 173-48 252 0" fill="none" stroke="#020617" stroke-width="22" stroke-linecap="round"/>
+  <text x="256" y="284" text-anchor="middle" font-size="92" font-family="Arial,sans-serif" font-weight="900" fill="#020617">SDP</text>
+</svg>
