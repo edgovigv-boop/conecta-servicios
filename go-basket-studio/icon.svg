@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Go Basket Studio</title>
+  <desc id="desc">Balón de básquet estilizado con aro de transmisión.</desc>
+  <defs>
+    <linearGradient id="paint" x1="80" x2="432" y1="64" y2="448" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff7a18" />
+      <stop offset="1" stop-color="#ffd166" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#0a0712" />
+  <circle cx="256" cy="256" r="166" fill="url(#paint)" />
+  <path d="M90 256h332M256 90c40 52 58 107 58 166s-18 114-58 166M256 90c-40 52-58 107-58 166s18 114 58 166M138 150c76 42 160 42 236 0M138 362c76-42 160-42 236 0" fill="none" stroke="#210904" stroke-width="20" stroke-linecap="round" />
+  <path d="M361 178h42v84c0 36-26 66-60 72" fill="none" stroke="#fff8ed" stroke-width="18" stroke-linecap="round" />
+  <circle cx="343" cy="334" r="17" fill="#fff8ed" />
+</svg>
