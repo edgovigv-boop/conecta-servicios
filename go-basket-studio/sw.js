@@ -1,4 +1,4 @@
-const CACHE_NAME = "go-basket-studio-v4";
+const CACHE_NAME = "go-basket-studio-v5-scroll-fix";
 const APP_SHELL = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", (event) => {

@@ -566,3 +566,75 @@ html, body {
 .controls-panel {
   margin-bottom: max(84px, env(safe-area-inset-bottom));
 }
+
+
+/* Home and mobile scroll fix v2: allow all normal screens to scroll, while keeping TV fullscreen protected. */
+html,
+body {
+  height: auto !important;
+  min-height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.app-shell {
+  min-height: 100dvh;
+  height: auto;
+  overflow: visible;
+}
+
+.screen {
+  min-height: 100dvh;
+  height: auto !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
+  overscroll-behavior-y: contain;
+}
+
+.screen.active {
+  display: block;
+}
+
+.screen--home,
+.screen--home.active {
+  display: block;
+  place-items: initial;
+}
+
+.hero-card {
+  margin: clamp(14px, 4vh, 34px) auto;
+}
+
+.modal-open {
+  overflow-y: auto !important;
+}
+
+.game-screen {
+  min-height: 100dvh;
+  height: auto !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+  padding-bottom: max(132px, env(safe-area-inset-bottom));
+}
+
+.game-screen.recording {
+  overflow-y: auto !important;
+  padding-bottom: max(132px, env(safe-area-inset-bottom));
+}
+
+.game-screen.fullscreen-mode,
+.game-screen.tv-mode {
+  overflow: hidden !important;
+  padding-bottom: max(18px, env(safe-area-inset-bottom));
+}
+
+.controls-panel {
+  margin-bottom: max(96px, env(safe-area-inset-bottom));
+}
