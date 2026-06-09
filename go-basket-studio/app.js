@@ -20,6 +20,9 @@ const appState = {
   crowdNode: null,
   cameraStream: null,
   mediaRecorder: null,
+  pendingAction: null,
+  tvWindow: null,
+  preferredVoice: null,
   recordingChunks: [],
   recordingCanvas: null,
   recordingCanvasContext: null,
@@ -27,6 +30,8 @@ const appState = {
   recordingStream: null,
   recordingStartedAt: null,
   recordedVideoUrl: null,
+  recordedVideoBlob: null,
+  recordedVideoFile: null,
   lastTap: 0,
   deferredInstallPrompt: null,
   rules: loadRules(),
@@ -47,6 +52,9 @@ const elements = {
   cameraView: $("#cameraView"),
   cameraStatus: null,
   recordingStatus: null,
+  actionModal: null,
+  humanPrompt: null,
+  tvStatus: null,
   gameScreen: $('[data-screen="game"]'),
   controlsPanel: $("#controlsPanel"),
   showControlsBtn: $("#showControlsBtn"),
@@ -56,6 +64,61 @@ const elements = {
   reportView: $("#reportView"),
   installBtn: $("#installBtn"),
 };
+
+function ensureDynamicUi() {
+  if (!elements.gameScreen || !elements.controlsPanel) return;
+
+  if (!elements.actionModal) {
+    const modal = document.createElement("div");
+    modal.className = "action-modal";
+    modal.hidden = true;
+    modal.innerHTML = `
+      <div class="action-modal__card" role="dialog" aria-modal="true" aria-labelledby="actionModalTitle">
+        <p class="eyebrow">Go Basket Studio</p>
+        <h3 id="actionModalTitle">¿Quién hizo la jugada?</h3>
+        <p class="action-modal__hint">Elige jugador para que la narración diga nombre, número, equipo y marcador.</p>
+        <div class="action-modal__players" id="actionPlayerList"></div>
+        <button class="small-btn" id="actionNoPlayerBtn" type="button">Equipo completo / Sin jugador</button>
+        <button class="small-btn danger" id="actionCancelBtn" type="button">Cancelar</button>
+      </div>
+    `;
+    document.body.append(modal);
+    elements.actionModal = modal;
+    $("#actionNoPlayerBtn", modal).addEventListener("click", () => completePendingAction(null));
+    $("#actionCancelBtn", modal).addEventListener("click", closeActionModal);
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) closeActionModal();
+    });
+  }
+
+  if (!elements.humanPrompt) {
+    const prompt = document.createElement("div");
+    prompt.className = "human-prompt";
+    prompt.innerHTML = `<span>Frase sugerida para narrador</span><strong>GO BASKET STUDIO EN VIVO</strong>`;
+    elements.gameScreen.insertBefore(prompt, elements.controlsPanel);
+    elements.humanPrompt = prompt;
+  }
+
+  if (!elements.tvStatus) {
+    const status = document.createElement("div");
+    status.className = "tv-status";
+    status.hidden = true;
+    status.textContent = "Tablero TV activo";
+    elements.gameScreen.append(status);
+    elements.tvStatus = status;
+  }
+
+  if (!$("#humanNarratorBtn")) {
+    const strip = document.createElement("div");
+    strip.className = "control-strip control-strip--extra";
+    strip.innerHTML = `
+      <button id="humanNarratorBtn" type="button">Narrador humano OFF</button>
+      <button id="tvBoardBtn" type="button">Modo TV / tablero gigante</button>
+      <button id="shareVideoBtn" type="button" hidden>Compartir video</button>
+    `;
+    elements.controlsPanel.append(strip);
+  }
+}
 
 function showScreen(name) {
   elements.screens.forEach((screen) => screen.classList.toggle("active", screen.dataset.screen === name));
@@ -161,6 +224,7 @@ function addPlayerRow(teamKey, data = {}) {
 }
 
 function startGame(config) {
+  ensureDynamicUi();
   stopTimer();
   stopCamera();
   stopCrowd();
@@ -192,12 +256,16 @@ function renderGame() {
   $("#teleprompter").classList.toggle("off", !game.teleprompterEnabled);
   $("#timerBtn").textContent = game.running ? "Pausar tiempo" : "Iniciar tiempo";
   $("#soundBtn").textContent = `Sonidos ${game.soundsEnabled ? "ON" : "OFF"}`;
-  $("#narratorBtn").textContent = `Narrador ${game.narratorEnabled ? "ON" : "OFF"}`;
+  $("#narratorBtn").textContent = `Narrador automático ${game.narratorEnabled ? "ON" : "OFF"}`;
+  const humanBtn = $("#humanNarratorBtn");
+  if (humanBtn) humanBtn.textContent = `Narrador humano ${game.humanNarratorEnabled ? "ON" : "OFF"}`;
   $("#teleBtn").textContent = `Teleprompter ${game.teleprompterEnabled ? "ON" : "OFF"}`;
   $("#crowdBtn").textContent = `Ambiente público ${game.crowdEnabled ? "ON" : "OFF"}`;
   $("#cameraBtn").textContent = `${game.cameraEnabled ? "Apagar" : "Activar"} cámara`;
   updateCameraStatus();
   updateRecordingStatus();
+  updateHumanPrompt();
+  updateTvBoard();
   $("#recordingBtn").textContent = game.internalRecording ? "Detener grabación interna" : "Grabar video completo";
   elements.gameScreen.classList.toggle("recording", game.recordingMode);
   elements.gameScreen.classList.toggle("fullscreen-mode", game.fullscreenMode);
@@ -244,30 +312,70 @@ function updateRecordingStatus() {
   elements.gameScreen.classList.toggle("internal-recording", game.internalRecording);
 }
 
+function updateHumanPrompt() {
+  const game = appState.game;
+  if (!game || !elements.humanPrompt) return;
+  const phrase = game.lastHumanPrompt || game.history[0]?.prompt || "GO BASKET STUDIO EN VIVO";
+  elements.humanPrompt.hidden = !game.teleprompterEnabled;
+  elements.humanPrompt.classList.toggle("human-prompt--active", game.humanNarratorEnabled);
+  $("strong", elements.humanPrompt).textContent = phrase;
+}
+
+function updateTvBoard() {
+  const game = appState.game;
+  if (!game || !appState.tvWindow || appState.tvWindow.closed) {
+    if (elements.tvStatus) elements.tvStatus.hidden = true;
+    return;
+  }
+  const payload = {
+    teamA: game.teamA,
+    teamB: game.teamB,
+    scoreA: game.scoreA,
+    scoreB: game.scoreB,
+    foulsA: game.foulsA,
+    foulsB: game.foulsB,
+    clock: formatClock(game.remainingSeconds),
+    lastPlay: game.history[0]?.text || "Go Basket Studio en vivo",
+  };
+  appState.tvWindow.postMessage({ type: "GO_BASKET_UPDATE", payload }, "*");
+  if (elements.tvStatus) elements.tvStatus.hidden = false;
+}
+
+function openTvBoard() {
+  const game = appState.game;
+  if (!game) return;
+  const tv = window.open("", "go-basket-tv", "popup=yes,width=1200,height=720");
+  if (!tv) {
+    alert("El navegador bloqueó la pantalla TV. Permite ventanas emergentes o usa pantalla completa/duplicar pantalla.");
+    return;
+  }
+  tv.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Go Basket Studio TV</title><style>
+    body{margin:0;min-height:100vh;background:radial-gradient(circle at 20% 0,#3a1708,transparent 38%),linear-gradient(135deg,#05030a,#101a2a);color:#fff;font-family:system-ui,sans-serif;display:grid;place-items:center;overflow:hidden}
+    .board{width:min(96vw,1500px);display:grid;gap:26px;text-align:center}.top{font-size:clamp(24px,4vw,64px);font-weight:1000;color:#ffd166;letter-spacing:.18em}.scores{display:grid;grid-template-columns:1fr .7fr 1fr;gap:24px;align-items:center}.team,.clock,.last{border:2px solid rgba(255,255,255,.16);border-radius:36px;background:rgba(0,0,0,.5);padding:32px;box-shadow:0 28px 80px rgba(0,0,0,.55)}.team span,.clock span{display:block;color:#c8b9a5;font-size:clamp(18px,2vw,34px);font-weight:900;text-transform:uppercase}.team strong{display:block;font-size:clamp(110px,18vw,280px);line-height:.85}.a strong{color:#4cc9f0}.b strong{color:#ff3d57}.clock strong{display:block;font-size:clamp(80px,12vw,190px);color:#ffd166;line-height:.9}.last{font-size:clamp(26px,4vw,76px);font-weight:950;text-align:left}.brand{position:fixed;right:24px;bottom:20px;color:#ffd166;font-weight:1000}</style></head><body><main class="board"><div class="top">GO BASKET STUDIO</div><section class="scores"><article class="team a"><span id="teamA"></span><strong id="scoreA"></strong><span id="foulsA"></span></article><article class="clock"><span>EN VIVO</span><strong id="clock"></strong><span>Tiempo</span></article><article class="team b"><span id="teamB"></span><strong id="scoreB"></strong><span id="foulsB"></span></article></section><section class="last" id="lastPlay"></section></main><div class="brand">Tablero gigante · Duplica esta pantalla a tu TV</div><script>function set(d){for(const k in d){const el=document.getElementById(k);if(el)el.textContent=d[k]}}window.addEventListener('message',e=>{if(e.data?.type==='GO_BASKET_UPDATE'){const p=e.data.payload;set({teamA:p.teamA,teamB:p.teamB,scoreA:p.scoreA,scoreB:p.scoreB,foulsA:'Faltas '+p.foulsA,foulsB:'Faltas '+p.foulsB,clock:p.clock,lastPlay:p.lastPlay})}});</script></body></html>`);
+  tv.document.close();
+  appState.tvWindow = tv;
+  updateTvBoard();
+  alert("Tablero TV abierto. Para verlo en una Smart TV, duplica pantalla con Chromecast, AirPlay, Miracast o HDMI, o abre esta misma app en la TV.");
+}
+
 function maybeAnnounceTime(game) {
+  const marker = scoreMarker(game);
   const alerts = [
-    { at: 360, key: "6m", text: "Quedan 6 minutos de juego.", prompt: "QUEDAN 6 MINUTOS" },
-    { at: 240, key: "4m", text: "Quedan 4 minutos de partido.", prompt: "QUEDAN 4 MINUTOS" },
-    { at: 180, key: "3m", text: "Últimos 3 minutos.", prompt: "ÚLTIMOS 3 MINUTOS" },
-    { at: 120, key: "2m", text: "Últimos 2 minutos del partido.", prompt: "ÚLTIMOS 2 MINUTOS" },
-    { at: 60, key: "1m", text: "Último minuto.", prompt: "ÚLTIMO MINUTO" },
-    { at: 30, key: "30s", text: "Quedan 30 segundos.", prompt: "QUEDAN 30 SEGUNDOS" },
-    { at: 20, key: "20s", text: "Quedan 20 segundos.", prompt: "QUEDAN 20 SEGUNDOS" },
-    { at: 10, key: "10s", text: "Quedan 10 segundos.", prompt: "QUEDAN 10 SEGUNDOS" },
-    { at: 5, key: "5s", text: "Cinco.", prompt: "5" },
-    { at: 3, key: "3s", text: "Tres.", prompt: "3" },
-    { at: 2, key: "2s", text: "Dos.", prompt: "2" },
-    { at: 1, key: "1s", text: "Uno.", prompt: "1" },
+    { at: 360, key: "6m", text: `Quedan 6 minutos de juego. Marcador: ${marker}.`, prompt: `QUEDAN 6 MINUTOS · MARCADOR: ${marker}` },
+    { at: 180, key: "3m", text: `Quedan 3 minutos de juego. Marcador: ${marker}.`, prompt: `QUEDAN 3 MINUTOS · MARCADOR: ${marker}` },
+    { at: 60, key: "1m", text: `Queda 1 minuto de juego. Marcador: ${marker}.`, prompt: `QUEDA 1 MINUTO · MARCADOR: ${marker}` },
+    { at: 30, key: "30s", text: "Quedan 30 segundos de juego.", prompt: "QUEDAN 30 SEGUNDOS" },
+    { at: 10, key: "10s", text: "Quedan 10 segundos de juego.", prompt: "QUEDAN 10 SEGUNDOS" },
+    { at: 5, key: "5s", text: "Quedan 5, 4, 3, 2, 1, fin del juego.", prompt: "5, 4, 3, 2, 1 · FIN DEL JUEGO" },
   ];
   const fired = new Set(game.timeAlerts || []);
   const alert = alerts.find((item) => item.at > 0 && game.durationSeconds > item.at && game.remainingSeconds === item.at && !fired.has(item.key));
   if (!alert) return;
   fired.add(alert.key);
   game.timeAlerts = [...fired];
-  const text = `${alert.text} Ahora el marcador va: ${scoreMarker(game)}.`;
-  recordPlay({ type: "time", text, prompt: `${alert.prompt} · MARCADOR: ${scoreMarker(game)}` });
+  recordPlay({ type: "time", text: alert.text, prompt: alert.prompt });
   playSound("alert");
-  announce(text);
+  announce(alert.text);
 }
 
 function renderPlayerSelect() {
@@ -286,26 +394,89 @@ function selectedPlayerFor(teamKey) {
 }
 
 function addScore(teamKey, points) {
+  requestAction({ type: "score", teamKey, points });
+}
+
+function addFoul(teamKey) {
+  requestAction({ type: "foul", teamKey });
+}
+
+function requestAction(action) {
   const game = appState.game;
-  const player = selectedPlayerFor(teamKey);
+  const players = game?.players?.[action.teamKey] || [];
+  if (!players.length) {
+    if (action.type === "score") applyScore(action.teamKey, action.points, null);
+    if (action.type === "foul") applyFoul(action.teamKey, null);
+    return;
+  }
+  appState.pendingAction = action;
+  openActionModal(action, players);
+}
+
+function openActionModal(action, players) {
+  ensureDynamicUi();
+  const modal = elements.actionModal;
+  const teamName = action.teamKey === "A" ? appState.game.teamA : appState.game.teamB;
+  $("#actionModalTitle", modal).textContent = action.type === "score"
+    ? `¿Quién anotó ${action.points} ${action.points === 1 ? "punto" : "puntos"} para ${teamName}?`
+    : `¿Quién cometió la falta de ${teamName}?`;
+  $("#actionPlayerList", modal).innerHTML = players.map((player) => `
+    <button type="button" class="action-player-btn" data-player-id="${player.id}">
+      <strong>${escapeHtml(player.name || "Jugador")}</strong>
+      <span>${player.number ? `#${escapeHtml(player.number)} · ` : ""}${escapeHtml(teamName)}</span>
+    </button>
+  `).join("");
+  $$("[data-player-id]", modal).forEach((button) => button.addEventListener("click", () => {
+    const player = players.find((item) => item.id === button.dataset.playerId) || null;
+    completePendingAction(player);
+  }));
+  modal.hidden = false;
+}
+
+function closeActionModal() {
+  if (elements.actionModal) elements.actionModal.hidden = true;
+  appState.pendingAction = null;
+}
+
+function completePendingAction(player) {
+  const action = appState.pendingAction;
+  closeActionModal();
+  if (!action) return;
+  if (action.type === "score") applyScore(action.teamKey, action.points, player);
+  if (action.type === "foul") applyFoul(action.teamKey, player);
+}
+
+function applyScore(teamKey, points, player) {
+  const game = appState.game;
   const scoreKey = teamKey === "A" ? "scoreA" : "scoreB";
   game[scoreKey] += points;
-  if (player) player.points += points;
+  if (player) {
+    player.points += points;
+    player.madeShots = player.madeShots || { one: 0, two: 0, three: 0 };
+    if (points === 1) player.madeShots.one += 1;
+    if (points === 2) player.madeShots.two += 1;
+    if (points === 3) player.madeShots.three += 1;
+  }
 
   const teamName = teamKey === "A" ? game.teamA : game.teamB;
-  const subject = describeSubject(player, teamName);
-  const action = points === 1 ? "Tiro libre" : "Canasta";
-  const text = `¡${action} de ${subject}, ${points} ${points === 1 ? "punto" : "puntos"}! Ahora el marcador va: ${scoreMarker(game)}.`;
-  const prompt = `${action.toUpperCase()} DE ${player ? playerDisplayName(player).toUpperCase() : teamName.toUpperCase()} — ${points} PUNTOS · MARCADOR: ${scoreMarker(game)}`;
+  const playerPhrase = player ? `, por parte de ${player.name || "Jugador"}${player.number ? `, número ${player.number}` : ""}` : "";
+  const text = `¡${points} ${points === 1 ? "punto" : "puntos"} para ${teamName}${playerPhrase}! Marcador: ${scoreMarker(game)}.`;
+  const playerLabel = player ? `${player.name || "Jugador"}${player.number ? ` #${player.number}` : ""}` : "Equipo completo";
+  const prompt = `${points} ${points === 1 ? "PUNTO" : "PUNTOS"} PARA ${teamName.toUpperCase()} · ${playerLabel.toUpperCase()} · MARCADOR: ${scoreMarker(game)}`;
+  game.lastHumanPrompt = buildHumanPrompt({ type: "score", teamName, player, points, text });
   recordPlay({
     type: "score",
     teamKey,
     teamName,
-    points,
     playerId: player?.id || null,
     playerName: player?.name || "",
     playerNumber: player?.number || "",
-    scoreAfter: { A: game.scoreA, B: game.scoreB },
+    points,
+    scoreA: game.scoreA,
+    scoreB: game.scoreB,
+    foulsA: game.foulsA,
+    foulsB: game.foulsB,
+    playerFouls: player?.fouls || 0,
     text,
     prompt,
   });
@@ -315,19 +486,19 @@ function addScore(teamKey, points) {
   renderGame();
 }
 
-function addFoul(teamKey) {
+function applyFoul(teamKey, player) {
   const game = appState.game;
-  const player = selectedPlayerFor(teamKey);
   const foulKey = teamKey === "A" ? "foulsA" : "foulsB";
   game[foulKey] += 1;
   if (player) player.fouls += 1;
 
   const teamName = teamKey === "A" ? game.teamA : game.teamB;
-  const subject = describeSubject(player, teamName);
   const text = player
-    ? `¡Falta de ${subject}! Faltas del jugador: ${player.fouls}. Faltas de ${teamName}: ${game[foulKey]}.`
-    : `¡Falta de ${teamName}! Faltas de ${teamName}: ${game[foulKey]}. Ahora el marcador va: ${scoreMarker(game)}.`;
-  const prompt = `FALTA DE ${player ? playerDisplayName(player).toUpperCase() : teamName.toUpperCase()} · MARCADOR: ${scoreMarker(game)}`;
+    ? `¡Falta de ${teamName}, cometida por ${player.name || "Jugador"}${player.number ? `, número ${player.number}` : ""}! Faltas del jugador: ${player.fouls}. Faltas de equipo: ${game[foulKey]}.`
+    : `¡Falta de ${teamName}! Faltas de equipo: ${game[foulKey]}.`;
+  const playerLabel = player ? `${player.name || "Jugador"}${player.number ? ` #${player.number}` : ""}` : "Equipo completo";
+  const prompt = `FALTA DE ${teamName.toUpperCase()} · ${playerLabel.toUpperCase()} · FALTAS: ${game[foulKey]}`;
+  game.lastHumanPrompt = buildHumanPrompt({ type: "foul", teamName, player, text });
   recordPlay({
     type: "foul",
     teamKey,
@@ -335,9 +506,13 @@ function addFoul(teamKey) {
     playerId: player?.id || null,
     playerName: player?.name || "",
     playerNumber: player?.number || "",
+    points: 0,
+    scoreA: game.scoreA,
+    scoreB: game.scoreB,
+    foulsA: game.foulsA,
+    foulsB: game.foulsB,
     playerFouls: player?.fouls || 0,
     teamFouls: game[foulKey],
-    scoreAfter: { A: game.scoreA, B: game.scoreB },
     text,
     prompt,
   });
@@ -346,18 +521,36 @@ function addFoul(teamKey) {
   renderGame();
 }
 
+function buildHumanPrompt({ type, teamName, player, points, text }) {
+  if (type === "score") {
+    const playerLine = player ? `Canasta del número ${player.number || "sin número"}, ${player.name || "jugador"}.` : `Canasta para ${teamName}.`;
+    const emotion = appState.game.scoreA === appState.game.scoreB ? "El partido está empatado." : "Esto se está poniendo bueno.";
+    return `${playerLine} ${points} ${points === 1 ? "punto" : "puntos"} para ${teamName}. ${emotion} Marcador: ${scoreMarker(appState.game)}.`;
+  }
+  if (type === "foul") {
+    return player ? `Falta del número ${player.number || "sin número"}, ${player.name || "jugador"}. Faltas de ${teamName}: ${teamName === appState.game.teamA ? appState.game.foulsA : appState.game.foulsB}.` : text;
+  }
+  return text || "Go Basket Studio en vivo.";
+}
+
 function recordPlay(play) {
   const game = appState.game;
-  const recordingRelativeSeconds = appState.recordingStartedAt
-    ? Math.max(0, Math.round((Date.now() - new Date(appState.recordingStartedAt).getTime()) / 1000))
+  const recordingTimeMs = appState.recordingStartedAt
+    ? Math.max(0, Date.now() - new Date(appState.recordingStartedAt).getTime())
     : null;
-  game.history.unshift({
+  const entry = {
     ...play,
     at: new Date().toISOString(),
     remainingSeconds: game.remainingSeconds,
-    recordingRelativeSeconds,
+    recordingTimeMs,
+    scoreA: play.scoreA ?? game.scoreA,
+    scoreB: play.scoreB ?? game.scoreB,
+    foulsA: play.foulsA ?? game.foulsA,
+    foulsB: play.foulsB ?? game.foulsB,
     scoreAfter: play.scoreAfter || { A: game.scoreA, B: game.scoreB },
-  });
+  };
+  game.lastHumanPrompt = entry.prompt || entry.text || game.lastHumanPrompt;
+  game.history.unshift(entry);
 }
 
 function undoLastPlay() {
@@ -610,6 +803,8 @@ function finalizeInternalRecording(game) {
   if (appState.recordingAnimationId) cancelAnimationFrame(appState.recordingAnimationId);
   const blob = new Blob(appState.recordingChunks, { type: game.recordingMimeType || "video/webm" });
   if (appState.recordedVideoUrl) URL.revokeObjectURL(appState.recordedVideoUrl);
+  appState.recordedVideoBlob = blob;
+  appState.recordedVideoFile = new File([blob], `go-basket-studio-${game.id}.webm`, { type: blob.type || game.recordingMimeType || "video/webm" });
   appState.recordedVideoUrl = URL.createObjectURL(blob);
   game.recordingUrl = appState.recordedVideoUrl;
   game.recordingSize = blob.size;
@@ -634,6 +829,8 @@ function resetInternalRecorder() {
   appState.mediaRecorder = null;
   appState.recordingChunks = [];
   appState.recordingStartedAt = null;
+  appState.recordedVideoBlob = null;
+  appState.recordedVideoFile = null;
 }
 
 function drawRecordingFrame() {
@@ -831,11 +1028,16 @@ function stopCrowd() {
 
 function announce(text) {
   const game = appState.game;
-  if (!game?.narratorEnabled || !("speechSynthesis" in window)) return;
+  if (!game?.narratorEnabled || game.humanNarratorEnabled || !("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "es-MX";
-  utterance.rate = 1.02;
+  utterance.rate = 0.94;
+  utterance.pitch = 1.06;
+  const voices = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
+  const preferred = voices.find((voice) => /es[-_](MX|US|ES|419)/i.test(voice.lang) && /google|microsoft|paulina|sabina|monica|premium|natural/i.test(voice.name))
+    || voices.find((voice) => /^es/i.test(voice.lang));
+  if (preferred) utterance.voice = preferred;
   window.speechSynthesis.speak(utterance);
 }
 
@@ -846,11 +1048,12 @@ function finishGame() {
   stopCrowd();
   game.finishedAt = new Date().toISOString();
   game.recordingMode = false;
-  if (game.internalRecording) stopInternalRecording({ finishGame: true });
   game.fullscreenMode = false;
-  recordPlay({ type: "final", text: "Partido finalizado.", prompt: "PARTIDO FINALIZADO" });
+  const finalText = `¡JUEGO FINALIZADO! Resultado final: ${scoreMarker(game)}.`;
+  recordPlay({ type: "final", text: finalText, prompt: `JUEGO FINALIZADO · RESULTADO FINAL: ${scoreMarker(game)}` });
   playSound("final");
-  announce("Partido finalizado.");
+  announce(finalText);
+  if (game.internalRecording) stopInternalRecording();
   stopCamera();
   renderReport(game);
   showScreen("report");
@@ -876,22 +1079,17 @@ function buildSummary(game) {
 
 
 function buildPlayerBetaSummaries(game) {
-  const playsByPlayer = game.history.reduce((acc, play) => {
-    if (!play.playerId) return acc;
-    acc[play.playerId] = (acc[play.playerId] || 0) + 1;
-    return acc;
-  }, {});
   return [...game.players.A, ...game.players.B]
     .filter((player) => player.name || player.number || player.points || player.fouls)
     .map((player) => {
       const teamName = player.team === "A" ? game.teamA : game.teamB;
-      const label = `${player.number ? `#${player.number} ` : ""}${player.name || "Jugador"}`;
-      const impact = player.points >= 10 ? "anotador destacado" : player.points >= 5 ? "aporte ofensivo constante" : player.fouls ? "presencia defensiva activa" : "participación registrada";
-      return {
-        label,
-        teamName,
-        text: `${label} (${teamName}) cerró con ${player.points} pts, ${player.fouls} faltas y ${playsByPlayer[player.id] || 0} jugadas registradas: ${impact}.`,
-      };
+      const label = `${player.name || "Jugador"}${player.number ? ` #${player.number}` : ""}`;
+      const plays = game.history
+        .filter((play) => play.playerId === player.id)
+        .reverse()
+        .map((play) => `${formatClock(play.remainingSeconds ?? 0)} · ${play.text}`);
+      const text = `${label} (${teamName}) terminó con ${player.points} puntos, ${player.fouls} faltas y ${plays.length} jugadas registradas. Resumen beta: momentos registrados del jugador. El recorte automático de video requiere almacenamiento/procesamiento avanzado en una versión futura.`;
+      return { label, teamName, plays, text };
     });
 }
 
@@ -900,8 +1098,9 @@ function renderReport(game) {
   const summary = buildSummary(game);
   const players = [...game.players.A, ...game.players.B].filter((player) => player.name || player.number);
   const betaSummaries = buildPlayerBetaSummaries(game);
+  const canShareVideo = Boolean(appState.recordedVideoFile && navigator.canShare?.({ files: [appState.recordedVideoFile] }));
   const videoBlock = game.recordingUrl
-    ? `<div class="video-report"><b>Video completo del partido</b><video controls src="${game.recordingUrl}"></video><a class="download-video" href="${game.recordingUrl}" download="go-basket-studio-${game.id}.webm">Descargar video completo</a><small>${game.recordingSize ? `${(game.recordingSize / 1024 / 1024).toFixed(1)} MB · ` : ""}${escapeHtml(game.recordingMimeType || "video/webm")}</small></div>`
+    ? `<div class="video-report"><b>Video completo del partido</b><video controls src="${game.recordingUrl}"></video><div class="video-actions"><button id="openVideoBtn" type="button">Ver video</button><button id="downloadVideoBtn" type="button">Descargar video</button><button id="shareVideoReportBtn" type="button">Compartir video</button></div><a class="download-video" id="downloadVideoLink" href="${game.recordingUrl}" download="go-basket-studio-${game.id}.webm">Enlace alternativo de descarga</a><small>${game.recordingSize ? `${(game.recordingSize / 1024 / 1024).toFixed(1)} MB · ` : ""}${escapeHtml(game.recordingMimeType || "video/webm")} · ${canShareVideo ? "Tu navegador permite compartir archivo." : "Si WhatsApp no acepta el archivo directo, descárgalo y compártelo desde Archivos/Galería."}</small></div>`
     : `<div class="video-report video-report--empty"><b>Video completo del partido</b><p>No se generó video interno en este partido. Usa “Grabar video completo” antes de finalizar.</p></div>`;
   elements.reportView.innerHTML = `
     <p class="eyebrow">Resultado final</p>
@@ -916,7 +1115,7 @@ function renderReport(game) {
       <div class="stat-box"><b>Jugadores</b><p>${players.length ? players.map((player) => `${escapeHtml(player.number ? `#${player.number} ` : "")}${escapeHtml(player.name || "Jugador")}: ${player.points} pts, ${player.fouls} faltas`).join("<br>") : "Sin jugadores registrados"}</p></div>
     </div>
     ${videoBlock}
-    <div class="history-box"><b>Resúmenes beta por jugador</b>${betaSummaries.length ? `<div class="player-beta-list">${betaSummaries.map((item) => `<article><strong>${escapeHtml(item.label)}</strong><span>${escapeHtml(item.text)}</span></article>`).join("")}</div>` : "<p>Sin jugadores registrados para resumen beta.</p>"}</div>
+    <div class="history-box"><b>Resumen por jugador</b>${betaSummaries.length ? `<div class="player-beta-list">${betaSummaries.map((item) => `<article><strong>${escapeHtml(item.label)}</strong><span>${escapeHtml(item.text)}</span>${item.plays.length ? `<ol>${item.plays.map((play) => `<li>${escapeHtml(play)}</li>`).join("")}</ol>` : ""}</article>`).join("")}</div>` : "<p>Sin jugadores registrados para resumen beta.</p>"}</div>
     <div class="history-box"><b>Historial de jugadas</b><ol>${game.history.map((play) => `<li>${escapeHtml(formatClock(play.remainingSeconds ?? 0))} · ${escapeHtml(play.text)}</li>`).join("")}</ol></div>
     <div class="report-actions">
       <button id="copySummaryBtn" type="button">Copiar resumen</button>
@@ -927,8 +1126,38 @@ function renderReport(game) {
   `;
   $("#copySummaryBtn").addEventListener("click", () => navigator.clipboard.writeText(summary));
   $("#whatsBtn").addEventListener("click", () => window.open(`https://wa.me/?text=${encodeURIComponent(summary)}`, "_blank", "noopener"));
+  $("#openVideoBtn")?.addEventListener("click", () => game.recordingUrl && window.open(game.recordingUrl, "_blank", "noopener"));
+  $("#downloadVideoBtn")?.addEventListener("click", () => downloadRecordedVideo(game));
+  $("#shareVideoReportBtn")?.addEventListener("click", () => shareRecordedVideo(game, summary));
   $("#saveMatchBtn").addEventListener("click", () => saveCurrentMatch(game));
   $('[data-open="home"]', elements.reportView).addEventListener("click", () => showScreen("home"));
+}
+
+function downloadRecordedVideo(game) {
+  if (!game.recordingUrl) {
+    alert("No hay video generado todavía.");
+    return;
+  }
+  const link = document.createElement("a");
+  link.href = game.recordingUrl;
+  link.download = `go-basket-studio-${game.id}.webm`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  alert("Video generado. Si el navegador no lo guardó automáticamente, mantén presionado el video y elige descargar o guardar.");
+}
+
+async function shareRecordedVideo(game, summary) {
+  const file = appState.recordedVideoFile;
+  if (file && navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: "Go Basket Studio", text: summary });
+      return;
+    } catch (error) {
+      console.warn("No se pudo compartir video", error);
+    }
+  }
+  alert("Este navegador no permite compartir el archivo directamente. Descarga el video y compártelo desde tu galería o archivos.");
 }
 
 function saveCurrentMatch(game) {
@@ -1048,6 +1277,9 @@ function bindEvents() {
   $("#soundBtn").addEventListener("click", () => { appState.game.soundsEnabled = !appState.game.soundsEnabled; renderGame(); });
   $("#narratorBtn").addEventListener("click", () => { appState.game.narratorEnabled = !appState.game.narratorEnabled; renderGame(); });
   $("#teleBtn").addEventListener("click", () => { appState.game.teleprompterEnabled = !appState.game.teleprompterEnabled; renderGame(); });
+  $("#humanNarratorBtn")?.addEventListener("click", () => { appState.game.humanNarratorEnabled = !appState.game.humanNarratorEnabled; renderGame(); });
+  $("#tvBoardBtn")?.addEventListener("click", openTvBoard);
+  $("#shareVideoBtn")?.addEventListener("click", () => shareRecordedVideo(appState.game, buildSummary(appState.game)));
   $("#crowdBtn").addEventListener("click", toggleCrowd);
   elements.showControlsBtn.addEventListener("click", showControls);
   elements.exitFullscreenBtn.addEventListener("click", () => toggleFullscreenMode(true));
@@ -1083,6 +1315,7 @@ function registerServiceWorker() {
 
 addPlayerRow("A", { name: "Carlos", number: "13" });
 addPlayerRow("B", { name: "José Luis", number: "7" });
+ensureDynamicUi();
 renderRules();
 bindEvents();
 registerServiceWorker();

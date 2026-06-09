@@ -297,3 +297,73 @@ h3 { margin-bottom: 12px; }
 }
 .player-beta-list strong, .player-beta-list span { display: block; }
 .player-beta-list span { color: var(--muted); margin-top: 4px; }
+
+
+.action-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.68);
+  backdrop-filter: blur(12px);
+}
+.action-modal[hidden] { display: none; }
+.action-modal__card {
+  width: min(620px, 100%);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  padding: 22px;
+  background: linear-gradient(180deg, rgba(18, 12, 30, 0.98), rgba(9, 5, 18, 0.98));
+  box-shadow: var(--shadow);
+}
+.action-modal__hint { color: var(--muted); }
+.action-modal__players { display: grid; gap: 10px; margin: 14px 0; }
+.action-player-btn {
+  display: grid;
+  gap: 4px;
+  min-height: 74px;
+  text-align: left;
+  background: rgba(255, 122, 24, 0.16);
+}
+.action-player-btn strong { font-size: 1.25rem; }
+.action-player-btn span { color: var(--muted); font-weight: 850; }
+.human-prompt {
+  position: relative;
+  z-index: 13;
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 14px 16px;
+  margin: 12px 0;
+  background: rgba(76, 201, 240, 0.14);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
+}
+.human-prompt span { color: var(--gold); font-size: 0.78rem; font-weight: 950; letter-spacing: 0.12em; text-transform: uppercase; }
+.human-prompt strong { font-size: clamp(1.2rem, 4.5vw, 2.3rem); line-height: 1.08; }
+.human-prompt--active { background: linear-gradient(135deg, rgba(69, 245, 154, 0.16), rgba(76, 201, 240, 0.18)); }
+.tv-status {
+  position: fixed;
+  left: 14px;
+  bottom: calc(max(14px, env(safe-area-inset-bottom)) + 122px);
+  z-index: 30;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: rgba(76, 201, 240, 0.18);
+  color: var(--blue);
+  font-weight: 950;
+  box-shadow: var(--shadow);
+}
+.control-strip--extra { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.video-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.video-actions button { min-height: 44px; border-radius: 999px; }
+.player-beta-list ol { margin: 8px 0 0; padding-left: 20px; color: var(--muted); }
+.game-screen.recording .human-prompt { z-index: 13; }
+@media (max-width: 760px) {
+  .control-strip--extra { grid-template-columns: 1fr; }
+  .action-modal__card { max-height: 90vh; overflow: auto; }
+}
