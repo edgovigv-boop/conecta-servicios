@@ -1,0 +1,21 @@
+{
+  "name": "Go Basket Studio",
+  "short_name": "Basket Studio",
+  "description": "Convierte cualquier partido de básquet en una transmisión desde tu celular.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0a0712",
+  "theme_color": "#ff7a18",
+  "orientation": "any",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["sports", "entertainment", "productivity"]
+}
