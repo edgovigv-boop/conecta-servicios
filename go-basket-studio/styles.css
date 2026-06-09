@@ -118,10 +118,20 @@ h3 { margin-bottom: 12px; }
 .player-row button { min-height: 52px; border-radius: 16px; }
 .small-btn { min-height: 46px; border-radius: 16px; }
 
-.game-screen { position: relative; width: 100%; min-height: 100dvh; padding: 14px; overflow: hidden; }
-.camera-bg { position: fixed; inset: 0; z-index: -3; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 180ms ease; }
+.game-screen {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  min-height: 100dvh;
+  padding: 14px;
+  overflow: hidden;
+  background: #07030d;
+}
+.camera-bg { position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 180ms ease; pointer-events: none; }
 .camera-bg.active { opacity: 1; }
-.game-shade { position: fixed; inset: 0; z-index: -2; background: linear-gradient(180deg, rgba(6, 3, 10, 0.75), rgba(6, 3, 10, 0.2) 44%, rgba(6, 3, 10, 0.82)); pointer-events: none; }
+.game-screen.recording .camera-bg.active { opacity: 1; }
+.game-screen.camera-on { background: #000; }
+.game-shade { position: fixed; inset: 0; z-index: 1; background: linear-gradient(180deg, rgba(6, 3, 10, 0.78), rgba(6, 3, 10, 0.24) 44%, rgba(6, 3, 10, 0.86)); pointer-events: none; }
 .broadcast-scoreboard {
   display: grid;
   grid-template-columns: 1fr minmax(128px, 0.6fr) 1fr;
@@ -131,6 +141,8 @@ h3 { margin-bottom: 12px; }
   z-index: 5;
 }
 .team-panel, .clock-panel, .live-info, .controls-panel {
+  position: relative;
+  z-index: 5;
   border: 1px solid var(--line);
   border-radius: 24px;
   background: rgba(10, 7, 18, 0.72);
@@ -149,7 +161,7 @@ h3 { margin-bottom: 12px; }
 .live-info strong { display: block; font-size: clamp(1.1rem, 4vw, 1.8rem); }
 .teleprompter { display: grid; place-items: center; min-height: 78px; border-radius: 20px; background: linear-gradient(135deg, rgba(255, 122, 24, 0.28), rgba(76, 201, 240, 0.16)); color: #fff; font-size: clamp(1.15rem, 5vw, 2.4rem); font-weight: 950; text-align: center; text-transform: uppercase; }
 .teleprompter.off { display: none; }
-.controls-panel { padding: 14px; transition: transform 180ms ease, opacity 180ms ease; }
+.controls-panel { z-index: 8; padding: 14px; transition: transform 180ms ease, opacity 180ms ease; }
 .controls-panel.hidden { transform: translateY(110%); opacity: 0; pointer-events: none; }
 .player-chooser { margin-bottom: 12px; }
 .team-actions article { border: 1px solid var(--line); border-radius: 24px; padding: 12px; background: rgba(255, 255, 255, 0.06); }
@@ -158,9 +170,28 @@ h3 { margin-bottom: 12px; }
 .control-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
 .control-strip button { min-height: 56px; border-radius: 18px; }
 .danger { background: rgba(255, 61, 87, 0.18) !important; color: #ffdce2 !important; }
-.floating-safe-btn, .floating-exit-btn { position: fixed; z-index: 20; right: 14px; min-height: 46px; border-radius: 999px; background: linear-gradient(135deg, var(--green), var(--blue)); color: #031014; }
+.camera-status {
+  position: fixed;
+  left: 14px;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  z-index: 24;
+  max-width: min(460px, calc(100% - 160px));
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 11px 14px;
+  background: rgba(10, 7, 18, 0.82);
+  color: var(--text);
+  font-weight: 950;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(16px);
+}
+.camera-status--ok { color: var(--green); }
+.camera-status--error { color: #ffdce2; background: rgba(255, 61, 87, 0.2); }
+.floating-safe-btn, .floating-exit-btn { position: fixed; z-index: 30; right: 14px; min-height: 46px; border-radius: 999px; background: linear-gradient(135deg, var(--green), var(--blue)); color: #031014; }
 .floating-safe-btn { bottom: max(14px, env(safe-area-inset-bottom)); }
 .floating-exit-btn { top: max(14px, env(safe-area-inset-top)); }
+.game-screen.recording .broadcast-scoreboard,
+.game-screen.recording .live-info { position: relative; z-index: 12; }
 .game-screen.recording .controls-panel { transform: translateY(110%); opacity: 0; pointer-events: none; }
 .game-screen.recording .live-info { grid-template-columns: 1fr; }
 .game-screen.fullscreen-mode { padding: max(18px, env(safe-area-inset-top)) 14px max(18px, env(safe-area-inset-bottom)); }
@@ -198,5 +229,6 @@ h3 { margin-bottom: 12px; }
   .clock-panel strong { font-size: clamp(1.4rem, 10vw, 3rem); }
   .button-grid button { min-height: 68px; }
   .control-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .camera-status { max-width: calc(100% - 28px); bottom: max(74px, env(safe-area-inset-bottom)); }
   .saved-item { grid-template-columns: 1fr; }
 }

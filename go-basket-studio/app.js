@@ -37,6 +37,7 @@ const elements = {
   rulesPanel: $("#rulesPanel"),
   savedList: $("#savedList"),
   cameraView: $("#cameraView"),
+  cameraStatus: null,
   gameScreen: $('[data-screen="game"]'),
   controlsPanel: $("#controlsPanel"),
   showControlsBtn: $("#showControlsBtn"),
@@ -103,6 +104,8 @@ function createGame(config) {
     finishedAt: null,
     running: false,
     cameraEnabled: Boolean(config.camera),
+    cameraStatus: Boolean(config.camera) ? "Cámara activa" : "",
+    cameraError: "",
     narratorEnabled: Boolean(config.narrator),
     soundsEnabled: Boolean(config.sounds),
     teleprompterEnabled: true,
@@ -177,12 +180,32 @@ function renderGame() {
   $("#teleBtn").textContent = `Teleprompter ${game.teleprompterEnabled ? "ON" : "OFF"}`;
   $("#crowdBtn").textContent = `Ambiente público ${game.crowdEnabled ? "ON" : "OFF"}`;
   $("#cameraBtn").textContent = `${game.cameraEnabled ? "Apagar" : "Activar"} cámara`;
+  updateCameraStatus();
   $("#recordingBtn").textContent = game.recordingMode ? "Salir de grabación" : "Modo grabación";
   elements.gameScreen.classList.toggle("recording", game.recordingMode);
   elements.gameScreen.classList.toggle("fullscreen-mode", game.fullscreenMode);
   elements.showControlsBtn.hidden = !game.recordingMode;
   elements.exitFullscreenBtn.hidden = !game.fullscreenMode;
   renderPlayerSelect();
+}
+
+function updateCameraStatus() {
+  const game = appState.game;
+  if (!game) return;
+  if (!elements.cameraStatus) {
+    elements.cameraStatus = document.createElement("div");
+    elements.cameraStatus.className = "camera-status";
+    elements.cameraStatus.setAttribute("role", "status");
+    elements.cameraStatus.setAttribute("aria-live", "polite");
+    elements.gameScreen.append(elements.cameraStatus);
+  }
+
+  const visible = game.recordingMode || game.cameraEnabled || Boolean(game.cameraError);
+  elements.cameraStatus.hidden = !visible;
+  elements.cameraStatus.classList.toggle("camera-status--ok", game.cameraEnabled);
+  elements.cameraStatus.classList.toggle("camera-status--error", Boolean(game.cameraError) || game.cameraStatus === "Cámara no disponible");
+  elements.cameraStatus.textContent = game.cameraError || game.cameraStatus || (game.cameraEnabled ? "Cámara activa" : "");
+  elements.gameScreen.classList.toggle("camera-on", game.cameraEnabled);
 }
 
 function renderPlayerSelect() {
@@ -306,21 +329,36 @@ function checkTimeAndTarget() {
   if (game.targetScore && (game.scoreA >= game.targetScore || game.scoreB >= game.targetScore)) finishGame();
 }
 
-async function toggleCamera(forceOn = null) {
+async function toggleCamera(forceOn = null, options = {}) {
   const game = appState.game;
+  const { showAlert = true } = options;
   const shouldEnable = forceOn ?? !game.cameraEnabled;
+  if (shouldEnable && appState.cameraStream && elements.cameraView.srcObject) {
+    elements.cameraView.classList.add("active");
+    game.cameraEnabled = true;
+    game.cameraStatus = "Cámara activa";
+    game.cameraError = "";
+    renderGame();
+    return true;
+  }
+
   if (!shouldEnable) {
     stopCamera();
     game.cameraEnabled = false;
+    game.cameraStatus = "";
+    game.cameraError = "";
     renderGame();
-    return;
+    return false;
   }
 
   if (!navigator.mediaDevices?.getUserMedia) {
-    alert("La cámara no está disponible en este navegador.");
+    const message = "Cámara no disponible. Puedes seguir grabando el marcador.";
+    if (showAlert) alert(message);
     game.cameraEnabled = false;
+    game.cameraStatus = "Cámara no disponible";
+    game.cameraError = message;
     renderGame();
-    return;
+    return false;
   }
 
   try {
@@ -330,12 +368,20 @@ async function toggleCamera(forceOn = null) {
     await elements.cameraView.play();
     elements.cameraView.classList.add("active");
     game.cameraEnabled = true;
+    game.cameraStatus = "Cámara activa";
+    game.cameraError = "";
+    renderGame();
+    return true;
   } catch (error) {
-    alert("No se pudo activar la cámara. Revisa permisos del navegador.");
+    const message = "Cámara no disponible. Puedes seguir grabando el marcador.";
+    if (showAlert) alert(message);
     console.warn("Cámara no disponible", error);
     game.cameraEnabled = false;
+    game.cameraStatus = "Cámara no disponible";
+    game.cameraError = message;
+    renderGame();
+    return false;
   }
-  renderGame();
 }
 
 function stopCamera() {
@@ -345,10 +391,29 @@ function stopCamera() {
   elements.cameraView.classList.remove("active");
 }
 
-function toggleRecordingMode() {
-  appState.game.recordingMode = !appState.game.recordingMode;
-  appState.game.fullscreenMode = false;
+async function toggleRecordingMode() {
+  const game = appState.game;
+  const enteringRecording = !game.recordingMode;
+  game.recordingMode = enteringRecording;
+  game.fullscreenMode = false;
   elements.controlsPanel.classList.remove("hidden");
+
+  if (enteringRecording && !game.cameraEnabled) {
+    game.cameraStatus = "Activando cámara…";
+    game.cameraError = "";
+    renderGame();
+    const cameraStarted = await toggleCamera(true, { showAlert: false });
+    game.recordingMode = true;
+    if (!cameraStarted && !game.cameraError) {
+      game.cameraStatus = "Cámara no disponible";
+      game.cameraError = "Cámara no disponible. Puedes seguir grabando el marcador.";
+    }
+  }
+
+  if (!enteringRecording) {
+    game.cameraError = "";
+  }
+
   renderGame();
 }
 
