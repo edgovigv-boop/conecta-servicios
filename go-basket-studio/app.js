@@ -19,6 +19,14 @@ const appState = {
   audioContext: null,
   crowdNode: null,
   cameraStream: null,
+  mediaRecorder: null,
+  recordingChunks: [],
+  recordingCanvas: null,
+  recordingCanvasContext: null,
+  recordingAnimationId: null,
+  recordingStream: null,
+  recordingStartedAt: null,
+  recordedVideoUrl: null,
   lastTap: 0,
   deferredInstallPrompt: null,
   rules: loadRules(),
@@ -38,6 +46,7 @@ const elements = {
   savedList: $("#savedList"),
   cameraView: $("#cameraView"),
   cameraStatus: null,
+  recordingStatus: null,
   gameScreen: $('[data-screen="game"]'),
   controlsPanel: $("#controlsPanel"),
   showControlsBtn: $("#showControlsBtn"),
@@ -111,6 +120,12 @@ function createGame(config) {
     teleprompterEnabled: true,
     crowdEnabled: false,
     recordingMode: false,
+    internalRecording: false,
+    recordingUrl: "",
+    recordingMimeType: "",
+    recordingStartedAt: null,
+    recordingFinishedAt: null,
+    timeAlerts: [],
     fullscreenMode: false,
     targetScore: config.targetScore || null,
     players: config.players || { A: [], B: [] },
@@ -149,6 +164,7 @@ function startGame(config) {
   stopTimer();
   stopCamera();
   stopCrowd();
+  resetInternalRecorder();
   appState.game = createGame(config);
   appState.game.startedAt = new Date().toISOString();
   showScreen("game");
@@ -181,10 +197,11 @@ function renderGame() {
   $("#crowdBtn").textContent = `Ambiente público ${game.crowdEnabled ? "ON" : "OFF"}`;
   $("#cameraBtn").textContent = `${game.cameraEnabled ? "Apagar" : "Activar"} cámara`;
   updateCameraStatus();
-  $("#recordingBtn").textContent = game.recordingMode ? "Salir de grabación" : "Modo grabación";
+  updateRecordingStatus();
+  $("#recordingBtn").textContent = game.internalRecording ? "Detener grabación interna" : "Grabar video completo";
   elements.gameScreen.classList.toggle("recording", game.recordingMode);
   elements.gameScreen.classList.toggle("fullscreen-mode", game.fullscreenMode);
-  elements.showControlsBtn.hidden = !game.recordingMode;
+  elements.showControlsBtn.hidden = !game.recordingMode && !game.internalRecording;
   elements.exitFullscreenBtn.hidden = !game.fullscreenMode;
   renderPlayerSelect();
 }
@@ -208,12 +225,57 @@ function updateCameraStatus() {
   elements.gameScreen.classList.toggle("camera-on", game.cameraEnabled);
 }
 
+
+function updateRecordingStatus() {
+  const game = appState.game;
+  if (!game) return;
+  if (!elements.recordingStatus) {
+    elements.recordingStatus = document.createElement("div");
+    elements.recordingStatus.className = "recording-status";
+    elements.recordingStatus.setAttribute("role", "status");
+    elements.recordingStatus.setAttribute("aria-live", "polite");
+    elements.gameScreen.append(elements.recordingStatus);
+  }
+
+  elements.recordingStatus.hidden = !game.internalRecording && !game.recordingUrl;
+  elements.recordingStatus.textContent = game.internalRecording
+    ? "● Grabando video interno con marcador, cámara y jugadas"
+    : game.recordingUrl ? "Video completo listo en el reporte final" : "";
+  elements.gameScreen.classList.toggle("internal-recording", game.internalRecording);
+}
+
+function maybeAnnounceTime(game) {
+  const alerts = [
+    { at: 360, key: "6m", text: "Quedan 6 minutos de juego.", prompt: "QUEDAN 6 MINUTOS" },
+    { at: 240, key: "4m", text: "Quedan 4 minutos de partido.", prompt: "QUEDAN 4 MINUTOS" },
+    { at: 180, key: "3m", text: "Últimos 3 minutos.", prompt: "ÚLTIMOS 3 MINUTOS" },
+    { at: 120, key: "2m", text: "Últimos 2 minutos del partido.", prompt: "ÚLTIMOS 2 MINUTOS" },
+    { at: 60, key: "1m", text: "Último minuto.", prompt: "ÚLTIMO MINUTO" },
+    { at: 30, key: "30s", text: "Quedan 30 segundos.", prompt: "QUEDAN 30 SEGUNDOS" },
+    { at: 20, key: "20s", text: "Quedan 20 segundos.", prompt: "QUEDAN 20 SEGUNDOS" },
+    { at: 10, key: "10s", text: "Quedan 10 segundos.", prompt: "QUEDAN 10 SEGUNDOS" },
+    { at: 5, key: "5s", text: "Cinco.", prompt: "5" },
+    { at: 3, key: "3s", text: "Tres.", prompt: "3" },
+    { at: 2, key: "2s", text: "Dos.", prompt: "2" },
+    { at: 1, key: "1s", text: "Uno.", prompt: "1" },
+  ];
+  const fired = new Set(game.timeAlerts || []);
+  const alert = alerts.find((item) => item.at > 0 && game.durationSeconds > item.at && game.remainingSeconds === item.at && !fired.has(item.key));
+  if (!alert) return;
+  fired.add(alert.key);
+  game.timeAlerts = [...fired];
+  const text = `${alert.text} Ahora el marcador va: ${scoreMarker(game)}.`;
+  recordPlay({ type: "time", text, prompt: `${alert.prompt} · MARCADOR: ${scoreMarker(game)}` });
+  playSound("alert");
+  announce(text);
+}
+
 function renderPlayerSelect() {
   const game = appState.game;
   const players = [...game.players.A, ...game.players.B];
   elements.playerChooser.hidden = players.length === 0;
   elements.playerSelect.innerHTML = '<option value="">Equipo completo</option>' + players
-    .map((player) => `<option value="${player.id}">${player.team === "A" ? game.teamA : game.teamB} · ${player.number ? `#${escapeHtml(player.number)} ` : ""}${escapeHtml(player.name || "Jugador")}</option>`)
+    .map((player) => `<option value="${player.id}">${player.team === "A" ? game.teamA : game.teamB} · ${escapeHtml(player.name || "Jugador")}${player.number ? ` #${escapeHtml(player.number)}` : ""}</option>`)
     .join("");
 }
 
@@ -232,10 +294,21 @@ function addScore(teamKey, points) {
 
   const teamName = teamKey === "A" ? game.teamA : game.teamB;
   const subject = describeSubject(player, teamName);
-  const kind = points === 3 ? "Triple" : points === 1 ? "Tiro libre" : "Canasta";
-  const text = `${kind} de ${subject}, ${points} ${points === 1 ? "punto" : "puntos"}.`;
-  const prompt = points === 3 ? `TRIPLE PARA ${subject}` : `${kind.toUpperCase()} DE ${subject} — ${points} PUNTOS`;
-  recordPlay({ type: "score", teamKey, points, playerId: player?.id || null, text, prompt });
+  const action = points === 1 ? "Tiro libre" : "Canasta";
+  const text = `¡${action} de ${subject}, ${points} ${points === 1 ? "punto" : "puntos"}! Ahora el marcador va: ${scoreMarker(game)}.`;
+  const prompt = `${action.toUpperCase()} DE ${player ? playerDisplayName(player).toUpperCase() : teamName.toUpperCase()} — ${points} PUNTOS · MARCADOR: ${scoreMarker(game)}`;
+  recordPlay({
+    type: "score",
+    teamKey,
+    teamName,
+    points,
+    playerId: player?.id || null,
+    playerName: player?.name || "",
+    playerNumber: player?.number || "",
+    scoreAfter: { A: game.scoreA, B: game.scoreB },
+    text,
+    prompt,
+  });
   playSound(points === 3 ? "triple" : "basket");
   announce(text);
   checkTimeAndTarget();
@@ -251,16 +324,40 @@ function addFoul(teamKey) {
 
   const teamName = teamKey === "A" ? game.teamA : game.teamB;
   const subject = describeSubject(player, teamName);
-  const text = `Falta de ${subject}.`;
-  const prompt = `FALTA DE ${subject}`;
-  recordPlay({ type: "foul", teamKey, playerId: player?.id || null, text, prompt });
+  const text = player
+    ? `¡Falta de ${subject}! Faltas del jugador: ${player.fouls}. Faltas de ${teamName}: ${game[foulKey]}.`
+    : `¡Falta de ${teamName}! Faltas de ${teamName}: ${game[foulKey]}. Ahora el marcador va: ${scoreMarker(game)}.`;
+  const prompt = `FALTA DE ${player ? playerDisplayName(player).toUpperCase() : teamName.toUpperCase()} · MARCADOR: ${scoreMarker(game)}`;
+  recordPlay({
+    type: "foul",
+    teamKey,
+    teamName,
+    playerId: player?.id || null,
+    playerName: player?.name || "",
+    playerNumber: player?.number || "",
+    playerFouls: player?.fouls || 0,
+    teamFouls: game[foulKey],
+    scoreAfter: { A: game.scoreA, B: game.scoreB },
+    text,
+    prompt,
+  });
   playSound("foul");
   announce(text);
   renderGame();
 }
 
 function recordPlay(play) {
-  appState.game.history.unshift({ ...play, at: new Date().toISOString(), remainingSeconds: appState.game.remainingSeconds });
+  const game = appState.game;
+  const recordingRelativeSeconds = appState.recordingStartedAt
+    ? Math.max(0, Math.round((Date.now() - new Date(appState.recordingStartedAt).getTime()) / 1000))
+    : null;
+  game.history.unshift({
+    ...play,
+    at: new Date().toISOString(),
+    remainingSeconds: game.remainingSeconds,
+    recordingRelativeSeconds,
+    scoreAfter: play.scoreAfter || { A: game.scoreA, B: game.scoreB },
+  });
 }
 
 function undoLastPlay() {
@@ -283,8 +380,17 @@ function undoLastPlay() {
 
 function describeSubject(player, teamName) {
   if (!player) return teamName;
-  if (player.number && player.name) return `número ${player.number}, ${player.name}`;
+  if (player.name && player.number) return `${player.name}, número ${player.number}`;
   return player.name || `número ${player.number}`;
+}
+
+function scoreMarker(game) {
+  return `${game.teamA} ${game.scoreA} - ${game.teamB} ${game.scoreB}`;
+}
+
+function playerDisplayName(player) {
+  if (!player) return "";
+  return `${player.name || "Jugador"}${player.number ? ` #${player.number}` : ""}`;
 }
 
 function toggleTimer() {
@@ -302,11 +408,7 @@ function tickClock() {
   const game = appState.game;
   if (!game) return;
   game.remainingSeconds = Math.max(0, game.remainingSeconds - 1);
-  if (game.remainingSeconds === 60) {
-    recordPlay({ type: "time", text: "Queda un minuto de partido.", prompt: "QUEDA 1 MINUTO" });
-    playSound("alert");
-    announce("Queda un minuto de partido.");
-  }
+  maybeAnnounceTime(game);
   if (game.remainingSeconds === 0) finishGame();
   renderGame();
 }
@@ -315,6 +417,7 @@ function resetTimer() {
   stopTimer();
   appState.game.remainingSeconds = appState.game.durationSeconds;
   appState.game.running = false;
+  appState.game.timeAlerts = [];
   renderGame();
 }
 
@@ -393,6 +496,13 @@ function stopCamera() {
 
 async function toggleRecordingMode() {
   const game = appState.game;
+  if (game.internalRecording) {
+    stopInternalRecording();
+    return;
+  }
+
+  if (await startInternalRecording()) return;
+
   const enteringRecording = !game.recordingMode;
   game.recordingMode = enteringRecording;
   game.fullscreenMode = false;
@@ -440,6 +550,215 @@ function handleDoubleTap() {
     if (appState.game?.recordingMode) showControls();
   }
   appState.lastTap = now;
+}
+
+
+async function startInternalRecording() {
+  const game = appState.game;
+  if (!game || appState.mediaRecorder) return false;
+  if (!("MediaRecorder" in window) || !HTMLCanvasElement.prototype.captureStream) {
+    alert("Este navegador no permite grabación interna. Puedes usar el modo visual y grabar pantalla.");
+    return false;
+  }
+
+  if (game.cameraEnabled && !appState.cameraStream) await toggleCamera(true, { showAlert: false });
+  resetInternalRecorder();
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 1280;
+  canvas.height = 720;
+  const context = canvas.getContext("2d");
+  const stream = canvas.captureStream(30);
+  const mimeType = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"].find((type) => MediaRecorder.isTypeSupported(type)) || "";
+
+  appState.recordingCanvas = canvas;
+  appState.recordingCanvasContext = context;
+  appState.recordingStream = stream;
+  appState.recordingChunks = [];
+  appState.recordingStartedAt = new Date().toISOString();
+  game.internalRecording = true;
+  game.recordingMode = true;
+  game.recordingStartedAt = appState.recordingStartedAt;
+  game.recordingUrl = "";
+  game.recordingMimeType = mimeType || "video/webm";
+
+  drawRecordingFrame();
+  appState.mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+  appState.mediaRecorder.addEventListener("dataavailable", (event) => {
+    if (event.data?.size) appState.recordingChunks.push(event.data);
+  });
+  appState.mediaRecorder.addEventListener("stop", () => finalizeInternalRecording(game));
+  appState.mediaRecorder.start(1000);
+  recordPlay({ type: "recording", text: "Grabación interna iniciada.", prompt: "GRABACIÓN INTERNA EN CURSO" });
+  renderGame();
+  return true;
+}
+
+function stopInternalRecording() {
+  const recorder = appState.mediaRecorder;
+  const game = appState.game;
+  if (!recorder || recorder.state === "inactive") return;
+  if (game) {
+    game.internalRecording = false;
+    game.recordingMode = false;
+    game.recordingFinishedAt = new Date().toISOString();
+  }
+  recorder.stop();
+}
+
+function finalizeInternalRecording(game) {
+  if (appState.recordingAnimationId) cancelAnimationFrame(appState.recordingAnimationId);
+  const blob = new Blob(appState.recordingChunks, { type: game.recordingMimeType || "video/webm" });
+  if (appState.recordedVideoUrl) URL.revokeObjectURL(appState.recordedVideoUrl);
+  appState.recordedVideoUrl = URL.createObjectURL(blob);
+  game.recordingUrl = appState.recordedVideoUrl;
+  game.recordingSize = blob.size;
+  game.internalRecording = false;
+  game.recordingMode = false;
+  appState.mediaRecorder = null;
+  appState.recordingStream?.getTracks().forEach((track) => track.stop());
+  appState.recordingStream = null;
+  recordPlay({ type: "recording", text: "Video completo generado y listo en el reporte final.", prompt: "VIDEO COMPLETO LISTO" });
+  renderGame();
+  if (game.finishedAt) renderReport(game);
+}
+
+function resetInternalRecorder() {
+  if (appState.mediaRecorder && appState.mediaRecorder.state !== "inactive") appState.mediaRecorder.stop();
+  if (appState.recordingAnimationId) cancelAnimationFrame(appState.recordingAnimationId);
+  appState.recordingAnimationId = null;
+  appState.recordingCanvas = null;
+  appState.recordingCanvasContext = null;
+  appState.recordingStream?.getTracks().forEach((track) => track.stop());
+  appState.recordingStream = null;
+  appState.mediaRecorder = null;
+  appState.recordingChunks = [];
+  appState.recordingStartedAt = null;
+}
+
+function drawRecordingFrame() {
+  const game = appState.game;
+  const canvas = appState.recordingCanvas;
+  const context = appState.recordingCanvasContext;
+  if (!game || !canvas || !context) return;
+
+  const { width, height } = canvas;
+  const video = elements.cameraView;
+  context.fillStyle = "#0a0712";
+  context.fillRect(0, 0, width, height);
+
+  if (game.cameraEnabled && video.readyState >= 2) {
+    const videoRatio = video.videoWidth / video.videoHeight || 16 / 9;
+    const canvasRatio = width / height;
+    let drawWidth = width;
+    let drawHeight = height;
+    let x = 0;
+    let y = 0;
+    if (videoRatio > canvasRatio) {
+      drawHeight = height;
+      drawWidth = height * videoRatio;
+      x = (width - drawWidth) / 2;
+    } else {
+      drawWidth = width;
+      drawHeight = width / videoRatio;
+      y = (height - drawHeight) / 2;
+    }
+    context.drawImage(video, x, y, drawWidth, drawHeight);
+    context.fillStyle = "rgba(6, 4, 12, 0.5)";
+    context.fillRect(0, 0, width, height);
+  } else {
+    const gradient = context.createLinearGradient(0, 0, width, height);
+    gradient.addColorStop(0, "#21103d");
+    gradient.addColorStop(0.5, "#0a0712");
+    gradient.addColorStop(1, "#321107");
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, width, height);
+  }
+
+  drawScoreBox(context, 50, 38, 320, 150, game.teamA, game.scoreA, game.foulsA, "#4cc9f0");
+  drawScoreBox(context, width - 370, 38, 320, 150, game.teamB, game.scoreB, game.foulsB, "#ff3d57");
+  drawClockBox(context, width / 2 - 170, 38, 340, 150, formatClock(game.remainingSeconds));
+
+  context.fillStyle = "rgba(10, 7, 18, 0.78)";
+  roundRect(context, 70, height - 178, width - 140, 118, 28);
+  context.fill();
+  context.fillStyle = "#9ca3af";
+  context.font = "700 24px system-ui, sans-serif";
+  context.fillText("ÚLTIMA JUGADA", 105, height - 126);
+  context.fillStyle = "#ffffff";
+  context.font = "900 38px system-ui, sans-serif";
+  fillWrappedText(context, game.history[0]?.text || "Go Basket Studio en vivo", 105, height - 82, width - 210, 42);
+
+  context.fillStyle = "rgba(255, 122, 24, 0.95)";
+  context.beginPath();
+  context.arc(width - 84, height - 84, 16, 0, Math.PI * 2);
+  context.fill();
+  context.fillStyle = "#ffffff";
+  context.font = "900 24px system-ui, sans-serif";
+  context.fillText("REC", width - 60, height - 76);
+
+  appState.recordingAnimationId = requestAnimationFrame(drawRecordingFrame);
+}
+
+function drawScoreBox(context, x, y, width, height, teamName, score, fouls, color) {
+  context.fillStyle = "rgba(10, 7, 18, 0.82)";
+  roundRect(context, x, y, width, height, 26);
+  context.fill();
+  context.strokeStyle = color;
+  context.lineWidth = 4;
+  context.stroke();
+  context.fillStyle = "#ffffff";
+  context.font = "900 30px system-ui, sans-serif";
+  context.fillText(teamName.slice(0, 18), x + 26, y + 45);
+  context.fillStyle = color;
+  context.font = "1000 86px system-ui, sans-serif";
+  context.fillText(String(score), x + 26, y + 126);
+  context.fillStyle = "#d1d5db";
+  context.font = "700 24px system-ui, sans-serif";
+  context.fillText(`Faltas ${fouls}`, x + 190, y + 118);
+}
+
+function drawClockBox(context, x, y, width, height, clock) {
+  context.fillStyle = "rgba(10, 7, 18, 0.88)";
+  roundRect(context, x, y, width, height, 30);
+  context.fill();
+  context.strokeStyle = "#ffd166";
+  context.lineWidth = 4;
+  context.stroke();
+  context.fillStyle = "#ffd166";
+  context.font = "1000 76px system-ui, sans-serif";
+  context.textAlign = "center";
+  context.fillText(clock, x + width / 2, y + 100);
+  context.fillStyle = "#ffffff";
+  context.font = "900 22px system-ui, sans-serif";
+  context.fillText("EN VIVO", x + width / 2, y + 132);
+  context.textAlign = "left";
+}
+
+function roundRect(context, x, y, width, height, radius) {
+  context.beginPath();
+  context.moveTo(x + radius, y);
+  context.arcTo(x + width, y, x + width, y + height, radius);
+  context.arcTo(x + width, y + height, x, y + height, radius);
+  context.arcTo(x, y + height, x, y, radius);
+  context.arcTo(x, y, x + width, y, radius);
+  context.closePath();
+}
+
+function fillWrappedText(context, text, x, y, maxWidth, lineHeight) {
+  const words = String(text).split(" ");
+  let line = "";
+  words.forEach((word) => {
+    const testLine = `${line}${word} `;
+    if (context.measureText(testLine).width > maxWidth && line) {
+      context.fillText(line.trim(), x, y);
+      line = `${word} `;
+      y += lineHeight;
+    } else {
+      line = testLine;
+    }
+  });
+  if (line) context.fillText(line.trim(), x, y);
 }
 
 function ensureAudioContext() {
@@ -527,6 +846,7 @@ function finishGame() {
   stopCrowd();
   game.finishedAt = new Date().toISOString();
   game.recordingMode = false;
+  if (game.internalRecording) stopInternalRecording({ finishGame: true });
   game.fullscreenMode = false;
   recordPlay({ type: "final", text: "Partido finalizado.", prompt: "PARTIDO FINALIZADO" });
   playSound("final");
@@ -554,10 +874,35 @@ function buildSummary(game) {
   return lines.join("\n");
 }
 
+
+function buildPlayerBetaSummaries(game) {
+  const playsByPlayer = game.history.reduce((acc, play) => {
+    if (!play.playerId) return acc;
+    acc[play.playerId] = (acc[play.playerId] || 0) + 1;
+    return acc;
+  }, {});
+  return [...game.players.A, ...game.players.B]
+    .filter((player) => player.name || player.number || player.points || player.fouls)
+    .map((player) => {
+      const teamName = player.team === "A" ? game.teamA : game.teamB;
+      const label = `${player.number ? `#${player.number} ` : ""}${player.name || "Jugador"}`;
+      const impact = player.points >= 10 ? "anotador destacado" : player.points >= 5 ? "aporte ofensivo constante" : player.fouls ? "presencia defensiva activa" : "participación registrada";
+      return {
+        label,
+        teamName,
+        text: `${label} (${teamName}) cerró con ${player.points} pts, ${player.fouls} faltas y ${playsByPlayer[player.id] || 0} jugadas registradas: ${impact}.`,
+      };
+    });
+}
+
 function renderReport(game) {
   const winner = game.scoreA === game.scoreB ? "Empate" : game.scoreA > game.scoreB ? game.teamA : game.teamB;
   const summary = buildSummary(game);
   const players = [...game.players.A, ...game.players.B].filter((player) => player.name || player.number);
+  const betaSummaries = buildPlayerBetaSummaries(game);
+  const videoBlock = game.recordingUrl
+    ? `<div class="video-report"><b>Video completo del partido</b><video controls src="${game.recordingUrl}"></video><a class="download-video" href="${game.recordingUrl}" download="go-basket-studio-${game.id}.webm">Descargar video completo</a><small>${game.recordingSize ? `${(game.recordingSize / 1024 / 1024).toFixed(1)} MB · ` : ""}${escapeHtml(game.recordingMimeType || "video/webm")}</small></div>`
+    : `<div class="video-report video-report--empty"><b>Video completo del partido</b><p>No se generó video interno en este partido. Usa “Grabar video completo” antes de finalizar.</p></div>`;
   elements.reportView.innerHTML = `
     <p class="eyebrow">Resultado final</p>
     <h2>${escapeHtml(winner)}</h2>
@@ -570,6 +915,8 @@ function renderReport(game) {
       <div class="stat-box"><b>Duración</b><p>${Math.round(game.durationSeconds / 60)} minutos programados</p></div>
       <div class="stat-box"><b>Jugadores</b><p>${players.length ? players.map((player) => `${escapeHtml(player.number ? `#${player.number} ` : "")}${escapeHtml(player.name || "Jugador")}: ${player.points} pts, ${player.fouls} faltas`).join("<br>") : "Sin jugadores registrados"}</p></div>
     </div>
+    ${videoBlock}
+    <div class="history-box"><b>Resúmenes beta por jugador</b>${betaSummaries.length ? `<div class="player-beta-list">${betaSummaries.map((item) => `<article><strong>${escapeHtml(item.label)}</strong><span>${escapeHtml(item.text)}</span></article>`).join("")}</div>` : "<p>Sin jugadores registrados para resumen beta.</p>"}</div>
     <div class="history-box"><b>Historial de jugadas</b><ol>${game.history.map((play) => `<li>${escapeHtml(formatClock(play.remainingSeconds ?? 0))} · ${escapeHtml(play.text)}</li>`).join("")}</ol></div>
     <div class="report-actions">
       <button id="copySummaryBtn" type="button">Copiar resumen</button>
