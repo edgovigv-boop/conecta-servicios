@@ -124,10 +124,7 @@ h3 { margin-bottom: 12px; }
   width: 100%;
   min-height: 100dvh;
   padding: 14px;
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: max(120px, env(safe-area-inset-bottom));
+  overflow: hidden;
   background: #07030d;
 }
 .camera-bg { position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 180ms ease; pointer-events: none; }
@@ -301,340 +298,72 @@ h3 { margin-bottom: 12px; }
 .player-beta-list strong, .player-beta-list span { display: block; }
 .player-beta-list span { color: var(--muted); margin-top: 4px; }
 
-.player-action-modal {
+
+.action-modal {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: 80;
   display: grid;
   place-items: center;
-  padding: max(18px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom));
-  background: rgba(5, 3, 10, 0.76);
-  backdrop-filter: blur(14px);
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.68);
+  backdrop-filter: blur(12px);
 }
-.player-action-modal[hidden] { display: none; }
-.player-action-card {
-  width: min(720px, 100%);
-  max-height: 92dvh;
-  overflow: auto;
-  position: relative;
+.action-modal[hidden] { display: none; }
+.action-modal__card {
+  width: min(620px, 100%);
   border: 1px solid var(--line);
-  border-radius: 32px;
-  padding: clamp(18px, 5vw, 34px);
-  background: linear-gradient(180deg, rgba(30, 17, 52, 0.98), rgba(10, 7, 18, 0.98));
+  border-radius: 28px;
+  padding: 22px;
+  background: linear-gradient(180deg, rgba(18, 12, 30, 0.98), rgba(9, 5, 18, 0.98));
   box-shadow: var(--shadow);
 }
-.player-action-close {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 46px;
-  min-height: 46px;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text);
-  font-size: 1.7rem;
-  font-weight: 950;
-}
-.player-action-subtitle { color: var(--muted); font-weight: 900; }
-.player-action-list { display: grid; gap: 12px; margin-top: 18px; }
-.player-pick-btn {
+.action-modal__hint { color: var(--muted); }
+.action-modal__players { display: grid; gap: 10px; margin: 14px 0; }
+.action-player-btn {
   display: grid;
   gap: 4px;
-  min-height: 82px;
+  min-height: 74px;
+  text-align: left;
+  background: rgba(255, 122, 24, 0.16);
+}
+.action-player-btn strong { font-size: 1.25rem; }
+.action-player-btn span { color: var(--muted); font-weight: 850; }
+.human-prompt {
+  position: relative;
+  z-index: 13;
+  display: grid;
+  gap: 8px;
   border: 1px solid var(--line);
   border-radius: 22px;
   padding: 14px 16px;
-  background: rgba(255, 122, 24, 0.14);
-  color: var(--text);
-  text-align: left;
-}
-.player-pick-btn strong { font-size: clamp(1.25rem, 5vw, 2rem); }
-.player-pick-btn strong span { color: var(--gold); }
-.player-pick-btn small { color: var(--muted); font-weight: 900; }
-.player-pick-btn--team { background: rgba(76, 201, 240, 0.14); }
-.modal-open { overflow: hidden; }
-.human-prompt-box, .tv-help-panel {
-  position: relative;
-  z-index: 13;
-  border: 1px solid var(--line);
-  border-radius: 24px;
-  padding: 14px;
   margin: 12px 0;
-  background: rgba(10, 7, 18, 0.78);
+  background: rgba(76, 201, 240, 0.14);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(16px);
-}
-.human-prompt-box span { display: block; color: var(--gold); font-size: 0.76rem; font-weight: 950; letter-spacing: 0.14em; text-transform: uppercase; }
-.human-prompt-box strong { display: block; margin-top: 8px; font-size: clamp(1.15rem, 4.6vw, 2.2rem); line-height: 1.15; }
-.tv-help-panel div, .video-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-.tv-help-panel button, .video-actions button {
-  min-height: 44px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text);
-  font-weight: 950;
-}
-.game-screen.tv-mode .controls-panel,
-.game-screen.tv-mode .human-prompt-box,
-.game-screen.tv-mode .camera-status,
-.game-screen.tv-mode .recording-status { display: none; }
-.game-screen.tv-mode .broadcast-scoreboard { top: max(18px, env(safe-area-inset-top)); grid-template-columns: 1fr minmax(220px, 0.7fr) 1fr; }
-.game-screen.tv-mode .team-panel { min-height: 34vh; }
-.game-screen.tv-mode .team-panel strong { font-size: clamp(7rem, 22vw, 16rem); }
-.game-screen.tv-mode .clock-panel strong { font-size: clamp(4rem, 14vw, 10rem); }
-.game-screen.tv-mode::before {
-  content: "GO BASKET STUDIO · TABLERO GIGANTE";
-  position: fixed;
-  left: 18px;
-  top: max(10px, env(safe-area-inset-top));
-  z-index: 14;
-  color: var(--gold);
-  font-weight: 1000;
-  letter-spacing: 0.14em;
-}
-.video-help { color: var(--muted); margin: 0; }
-.player-beta-list ol { margin: 8px 0; padding-left: 22px; color: var(--muted); }
-.player-beta-list p { color: var(--text); line-height: 1.45; }
-.player-beta-list small { color: var(--muted); line-height: 1.45; }
-
-html, body {
-  overscroll-behavior-y: contain;
-  overscroll-behavior-x: none;
-}
-.screen { overscroll-behavior: contain; }
-.game-screen {
-  overscroll-behavior: none;
-  touch-action: pan-y;
-}
-.timeout-status {
-  position: relative;
-  z-index: 12;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin: 12px 0;
-}
-.timeout-status div {
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 10px 12px;
-  background: rgba(10, 7, 18, 0.72);
-  text-align: center;
-  box-shadow: var(--shadow);
-}
-.timeout-status span { display: block; color: var(--muted); font-size: 0.75rem; font-weight: 900; text-transform: uppercase; }
-.timeout-status strong { display: block; color: var(--gold); font-size: 1.1rem; }
-.timeout-modal, .intro-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 110;
-  display: grid;
-  place-items: center;
-  padding: max(18px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom));
-  background: rgba(5, 3, 10, 0.78);
   backdrop-filter: blur(14px);
 }
-.timeout-modal[hidden], .intro-modal[hidden] { display: none; }
-.timeout-card, .intro-card {
-  width: min(860px, 100%);
-  max-height: 92dvh;
-  overflow: auto;
-  border: 1px solid var(--line);
-  border-radius: 32px;
-  padding: clamp(18px, 5vw, 34px);
-  background: linear-gradient(180deg, rgba(30, 17, 52, 0.98), rgba(10, 7, 18, 0.98));
-  box-shadow: var(--shadow);
-}
-.timeout-actions, .intro-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
-.timeout-actions button, .intro-actions button {
-  min-height: 62px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 12px;
-  background: rgba(76, 201, 240, 0.14);
-  color: var(--text);
-  font-weight: 950;
-}
-.microphone-status {
+.human-prompt span { color: var(--gold); font-size: 0.78rem; font-weight: 950; letter-spacing: 0.12em; text-transform: uppercase; }
+.human-prompt strong { font-size: clamp(1.2rem, 4.5vw, 2.3rem); line-height: 1.08; }
+.human-prompt--active { background: linear-gradient(135deg, rgba(69, 245, 154, 0.16), rgba(76, 201, 240, 0.18)); }
+.tv-status {
   position: fixed;
   left: 14px;
-  bottom: calc(max(14px, env(safe-area-inset-bottom)) + 58px);
-  z-index: 32;
+  bottom: calc(max(14px, env(safe-area-inset-bottom)) + 122px);
+  z-index: 30;
+  border: 1px solid var(--line);
   border-radius: 999px;
   padding: 10px 14px;
-  background: rgba(69, 245, 154, 0.18);
-  color: var(--green);
-  border: 1px solid rgba(69, 245, 154, 0.38);
+  background: rgba(76, 201, 240, 0.18);
+  color: var(--blue);
   font-weight: 950;
-  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
 }
-.intro-layout {
-  display: grid;
-  grid-template-columns: minmax(150px, 0.42fr) 1fr;
-  gap: 22px;
-  align-items: center;
-}
-.intro-layout img, .intro-avatar {
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: 28px;
-  object-fit: cover;
-  border: 2px solid rgba(255, 209, 102, 0.58);
-  background: linear-gradient(135deg, rgba(255, 122, 24, 0.4), rgba(76, 201, 240, 0.2));
-}
-.intro-avatar { display: grid; place-items: center; color: var(--gold); font-size: clamp(3rem, 12vw, 7rem); font-weight: 1000; }
-.intro-layout span { color: var(--gold); font-weight: 950; text-transform: uppercase; letter-spacing: 0.12em; }
-.intro-layout strong { display: block; color: var(--blue); font-size: clamp(1.4rem, 5vw, 3rem); }
-.intro-layout p { color: var(--muted); font-size: 1.1rem; line-height: 1.45; }
-.timeline-bar {
-  position: relative;
-  height: 42px;
-  margin: 18px 8px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(255, 209, 102, 0.24), rgba(76, 201, 240, 0.14));
-  border: 1px solid var(--line);
-}
-.timeline-dot {
-  position: absolute;
-  top: 50%;
-  translate: -50% -50%;
-  width: 34px;
-  height: 34px;
-  border: 2px solid rgba(255, 255, 255, 0.7);
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: var(--event-color, #fff);
-  color: #08050f;
-  font-size: 0.68rem;
-  font-weight: 1000;
-  padding: 0;
-}
-.timeline-detail {
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.06);
-}
-.game-screen.tv-mode .timeout-status { grid-template-columns: repeat(3, 1fr); }
-.game-screen.tv-mode .timeout-status div { background: rgba(10, 7, 18, 0.82); }
+.control-strip--extra { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.video-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.video-actions button { min-height: 44px; border-radius: 999px; }
+.player-beta-list ol { margin: 8px 0 0; padding-left: 20px; color: var(--muted); }
+.game-screen.recording .human-prompt { z-index: 13; }
 @media (max-width: 760px) {
-  .timeout-status, .timeout-actions, .intro-actions, .intro-layout { grid-template-columns: 1fr; }
-}
-.player-row { grid-template-columns: repeat(2, minmax(0, 1fr)) auto; }
-.player-row label:nth-child(5), .player-row label:nth-child(6) { grid-column: span 2; }
-@media (max-width: 760px) {
-  .player-row { grid-template-columns: 1fr; }
-  .player-row label:nth-child(5), .player-row label:nth-child(6) { grid-column: auto; }
-}
-
-
-/* Scroll fix: keep pull-to-refresh protection without blocking vertical navigation. */
-html, body {
-  height: auto;
-  min-height: 100%;
-  overflow-x: hidden;
-  overscroll-behavior-y: contain;
-  -webkit-overflow-scrolling: touch;
-}
-
-.screen {
-  overflow: visible;
-}
-
-.game-screen {
-  height: auto;
-  max-height: none;
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
-  touch-action: pan-y;
-  padding-bottom: max(120px, env(safe-area-inset-bottom));
-}
-
-.game-screen.recording,
-.game-screen.tv-mode,
-.game-screen.fullscreen-mode {
-  overflow: hidden;
-  padding-bottom: max(18px, env(safe-area-inset-bottom));
-}
-
-.controls-panel {
-  margin-bottom: max(84px, env(safe-area-inset-bottom));
-}
-
-
-/* Home and mobile scroll fix v2: allow all normal screens to scroll, while keeping TV fullscreen protected. */
-html,
-body {
-  height: auto !important;
-  min-height: 100% !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  overscroll-behavior-y: contain;
-  -webkit-overflow-scrolling: touch;
-}
-
-.app-shell {
-  min-height: 100dvh;
-  height: auto;
-  overflow: visible;
-}
-
-.screen {
-  min-height: 100dvh;
-  height: auto !important;
-  max-height: none !important;
-  overflow-x: hidden !important;
-  overflow-y: visible !important;
-  overscroll-behavior-y: contain;
-}
-
-.screen.active {
-  display: block;
-}
-
-.screen--home,
-.screen--home.active {
-  display: block;
-  place-items: initial;
-}
-
-.hero-card {
-  margin: clamp(14px, 4vh, 34px) auto;
-}
-
-.modal-open {
-  overflow-y: auto !important;
-}
-
-.game-screen {
-  min-height: 100dvh;
-  height: auto !important;
-  max-height: none !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
-  touch-action: pan-y;
-  padding-bottom: max(132px, env(safe-area-inset-bottom));
-}
-
-.game-screen.recording {
-  overflow-y: auto !important;
-  padding-bottom: max(132px, env(safe-area-inset-bottom));
-}
-
-.game-screen.fullscreen-mode,
-.game-screen.tv-mode {
-  overflow: hidden !important;
-  padding-bottom: max(18px, env(safe-area-inset-bottom));
-}
-
-.controls-panel {
-  margin-bottom: max(96px, env(safe-area-inset-bottom));
+  .control-strip--extra { grid-template-columns: 1fr; }
+  .action-modal__card { max-height: 90vh; overflow: auto; }
 }
