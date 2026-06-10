@@ -1,112 +1,113 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#070912" />
-    <title>Go Basket Studio Live</title>
-    <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="icon" href="icon.svg" />
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <main class="broadcast-app" aria-label="Go Basket Studio Live">
-      <section class="camera-layer" aria-label="Vista de cámara o cancha">
-        <div class="court-lines" aria-hidden="true"></div>
-        <div class="camera-label">Vista de cámara / cancha</div>
-      </section>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#05070f" />
+  <title>Go Basket Studio Live</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="broadcast-app" id="app">
+    <section class="camera-stage" aria-label="Vista de cámara o cancha">
+      <div class="court-bg" aria-hidden="true">
+        <div class="court-lines"></div>
+        <div class="court-noise"></div>
+      </div>
+    </section>
 
-      <div class="broadcast-shade" aria-hidden="true"></div>
-
-      <header class="scoreboard-overlay" aria-label="Marcador del partido">
-        <article class="team-card team-card--a">
-          <div class="team-logo" aria-hidden="true">A</div>
-          <div class="team-main">
-            <span class="team-name">Equipo A</span>
+    <header class="scoreboard-overlay" aria-label="Marcador principal">
+      <article class="team-card team-card--a">
+        <div class="team-topline"></div>
+        <div class="team-main">
+          <div class="team-logo team-logo--a" aria-label="Logo equipo A">
+            <span>🐺</span>
+          </div>
+          <div class="team-info">
+            <p class="team-label">EQUIPO A</p>
             <strong class="team-score">00</strong>
           </div>
-          <div class="team-meta">
-            <span>Faltas <b>0</b></span>
-            <span class="timeouts" aria-label="Tiempos fuera Equipo A">
-              <i></i><i></i><i class="off"></i>
-            </span>
-          </div>
-        </article>
-
-        <article class="clock-card">
-          <span class="live-pill">● En vivo</span>
-          <strong>10:00</strong>
-          <span>1er Cuarto</span>
-        </article>
-
-        <article class="team-card team-card--b">
-          <div class="team-main team-main--right">
-            <span class="team-name">Equipo B</span>
-            <strong class="team-score">00</strong>
-          </div>
-          <div class="team-logo team-logo--b" aria-hidden="true">B</div>
-          <div class="team-meta team-meta--right">
-            <span>Faltas <b>0</b></span>
-            <span class="timeouts timeouts--b" aria-label="Tiempos fuera Equipo B">
-              <i></i><i></i><i class="off"></i>
-            </span>
-          </div>
-        </article>
-      </header>
-
-      <section class="teleprompter-overlay" aria-label="Teleprompter de sugerencias">
-        <span class="spark" aria-hidden="true">✦</span>
-        <p><span>Sugerencia:</span> Canasta del número 13, José Luis</p>
-        <button class="ghost-arrow" type="button" data-action="teleprompter" aria-label="Ver sugerencia">›</button>
-      </section>
-
-      <section class="mic-overlay" aria-label="Estado del micrófono">
-        <span class="mic-icon" aria-hidden="true">🎙️</span>
-        <strong>Micrófono activo</strong>
-        <div class="audio-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-      </section>
-
-      <footer class="control-dock" aria-label="Controles principales">
-        <button class="dock-btn dock-btn--primary" type="button" data-modal="timer">
-          <span class="dock-icon">⏱️</span>
-          <span>Iniciar / Pausa</span>
-          <small>Tiempo fuera</small>
-        </button>
-        <button class="dock-btn" type="button" data-modal="score">
-          <span class="dock-icon">🏀</span>
-          <span>Anotar punto</span>
-          <small>+1 universal</small>
-        </button>
-        <button class="dock-btn" type="button" data-modal="foul">
-          <span class="dock-icon">🚩</span>
-          <span>Faltas</span>
-          <small>Equipo / jugador</small>
-        </button>
-        <button class="dock-btn" type="button" data-modal="tv">
-          <span class="dock-icon">📺</span>
-          <span>Transmitir</span>
-          <small>TV / pantalla</small>
-        </button>
-        <button class="dock-btn" type="button" data-modal="settings">
-          <span class="dock-icon">⚙️</span>
-          <span>Configuración</span>
-          <small>Datos</small>
-        </button>
-      </footer>
-
-      <div class="modal-backdrop" hidden></div>
-      <section class="action-sheet" hidden aria-live="polite" aria-label="Panel de acción">
-        <div class="sheet-head">
-          <div>
-            <p class="eyebrow">Bloque 1 visual</p>
-            <h2 id="sheetTitle">Acción</h2>
-          </div>
-          <button class="close-sheet" type="button" aria-label="Cerrar">×</button>
         </div>
-        <div id="sheetBody" class="sheet-body"></div>
-      </section>
-    </main>
+        <div class="team-meta">
+          <span>Faltas <b>0</b></span>
+          <span class="timeout-dots" aria-label="Tiempos fuera equipo A"><i></i><i></i><i class="off"></i></span>
+        </div>
+      </article>
 
-    <script src="app.js" defer></script>
-  </body>
+      <article class="clock-card">
+        <p class="live-badge"><span class="live-dot"></span> EN VIVO</p>
+        <strong class="game-clock">10:00</strong>
+        <span class="period-label">1er Cuarto</span>
+      </article>
+
+      <article class="team-card team-card--b">
+        <div class="team-topline"></div>
+        <div class="team-main team-main--reverse">
+          <div class="team-info team-info--right">
+            <p class="team-label">EQUIPO B</p>
+            <strong class="team-score">00</strong>
+          </div>
+          <div class="team-logo team-logo--b" aria-label="Logo equipo B">
+            <span>🐯</span>
+          </div>
+        </div>
+        <div class="team-meta">
+          <span>Faltas <b>0</b></span>
+          <span class="timeout-dots timeout-dots--b" aria-label="Tiempos fuera equipo B"><i></i><i></i><i class="off"></i></span>
+        </div>
+      </article>
+    </header>
+
+    <section class="prompt-pill" aria-label="Teleprompter">
+      <span class="prompt-icon">✦</span>
+      <p><b>Sugerencia:</b> Canasta del número 13, José Luis</p>
+      <button class="prompt-next" type="button" aria-label="Siguiente sugerencia">›</button>
+    </section>
+
+    <section class="mic-pill" aria-label="Micrófono activo">
+      <span class="mic-icon">🎙️</span>
+      <span>Micrófono activo</span>
+      <div class="audio-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    </section>
+
+    <footer class="control-dock" aria-label="Controles del partido">
+      <button class="dock-btn dock-btn--wide dock-btn--clock" data-modal="clock" type="button">
+        <span class="dock-icon">⏱️</span>
+        <strong>Iniciar / Pausa</strong>
+        <small>Tiempo fuera</small>
+      </button>
+      <button class="dock-btn dock-btn--score" data-modal="score" type="button">
+        <span class="dock-icon">🏀</span>
+        <strong>Anotar punto</strong>
+        <small>+1 universal</small>
+      </button>
+      <button class="dock-btn dock-btn--foul" data-modal="foul" type="button">
+        <span class="dock-icon">🚩</span>
+        <strong>Faltas</strong>
+        <small>Equipo / jugador</small>
+      </button>
+      <button class="dock-btn dock-btn--tv" data-modal="tv" type="button">
+        <span class="dock-icon">📺</span>
+        <strong>Transmitir</strong>
+        <small>TV / pantalla</small>
+      </button>
+      <button class="dock-btn dock-btn--settings" data-modal="settings" type="button">
+        <span class="dock-icon">⚙️</span>
+        <strong>Configuración</strong>
+        <small>Datos</small>
+      </button>
+    </footer>
+
+    <div class="modal-backdrop" id="modalBackdrop" hidden></div>
+    <section class="glass-modal" id="glassModal" hidden aria-live="polite">
+      <button class="modal-close" id="modalClose" type="button" aria-label="Cerrar">×</button>
+      <p class="modal-kicker" id="modalKicker">Go Basket Studio</p>
+      <h2 id="modalTitle">Acción</h2>
+      <p id="modalText">Aquí irá la acción seleccionada.</p>
+      <div class="modal-actions" id="modalActions"></div>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
 </html>

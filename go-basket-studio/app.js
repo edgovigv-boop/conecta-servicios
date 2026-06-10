@@ -1,100 +1,84 @@
-const sheet = document.querySelector('.action-sheet');
-const backdrop = document.querySelector('.modal-backdrop');
-const sheetTitle = document.getElementById('sheetTitle');
-const sheetBody = document.getElementById('sheetBody');
-const closeButton = document.querySelector('.close-sheet');
-
-const content = {
-  timer: {
-    title: 'Reloj y tiempos fuera',
-    body: `
-      <p>En el Bloque 2 aquí irá el control real del cronómetro, pausa y tiempos fuera.</p>
-      <div class="visual-row">
-        <div class="visual-pill">Iniciar</div>
-        <div class="visual-pill">Pausa</div>
-        <div class="visual-pill">Tiempo fuera A</div>
-        <div class="visual-pill">Tiempo fuera B</div>
-      </div>
-    `,
+const modalData = {
+  clock: {
+    kicker: "Control visual",
+    title: "Reloj y tiempo fuera",
+    text: "Aquí irá el control de iniciar, pausar, pedir tiempo fuera y avanzar periodos. En este bloque solo validamos diseño.",
+    actions: ["Iniciar reloj", "Tiempo fuera Equipo A", "Tiempo fuera Equipo B"],
   },
   score: {
-    title: 'Anotar punto',
-    body: `
-      <p>En el Bloque 2 aquí se elegirá equipo y jugador para sumar 1 punto universal.</p>
-      <div class="visual-row">
-        <div class="visual-card">Equipo A<small>#13 José Luis · 1 punto</small></div>
-        <div class="visual-card">Equipo B<small>#7 Carlos · 1 punto</small></div>
-      </div>
-    `,
+    kicker: "Anotación universal",
+    title: "Anotar punto",
+    text: "Aquí se elegirá equipo y jugador para sumar 1 punto. Si una jugada vale 6 puntos, el operador tocará seis veces.",
+    actions: ["Equipo A +1", "Equipo B +1", "Ver jugadores"],
   },
   foul: {
-    title: 'Faltas',
-    body: `
-      <p>En el Bloque 2 aquí se elegirá equipo y jugador para sumar una falta.</p>
-      <div class="visual-row">
-        <div class="visual-card">Jugador<small>#13 José Luis</small></div>
-        <div class="visual-card">Registro<small>1 falta</small></div>
-      </div>
-    `,
+    kicker: "Faltas",
+    title: "Registrar falta",
+    text: "Aquí se elegirá equipo y jugador para sumar una falta y mantener visibles puntos y faltas por jugador.",
+    actions: ["Falta Equipo A", "Falta Equipo B"],
   },
   tv: {
-    title: 'Transmitir / TV',
-    body: `
-      <p>En el Bloque 2 aquí irá el modo TV limpio y las instrucciones para duplicar pantalla.</p>
-      <div class="visual-card">Modo TV limpio<small>Cámara + marcador + teleprompter</small></div>
-    `,
+    kicker: "Pantalla externa",
+    title: "Transmitir / TV",
+    text: "Aquí irá el modo TV limpio. La app recomendará duplicar pantalla con Chromecast, AirPlay, Miracast o HDMI.",
+    actions: ["Modo TV limpio", "Pantalla completa"],
   },
   settings: {
-    title: 'Configuración / Datos',
-    body: `
-      <p>Panel visual base. En el Bloque 2 se conectarán equipos, logos, periodos y jugadores.</p>
-      <div class="visual-row">
-        <div class="visual-card">Equipo A<small>Logo, nombre, jugadores</small></div>
-        <div class="visual-card">Equipo B<small>Logo, nombre, jugadores</small></div>
-        <div class="visual-card">Deporte<small>Básquet, fútbol, personalizado</small></div>
-        <div class="visual-card">Tiempo<small>4 de 10, 2 de 45, etc.</small></div>
-      </div>
-    `,
-  },
-  teleprompter: {
-    title: 'Sugerencia de narración',
-    body: `
-      <p>El operador narrará con su propia voz. La app mostrará frases listas para leer.</p>
-      <div class="visual-card">Sugerencia<small>Canasta del número 13, José Luis.</small></div>
-    `,
+    kicker: "Datos del partido",
+    title: "Configuración",
+    text: "Aquí se configurarán nombres, logos, deporte, periodos, duración y jugadores. En este bloque es solo visual.",
+    actions: ["Equipos y logos", "Periodos y duración", "Jugadores"],
   },
 };
 
-function openSheet(key) {
-  const item = content[key] || content.settings;
-  sheetTitle.textContent = item.title;
-  sheetBody.innerHTML = item.body;
-  sheet.hidden = false;
+const modal = document.querySelector("#glassModal");
+const backdrop = document.querySelector("#modalBackdrop");
+const closeBtn = document.querySelector("#modalClose");
+const title = document.querySelector("#modalTitle");
+const kicker = document.querySelector("#modalKicker");
+const text = document.querySelector("#modalText");
+const actions = document.querySelector("#modalActions");
+const promptText = document.querySelector(".prompt-pill p");
+
+function openModal(key) {
+  const data = modalData[key];
+  if (!data) return;
+  kicker.textContent = data.kicker;
+  title.textContent = data.title;
+  text.textContent = data.text;
+  actions.innerHTML = "";
+  data.actions.forEach((label) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    button.addEventListener("click", () => {
+      promptText.innerHTML = `<b>Sugerencia:</b> ${label}`;
+      closeModal();
+    });
+    actions.append(button);
+  });
+  modal.hidden = false;
   backdrop.hidden = false;
 }
 
-function closeSheet() {
-  sheet.hidden = true;
+function closeModal() {
+  modal.hidden = true;
   backdrop.hidden = true;
 }
 
-document.querySelectorAll('[data-modal]').forEach((button) => {
-  button.addEventListener('click', () => openSheet(button.dataset.modal));
+document.querySelectorAll("[data-modal]").forEach((button) => {
+  button.addEventListener("click", () => openModal(button.dataset.modal));
 });
 
-document.querySelectorAll('[data-action="teleprompter"]').forEach((button) => {
-  button.addEventListener('click', () => openSheet('teleprompter'));
+closeBtn.addEventListener("click", closeModal);
+backdrop.addEventListener("click", closeModal);
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeModal();
 });
 
-closeButton.addEventListener('click', closeSheet);
-backdrop.addEventListener('click', closeSheet);
-
-document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') closeSheet();
-});
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch((error) => console.warn('SW no registrado', error));
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
   });
 }
