@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#0a0712" />
-    <meta name="description" content="Go Basket Studio Live: marcador, cámara, micrófono, grabación y modo TV para transmitir básquet desde celular." />
+    <meta name="theme-color" content="#090713" />
+    <meta name="description" content="Go Basket Studio Live: cámara, marcador profesional, micrófono, jugadores, grabación y modo TV para transmitir partidos desde celular." />
     <title>Go Basket Studio Live</title>
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
@@ -17,28 +17,30 @@
       <div class="live-backdrop" aria-hidden="true"></div>
 
       <section id="permissionCard" class="permission-card" hidden>
-        <p class="eyebrow">Permisos requeridos</p>
+        <p class="eyebrow">Permisos de transmisión</p>
         <h1>Go Basket Studio Live</h1>
-        <p id="permissionMessage">Activa cámara y micrófono para iniciar tu transmisión.</p>
-        <button id="retryPermissionsBtn" type="button">Activar cámara y micrófono</button>
+        <p id="permissionMessage">Activa cámara y micrófono para capturar video, marcador y narración humana.</p>
+        <div class="permission-actions">
+          <button id="retryPermissionsBtn" type="button">Activar cámara y micrófono</button>
+        </div>
       </section>
 
       <header id="scoreboard" class="scoreboard" aria-label="Marcador en vivo">
         <article class="score-team score-team--a">
           <div id="teamALogo" class="team-logo">A</div>
-          <div>
+          <div class="team-meta">
             <span id="teamAName">Equipo Azul</span>
             <strong id="scoreA">0</strong>
             <small>Faltas <b id="foulsA">0</b> · TO <b id="timeoutsA">2</b></small>
           </div>
         </article>
         <article class="score-center">
-          <span id="liveStatus">EN VIVO</span>
+          <span id="liveStatus">PAUSADO</span>
           <strong id="clock">10:00</strong>
           <small id="periodLabel">Periodo 1</small>
         </article>
         <article class="score-team score-team--b">
-          <div>
+          <div class="team-meta team-meta--right">
             <span id="teamBName">Equipo Rojo</span>
             <strong id="scoreB">0</strong>
             <small>Faltas <b id="foulsB">0</b> · TO <b id="timeoutsB">2</b></small>
@@ -60,10 +62,13 @@
         <div id="lastPlay" class="pill pill-wide">Última jugada: listo para iniciar</div>
       </section>
 
+      <button id="exitTvBtn" class="exit-tv-btn" type="button" hidden>Volver a controles</button>
+
       <nav id="controlDock" class="control-dock" aria-label="Controles principales">
         <button id="timerBtn" class="dock-btn primary" type="button">Iniciar</button>
-        <button id="scoreBtn" class="dock-btn" type="button">Anotar</button>
+        <button id="scoreBtn" class="dock-btn" type="button">Anotar punto</button>
         <button id="foulBtn" class="dock-btn" type="button">Faltas</button>
+        <button id="playersBtn" class="dock-btn" type="button">Jugadores</button>
         <button id="recordBtn" class="dock-btn danger" type="button">Grabar</button>
         <button id="tvBtn" class="dock-btn" type="button">TV</button>
         <button id="settingsBtn" class="dock-btn" type="button">Config</button>
