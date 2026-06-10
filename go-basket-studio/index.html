@@ -4,222 +4,75 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0a0712" />
-    <meta
-      name="description"
-      content="Go Basket Studio convierte cualquier partido de básquet en una transmisión desde tu celular con marcador, cámara, narración, sonidos y resumen final."
-    />
-    <title>Go Basket Studio</title>
+    <meta name="description" content="Go Basket Studio Live: marcador, cámara, micrófono, grabación y modo TV para transmitir básquet desde celular." />
+    <title>Go Basket Studio Live</title>
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="icon.svg" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div id="app" class="app-shell">
-      <section class="screen screen--home active" data-screen="home" aria-labelledby="home-title">
-        <div class="hero-card">
-          <div class="brand-lockup">
-            <span class="brand-ball" aria-hidden="true">🏀</span>
-            <div>
-              <p class="eyebrow">PWA de transmisión móvil</p>
-              <h1 id="home-title">Go Basket Studio</h1>
-            </div>
-          </div>
-          <p class="promise">Convierte cualquier partido de básquet en una transmisión desde tu celular.</p>
-          <p class="subtitle">Marcador, cámara, narración, sonidos, pantalla completa, grabación y resumen final para compartir.</p>
-          <div class="home-actions" role="list">
-            <button class="action-card primary" data-open="quick" type="button">Partido rápido</button>
-            <button class="action-card" data-open="players" type="button">Partido con jugadores</button>
-            <button class="action-card" data-open="three" type="button">Modo 3x3</button>
-            <button class="action-card" data-open="rules" type="button">Reglas personalizadas</button>
-            <button class="action-card" data-open="saved" type="button">Ver partidos guardados</button>
-          </div>
-          <button id="installBtn" class="install-btn" type="button" hidden>Instalar Go Basket Studio</button>
-        </div>
+    <main id="app" class="live-app">
+      <video id="cameraView" class="live-camera" playsinline muted autoplay></video>
+      <div class="live-backdrop" aria-hidden="true"></div>
+
+      <section id="permissionCard" class="permission-card" hidden>
+        <p class="eyebrow">Permisos requeridos</p>
+        <h1>Go Basket Studio Live</h1>
+        <p id="permissionMessage">Activa cámara y micrófono para iniciar tu transmisión.</p>
+        <button id="retryPermissionsBtn" type="button">Activar cámara y micrófono</button>
       </section>
 
-      <section class="screen" data-screen="quick" aria-labelledby="quick-title">
-        <header class="screen-head">
-          <button class="back-btn" data-open="home" type="button">← Inicio</button>
+      <header id="scoreboard" class="scoreboard" aria-label="Marcador en vivo">
+        <article class="score-team score-team--a">
+          <div id="teamALogo" class="team-logo">A</div>
           <div>
-            <p class="eyebrow">Iniciar en segundos</p>
-            <h2 id="quick-title">Partido rápido</h2>
-          </div>
-        </header>
-        <form id="quickForm" class="setup-card">
-          <label>Nombre Equipo A<input name="teamA" required value="Equipo Azul" /></label>
-          <label>Nombre Equipo B<input name="teamB" required value="Equipo Rojo" /></label>
-          <label>Duración del partido<input name="duration" type="number" min="1" max="240" value="10" /></label>
-          <div class="toggle-grid">
-            <label class="switch-line"><input name="camera" type="checkbox" /> Activar cámara</label>
-            <label class="switch-line"><input name="narrator" type="checkbox" checked /> Activar narrador</label>
-            <label class="switch-line"><input name="sounds" type="checkbox" checked /> Activar sonidos</label>
-          </div>
-          <button class="mega-btn primary" type="submit">Iniciar partido</button>
-        </form>
-      </section>
-
-      <section class="screen" data-screen="players" aria-labelledby="players-title">
-        <header class="screen-head">
-          <button class="back-btn" data-open="home" type="button">← Inicio</button>
-          <div>
-            <p class="eyebrow">Con estadísticas personales</p>
-            <h2 id="players-title">Partido con jugadores</h2>
-          </div>
-        </header>
-        <form id="playersForm" class="setup-card">
-          <div class="two-col">
-            <label>Nombre Equipo A<input name="teamA" required value="Equipo Azul" /></label>
-            <label>Nombre Equipo B<input name="teamB" required value="Equipo Rojo" /></label>
-          </div>
-          <label>Duración del partido<input name="duration" type="number" min="1" max="240" value="10" /></label>
-          <div class="roster-grid">
-            <div>
-              <h3>Jugadores Equipo A</h3>
-              <div id="rosterA" class="roster-list"></div>
-              <button class="small-btn" data-add-player="A" type="button">+ Agregar jugador A</button>
-            </div>
-            <div>
-              <h3>Jugadores Equipo B</h3>
-              <div id="rosterB" class="roster-list"></div>
-              <button class="small-btn" data-add-player="B" type="button">+ Agregar jugador B</button>
-            </div>
-          </div>
-          <div class="toggle-grid">
-            <label class="switch-line"><input name="camera" type="checkbox" /> Activar cámara</label>
-            <label class="switch-line"><input name="narrator" type="checkbox" checked /> Activar narrador</label>
-            <label class="switch-line"><input name="sounds" type="checkbox" checked /> Activar sonidos</label>
-          </div>
-          <button class="mega-btn primary" type="submit">Iniciar partido con jugadores</button>
-        </form>
-      </section>
-
-      <section class="screen" data-screen="three" aria-labelledby="three-title">
-        <header class="screen-head">
-          <button class="back-btn" data-open="home" type="button">← Inicio</button>
-          <div>
-            <p class="eyebrow">Reta, convivencia o torneo pequeño</p>
-            <h2 id="three-title">Modo 3x3</h2>
-          </div>
-        </header>
-        <form id="threeForm" class="setup-card">
-          <div class="two-col">
-            <label>Equipo A<input name="teamA" required value="Trío Azul" /></label>
-            <label>Equipo B<input name="teamB" required value="Trío Rojo" /></label>
-          </div>
-          <label>Tipo de partido<select name="mode"><option value="time">Por tiempo</option><option value="points">Por puntos</option></select></label>
-          <label>Duración o puntos objetivo<input name="limit" type="number" min="1" value="10" /></label>
-          <p class="hint">Puntuación manual con +1, +2 y falta. Sin marcas oficiales ni logos de ligas.</p>
-          <button class="mega-btn primary" type="submit">Iniciar 3x3</button>
-        </form>
-      </section>
-
-      <section class="screen" data-screen="rules" aria-labelledby="rules-title">
-        <header class="screen-head">
-          <button class="back-btn" data-open="home" type="button">← Inicio</button>
-          <div>
-            <p class="eyebrow">Preparado para crecer</p>
-            <h2 id="rules-title">Reglas personalizadas</h2>
-          </div>
-        </header>
-        <div class="setup-card rules-grid" id="rulesPanel"></div>
-      </section>
-
-      <section class="screen" data-screen="saved" aria-labelledby="saved-title">
-        <header class="screen-head">
-          <button class="back-btn" data-open="home" type="button">← Inicio</button>
-          <div>
-            <p class="eyebrow">LocalStorage</p>
-            <h2 id="saved-title">Partidos guardados</h2>
-          </div>
-        </header>
-        <div id="savedList" class="saved-list"></div>
-      </section>
-
-      <section class="screen game-screen" data-screen="game" aria-labelledby="game-title">
-        <video id="cameraView" class="camera-bg" playsinline muted></video>
-        <div class="game-shade" aria-hidden="true"></div>
-        <button id="showControlsBtn" class="floating-safe-btn" type="button" hidden>Mostrar controles</button>
-        <button id="exitFullscreenBtn" class="floating-exit-btn" type="button" hidden>Salir</button>
-
-        <header class="broadcast-scoreboard">
-          <div class="team-panel team-panel--a">
-            <span id="gameTeamA">Equipo A</span>
+            <span id="teamAName">Equipo Azul</span>
             <strong id="scoreA">0</strong>
-            <small>Faltas <b id="foulsA">0</b></small>
+            <small>Faltas <b id="foulsA">0</b> · TO <b id="timeoutsA">2</b></small>
           </div>
-          <div class="clock-panel">
-            <p id="game-title" class="eyebrow">En vivo</p>
-            <strong id="clock">10:00</strong>
-            <span id="periodLabel">Tiempo corrido</span>
-          </div>
-          <div class="team-panel team-panel--b">
-            <span id="gameTeamB">Equipo B</span>
+        </article>
+        <article class="score-center">
+          <span id="liveStatus">EN VIVO</span>
+          <strong id="clock">10:00</strong>
+          <small id="periodLabel">Periodo 1</small>
+        </article>
+        <article class="score-team score-team--b">
+          <div>
+            <span id="teamBName">Equipo Rojo</span>
             <strong id="scoreB">0</strong>
-            <small>Faltas <b id="foulsB">0</b></small>
+            <small>Faltas <b id="foulsB">0</b> · TO <b id="timeoutsB">2</b></small>
           </div>
-        </header>
+          <div id="teamBLogo" class="team-logo team-logo--b">B</div>
+        </article>
+      </header>
 
-        <section class="live-info">
-          <div>
-            <span>Última jugada</span>
-            <strong id="lastPlay">Listo para iniciar transmisión</strong>
-          </div>
-          <div id="teleprompter" class="teleprompter">GO BASKET STUDIO EN VIVO</div>
-        </section>
+      <section id="introOverlay" class="intro-overlay" hidden></section>
 
-        <section id="controlsPanel" class="controls-panel">
-          <div id="playerChooser" class="player-chooser" hidden>
-            <label>Jugador de la jugada<select id="playerSelect"><option value="">Equipo completo</option></select></label>
-          </div>
-          <div class="team-actions">
-            <article>
-              <h3 id="controlTeamA">Equipo A</h3>
-              <div class="button-grid">
-                <button data-score="A" data-points="1" type="button">+1</button>
-                <button data-score="A" data-points="2" type="button">+2</button>
-                <button data-score="A" data-points="3" type="button">+3</button>
-                <button data-foul="A" type="button">Falta</button>
-              </div>
-            </article>
-            <article>
-              <h3 id="controlTeamB">Equipo B</h3>
-              <div class="button-grid">
-                <button data-score="B" data-points="1" type="button">+1</button>
-                <button data-score="B" data-points="2" type="button">+2</button>
-                <button data-score="B" data-points="3" type="button">+3</button>
-                <button data-foul="B" type="button">Falta</button>
-              </div>
-            </article>
-          </div>
-          <div class="control-strip">
-            <button id="undoBtn" type="button">Deshacer</button>
-            <button id="timerBtn" type="button">Iniciar tiempo</button>
-            <button id="resetTimerBtn" type="button">Reiniciar tiempo</button>
-            <button id="finishBtn" class="danger" type="button">Finalizar partido</button>
-            <button id="cameraBtn" type="button">Activar cámara</button>
-            <button id="recordingBtn" type="button">Modo grabación</button>
-            <button id="fullscreenBtn" type="button">Pantalla completa</button>
-            <button id="soundBtn" type="button">Sonidos ON</button>
-            <button id="narratorBtn" type="button">Narrador ON</button>
-            <button id="teleBtn" type="button">Teleprompter ON</button>
-            <button id="crowdBtn" type="button">Ambiente público OFF</button>
-          </div>
-          <p class="recording-help">Activa la grabación de pantalla de tu celular para guardar el partido con marcador y narración.</p>
-        </section>
+      <section id="teleprompter" class="teleprompter-live">
+        <span>Sugerencia para narrador</span>
+        <strong id="promptText">Go Basket Studio en vivo. Cámara y marcador listos.</strong>
       </section>
 
-      <section class="screen" data-screen="report" aria-labelledby="report-title">
-        <header class="screen-head">
-          <button class="back-btn" data-open="home" type="button">← Inicio</button>
-          <div>
-            <p class="eyebrow">Resumen para compartir</p>
-            <h2 id="report-title">Reporte final</h2>
-          </div>
-        </header>
-        <div id="reportView" class="report-card"></div>
+      <section class="status-strip">
+        <div id="micStatus" class="pill">Micrófono: solicitando</div>
+        <div id="recordStatus" class="pill">Grabación: inactiva</div>
+        <div id="lastPlay" class="pill pill-wide">Última jugada: listo para iniciar</div>
       </section>
-    </div>
+
+      <nav id="controlDock" class="control-dock" aria-label="Controles principales">
+        <button id="timerBtn" class="dock-btn primary" type="button">Iniciar</button>
+        <button id="scoreBtn" class="dock-btn" type="button">Anotar</button>
+        <button id="foulBtn" class="dock-btn" type="button">Faltas</button>
+        <button id="recordBtn" class="dock-btn danger" type="button">Grabar</button>
+        <button id="tvBtn" class="dock-btn" type="button">TV</button>
+        <button id="settingsBtn" class="dock-btn" type="button">Config</button>
+      </nav>
+    </main>
+
+    <dialog id="actionModal" class="live-modal"></dialog>
+    <dialog id="settingsModal" class="live-modal settings-modal"></dialog>
+    <dialog id="reportModal" class="live-modal report-modal"></dialog>
     <script src="app.js" defer></script>
   </body>
 </html>
