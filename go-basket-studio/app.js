@@ -1,5 +1,5 @@
 const modal = document.querySelector("#messageModal");
-const buttons = document.querySelectorAll(".dock-button");
+const buttons = document.querySelectorAll(".dock-action");
 
 function openModal(content) {
   modal.innerHTML = content;
