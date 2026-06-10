@@ -4,80 +4,102 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#090713" />
-    <meta name="description" content="Go Basket Studio Live: cámara, marcador profesional, micrófono, jugadores, grabación y modo TV para transmitir partidos desde celular." />
-    <title>Go Basket Studio Live</title>
+    <meta name="description" content="Go Basket Studio Bloque 1: pantalla visual base tipo transmisión deportiva móvil." />
+    <title>Go Basket Studio · Bloque 1</title>
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="icon.svg" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main id="app" class="live-app">
-      <video id="cameraView" class="live-camera" playsinline muted autoplay></video>
-      <div class="live-backdrop" aria-hidden="true"></div>
-
-      <section id="permissionCard" class="permission-card" hidden>
-        <p class="eyebrow">Permisos de transmisión</p>
-        <h1>Go Basket Studio Live</h1>
-        <p id="permissionMessage">Activa cámara y micrófono para capturar video, marcador y narración humana.</p>
-        <div class="permission-actions">
-          <button id="retryPermissionsBtn" type="button">Activar cámara y micrófono</button>
+    <main class="studio-shell" aria-label="Go Basket Studio pantalla visual base">
+      <section class="visual-stage" aria-label="Vista de transmisión simulada">
+        <div class="court-bg" aria-hidden="true">
+          <span class="court-line court-line--center"></span>
+          <span class="court-line court-line--arc court-line--left"></span>
+          <span class="court-line court-line--arc court-line--right"></span>
+          <span class="camera-placeholder">Vista de cámara / cancha</span>
         </div>
-      </section>
 
-      <header id="scoreboard" class="scoreboard" aria-label="Marcador en vivo">
-        <article class="score-team score-team--a">
-          <div id="teamALogo" class="team-logo">A</div>
-          <div class="team-meta">
-            <span id="teamAName">Equipo Azul</span>
-            <strong id="scoreA">0</strong>
-            <small>Faltas <b id="foulsA">0</b> · TO <b id="timeoutsA">2</b></small>
+        <header class="scoreboard" aria-label="Marcador profesional">
+          <article class="team-card team-card--left">
+            <div class="team-logo">A</div>
+            <div class="team-copy">
+              <span class="team-name">Equipo A</span>
+              <strong class="team-score">00</strong>
+              <small>Faltas <b>0</b></small>
+              <div class="timeouts" aria-label="Tiempos fuera Equipo A">
+                <span></span><span></span>
+              </div>
+            </div>
+          </article>
+
+          <article class="clock-card">
+            <span class="live-badge">EN VIVO</span>
+            <strong>10:00</strong>
+            <small>1er Cuarto</small>
+          </article>
+
+          <article class="team-card team-card--right">
+            <div class="team-copy team-copy--right">
+              <span class="team-name">Equipo B</span>
+              <strong class="team-score team-score--b">00</strong>
+              <small>Faltas <b>0</b></small>
+              <div class="timeouts timeouts--right" aria-label="Tiempos fuera Equipo B">
+                <span></span><span></span>
+              </div>
+            </div>
+            <div class="team-logo team-logo--b">B</div>
+          </article>
+        </header>
+
+        <section class="mic-widget" aria-label="Indicador visual de micrófono">
+          <div class="mic-icon">🎙️</div>
+          <div>
+            <strong>Micrófono activo</strong>
+            <span>Audio visual simulado</span>
           </div>
-        </article>
-        <article class="score-center">
-          <span id="liveStatus">PAUSADO</span>
-          <strong id="clock">10:00</strong>
-          <small id="periodLabel">Periodo 1</small>
-        </article>
-        <article class="score-team score-team--b">
-          <div class="team-meta team-meta--right">
-            <span id="teamBName">Equipo Rojo</span>
-            <strong id="scoreB">0</strong>
-            <small>Faltas <b id="foulsB">0</b> · TO <b id="timeoutsB">2</b></small>
+          <div class="audio-bars" aria-hidden="true">
+            <i></i><i></i><i></i><i></i>
           </div>
-          <div id="teamBLogo" class="team-logo team-logo--b">B</div>
-        </article>
-      </header>
+        </section>
 
-      <section id="introOverlay" class="intro-overlay" hidden></section>
-
-      <section id="teleprompter" class="teleprompter-live">
-        <span>Sugerencia para narrador</span>
-        <strong id="promptText">Go Basket Studio en vivo. Cámara y marcador listos.</strong>
+        <section class="teleprompter" aria-label="Sugerencia para narrador">
+          <div class="spark">✦</div>
+          <p><span>Sugerencia:</span> Canasta del número 13, José Luis</p>
+          <div class="arrow">›</div>
+        </section>
       </section>
 
-      <section class="status-strip">
-        <div id="micStatus" class="pill">Micrófono: solicitando</div>
-        <div id="recordStatus" class="pill">Grabación: inactiva</div>
-        <div id="lastPlay" class="pill pill-wide">Última jugada: listo para iniciar</div>
-      </section>
-
-      <button id="exitTvBtn" class="exit-tv-btn" type="button" hidden>Volver a controles</button>
-
-      <nav id="controlDock" class="control-dock" aria-label="Controles principales">
-        <button id="timerBtn" class="dock-btn primary" type="button">Iniciar</button>
-        <button id="scoreBtn" class="dock-btn" type="button">Anotar punto</button>
-        <button id="foulBtn" class="dock-btn" type="button">Faltas</button>
-        <button id="playersBtn" class="dock-btn" type="button">Jugadores</button>
-        <button id="recordBtn" class="dock-btn danger" type="button">Grabar</button>
-        <button id="tvBtn" class="dock-btn" type="button">TV</button>
-        <button id="settingsBtn" class="dock-btn" type="button">Config</button>
+      <nav class="control-dock" aria-label="Botones visuales principales">
+        <button class="dock-button dock-button--primary" type="button" data-message="Aquí irá el control de reloj y tiempos fuera.">
+          <span>⏱️</span>
+          <strong>Iniciar / Pausa</strong>
+          <small>Tiempo fuera</small>
+        </button>
+        <button class="dock-button" type="button" data-message="Aquí se elegirá equipo y jugador para sumar 1 punto.">
+          <span>🏀</span>
+          <strong>Anotar punto</strong>
+          <small>+1 universal</small>
+        </button>
+        <button class="dock-button" type="button" data-message="Aquí se elegirá equipo y jugador para sumar falta.">
+          <span>🚩</span>
+          <strong>Faltas</strong>
+          <small>Equipo / jugador</small>
+        </button>
+        <button class="dock-button" type="button" data-message="Aquí irá el modo TV.">
+          <span>📺</span>
+          <strong>Transmitir</strong>
+          <small>TV / pantalla</small>
+        </button>
+        <button class="dock-button" type="button" data-settings>
+          <span>⚙️</span>
+          <strong>Configuración</strong>
+          <small>Datos</small>
+        </button>
       </nav>
     </main>
 
-    <dialog id="actionModal" class="live-modal"></dialog>
-    <dialog id="settingsModal" class="live-modal settings-modal"></dialog>
-    <dialog id="reportModal" class="live-modal report-modal"></dialog>
+    <dialog id="messageModal" class="simple-modal" aria-label="Mensaje visual"></dialog>
     <script src="app.js" defer></script>
   </body>
 </html>
