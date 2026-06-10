@@ -1,4 +1,4 @@
-const CACHE_NAME = "go-basket-studio-block-1-ui";
+const CACHE_NAME = "go-basket-studio-block-1-visual-v2";
 const APP_SHELL = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", (event) => {
