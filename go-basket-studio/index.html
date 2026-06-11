@@ -1,113 +1,401 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#05070f" />
-  <title>Go Basket Studio Live</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Go Basket Studio" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <title>Go Basket Studio</title>
+  <style>
+*{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:#000;overscroll-behavior:none}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;-webkit-tap-highlight-color:transparent;color:#fff;user-select:none}
+  .hidden{display:none!important}
+  .app{position:relative;width:100%;height:100dvh;max-width:430px;margin:0 auto;overflow:hidden;background:#000}
+  #video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;background:#000}
+  #recordCanvas{display:none}
+  .top-bar{position:absolute;top:0;left:0;right:0;z-index:20;height:17vh;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,.08);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 8px}
+  .team{display:flex;flex-direction:column;align-items:center}
+  .logo-btn{width:48px;height:48px;border-radius:50%;background:#27272a;border:2px solid rgba(255,255,255,.9);overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .1s;padding:0}
+  .logo-btn:active{transform:scale(.95)}
+  .logo-btn img{width:100%;height:100%;object-fit:cover}
+  .logo-btn span{font-size:10px;color:#fff}
+  .team-name{background:transparent;border:none;color:#fff;text-align:center;font-size:11px;font-weight:900;width:84px;margin-top:4px;text-transform:uppercase;letter-spacing:.5px;outline:none}
+  .score{font-weight:900;font-size:38px;line-height:1;margin-top:-2px;font-family:system-ui}
+  .team-stats{font-size:10px;line-height:1.1;opacity:.8;margin-top:-2px;text-align:center}
+  .center{display:flex;flex-direction:column;align-items:center;padding:0 4px}
+  .live-badge{display:flex;align-items:center;gap:6px;background:#dc2626;padding:2px 10px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+  .live-dot{width:6px;height:6px;background:#fff;border-radius:50%;animation:pulse-r 1.4s infinite}
+  @keyframes pulse-r{0%,100%{opacity:1}50%{opacity:.35}}
+  .live-text{font-size:10px;font-weight:900;letter-spacing:.1em}
+  .timer{font-weight:900;font-size:52px;line-height:1;letter-spacing:.02em;margin:4px 0}
+  .period-badge{font-size:11px;font-weight:700;background:rgba(255,255,255,.1);padding:2px 8px;border-radius:6px;border:1px solid rgba(255,255,255,.1)}
+  .bottom-bar{position:absolute;bottom:0;left:0;right:0;z-index:20;height:18vh;background:#050505;border-top:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column}
+  .narration-bar{height:30px;background:#09090b;display:flex;align-items:center;justify-content:space-between;padding:0 12px;gap:8px}
+  .narration-label{font-size:10px;opacity:.5;flex-shrink:0}
+  .narration-text{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;transition:opacity .3s}
+  .mic-status{display:flex;align-items:center;gap:6px;flex-shrink:0}
+  .mic-dot-wrap{position:relative;width:8px;height:8px}
+  .mic-dot{position:relative;width:8px;height:8px;background:#22c55e;border-radius:50%}
+  .mic-pulse{position:absolute;inset:0;background:#22c55e;border-radius:50%;opacity:.75;animation:pulse-g 1.2s infinite}
+  @keyframes pulse-g{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+  .mic-text{font-size:10px;font-weight:700;color:#4ade80;white-space:nowrap}
+  .controls{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px;flex:1}
+  .btn{border:none;border-radius:16px;font-weight:900;font-size:13px;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;line-height:1.1;padding:6px;min-height:0}
+  .btn:active{filter:brightness(.9)}
+  .btn-start{grid-column:span 2;background:#2563eb;font-size:16px;flex-direction:row;gap:8px;box-shadow:0 4px 16px rgba(37,99,235,.2)}
+  .btn-score{background:#16a34a}
+  .btn-foul{background:#fbbf24;color:#000}
+  .btn-cast{background:#7c3aed}
+  .btn-config{background:#27272a;border:1px solid rgba(255,255,255,.1)}
+  .big{font-size:22px;line-height:1}
+  .med{font-size:18px;line-height:1}
+  .small{font-size:11px}
+  .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:40}
+  .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:360px;background:#18181b;border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:20px;box-shadow:0 20px 40px rgba(0,0,0,.5);z-index:50}
+  .modal h3{font-size:20px;font-weight:900;text-align:center;margin:0 0 4px}
+  .modal p.sub{font-size:14px;opacity:.7;text-align:center;margin:0 0 16px}
+  .grid-1{display:grid;gap:8px}
+  .btn-modal{width:100%;padding:12px;border:none;border-radius:12px;background:#27272a;color:#fff;font-weight:700;cursor:pointer;font-size:15px}
+  .btn-modal.primary{background:#2563eb;font-weight:900}
+  .btn-modal.warning{background:#fbbf24;color:#000;font-weight:900}
+  .tabs{display:flex;gap:8px;margin-bottom:12px}
+  .tab{flex:1;padding:8px;border:none;border-radius:12px;background:#27272a;color:#fff;font-weight:700;cursor:pointer}
+  .tab.active{background:#fff;color:#000}
+  .points-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+  .point-btn{background:#16a34a;color:#fff;border:none;padding:16px;border-radius:16px;font-size:28px;font-weight:900;cursor:pointer}
+  .modal-select{width:100%;background:#000;border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:12px;color:#fff;font-size:14px;margin-bottom:12px}
+  .config-modal{max-width:420px;width:92%;max-height:90vh;overflow-y:auto}
+  .config-modal h3{font-size:24px;text-align:left;margin-bottom:16px}
+  .input-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+  .input-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
+  .field label{font-size:12px;opacity:.7;display:block;margin-bottom:4px}
+  .field input{width:100%;background:#000;border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:10px;color:#fff;font-size:14px;text-transform:uppercase}
+  .rosters{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+  .roster-box{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:12px}
+  .roster-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .roster-head span{font-weight:700;font-size:14px}
+  .roster-add{font-size:12px;background:#27272a;border:none;color:#fff;padding:4px 8px;border-radius:8px;cursor:pointer}
+  .roster-list{max-height:140px;overflow-y:auto;font-size:12px;display:flex;flex-direction:column;gap:4px}
+  .roster-item{display:flex;justify-content:space-between;background:#09090b;padding:4px 8px;border-radius:8px}
+  .roster-item button{background:none;border:none;color:#fff;opacity:.6;cursor:pointer}
+  .config-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .btn-indigo{background:#4f46e5}
+  .btn-red{background:#dc2626}
+  .btn-emerald{background:#059669}
+  .btn-zinc{background:#27272a}
+  .roster-sheet{position:fixed;inset:0;background:#000;z-index:50;overflow-y:auto;padding:16px}
+  .sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;max-width:420px;margin:0 auto 12px}
+  .sheet-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:420px;margin:0 auto}
+  .sheet-col{background:#18181b;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:12px}
+  .sheet-col h4{font-weight:900;text-align:center;margin:0 0 8px;font-size:18px}
+  .sheet-row{display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.05);padding:6px 0;font-size:14px}
+  .sheet-row .num{font-weight:700;width:28px}
+  .download-modal{max-width:380px}
+  .download-modal video{width:100%;border-radius:12px;background:#000;margin-bottom:12px;aspect-ratio:9/16}
+  .download-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .download-link{text-align:center;padding:12px;border-radius:12px;background:#059669;color:#fff;font-weight:700;text-decoration:none;display:block}
+  </style>
 </head>
 <body>
-  <main class="broadcast-app" id="app">
-    <section class="camera-stage" aria-label="Vista de cámara o cancha">
-      <div class="court-bg" aria-hidden="true">
-        <div class="court-lines"></div>
-        <div class="court-noise"></div>
+<div class="app">
+  <video id="video" autoplay="" playsinline="" muted=""></video>
+  <canvas id="recordCanvas" width="720" height="1280"></canvas>
+
+  <div class="top-bar">
+    <div class="team">
+      <button id="logoABtn" class="logo-btn">
+        <img id="logoAImg" class="hidden" alt="">
+        <span>A</span>
+      </button>
+      <input id="teamAName" class="team-name" value="LOCAL" maxlength="14">
+      <div id="scoreA" class="score">00</div>
+      <div class="team-stats">
+        <div>Faltas: <span id="foulsA">0</span></div>
+        <div>T.Fuera: <span id="toA">3</span></div>
       </div>
-    </section>
+    </div>
+    <div class="center">
+      <div class="live-badge"><span class="live-dot"></span><span class="live-text">EN VIVO</span></div>
+      <div id="timer" class="timer">10:00</div>
+      <div class="period-badge">Periodo <span id="periodNow">1</span>/<span id="periodTotal">4</span></div>
+    </div>
+    <div class="team">
+      <button id="logoBBtn" class="logo-btn">
+        <img id="logoBImg" class="hidden" alt="">
+        <span>B</span>
+      </button>
+      <input id="teamBName" class="team-name" value="VISITA" maxlength="14">
+      <div id="scoreB" class="score">00</div>
+      <div class="team-stats">
+        <div>Faltas: <span id="foulsB">0</span></div>
+        <div>T.Fuera: <span id="toB">3</span></div>
+      </div>
+    </div>
+  </div>
 
-    <header class="scoreboard-overlay" aria-label="Marcador principal">
-      <article class="team-card team-card--a">
-        <div class="team-topline"></div>
-        <div class="team-main">
-          <div class="team-logo team-logo--a" aria-label="Logo equipo A">
-            <span>🐺</span>
-          </div>
-          <div class="team-info">
-            <p class="team-label">EQUIPO A</p>
-            <strong class="team-score">00</strong>
-          </div>
+  <div class="bottom-bar">
+    <div class="narration-bar">
+      <span class="narration-label">NARRACIÓN</span>
+      <span id="narration" class="narration-text" style="opacity: 1;">Activa permisos de cámara y micrófono</span>
+      <div class="mic-status">
+        <span class="mic-dot-wrap"><span class="mic-pulse"></span><span class="mic-dot"></span></span>
+        <span class="mic-text">Micrófono activo</span>
+      </div>
+    </div>
+    <div class="controls">
+      <button id="btnStart" class="btn btn-start"><span id="startIcon">▶</span><span>Iniciar</span></button>
+      <button id="btnScore" class="btn btn-score"><span class="big">＋</span><span class="small">Anotar</span></button>
+      <button id="btnFoul" class="btn btn-foul"><span class="med">⚠</span><span class="small">Faltas</span></button>
+      <button id="btnCast" class="btn btn-cast"><span class="med">📺</span><span class="small">Transmitir</span></button>
+      <button id="btnConfig" class="btn btn-config"><span class="med">⚙</span><span class="small">Config</span></button>
+    </div>
+  </div>
+
+  <input type="file" id="logoAInput" accept="image/*" class="hidden">
+  <input type="file" id="logoBInput" accept="image/*" class="hidden">
+</div>
+
+<div id="backdrop" class="backdrop hidden"></div>
+
+<div id="modalTimeout" class="modal hidden">
+  <h3>¿Tiempo fuera?</h3>
+  <p class="sub">El cronómetro está pausado</p>
+  <div class="grid-1">
+    <button data-to="A" class="toBtn btn-modal">Equipo A (<span id="toABtn">3</span>)</button>
+    <button data-to="B" class="toBtn btn-modal">Equipo B (<span id="toBBtn">3</span>)</button>
+    <button data-to="N" class="toBtn btn-modal primary">Ninguno - Seguir</button>
+  </div>
+</div>
+
+<div id="modalScore" class="modal hidden">
+  <h3>Anotar puntos</h3>
+  <div class="tabs">
+    <button id="tabA" class="tab active">LOCAL</button>
+    <button id="tabB" class="tab">VISITA</button>
+  </div>
+  <div class="points-grid">
+    <button data-pts="1" class="ptBtn point-btn">+1</button>
+    <button data-pts="2" class="ptBtn point-btn">+2</button>
+    <button data-pts="3" class="ptBtn point-btn">+3</button>
+  </div>
+  <select id="playerSelect" class="modal-select"></select>
+  <button id="closeScore" class="btn-modal">Cerrar</button>
+</div>
+
+<div id="modalFoul" class="modal hidden">
+  <h3>Registrar falta</h3>
+  <div class="grid-1" style="margin-top:16px">
+    <button data-foul="A" class="foulBtn btn-modal warning">Falta LOCAL</button>
+    <button data-foul="B" class="foulBtn btn-modal warning">Falta VISITA</button>
+    <button id="closeFoul" class="btn-modal" style="margin-top:8px">Cancelar</button>
+  </div>
+</div>
+
+<div id="modalConfig" class="modal config-modal hidden">
+    <h3>Configuración</h3>
+    <div class="input-grid-3">
+      <div class="field"><label>Periodos</label><input id="cfgPeriods" type="number" min="1" max="9"></div>
+      <div class="field"><label>Minutos</label><input id="cfgMinutes" type="number" min="1" max="60"></div>
+      <div class="field"><label>T. Fuera</label><input id="cfgTO" type="number" min="0" max="9"></div>
+    </div>
+    <div class="input-grid-2">
+      <div class="field"><label>Nombre Equipo A</label><input id="cfgNameA"></div>
+      <div class="field"><label>Nombre Equipo B</label><input id="cfgNameB"></div>
+    </div>
+    <div style="margin-bottom:20px">
+      <h4 style="font-weight:700;margin:0 0 8px">Rosters</h4>
+      <div class="rosters">
+        <div class="roster-box">
+          <div class="roster-head"><span>LOCAL</span><button id="addA" class="roster-add">+ Añadir</button></div>
+          <div id="listA" class="roster-list"></div>
         </div>
-        <div class="team-meta">
-          <span>Faltas <b>0</b></span>
-          <span class="timeout-dots" aria-label="Tiempos fuera equipo A"><i></i><i></i><i class="off"></i></span>
+        <div class="roster-box">
+          <div class="roster-head"><span>VISITA</span><button id="addB" class="roster-add">+ Añadir</button></div>
+          <div id="listB" class="roster-list"></div>
         </div>
-      </article>
+      </div>
+    </div>
+    <div class="config-actions">
+      <button id="btnRosterSheet" class="btn-modal btn-indigo">Hoja Presentación</button>
+      <button id="btnReset" class="btn-modal btn-red">Reiniciar Marcador</button>
+      <button id="btnSaveVideo" class="btn-modal btn-emerald">Finalizar y Guardar</button>
+      <button id="closeConfig" class="btn-modal btn-zinc">Cerrar</button>
+    </div>
+</div>
 
-      <article class="clock-card">
-        <p class="live-badge"><span class="live-dot"></span> EN VIVO</p>
-        <strong class="game-clock">10:00</strong>
-        <span class="period-label">1er Cuarto</span>
-      </article>
+<div id="modalRoster" class="roster-sheet hidden">
+  <div class="sheet-head"><h3 style="font-size:20px;font-weight:900;margin:0">Hoja de Presentación</h3><button id="closeRoster" class="btn-modal" style="width:auto;padding:6px 12px">Cerrar</button></div>
+  <div id="rosterContent" class="sheet-grid"></div>
+</div>
 
-      <article class="team-card team-card--b">
-        <div class="team-topline"></div>
-        <div class="team-main team-main--reverse">
-          <div class="team-info team-info--right">
-            <p class="team-label">EQUIPO B</p>
-            <strong class="team-score">00</strong>
-          </div>
-          <div class="team-logo team-logo--b" aria-label="Logo equipo B">
-            <span>🐯</span>
-          </div>
-        </div>
-        <div class="team-meta">
-          <span>Faltas <b>0</b></span>
-          <span class="timeout-dots timeout-dots--b" aria-label="Tiempos fuera equipo B"><i></i><i></i><i class="off"></i></span>
-        </div>
-      </article>
-    </header>
+<div id="modalDownload" class="modal download-modal hidden">
+  <h3>Video listo</h3>
+  <video id="preview" controls=""></video>
+  <div class="download-grid">
+    <a id="downloadLink" class="download-link">Descargar</a>
+    <button id="shareBtn" class="btn-modal primary">Compartir</button>
+  </div>
+  <button id="closeDownload" class="btn-modal" style="margin-top:8px">Cerrar</button>
+</div>
 
-    <section class="prompt-pill" aria-label="Teleprompter">
-      <span class="prompt-icon">✦</span>
-      <p><b>Sugerencia:</b> Canasta del número 13, José Luis</p>
-      <button class="prompt-next" type="button" aria-label="Siguiente sugerencia">›</button>
-    </section>
+<div id="modalCast" class="modal hidden">
+  <h3>Transmitir a TV</h3>
+  <p class="sub" style="margin:12px 0 16px">Pantalla completa activada. Usa <b>AirPlay</b> (iPhone) o <b>Transmitir</b> (Android) desde el centro de control para enviar la imagen a tu Smart TV.</p>
+  <button id="closeCast" class="btn-modal">Entendido</button>
+</div>
 
-    <section class="mic-pill" aria-label="Micrófono activo">
-      <span class="mic-icon">🎙️</span>
-      <span>Micrófono activo</span>
-      <div class="audio-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-    </section>
+<script>
+const $ = id => document.getElementById(id);
+const phrases = ["¡Qué jugada!","Defensa intensa","Busca el espacio","Tiempo clave","Atención a la falta","Ritmo alto","Se viene la presión","Gran esfuerzo defensivo","Juego rápido","Cuidado con la marca"];
+let state = JSON.parse(localStorage.getItem('marcadorUniversal')||'null') || {
+  teamA:{name:'LOCAL',logo:null,score:0,fouls:0,timeouts:3,roster:[]},
+  teamB:{name:'VISITA',logo:null,score:0,fouls:0,timeouts:3,roster:[]},
+  config:{periods:4,duration:10,timeoutCount:3,currentPeriod:1},
+  timer:{timeLeft:600,running:false}
+};
+let stream, mediaRecorder, recordedChunks=[], canvas, ctx, video, logoAImg=new Image(), logoBImg=new Image(), currentTeam='A', tickInt, drawInt;
 
-    <footer class="control-dock" aria-label="Controles del partido">
-      <button class="dock-btn dock-btn--wide dock-btn--clock" data-modal="clock" type="button">
-        <span class="dock-icon">⏱️</span>
-        <strong>Iniciar / Pausa</strong>
-        <small>Tiempo fuera</small>
-      </button>
-      <button class="dock-btn dock-btn--score" data-modal="score" type="button">
-        <span class="dock-icon">🏀</span>
-        <strong>Anotar punto</strong>
-        <small>+1 universal</small>
-      </button>
-      <button class="dock-btn dock-btn--foul" data-modal="foul" type="button">
-        <span class="dock-icon">🚩</span>
-        <strong>Faltas</strong>
-        <small>Equipo / jugador</small>
-      </button>
-      <button class="dock-btn dock-btn--tv" data-modal="tv" type="button">
-        <span class="dock-icon">📺</span>
-        <strong>Transmitir</strong>
-        <small>TV / pantalla</small>
-      </button>
-      <button class="dock-btn dock-btn--settings" data-modal="settings" type="button">
-        <span class="dock-icon">⚙️</span>
-        <strong>Configuración</strong>
-        <small>Datos</small>
-      </button>
-    </footer>
+function save(){ localStorage.setItem('marcadorUniversal', JSON.stringify(state)); }
+function fmt(s){ const m=Math.floor(s/60).toString().padStart(2,'0'); const r=(s%60).toString().padStart(2,'0'); return `${m}:${r}`;}
+function render(){
+  $('scoreA').textContent=String(state.teamA.score).padStart(2,'0');
+  $('scoreB').textContent=String(state.teamB.score).padStart(2,'0');
+  $('foulsA').textContent=state.teamA.fouls;
+  $('foulsB').textContent=state.teamB.fouls;
+  $('toA').textContent=state.teamA.timeouts;
+  $('toB').textContent=state.teamB.timeouts;
+  $('toABtn').textContent=state.teamA.timeouts;
+  $('toBBtn').textContent=state.teamB.timeouts;
+  $('periodNow').textContent=state.config.currentPeriod;
+  $('periodTotal').textContent=state.config.periods;
+  $('timer').textContent=fmt(state.timer.timeLeft);
+  $('teamAName').value=state.teamA.name;
+  $('teamBName').value=state.teamB.name;
+  $('tabA').textContent=state.teamA.name;
+  $('tabB').textContent=state.teamB.name;
+}
+function show(id){$('backdrop').classList.remove('hidden');$(id).classList.remove('hidden')}
+function hide(id){$(id).classList.add('hidden');$('backdrop').classList.add('hidden')}
+function narrate(txt){ const el=$('narration'); el.style.opacity=0; setTimeout(()=>{el.textContent=txt; el.style.opacity=1},200); }
 
-    <div class="modal-backdrop" id="modalBackdrop" hidden></div>
-    <section class="glass-modal" id="glassModal" hidden aria-live="polite">
-      <button class="modal-close" id="modalClose" type="button" aria-label="Cerrar">×</button>
-      <p class="modal-kicker" id="modalKicker">Go Basket Studio</p>
-      <h2 id="modalTitle">Acción</h2>
-      <p id="modalText">Aquí irá la acción seleccionada.</p>
-      <div class="modal-actions" id="modalActions"></div>
-    </section>
-  </main>
+async function init(){
+  video=$('video'); canvas=$('recordCanvas'); ctx=canvas.getContext('2d');
+  if(state.teamA.logo){ logoAImg.src=state.teamA.logo; $('logoAImg').src=state.teamA.logo; $('logoAImg').classList.remove('hidden'); }
+  if(state.teamB.logo){ logoBImg.src=state.teamB.logo; $('logoBImg').src=state.teamB.logo; $('logoBImg').classList.remove('hidden'); }
+  state.teamA.logoImg=logoAImg; state.teamB.logoImg=logoBImg;
+  state.timer.timeLeft=state.timer.timeLeft||state.config.duration*60;
+  render();
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}, audio:true});
+    video.srcObject=stream; await video.play();
+    startCanvasDraw();
+    startRecording();
+    narrate('Cámara y micrófono activos');
+  }catch(e){ narrate('Activa permisos de cámara y micrófono'); console.warn(e); startCanvasDraw(); }
+  setupEvents(); startPhraseLoop(); tickInt=setInterval(tick,1000);
+}
+function startCanvasDraw(){
+  drawInt = requestAnimationFrame(function loop(){
+    if(video.readyState>=2){ ctx.drawImage(video,0,0,720,1280); } else { ctx.fillStyle='#000'; ctx.fillRect(0,0,720,1280); }
+    ctx.fillStyle='rgba(0,0,0,0.72)'; ctx.fillRect(0,0,720,230);
+    roundRect(ctx,305,14,110,28,14); ctx.fillStyle='#dc2626'; ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font='bold 13px system-ui'; ctx.textAlign='center'; ctx.fillText('● EN VIVO',360,33);
+    ctx.font='900 80px system-ui'; ctx.fillText(fmt(state.timer.timeLeft),360,118);
+    ctx.font='bold 16px system-ui'; ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.fillText(`Periodo ${state.config.currentPeriod}/${state.config.periods}`,360,148);
+    drawTeam(state.teamA,110,85,logoAImg);
+    drawTeam(state.teamB,610,85,logoBImg);
+    drawInt=requestAnimationFrame(loop);
+  });
+}
+function roundRect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
+function drawTeam(t,x,y,logo){
+  ctx.save(); ctx.beginPath(); ctx.arc(x-40,y-20,34,0,Math.PI*2); ctx.clip(); ctx.fillStyle='#1a1a1a'; ctx.fillRect(x-74,y-54,68,68); if(logo.complete&&logo.src){ try{ctx.drawImage(logo,x-74,y-54,68,68)}catch{} } ctx.restore();
+  ctx.strokeStyle='rgba(255,255,255,0.9)'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(x-40,y-20,34,0,Math.PI*2); ctx.stroke();
+  ctx.fillStyle='#fff'; ctx.font='bold 17px system-ui'; ctx.textAlign='center'; ctx.fillText(t.name.slice(0,12).toUpperCase(),x-40,y+25);
+  ctx.font='900 68px system-ui'; ctx.fillText(String(t.score).padStart(2,'0'),x-40,y+92);
+  ctx.font='12px system-ui'; ctx.textAlign='left'; ctx.fillStyle='rgba(255,255,255,0.85)'; ctx.fillText(`Faltas: ${t.fouls}`,x-78,y+116); ctx.fillText(`T.Fuera: ${t.timeouts}`,x-78,y+135);
+}
+function startRecording(){
+  try{
+    const canvasStream = canvas.captureStream(30);
+    const audioTrack = stream ? stream.getAudioTracks()[0] : null;
+    const tracks = [...canvasStream.getVideoTracks(), ...(audioTrack?[audioTrack]:[])];
+    const mixed = new MediaStream(tracks);
+    recordedChunks=[];
+    const recOptions = MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus') ? {mimeType:'video/webm;codecs=vp8,opus'} : {};
+    mediaRecorder = new MediaRecorder(mixed, recOptions);
+    mediaRecorder.ondataavailable=e=>{if(e.data.size) recordedChunks.push(e.data)};
+    mediaRecorder.onstop=handleStop;
+    mediaRecorder.start(1000);
+  }catch(e){console.warn('Recorder no disponible',e)}
+}
+function handleStop(){
+  const blob = new Blob(recordedChunks,{type:'video/webm'});
+  const url = URL.createObjectURL(blob);
+  $('preview').src=url;
+  $('downloadLink').href=url;
+  $('downloadLink').download=`marcador-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.webm`;
+  $('shareBtn').onclick=async()=>{ const file=new File([blob],'partido.webm',{type:'video/webm'}); const shareData={files:[file],title:'Partido grabado',text:`${state.teamA.name} ${state.teamA.score} - ${state.teamB.score} ${state.teamB.name}`}; if(navigator.share && (!navigator.canShare || navigator.canShare(shareData))){ try{await navigator.share(shareData)}catch{}} else { alert('Compartir no disponible en este dispositivo'); } };
+  show('modalDownload');
+}
+function tick(){
+  if(!state.timer.running) return;
+  if(state.timer.timeLeft>0){ state.timer.timeLeft--; $('timer').textContent=fmt(state.timer.timeLeft); save(); if(state.timer.timeLeft===0){ endPeriod(); } }
+}
+function startTimer(){ if(state.timer.timeLeft<=0) state.timer.timeLeft=state.config.duration*60; state.timer.running=true; $('startIcon').textContent='⏸'; $('btnStart').lastElementChild.textContent='Pausar'; if(mediaRecorder&&mediaRecorder.state==='paused') mediaRecorder.resume(); narrate('¡Tiempo en marcha!'); save(); }
+function pauseTimer(){ state.timer.running=false; $('startIcon').textContent='▶'; $('btnStart').lastElementChild.textContent='Iniciar'; if(mediaRecorder&&mediaRecorder.state==='recording') mediaRecorder.pause(); save(); show('modalTimeout'); }
+function endPeriod(){
+  pauseTimer(); hide('modalTimeout');
+  narrate(`Fin del periodo ${state.config.currentPeriod}`);
+  if(state.config.currentPeriod>=state.config.periods){ setTimeout(()=>{ if(mediaRecorder&&mediaRecorder.state!=='inactive') mediaRecorder.stop(); },500); } else { state.config.currentPeriod++; state.timer.timeLeft=state.config.duration*60; save(); render(); }
+}
+function setupEvents(){
+  $('logoABtn').onclick=()=>$('logoAInput').click();
+  $('logoBBtn').onclick=()=>$('logoBInput').click();
+  $('logoAInput').onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{state.teamA.logo=r.result; logoAImg.src=r.result; $('logoAImg').src=r.result; $('logoAImg').classList.remove('hidden'); save()}; r.readAsDataURL(f); };
+  $('logoBInput').onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{state.teamB.logo=r.result; logoBImg.src=r.result; $('logoBImg').src=r.result; $('logoBImg').classList.remove('hidden'); save()}; r.readAsDataURL(f); };
+  $('teamAName').oninput=e=>{ state.teamA.name=e.target.value.toUpperCase(); save(); render(); };
+  $('teamBName').oninput=e=>{ state.teamB.name=e.target.value.toUpperCase(); save(); render(); };
+  $('btnStart').onclick=()=>{ state.timer.running?pauseTimer():startTimer(); };
+  $('btnScore').onclick=()=>{ openScore(); };
+  $('btnFoul').onclick=()=>show('modalFoul');
+  $('btnConfig').onclick=openConfig;
+  $('btnCast').onclick=()=>{ try{document.documentElement.requestFullscreen?.();}catch{}; show('modalCast'); };
+  document.querySelectorAll('.toBtn').forEach(b=>b.onclick=()=>{ const t=b.dataset.to; if(t==='A'&&state.teamA.timeouts>0){state.teamA.timeouts--; narrate('Tiempo fuera '+state.teamA.name)} else if(t==='B'&&state.teamB.timeouts>0){state.teamB.timeouts--; narrate('Tiempo fuera '+state.teamB.name)} save(); render(); hide('modalTimeout'); });
+  $('tabA').onclick=()=>{currentTeam='A'; $('tabA').classList.add('active'); $('tabB').classList.remove('active'); populatePlayers();};
+  $('tabB').onclick=()=>{currentTeam='B'; $('tabB').classList.add('active'); $('tabA').classList.remove('active'); populatePlayers();};
+  document.querySelectorAll('.ptBtn').forEach(b=>b.onclick=()=>{ addPoints(currentTeam, parseInt(b.dataset.pts)); });
+  $('closeScore').onclick=()=>hide('modalScore');
+  document.querySelectorAll('.foulBtn').forEach(b=>b.onclick=()=>{ const t=b.dataset.foul; if(t==='A') state.teamA.fouls++; else state.teamB.fouls++; narrate('Falta para '+ (t==='A'?state.teamA.name:state.teamB.name)); save(); render(); hide('modalFoul'); });
+  $('closeFoul').onclick=()=>hide('modalFoul');
+  $('closeConfig').onclick=()=>hide('modalConfig');
+  $('btnReset').onclick=()=>{ if(confirm('¿Reiniciar todo el marcador?')){ localStorage.removeItem('marcadorUniversal'); location.reload(); } };
+  $('btnSaveVideo').onclick=()=>{ hide('modalConfig'); if(mediaRecorder&&mediaRecorder.state!=='inactive') mediaRecorder.stop(); else handleStop(); };
+  $('closeDownload').onclick=()=>hide('modalDownload');
+  $('closeCast').onclick=()=>hide('modalCast');
+  $('btnRosterSheet').onclick=()=>{ buildRosterSheet(); hide('modalConfig'); $('modalRoster').classList.remove('hidden'); };
+  $('closeRoster').onclick=()=>{ $('modalRoster').classList.add('hidden'); };
+  $('addA').onclick=()=>addPlayer('A'); $('addB').onclick=()=>addPlayer('B');
+  $('backdrop').onclick=()=>{ document.querySelectorAll('[id^=modal]').forEach(m=>m.classList.add('hidden')); $('backdrop').classList.add('hidden'); $('modalRoster').classList.add('hidden'); };
+}
+function openScore(){ currentTeam='A'; $('tabA').click(); populatePlayers(); show('modalScore'); }
+function populatePlayers(){ const sel=$('playerSelect'); sel.innerHTML='<option value="">Sin jugador</option>'; const list=(currentTeam==='A'?state.teamA:state.teamB).roster; list.forEach(p=>{ const o=document.createElement('option'); o.value=p.numero; o.textContent=`#${p.numero} ${p.nombre}`; sel.appendChild(o); }); }
+function addPoints(team,pts){ const t=team==='A'?state.teamA:state.teamB; t.score+=pts; const sel=$('playerSelect').value; const player = sel?` #${sel}`:''; narrate(`${t.name}${player} anota ${pts}`); save(); render(); hide('modalScore'); }
+function openConfig(){ $('cfgPeriods').value=state.config.periods; $('cfgMinutes').value=state.config.duration; $('cfgTO').value=state.config.timeoutCount; $('cfgNameA').value=state.teamA.name; $('cfgNameB').value=state.teamB.name; renderRosters(); show('modalConfig'); }
+function renderRosters(){ const la=$('listA'); const lb=$('listB'); la.innerHTML=''; lb.innerHTML=''; state.teamA.roster.forEach((p,i)=>{ la.innerHTML+=`<div class="roster-item"><span>#${p.numero} ${p.nombre}</span><button onclick="delPlayer('A',${i})">x</button></div>`}); state.teamB.roster.forEach((p,i)=>{ lb.innerHTML+=`<div class="roster-item"><span>#${p.numero} ${p.nombre}</span><button onclick="delPlayer('B',${i})">x</button></div>`}); $('cfgNameA').onchange=e=>{state.teamA.name=e.target.value.toUpperCase(); save(); render()}; $('cfgNameB').onchange=e=>{state.teamB.name=e.target.value.toUpperCase(); save(); render()}; $('cfgPeriods').onchange=e=>{state.config.periods=parseInt(e.target.value); $('periodTotal').textContent=e.target.value; save()}; $('cfgMinutes').onchange=e=>{state.config.duration=parseInt(e.target.value); state.timer.timeLeft=state.config.duration*60; save(); render()}; $('cfgTO').onchange=e=>{state.config.timeoutCount=parseInt(e.target.value); state.teamA.timeouts=state.config.timeoutCount; state.teamB.timeouts=state.config.timeoutCount; save(); render()}; }
+function addPlayer(team){ const nombre=prompt('Nombre del jugador:'); if(!nombre) return; const numero=prompt('Número:')||''; const nota=prompt('Nota corta (opcional):')||''; const t=team==='A'?state.teamA:state.teamB; t.roster.push({nombre,numero,nota}); save(); renderRosters(); }
+function delPlayer(team,i){ const t=team==='A'?state.teamA:state.teamB; t.roster.splice(i,1); save(); renderRosters(); }
+function buildRosterSheet(){ const c=$('rosterContent'); c.innerHTML=''; [state.teamA,state.teamB].forEach(t=>{ const col=document.createElement('div'); col.className='sheet-col'; col.innerHTML=`<h4>${t.name}</h4>`+(t.roster.length? t.roster.map(p=>`<div class="sheet-row"><span class="num">#${p.numero}</span><span>${p.nombre}</span></div>`).join('') : '<p style="opacity:.5;text-align:center;font-size:14px">Sin jugadores</p>'); c.appendChild(col); }); }
+let phraseIdx=0; function startPhraseLoop(){ setInterval(()=>{ if(!state.timer.running) return; const el=$('narration'); el.style.opacity=0; setTimeout(()=>{ el.textContent=phrases[phraseIdx%phrases.length]; el.style.opacity=1; phraseIdx++; },250); },4000); }
+window.addEventListener('load',init);
+window.addEventListener('beforeunload',()=>save());
+</script>
 
-  <script src="./app.js"></script>
 </body>
 </html>
