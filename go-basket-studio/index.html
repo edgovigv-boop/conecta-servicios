@@ -11,6 +11,7 @@
   <link rel="apple-touch-icon" href="icon-192.png" />
   <link rel="manifest" href="manifest.webmanifest" />
   <title>Go Basket Studio</title>
+  <!-- stable-state-v2: marcador y nombres se conservan hasta reinicio manual -->
   <style>
 *{box-sizing:border-box}
   html,body{height:100%;margin:0;background:#000;overscroll-behavior:none}
@@ -252,16 +253,58 @@
 
 <script>
 const $ = id => document.getElementById(id);
+const STORAGE_KEY = 'marcadorUniversal';
 const phrases = ["¡Qué jugada!","Defensa intensa","Busca el espacio","Tiempo clave","Atención a la falta","Ritmo alto","Se viene la presión","Gran esfuerzo defensivo","Juego rápido","Cuidado con la marca"];
-let state = JSON.parse(localStorage.getItem('marcadorUniversal')||'null') || {
-  teamA:{name:'LOCAL',logo:null,score:0,fouls:0,timeouts:3,roster:[]},
-  teamB:{name:'VISITA',logo:null,score:0,fouls:0,timeouts:3,roster:[]},
-  config:{periods:4,duration:10,timeoutCount:3,currentPeriod:1},
-  timer:{timeLeft:600,running:false}
-};
+
+function defaultState(){
+  return {
+    teamA:{name:'LOCAL',logo:null,score:0,fouls:0,timeouts:3,roster:[]},
+    teamB:{name:'VISITA',logo:null,score:0,fouls:0,timeouts:3,roster:[]},
+    config:{periods:4,duration:10,timeoutCount:3,currentPeriod:1},
+    timer:{timeLeft:600,running:false}
+  };
+}
+
+function loadState(){
+  const base = defaultState();
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); }
+  catch(e){ saved = null; }
+  const s = saved && typeof saved === 'object' ? saved : {};
+  const safeTeam = (savedTeam, baseTeam) => ({
+    ...baseTeam,
+    ...(savedTeam || {}),
+    name: String((savedTeam && savedTeam.name) || baseTeam.name).toUpperCase(),
+    score: Number.isFinite(Number(savedTeam && savedTeam.score)) ? Number(savedTeam.score) : baseTeam.score,
+    fouls: Number.isFinite(Number(savedTeam && savedTeam.fouls)) ? Number(savedTeam.fouls) : baseTeam.fouls,
+    timeouts: Number.isFinite(Number(savedTeam && savedTeam.timeouts)) ? Number(savedTeam.timeouts) : baseTeam.timeouts,
+    roster: Array.isArray(savedTeam && savedTeam.roster) ? savedTeam.roster : []
+  });
+  const cfg = {...base.config, ...(s.config || {})};
+  cfg.periods = Math.max(1, Number(cfg.periods) || base.config.periods);
+  cfg.duration = Math.max(1, Number(cfg.duration) || base.config.duration);
+  cfg.timeoutCount = Math.max(0, Number(cfg.timeoutCount) || base.config.timeoutCount);
+  cfg.currentPeriod = Math.max(1, Number(cfg.currentPeriod) || 1);
+  const t = {...base.timer, ...(s.timer || {})};
+  t.timeLeft = Number.isFinite(Number(t.timeLeft)) ? Number(t.timeLeft) : cfg.duration * 60;
+  t.running = false; // al abrir la app nunca debe arrancar sola
+  return { teamA: safeTeam(s.teamA, base.teamA), teamB: safeTeam(s.teamB, base.teamB), config: cfg, timer: t };
+}
+
+let state = loadState();
 let stream, mediaRecorder, recordedChunks=[], canvas, ctx, video, logoAImg=new Image(), logoBImg=new Image(), currentTeam='A', tickInt, drawInt;
 
-function save(){ localStorage.setItem('marcadorUniversal', JSON.stringify(state)); }
+function save(){
+  try {
+    const clean = JSON.parse(JSON.stringify({
+      teamA: state.teamA,
+      teamB: state.teamB,
+      config: state.config,
+      timer: {...state.timer, running:false}
+    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(clean));
+  } catch(e){ console.warn('No se pudo guardar el marcador', e); }
+}
 function fmt(s){ const m=Math.floor(s/60).toString().padStart(2,'0'); const r=(s%60).toString().padStart(2,'0'); return `${m}:${r}`;}
 function render(){
   $('scoreA').textContent=String(state.teamA.score).padStart(2,'0');
@@ -288,8 +331,10 @@ async function init(){
   video=$('video'); canvas=$('recordCanvas'); ctx=canvas.getContext('2d');
   if(state.teamA.logo){ logoAImg.src=state.teamA.logo; $('logoAImg').src=state.teamA.logo; $('logoAImg').classList.remove('hidden'); }
   if(state.teamB.logo){ logoBImg.src=state.teamB.logo; $('logoBImg').src=state.teamB.logo; $('logoBImg').classList.remove('hidden'); }
-  state.teamA.logoImg=logoAImg; state.teamB.logoImg=logoBImg;
-  state.timer.timeLeft=state.timer.timeLeft||state.config.duration*60;
+  // No guardamos objetos de imagen dentro del estado: solo datos simples.
+  if (!Number.isFinite(Number(state.timer.timeLeft))) state.timer.timeLeft = state.config.duration * 60;
+  state.timer.running = false;
+  save();
   render();
   try{
     stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}, audio:true});
@@ -351,17 +396,28 @@ function tick(){
 function startTimer(){ if(state.timer.timeLeft<=0) state.timer.timeLeft=state.config.duration*60; state.timer.running=true; $('startIcon').textContent='⏸'; $('btnStart').lastElementChild.textContent='Pausar'; if(mediaRecorder&&mediaRecorder.state==='paused') mediaRecorder.resume(); narrate('¡Tiempo en marcha!'); save(); }
 function pauseTimer(){ state.timer.running=false; $('startIcon').textContent='▶'; $('btnStart').lastElementChild.textContent='Iniciar'; if(mediaRecorder&&mediaRecorder.state==='recording') mediaRecorder.pause(); save(); show('modalTimeout'); }
 function endPeriod(){
-  pauseTimer(); hide('modalTimeout');
+  state.timer.running = false;
+  $('startIcon').textContent='▶';
+  $('btnStart').lastElementChild.textContent='Iniciar';
+  if(mediaRecorder&&mediaRecorder.state==='recording') mediaRecorder.pause();
   narrate(`Fin del periodo ${state.config.currentPeriod}`);
-  if(state.config.currentPeriod>=state.config.periods){ setTimeout(()=>{ if(mediaRecorder&&mediaRecorder.state!=='inactive') mediaRecorder.stop(); },500); } else { state.config.currentPeriod++; state.timer.timeLeft=state.config.duration*60; save(); render(); }
+  if(state.config.currentPeriod>=state.config.periods){
+    save();
+    setTimeout(()=>{ if(mediaRecorder&&mediaRecorder.state!=='inactive') mediaRecorder.stop(); },500);
+  } else {
+    state.config.currentPeriod++;
+    state.timer.timeLeft=state.config.duration*60;
+    save();
+    render();
+  }
 }
 function setupEvents(){
   $('logoABtn').onclick=()=>$('logoAInput').click();
   $('logoBBtn').onclick=()=>$('logoBInput').click();
   $('logoAInput').onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{state.teamA.logo=r.result; logoAImg.src=r.result; $('logoAImg').src=r.result; $('logoAImg').classList.remove('hidden'); save()}; r.readAsDataURL(f); };
   $('logoBInput').onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{state.teamB.logo=r.result; logoBImg.src=r.result; $('logoBImg').src=r.result; $('logoBImg').classList.remove('hidden'); save()}; r.readAsDataURL(f); };
-  $('teamAName').oninput=e=>{ state.teamA.name=e.target.value.toUpperCase(); save(); render(); };
-  $('teamBName').oninput=e=>{ state.teamB.name=e.target.value.toUpperCase(); save(); render(); };
+  $('teamAName').oninput=e=>{ state.teamA.name=e.target.value.toUpperCase(); $('tabA').textContent=state.teamA.name; save(); };
+  $('teamBName').oninput=e=>{ state.teamB.name=e.target.value.toUpperCase(); $('tabB').textContent=state.teamB.name; save(); };
   $('btnStart').onclick=()=>{ state.timer.running?pauseTimer():startTimer(); };
   $('btnScore').onclick=()=>{ openScore(); };
   $('btnFoul').onclick=()=>show('modalFoul');
@@ -388,13 +444,15 @@ function openScore(){ currentTeam='A'; $('tabA').click(); populatePlayers(); sho
 function populatePlayers(){ const sel=$('playerSelect'); sel.innerHTML='<option value="">Sin jugador</option>'; const list=(currentTeam==='A'?state.teamA:state.teamB).roster; list.forEach(p=>{ const o=document.createElement('option'); o.value=p.numero; o.textContent=`#${p.numero} ${p.nombre}`; sel.appendChild(o); }); }
 function addPoints(team,pts){ const t=team==='A'?state.teamA:state.teamB; t.score+=pts; const sel=$('playerSelect').value; const player = sel?` #${sel}`:''; narrate(`${t.name}${player} anota ${pts}`); save(); render(); hide('modalScore'); }
 function openConfig(){ $('cfgPeriods').value=state.config.periods; $('cfgMinutes').value=state.config.duration; $('cfgTO').value=state.config.timeoutCount; $('cfgNameA').value=state.teamA.name; $('cfgNameB').value=state.teamB.name; renderRosters(); show('modalConfig'); }
-function renderRosters(){ const la=$('listA'); const lb=$('listB'); la.innerHTML=''; lb.innerHTML=''; state.teamA.roster.forEach((p,i)=>{ la.innerHTML+=`<div class="roster-item"><span>#${p.numero} ${p.nombre}</span><button onclick="delPlayer('A',${i})">x</button></div>`}); state.teamB.roster.forEach((p,i)=>{ lb.innerHTML+=`<div class="roster-item"><span>#${p.numero} ${p.nombre}</span><button onclick="delPlayer('B',${i})">x</button></div>`}); $('cfgNameA').onchange=e=>{state.teamA.name=e.target.value.toUpperCase(); save(); render()}; $('cfgNameB').onchange=e=>{state.teamB.name=e.target.value.toUpperCase(); save(); render()}; $('cfgPeriods').onchange=e=>{state.config.periods=parseInt(e.target.value); $('periodTotal').textContent=e.target.value; save()}; $('cfgMinutes').onchange=e=>{state.config.duration=parseInt(e.target.value); state.timer.timeLeft=state.config.duration*60; save(); render()}; $('cfgTO').onchange=e=>{state.config.timeoutCount=parseInt(e.target.value); state.teamA.timeouts=state.config.timeoutCount; state.teamB.timeouts=state.config.timeoutCount; save(); render()}; }
+function renderRosters(){ const la=$('listA'); const lb=$('listB'); la.innerHTML=''; lb.innerHTML=''; state.teamA.roster.forEach((p,i)=>{ la.innerHTML+=`<div class="roster-item"><span>#${p.numero} ${p.nombre}</span><button onclick="delPlayer('A',${i})">x</button></div>`}); state.teamB.roster.forEach((p,i)=>{ lb.innerHTML+=`<div class="roster-item"><span>#${p.numero} ${p.nombre}</span><button onclick="delPlayer('B',${i})">x</button></div>`}); $('cfgNameA').oninput=e=>{state.teamA.name=e.target.value.toUpperCase(); save(); render()}; $('cfgNameB').oninput=e=>{state.teamB.name=e.target.value.toUpperCase(); save(); render()}; $('cfgPeriods').oninput=e=>{state.config.periods=Math.max(1,parseInt(e.target.value)||1); $('periodTotal').textContent=state.config.periods; save()}; $('cfgMinutes').oninput=e=>{state.config.duration=Math.max(1,parseInt(e.target.value)||10); if(!state.timer.running){ state.timer.timeLeft=state.config.duration*60; } save(); render()}; $('cfgTO').oninput=e=>{state.config.timeoutCount=Math.max(0,parseInt(e.target.value)||0); state.teamA.timeouts=Math.min(state.teamA.timeouts,state.config.timeoutCount); state.teamB.timeouts=Math.min(state.teamB.timeouts,state.config.timeoutCount); save(); render()}; }
 function addPlayer(team){ const nombre=prompt('Nombre del jugador:'); if(!nombre) return; const numero=prompt('Número:')||''; const nota=prompt('Nota corta (opcional):')||''; const t=team==='A'?state.teamA:state.teamB; t.roster.push({nombre,numero,nota}); save(); renderRosters(); }
 function delPlayer(team,i){ const t=team==='A'?state.teamA:state.teamB; t.roster.splice(i,1); save(); renderRosters(); }
 function buildRosterSheet(){ const c=$('rosterContent'); c.innerHTML=''; [state.teamA,state.teamB].forEach(t=>{ const col=document.createElement('div'); col.className='sheet-col'; col.innerHTML=`<h4>${t.name}</h4>`+(t.roster.length? t.roster.map(p=>`<div class="sheet-row"><span class="num">#${p.numero}</span><span>${p.nombre}</span></div>`).join('') : '<p style="opacity:.5;text-align:center;font-size:14px">Sin jugadores</p>'); c.appendChild(col); }); }
 let phraseIdx=0; function startPhraseLoop(){ setInterval(()=>{ if(!state.timer.running) return; const el=$('narration'); el.style.opacity=0; setTimeout(()=>{ el.textContent=phrases[phraseIdx%phrases.length]; el.style.opacity=1; phraseIdx++; },250); },4000); }
 window.addEventListener('load',init);
-window.addEventListener('beforeunload',()=>save());
+window.addEventListener('beforeunload',()=>{ state.timer.running=false; save(); });
+window.addEventListener('pagehide',()=>{ state.timer.running=false; save(); });
+document.addEventListener('visibilitychange',()=>{ if(document.hidden){ state.timer.running=false; save(); } });
 </script>
 
 </body>
