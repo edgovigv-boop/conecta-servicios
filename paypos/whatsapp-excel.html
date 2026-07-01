@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <title>PayPos Fer — WhatsApp a Excel</title>
+  <title>Ordena tus ventas — WhatsApp a Excel</title>
   <style>
     :root{font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#172033;background:#f8fafc;--green:#16a34a;--purple:#5b2eea;--line:#e5e7eb;--muted:#64748b}
     *{box-sizing:border-box}
@@ -34,10 +34,10 @@
   </div>
 
   <section class="card">
-    <p class="small">PAYPOS FER</p>
-    <h1>PayPos Fer — WhatsApp a Excel</h1>
-    <p class="muted">Captura movimientos como si los escribieras por WhatsApp y conviértelos en una tabla ordenada para Excel.</p>
-    <p class="note">PayPos no reemplaza Excel. PayPos ayuda a capturar movimientos fácil y exportarlos ordenados para Excel.</p>
+    <p class="small">ORDENA TUS VENTAS</p>
+    <h1>Ordena tus ventas</h1>
+    <p class="muted">Escribe tus ventas, compras, gastos o pagos como si fuera un mensaje de WhatsApp. Conecta los convierte en una tabla ordenada para Excel.</p>
+    <p class="note">Esta herramienta no reemplaza tu Excel. Te ayuda a capturar movimientos fácil y exportarlos de forma ordenada.</p>
     <p class="note warning">Herramienta en prueba interna. Validar la información antes de usarla para decisiones contables.</p>
   </section>
 
@@ -91,7 +91,7 @@
 </main>
 <script>
 (function(){
-  var STORAGE_KEY='paypos_fer_whatsapp_excel_demo';
+  var STORAGE_KEY='ordena_ventas_whatsapp_excel_demo';
   var columns=['fecha','tipo_movimiento','reporte_sugerido','concepto','producto_o_insumo','cantidad','unidad','cliente_o_proveedor','entrada_efectivo','salida_efectivo','impacto_patrimonio','notas','texto_original'];
   var products=['pay fresas grandes','arroz con leche','crema mezclada','pay limón','pay limon','pay arroz','pay fresas'];
   var supplies=['media crema','gasolina','galletas','jabón','jabon','leche','limón','limon','arroz','fresa','azúcar','azucar','vasos','gas'];
@@ -130,7 +130,7 @@
   function add(){var text=el('input').value.trim();if(!text){setMsg('Escribe un movimiento primero.','err');return}var row=parseMovement(text);rows.unshift(row);saveRows();render();el('input').value='';setMsg('Movimiento registrado como: '+row.tipo_movimiento,'ok')}
   function csvEscape(value){var s=String(value==null?'':value);return /[",\n;]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
   function toCsv(){return columns.join(',')+'\n'+rows.map(function(row){return columns.map(function(c){return csvEscape(row[c])}).join(',')}).join('\n')}
-  function exportCsv(){if(!rows.length){setMsg('No hay movimientos para exportar.','err');return}var blob=new Blob(['\ufeff'+toCsv()],{type:'text/csv;charset=utf-8'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='paypos-fer-whatsapp-excel-'+today()+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);setMsg('CSV exportado para Excel.','ok')}
+  function exportCsv(){if(!rows.length){setMsg('No hay movimientos para exportar.','err');return}var blob=new Blob(['\ufeff'+toCsv()],{type:'text/csv;charset=utf-8'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='ordena-tus-ventas-'+today()+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);setMsg('CSV exportado para Excel.','ok')}
   async function copyTable(){if(!rows.length){setMsg('No hay movimientos para copiar.','err');return}var text=columns.join('\t')+'\n'+rows.map(function(row){return columns.map(function(c){return row[c]}).join('\t')}).join('\n');try{await navigator.clipboard.writeText(text);setMsg('Tabla copiada. Pégala directo en Excel.','ok')}catch(e){setMsg('No se pudo copiar automáticamente. Usa Exportar CSV.','err')}}
   function clearDemo(){if(!confirm('¿Limpiar los datos demo de esta herramienta?'))return;rows=[];saveRows();render();setMsg('Demo limpia. Puedes capturar nuevos movimientos.','ok')}
   el('examples').innerHTML=examples.map(function(x){return '<button class="example" data-text="'+esc(x)+'">'+esc(x)+'</button>'}).join('');
