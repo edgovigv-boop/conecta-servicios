@@ -18,5 +18,39 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="app.js?v=5.2.16-publicar-simple" defer></script>
   <script src="investor-demo-fixes.js?v=5.2.16-publicar-simple" defer></script>
+  <script>
+    (function () {
+      'use strict';
+      var CARD_ID = 'paypos-fer-profile-access';
+
+      function addPayposAccess() {
+        if (!document.body.classList.contains('route-perfil')) return;
+        if (document.getElementById(CARD_ID)) return;
+        var options = document.querySelector('.big-options');
+        if (!options) return;
+
+        var link = document.createElement('a');
+        link.id = CARD_ID;
+        link.className = 'big-option';
+        link.href = '/paypos/whatsapp-excel.html';
+        link.setAttribute('aria-label', 'Abrir PayPos Fer');
+        link.innerHTML = '<span class="ico">📊</span><div><b>PayPos Fer</b><small>Captura movimientos tipo WhatsApp y conviértelos en tabla para Excel.</small><span style="display:inline-flex;margin-top:8px;color:#5b2eea;font-weight:950">Abrir herramienta</span></div>';
+        options.appendChild(link);
+      }
+
+      function watchApp() {
+        var root = document.getElementById('app');
+        if (!root) return;
+        addPayposAccess();
+        new MutationObserver(addPayposAccess).observe(root, { childList: true, subtree: true });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', watchApp);
+      } else {
+        watchApp();
+      }
+    }());
+  </script>
 </body>
 </html>
