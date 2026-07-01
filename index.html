@@ -21,28 +21,307 @@
   <script>
     (function () {
       'use strict';
-      var CARD_ID = 'paypos-fer-profile-access';
 
-      function addPayposAccess() {
+      var SALES_CARD_ID = 'ordena-ventas-profile-access';
+      var BUSINESS_CARD_ID = 'publica-negocio-home-access';
+      var BUSINESS_SCREEN_ID = 'publica-negocio-screen';
+      var STYLE_ID = 'publica-negocio-styles';
+      var SALES_TOOL_URL = '/paypos/whatsapp-excel.html';
+      // Reemplazar este número por el WhatsApp real de Conecta Servicios.
+      const CONECTA_WHATSAPP = "521XXXXXXXXXX";
+
+      function escapeHtml(value) {
+        return String(value || '').replace(/[&<>"]/g, function (char) {
+          return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[char];
+        });
+      }
+
+      function injectStyles() {
+        if (document.getElementById(STYLE_ID)) return;
+        var style = document.createElement('style');
+        style.id = STYLE_ID;
+        style.textContent = [
+          '.publica-home-card{margin:14px 0;padding:18px;border-radius:24px;background:linear-gradient(135deg,#4c1d95,#7c3aed 52%,#f97316);color:#fff;box-shadow:0 18px 38px rgba(76,29,149,.25);overflow:hidden;position:relative}',
+          '.publica-home-card:after{content:"";position:absolute;right:-42px;top:-42px;width:132px;height:132px;border-radius:999px;background:rgba(255,255,255,.16)}',
+          '.publica-home-card b{display:block;font-size:1.25rem;margin-bottom:6px}',
+          '.publica-home-card small{display:block;color:rgba(255,255,255,.9);line-height:1.45;max-width:34rem}',
+          '.publica-home-card button,.publica-primary-button{border:0;border-radius:999px;background:#fff;color:#4c1d95;font-weight:950;padding:11px 16px;margin-top:14px;box-shadow:0 10px 24px rgba(0,0,0,.18);cursor:pointer}',
+          '.publica-screen{position:fixed;inset:0;z-index:80;background:#f8fafc;color:#172033;overflow:auto;padding:18px 14px 92px}',
+          '.publica-screen[hidden]{display:none}',
+          '.publica-wrap{width:min(980px,100%);margin:0 auto}',
+          '.publica-close{position:sticky;top:8px;z-index:2;margin-left:auto;display:flex;border:0;border-radius:999px;background:#172033;color:#fff;font-weight:900;padding:10px 14px;cursor:pointer}',
+          '.publica-hero{margin:8px 0 16px;padding:28px 20px;border-radius:30px;background:radial-gradient(circle at top right,rgba(255,255,255,.28),transparent 34%),linear-gradient(135deg,#4c1d95,#7c3aed 58%,#fb923c);color:#fff;box-shadow:0 24px 54px rgba(76,29,149,.28)}',
+          '.publica-kicker{display:inline-flex;gap:8px;align-items:center;border-radius:999px;background:rgba(255,255,255,.18);padding:7px 11px;font-weight:900;font-size:.82rem}',
+          '.publica-hero h1{font-size:clamp(2rem,8vw,4.6rem);line-height:.96;margin:18px 0 12px;letter-spacing:-.06em}',
+          '.publica-hero p{font-size:1.03rem;line-height:1.55;color:rgba(255,255,255,.93);max-width:44rem;margin:0}',
+          '.publica-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}',
+          '.publica-secondary-button{border:1px solid rgba(255,255,255,.45);border-radius:999px;background:rgba(255,255,255,.12);color:#fff;font-weight:950;padding:11px 16px;cursor:pointer}',
+          '.publica-trust{margin-top:16px;font-size:.91rem;color:rgba(255,255,255,.88)}',
+          '.publica-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}',
+          '.publica-card,.publica-form-card{background:#fff;border:1px solid #e5e7eb;border-radius:24px;padding:16px;box-shadow:0 14px 32px rgba(15,23,42,.07)}',
+          '.publica-card h2,.publica-card h3,.publica-form-card h2{margin:0 0 8px;color:#172033;letter-spacing:-.03em}',
+          '.publica-card p,.publica-card li,.publica-form-card p{color:#475569;line-height:1.5;margin:0}',
+          '.publica-section-title{margin:24px 2px 12px}',
+          '.publica-section-title h2{margin:0;color:#172033;letter-spacing:-.04em;font-size:1.55rem}',
+          '.publica-section-title p{margin:6px 0 0;color:#64748b;line-height:1.45}',
+          '.publica-packages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}',
+          '.publica-package{position:relative;display:flex;flex-direction:column;gap:10px}',
+          '.publica-package strong{font-size:1.15rem;color:#172033}',
+          '.publica-price{font-size:1.9rem;font-weight:1000;color:#5b2eea;letter-spacing:-.05em}',
+          '.publica-tag{align-self:flex-start;border-radius:999px;background:#ede9fe;color:#5b21b6;font-weight:900;font-size:.78rem;padding:6px 9px}',
+          '.publica-package ul{padding-left:18px;margin:0;display:grid;gap:6px}',
+          '.publica-package button,.publica-form-card button{border:0;border-radius:999px;background:#5b2eea;color:#fff;font-weight:950;padding:12px 15px;margin-top:auto;cursor:pointer}',
+          '.publica-sales-link{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:linear-gradient(135deg,#0f172a,#334155);color:#fff}',
+          '.publica-sales-link h2,.publica-sales-link p{color:#fff}',
+          '.publica-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}',
+          '.publica-field{display:grid;gap:6px;font-weight:900;color:#334155}',
+          '.publica-field input,.publica-field select,.publica-field textarea{width:100%;border:1px solid #cbd5e1;border-radius:16px;padding:12px 13px;font:inherit;color:#172033;background:#fff}',
+          '.publica-field textarea{min-height:96px;resize:vertical}',
+          '.publica-field.full{grid-column:1/-1}',
+          '.publica-form-msg{min-height:24px;margin-top:10px;font-weight:900;color:#5b2eea}',
+          '@media (max-width:760px){.publica-screen{padding:12px 10px 88px}.publica-hero{padding:24px 16px;border-radius:26px}.publica-grid,.publica-packages,.publica-form-grid{grid-template-columns:1fr}.publica-card,.publica-form-card{border-radius:22px}.publica-close{top:6px}.publica-home-card{margin:12px 0}}'
+        ].join('\n');
+        document.head.appendChild(style);
+      }
+
+      function addSalesAccess() {
         if (!document.body.classList.contains('route-perfil')) return;
-        if (document.getElementById(CARD_ID)) return;
+        if (document.getElementById(SALES_CARD_ID)) return;
         var options = document.querySelector('.big-options');
         if (!options) return;
 
         var link = document.createElement('a');
-        link.id = CARD_ID;
+        link.id = SALES_CARD_ID;
         link.className = 'big-option';
-        link.href = '/paypos/whatsapp-excel.html';
-        link.setAttribute('aria-label', 'Abrir PayPos Fer');
-        link.innerHTML = '<span class="ico">📊</span><div><b>PayPos Fer</b><small>Captura movimientos tipo WhatsApp y conviértelos en tabla para Excel.</small><span style="display:inline-flex;margin-top:8px;color:#5b2eea;font-weight:950">Abrir herramienta</span></div>';
+        link.href = SALES_TOOL_URL;
+        link.setAttribute('aria-label', 'Abrir Ordena tus ventas');
+        link.innerHTML = '<span class="ico">📊</span><div><b>Ordena tus ventas</b><small>Captura ventas, gastos y movimientos como mensaje de WhatsApp y conviértelos en una tabla para Excel.</small><span style="display:inline-flex;margin-top:8px;color:#5b2eea;font-weight:950">Abrir herramienta</span></div>';
         options.appendChild(link);
+      }
+
+      function addBusinessHomeAccess() {
+        if (!document.body.classList.contains('route-home')) return;
+        if (document.getElementById(BUSINESS_CARD_ID)) return;
+        var app = document.getElementById('app');
+        if (!app) return;
+
+        var card = document.createElement('section');
+        card.id = BUSINESS_CARD_ID;
+        card.className = 'publica-home-card';
+        card.innerHTML = '<b>Publica tu negocio</b><small>Creamos tu anuncio y te ayudamos a promocionarte localmente en Conecta Servicios.</small><button type="button" data-open-publica-negocio>Ver paquetes</button>';
+
+        var hero = app.querySelector('.quick-hero');
+        if (hero && hero.parentNode) {
+          hero.parentNode.insertBefore(card, hero.nextSibling);
+        } else {
+          app.insertBefore(card, app.firstChild);
+        }
+      }
+
+      function packageCard(name, price, tag, items) {
+        return '<article class="publica-card publica-package"><span class="publica-tag">' + escapeHtml(tag) + '</span><strong>' + escapeHtml(name) + '</strong><div class="publica-price">' + escapeHtml(price) + '</div><ul>' + items.map(function (item) { return '<li>' + escapeHtml(item) + '</li>'; }).join('') + '</ul><button type="button" data-package="' + escapeHtml(name) + '">Quiero este paquete</button></article>';
+      }
+
+      function ensureBusinessScreen() {
+        if (document.getElementById(BUSINESS_SCREEN_ID)) return;
+        var screen = document.createElement('section');
+        screen.id = BUSINESS_SCREEN_ID;
+        screen.className = 'publica-screen';
+        screen.hidden = true;
+        screen.setAttribute('aria-label', 'Publica tu negocio');
+        screen.innerHTML = [
+          '<div class="publica-wrap">',
+          '<button class="publica-close" type="button" data-close-publica-negocio>Volver a Conecta</button>',
+          '<header class="publica-hero">',
+          '<span class="publica-kicker">✨ Visibilidad local para negocios reales</span>',
+          '<h1>Publica tu negocio en Conecta Servicios</h1>',
+          '<p>Te ayudamos a convertir lo que vendes u ofreces en una publicación clara, bonita y fácil de compartir para que más vecinos te encuentren.</p>',
+          '<div class="publica-actions"><button class="publica-primary-button" type="button" data-scroll-publica-form>Publicar mi negocio</button><button class="publica-secondary-button" type="button" data-scroll-publica-packages>Ver paquetes</button></div>',
+          '<div class="publica-trust">Sin pagos automáticos dentro de la app. Primero revisamos tu información por WhatsApp y validamos contigo antes de publicar.</div>',
+          '</header>',
+          '<div class="publica-grid">',
+          '<article class="publica-card"><h3>Anuncio claro</h3><p>Ordenamos tu oferta para que se entienda rápido.</p></article>',
+          '<article class="publica-card"><h3>Promoción local</h3><p>Enfocado en vecinos, clientes cercanos y zonas reales.</p></article>',
+          '<article class="publica-card"><h3>Contacto directo</h3><p>Tu WhatsApp queda listo para recibir interesados.</p></article>',
+          '<article class="publica-card"><h3>Mejor presentación</h3><p>Texto, categoría y llamada a la acción con más confianza.</p></article>',
+          '</div>',
+          '<section class="publica-section-title"><h2>Qué hacemos por ti</h2><p>No solo subimos datos: damos forma a tu anuncio para que venda mejor.</p></section>',
+          '<div class="publica-grid">',
+          '<article class="publica-card"><h3>Redacción</h3><p>Convertimos tu descripción en un mensaje directo y atractivo.</p></article>',
+          '<article class="publica-card"><h3>Ficha del negocio</h3><p>Organizamos nombre, zona, categoría, WhatsApp y servicios.</p></article>',
+          '<article class="publica-card"><h3>Publicación guiada</h3><p>Revisamos contigo antes de activar o compartir la publicación.</p></article>',
+          '<article class="publica-card"><h3>Impulso comunitario</h3><p>Ayudamos a que más personas locales sepan qué ofreces.</p></article>',
+          '</div>',
+          '<section class="publica-section-title" id="publica-packages"><h2>Paquetes para publicar</h2><p>Elige el punto de partida. Los precios pueden ajustarse antes del lanzamiento final.</p></section>',
+          '<div class="publica-packages">',
+          packageCard('Básico local', '$99', 'Para empezar', ['Ficha sencilla del negocio', 'Texto de venta ordenado', 'Contacto por WhatsApp', 'Publicación inicial en Conecta']),
+          packageCard('Impulso local', '$199', 'Más visible', ['Todo lo del básico', 'Mejora del mensaje comercial', 'Categoría y zona destacadas', 'Sugerencias para publicar mejor']),
+          packageCard('Presencia premium', '$349', 'Más completo', ['Ficha más completa', 'Texto optimizado para confianza', 'Acompañamiento de publicación', 'Revisión para promociones futuras']),
+          '</div>',
+          '<section class="publica-card publica-sales-link" style="margin-top:16px">',
+          '<div><h2>También puedes ordenar tus ventas</h2><p>Captura movimientos como si fueran mensajes de WhatsApp y conviértelos en tabla para Excel.</p></div>',
+          '<button class="publica-primary-button" type="button" data-open-sales-tool>Abrir herramienta</button>',
+          '</section>',
+          '<section class="publica-section-title"><h2>¿Para quién es?</h2><p>Para negocios, servicios y vendedores que quieren verse más profesionales sin complicarse.</p></section>',
+          '<div class="publica-grid">',
+          '<article class="publica-card"><h3>Comercios</h3><p>Tiendas, alimentos, bazares, estética, talleres y venta local.</p></article>',
+          '<article class="publica-card"><h3>Servicios</h3><p>Oficios, técnicos, limpieza, clases, reparaciones y mandados.</p></article>',
+          '<article class="publica-card"><h3>Emprendedores</h3><p>Personas que venden por WhatsApp, Facebook o recomendación.</p></article>',
+          '<article class="publica-card"><h3>Negocios nuevos</h3><p>Quienes necesitan una primera presentación clara y compartible.</p></article>',
+          '</div>',
+          '<section class="publica-section-title"><h2>Cómo funciona</h2><p>Un proceso simple para publicar sin perder control de tu información.</p></section>',
+          '<div class="publica-grid">',
+          '<article class="publica-card"><h3>1. Envías tus datos</h3><p>Completa el formulario y se abre WhatsApp con tu solicitud.</p></article>',
+          '<article class="publica-card"><h3>2. Revisamos contigo</h3><p>Confirmamos información, zona, categoría y paquete.</p></article>',
+          '<article class="publica-card"><h3>3. Preparamos tu anuncio</h3><p>Damos formato para que se vea claro y confiable.</p></article>',
+          '<article class="publica-card"><h3>4. Publicas y compartes</h3><p>Tu negocio queda listo para promoción local.</p></article>',
+          '</div>',
+          '<section class="publica-form-card" id="publica-form" style="margin-top:18px">',
+          '<h2>Solicitar publicación</h2><p>Llena estos datos. Se abrirá WhatsApp con el mensaje listo para enviar.</p>',
+          '<form class="publica-form-grid" novalidate>',
+          '<label class="publica-field">Nombre del negocio o servicio<input name="businessName" autocomplete="organization" required></label>',
+          '<label class="publica-field">Nombre de contacto<input name="contactName" autocomplete="name" required></label>',
+          '<label class="publica-field">WhatsApp<input name="phone" inputmode="tel" autocomplete="tel" required></label>',
+          '<label class="publica-field">Municipio o zona<input name="zone" autocomplete="address-level2" required></label>',
+          '<label class="publica-field">Categoría<select name="category"><option value="Negocio local">Negocio local</option><option value="Servicio">Servicio</option><option value="Comida o alimentos">Comida o alimentos</option><option value="Venta por catálogo">Venta por catálogo</option><option value="Mandados o entregas">Mandados o entregas</option><option value="Otro">Otro</option></select></label>',
+          '<label class="publica-field">Paquete de interés<select name="package" required><option value="">Seleccionar paquete</option><option>Básico local</option><option>Impulso local</option><option>Presencia premium</option></select></label>',
+          '<label class="publica-field full">Qué vendes u ofreces<textarea name="offer" required placeholder="Ejemplo: vendo comida corrida, entrego en la zona y acepto pedidos por WhatsApp."></textarea></label>',
+          '<label class="publica-field full">Comentarios<textarea name="comments" placeholder="Horario, colonia, promociones, fotos disponibles o dudas."></textarea></label>',
+          '<button type="button" data-submit-business>Enviar por WhatsApp</button>',
+          '</form><div class="publica-form-msg" id="publica-form-msg" role="status" aria-live="polite"></div>',
+          '</section>',
+          '<section class="publica-card" style="margin-top:16px"><h2>Confianza antes de publicar</h2><p>Conecta Servicios debe validar la información antes de usarla como anuncio público. No envíes datos sensibles ni comprobantes por este formulario.</p></section>',
+          '</div>'
+        ].join('');
+        document.body.appendChild(screen);
+      }
+
+      function showBusinessSection() {
+        ensureBusinessScreen();
+        var screen = document.getElementById(BUSINESS_SCREEN_ID);
+        if (!screen) return;
+        screen.hidden = false;
+        screen.scrollTop = 0;
+        document.body.style.overflow = 'hidden';
+      }
+
+      function hideBusinessSection() {
+        var screen = document.getElementById(BUSINESS_SCREEN_ID);
+        if (!screen) return;
+        screen.hidden = true;
+        document.body.style.overflow = '';
+      }
+
+      function scrollInsideScreen(selector) {
+        ensureBusinessScreen();
+        var target = document.querySelector(selector);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      function getForm() {
+        ensureBusinessScreen();
+        var screen = document.getElementById(BUSINESS_SCREEN_ID);
+        return screen ? screen.querySelector('form') : null;
+      }
+
+      function submitBusinessRequest() {
+        var form = getForm();
+        var messageBox = document.getElementById('publica-form-msg');
+        if (!form || !messageBox) return;
+        var data = new FormData(form);
+        var required = ['businessName', 'contactName', 'phone', 'zone', 'offer', 'package'];
+        var missing = required.some(function (name) { return !String(data.get(name) || '').trim(); });
+        if (missing) {
+          messageBox.textContent = 'Completa los campos obligatorios para preparar el mensaje.';
+          return;
+        }
+
+        var message = [
+          'Hola, quiero publicar mi negocio en Conecta Servicios.',
+          '',
+          'Nombre del negocio:',
+          String(data.get('businessName') || '').trim(),
+          '',
+          'Nombre de contacto:',
+          String(data.get('contactName') || '').trim(),
+          '',
+          'WhatsApp:',
+          String(data.get('phone') || '').trim(),
+          '',
+          'Municipio o zona:',
+          String(data.get('zone') || '').trim(),
+          '',
+          'Categoría:',
+          String(data.get('category') || '').trim(),
+          '',
+          'Qué vendo u ofrezco:',
+          String(data.get('offer') || '').trim(),
+          '',
+          'Paquete de interés:',
+          String(data.get('package') || '').trim(),
+          '',
+          'Comentarios:',
+          String(data.get('comments') || '').trim() || 'Sin comentarios adicionales.'
+        ].join('\n');
+        var url = 'https://wa.me/' + CONECTA_WHATSAPP + '?text=' + encodeURIComponent(message);
+        messageBox.textContent = 'Mensaje listo. Se abrirá WhatsApp para enviarlo.';
+        window.open(url, '_blank', 'noopener');
+      }
+
+      function handleClick(event) {
+        var openBusiness = event.target.closest('[data-open-publica-negocio]');
+        if (openBusiness) {
+          event.preventDefault();
+          showBusinessSection();
+          return;
+        }
+        if (event.target.closest('[data-close-publica-negocio]')) {
+          event.preventDefault();
+          hideBusinessSection();
+          return;
+        }
+        if (event.target.closest('[data-scroll-publica-form]')) {
+          event.preventDefault();
+          scrollInsideScreen('#publica-form');
+          return;
+        }
+        if (event.target.closest('[data-scroll-publica-packages]')) {
+          event.preventDefault();
+          scrollInsideScreen('#publica-packages');
+          return;
+        }
+        var packageButton = event.target.closest('[data-package]');
+        if (packageButton) {
+          event.preventDefault();
+          var form = getForm();
+          if (form && form.elements.package) form.elements.package.value = packageButton.getAttribute('data-package');
+          scrollInsideScreen('#publica-form');
+          return;
+        }
+        if (event.target.closest('[data-open-sales-tool]')) {
+          event.preventDefault();
+          window.location.href = SALES_TOOL_URL;
+          return;
+        }
+        if (event.target.closest('[data-submit-business]')) {
+          event.preventDefault();
+          submitBusinessRequest();
+        }
+      }
+
+      function refreshEnhancements() {
+        injectStyles();
+        ensureBusinessScreen();
+        addSalesAccess();
+        addBusinessHomeAccess();
       }
 
       function watchApp() {
         var root = document.getElementById('app');
         if (!root) return;
-        addPayposAccess();
-        new MutationObserver(addPayposAccess).observe(root, { childList: true, subtree: true });
+        refreshEnhancements();
+        document.addEventListener('click', handleClick);
+        new MutationObserver(refreshEnhancements).observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
       }
 
       if (document.readyState === 'loading') {
