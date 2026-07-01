@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>PayPos Fer — WhatsApp a Excel</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#172033;background:#f8fafc;--green:#16a34a;--purple:#5b2eea;--line:#e5e7eb;--muted:#64748b}
+    *{box-sizing:border-box}
+    body{margin:0;padding:16px;background:linear-gradient(180deg,#ecfdf5,#f8fafc 38%,#fff7ed)}
+    main{max-width:1180px;margin:auto}
+    .card{background:#fff;border:1px solid var(--line);border-radius:26px;padding:18px;margin:12px 0;box-shadow:0 18px 42px #0f172a14}
+    .top{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .pill,a.pill{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--purple);border:1px solid var(--line);border-radius:999px;padding:11px 14px;text-decoration:none;font-weight:950;box-shadow:0 10px 24px #0001}
+    h1{font-size:clamp(30px,5vw,52px);line-height:1;margin:4px 0 10px;color:#14532d}
+    h2{font-size:22px;margin:0 0 10px}.muted{color:var(--muted);font-weight:800;line-height:1.45}.note{background:#fffbeb;border:1px solid #fde68a;color:#854d0e;border-radius:20px;padding:13px;font-weight:850}.warning{background:#fff1f2;border-color:#fecdd3;color:#9f1239}
+    textarea{width:100%;min-height:132px;resize:vertical;border:2px solid #bbf7d0;border-radius:22px;padding:16px;font-size:21px;font-weight:850;line-height:1.35;outline:none;background:#fcfffd;color:#172033}
+    textarea:focus{border-color:#22c55e;box-shadow:0 0 0 4px #dcfce7}
+    .actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+    button{border:0;border-radius:18px;padding:15px 14px;font-size:16px;font-weight:950;cursor:pointer;text-align:left}.primary{background:var(--green);color:white}.blue{background:#e0e7ff;color:#3730a3}.white{background:#fff;color:var(--purple);border:1px solid var(--line)}.danger-btn{background:#fee2e2;color:#991b1b}
+    button:active{transform:translateY(1px)}.msg{white-space:pre-wrap;background:#f8fafc;border:1px solid var(--line);border-radius:18px;padding:12px;font-weight:850}.ok{background:#ecfdf5;color:#166534;border-color:#86efac}.err{background:#fff1f2;color:#be123c;border-color:#fecdd3}
+    .examples,.chips{display:flex;gap:8px;flex-wrap:wrap}.example,.chip{border:1px solid #dbe4ef;background:#fff;border-radius:999px;padding:9px 11px;color:#334155;font-size:13px;font-weight:900;cursor:pointer}.chip{cursor:default;background:#f8fafc}
+    .summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.summary div{border:1px solid var(--line);border-radius:20px;background:#f8fafc;padding:12px}.summary b{display:block;font-size:22px;color:#14532d}.summary small{color:var(--muted);font-weight:850}
+    .tableWrap{overflow:auto;border:1px solid var(--line);border-radius:22px;background:#fff}table{width:100%;border-collapse:collapse;min-width:1220px}th,td{border-bottom:1px solid #edf2f7;padding:11px 10px;text-align:left;vertical-align:top;font-size:13px}th{position:sticky;top:0;background:#f8fafc;color:#475569;text-transform:uppercase;letter-spacing:.04em;font-size:11px}td{font-weight:760;color:#172033}.empty{text-align:center;color:var(--muted);font-weight:900;padding:28px!important}.money{text-align:right;white-space:nowrap}.small{font-size:12px;color:var(--muted);font-weight:850}.tag{display:inline-block;border-radius:999px;background:#dcfce7;color:#166534;padding:3px 8px;font-size:12px;font-weight:950}
+    @media(max-width:760px){body{padding:10px}.actions,.summary{grid-template-columns:1fr}button{text-align:center}.top{align-items:stretch}.pill{justify-content:center;flex:1}textarea{font-size:18px}table{min-width:1100px}}
+  </style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <a class="pill" href="/">← Volver a Conecta</a>
+    <span class="pill">Herramienta interna / experimental</span>
+  </div>
+
+  <section class="card">
+    <p class="small">PAYPOS FER</p>
+    <h1>PayPos Fer — WhatsApp a Excel</h1>
+    <p class="muted">Captura movimientos como si los escribieras por WhatsApp y conviértelos en una tabla ordenada para Excel.</p>
+    <p class="note">PayPos no reemplaza Excel. PayPos ayuda a capturar movimientos fácil y exportarlos ordenados para Excel.</p>
+    <p class="note warning">Herramienta en prueba interna. Validar la información antes de usarla para decisiones contables.</p>
+  </section>
+
+  <section class="card">
+    <h2>Qué ayuda a ordenar</h2>
+    <div class="chips">
+      <span class="chip">Estado de resultados</span><span class="chip">Balance general / Patrimonio</span><span class="chip">Ventas</span><span class="chip">Compras</span><span class="chip">Gastos</span><span class="chip">Clientes</span><span class="chip">Proveedores</span><span class="chip">Entradas y salidas de efectivo</span><span class="chip">Captura detallada de movimientos</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Captura detallada de movimientos</h2>
+    <textarea id="input" placeholder="Ejemplo: vendí 3 pay limón a 25 a cliente Ana"></textarea>
+    <div class="actions">
+      <button class="primary" id="addBtn">＋ Registrar movimiento</button>
+      <button class="blue" id="csvBtn">⬇ Exportar CSV para Excel</button>
+      <button class="white" id="copyBtn">📋 Copiar tabla</button>
+      <button class="danger-btn" id="clearBtn">🧹 Limpiar datos demo</button>
+    </div>
+    <p id="msg" class="msg">Listo para capturar ventas, compras, gastos, clientes, proveedores y efectivo.</p>
+  </section>
+
+  <section class="card">
+    <h2>Resumen rápido</h2>
+    <div class="summary">
+      <div><small>Entradas de efectivo</small><b id="sumIn">$0.00</b></div>
+      <div><small>Salidas de efectivo</small><b id="sumOut">$0.00</b></div>
+      <div><small>Resultado estimado</small><b id="sumNet">$0.00</b></div>
+      <div><small>Movimientos</small><b id="sumCount">0</b></div>
+    </div>
+    <p class="muted">Este resumen es una guía para Excel: ventas y cobros alimentan entradas; compras, gastos y pagos alimentan salidas.</p>
+  </section>
+
+  <section class="card">
+    <h2>Pruebas rápidas</h2>
+    <p class="muted">Toca un ejemplo para cargarlo en la caja y después registra el movimiento.</p>
+    <div class="examples" id="examples"></div>
+  </section>
+
+  <section class="card">
+    <h2>Tabla compatible con Excel <span class="tag" id="countTag">0 movimientos</span></h2>
+    <div class="tableWrap">
+      <table id="table">
+        <thead><tr>
+          <th>fecha</th><th>tipo_movimiento</th><th>reporte_sugerido</th><th>concepto</th><th>producto_o_insumo</th><th>cantidad</th><th>unidad</th><th>cliente_o_proveedor</th><th>entrada_efectivo</th><th>salida_efectivo</th><th>impacto_patrimonio</th><th>notas</th><th>texto_original</th>
+        </tr></thead>
+        <tbody id="tbody"><tr><td colspan="13" class="empty">Sin movimientos todavía.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+<script>
+(function(){
+  var STORAGE_KEY='paypos_fer_whatsapp_excel_demo';
+  var columns=['fecha','tipo_movimiento','reporte_sugerido','concepto','producto_o_insumo','cantidad','unidad','cliente_o_proveedor','entrada_efectivo','salida_efectivo','impacto_patrimonio','notas','texto_original'];
+  var products=['pay fresas grandes','arroz con leche','crema mezclada','pay limón','pay limon','pay arroz','pay fresas'];
+  var supplies=['media crema','gasolina','galletas','jabón','jabon','leche','limón','limon','arroz','fresa','azúcar','azucar','vasos','gas'];
+  var basePrices={'arroz con leche':25,'pay limón':25,'pay limon':25,'pay arroz':25,'pay fresas':25,'pay fresas grandes':35};
+  var examples=['vendí 3 pay limón a 25 a cliente Ana','compré 2 leche por 80 a proveedor Luis','gasté 300 en gasolina','me pagó Ana 500','pagué 1000 de salario','preparé 10 pay arroz','cliente mayorista Juan compró 20 pay limón a 25'];
+  var rows=loadRows();
+  function el(id){return document.getElementById(id)}
+  function normalize(text){return String(text||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
+  function today(){return new Date().toISOString().slice(0,10)}
+  function moneyValue(value){return value===''||value==null?'':Number(value).toFixed(2)}
+  function esc(value){return String(value==null?'':value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function setMsg(text,kind){el('msg').className='msg '+(kind||'');el('msg').textContent=text}
+  function loadRows(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')}catch(e){return []}}
+  function saveRows(){localStorage.setItem(STORAGE_KEY,JSON.stringify(rows))}
+  function findCatalog(text,list){var n=normalize(text);for(var i=0;i<list.length;i++){if(n.indexOf(normalize(list[i]))>-1)return list[i].replace('limon','limón').replace('jabon','jabón').replace('azucar','azúcar')}return ''}
+  function numberAfter(text,patterns){var n=normalize(text);for(var i=0;i<patterns.length;i++){var match=n.match(patterns[i]);if(match)return Number(match[1].replace(',','.'))}return null}
+  function allNumbers(text){return (normalize(text).match(/\d+(?:[.,]\d+)?/g)||[]).map(function(x){return Number(x.replace(',','.'))}).filter(function(x){return Number.isFinite(x)})}
+  function detectQuantity(text,type){var n=normalize(text);var action=type==='venta'?'(?:vendi|venta|vendio|compro|compro)':type==='compra'?'(?:compre|compra|compro)':type==='produccion'?'(?:prepare|produje|hice|preparo)':'(?:vendi|compre|prepare|produje|hice|compro)';var match=n.match(new RegExp(action+'\\s+(\\d+(?:[.,]\\d+)?)'));if(match)return Number(match[1].replace(',','.'));var nums=allNumbers(text);return nums.length?nums[0]:''}
+  function detectPerson(text,type){var original=String(text||'').trim();var patterns=[];
+    if(type==='cobro_cliente')patterns=[/me\s+pag[oó]\s+([^0-9$]+?)\s+\$?\d/i,/me\s+abon[oó]\s+([^0-9$]+?)\s+\$?\d/i];
+    if(normalize(text).indexOf('mayorista')>-1)patterns.push(/mayorista\s+([^0-9$]+?)\s+(?:compro|compr[oó]|compra)/i);
+    patterns.push(/cliente\s+([^0-9$]+?)\s+(?:debe|compr[oó]|compra)/i,/a\s+cliente\s+([^0-9$]+)$/i,/proveedor\s+([^0-9$]+?)\s*(?:$|por|de)/i,/a\s+proveedor\s+([^0-9$]+)$/i);
+    for(var i=0;i<patterns.length;i++){var m=original.match(patterns[i]);if(m)return m[1].trim()}return ''}
+  function detectType(text){var n=normalize(text);if(n.indexOf('salario')>-1||n.indexOf('sueldo')>-1)return 'gasto_salario';if(/me\s+(pago|abono)/.test(n))return 'cobro_cliente';if(n.indexOf('mayorista')>-1&&/(compro|compra)/.test(n))return 'venta';if(/\b(vendi|venta)\b/.test(n))return 'venta';if(/\b(compre|compra)\b/.test(n))return 'compra';if(/\b(prepare|produje|hice)\b/.test(n))return 'produccion';if(/\b(le debo|debo|acreedor)\b/.test(n))return 'deuda_proveedor';if(/\b(me deben|cliente debe|fiado)\b/.test(n))return 'cuenta_por_cobrar';if(/\b(gaste|pague|pago)\b/.test(n))return 'gasto';return 'sin_clasificar'}
+  function detectAmount(text,type,quantity,product){var amount=null;if(type==='venta')amount=numberAfter(text, [/\ba\s+\$?(\d+(?:[.,]\d+)?)/,/\bpor\s+\$?(\d+(?:[.,]\d+)?)/]);
+    if(type==='cobro_cliente')amount=numberAfter(text, [/me\s+pag(?:o|ó)\s+.*?\$?(\d+(?:[.,]\d+)?)/,/me\s+abon(?:o|ó)\s+.*?\$?(\d+(?:[.,]\d+)?)/]);
+    if(type==='compra')amount=numberAfter(text, [/\bpor\s+\$?(\d+(?:[.,]\d+)?)/,/\$\s*(\d+(?:[.,]\d+)?)/]);
+    if(type==='gasto'||type==='gasto_salario')amount=numberAfter(text, [/(?:gaste|gasté|pague|pagué|pago)\s+\$?(\d+(?:[.,]\d+)?)/,/\bpor\s+\$?(\d+(?:[.,]\d+)?)/]);
+    if(type==='venta'&&amount!=null&&quantity)return amount*Number(quantity);if(type==='venta'&&amount==null&&product&&basePrices[normalize(product)]&&quantity)return Number(quantity)*basePrices[normalize(product)];return amount==null?'':amount}
+  function reportFor(type){if(type==='venta'||type==='compra'||type==='gasto'||type==='gasto_salario'||type==='cobro_cliente')return 'Estado de resultados / Flujo de efectivo';if(type==='deuda_proveedor'||type==='cuenta_por_cobrar')return 'Balance general / Patrimonio';if(type==='produccion')return 'Inventario / Patrimonio';return 'Revisar en Excel'}
+  function patrimonyFor(type){if(type==='venta'||type==='cobro_cliente')return 'Aumenta efectivo / patrimonio';if(type==='compra'||type==='gasto'||type==='gasto_salario')return 'Disminuye efectivo';if(type==='deuda_proveedor')return 'Aumenta pasivo';if(type==='cuenta_por_cobrar')return 'Aumenta cuenta por cobrar';if(type==='produccion')return 'Mueve inventario';return 'Pendiente de clasificar'}
+  function parseMovement(text){var type=detectType(text);var product=findCatalog(text,products)||findCatalog(text,supplies);var qty=(type==='cobro_cliente'||type==='gasto'||type==='gasto_salario'||type==='deuda_proveedor'||type==='cuenta_por_cobrar')?'':detectQuantity(text,type);var concept={venta:'Venta',compra:'Compra de insumo',produccion:'Producción',cobro_cliente:'Cobro a cliente',deuda_proveedor:'Deuda a proveedor',cuenta_por_cobrar:'Cuenta por cobrar',gasto:'Gasto',gasto_salario:'Gasto de salario',sin_clasificar:'Movimiento por revisar'}[type]||'Movimiento';var entrada='',salida='',amount=detectAmount(text,type,qty,product);if(type==='venta'||type==='cobro_cliente')entrada=moneyValue(amount);if(type==='compra'||type==='gasto'||type==='gasto_salario')salida=moneyValue(amount);var notes=[];if(normalize(text).indexOf('mayorista')>-1)notes.push('cliente mayorista');if(type==='sin_clasificar')notes.push('revisar clasificación');if(type==='venta'&&entrada==='')notes.push('sin precio detectado');return {fecha:today(),tipo_movimiento:type,reporte_sugerido:reportFor(type),concepto:concept,producto_o_insumo:product,cantidad:qty,unidad:qty===''?'':'pieza',cliente_o_proveedor:detectPerson(text,type),entrada_efectivo:entrada,salida_efectivo:salida,impacto_patrimonio:patrimonyFor(type),notas:notes.join('; '),texto_original:String(text||'').trim()}}
+  function sum(field){return rows.reduce(function(total,row){return total+(Number(row[field])||0)},0)}
+  function renderSummary(){var entrada=sum('entrada_efectivo');var salida=sum('salida_efectivo');el('sumIn').textContent='$'+entrada.toFixed(2);el('sumOut').textContent='$'+salida.toFixed(2);el('sumNet').textContent='$'+(entrada-salida).toFixed(2);el('sumCount').textContent=String(rows.length)}
+  function render(){var body=el('tbody');el('countTag').textContent=rows.length+' movimiento'+(rows.length===1?'':'s');renderSummary();if(!rows.length){body.innerHTML='<tr><td colspan="13" class="empty">Sin movimientos todavía.</td></tr>';return}body.innerHTML=rows.map(function(row){return '<tr>'+columns.map(function(c){var cls=(c==='entrada_efectivo'||c==='salida_efectivo')?' class="money"':'';return '<td'+cls+'>'+esc(row[c])+'</td>'}).join('')+'</tr>'}).join('')}
+  function add(){var text=el('input').value.trim();if(!text){setMsg('Escribe un movimiento primero.','err');return}var row=parseMovement(text);rows.unshift(row);saveRows();render();el('input').value='';setMsg('Movimiento registrado como: '+row.tipo_movimiento,'ok')}
+  function csvEscape(value){var s=String(value==null?'':value);return /[",\n;]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
+  function toCsv(){return columns.join(',')+'\n'+rows.map(function(row){return columns.map(function(c){return csvEscape(row[c])}).join(',')}).join('\n')}
+  function exportCsv(){if(!rows.length){setMsg('No hay movimientos para exportar.','err');return}var blob=new Blob(['\ufeff'+toCsv()],{type:'text/csv;charset=utf-8'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='paypos-fer-whatsapp-excel-'+today()+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);setMsg('CSV exportado para Excel.','ok')}
+  async function copyTable(){if(!rows.length){setMsg('No hay movimientos para copiar.','err');return}var text=columns.join('\t')+'\n'+rows.map(function(row){return columns.map(function(c){return row[c]}).join('\t')}).join('\n');try{await navigator.clipboard.writeText(text);setMsg('Tabla copiada. Pégala directo en Excel.','ok')}catch(e){setMsg('No se pudo copiar automáticamente. Usa Exportar CSV.','err')}}
+  function clearDemo(){if(!confirm('¿Limpiar los datos demo de esta herramienta?'))return;rows=[];saveRows();render();setMsg('Demo limpia. Puedes capturar nuevos movimientos.','ok')}
+  el('examples').innerHTML=examples.map(function(x){return '<button class="example" data-text="'+esc(x)+'">'+esc(x)+'</button>'}).join('');
+  document.addEventListener('click',function(e){var ex=e.target.closest('.example');if(ex){el('input').value=ex.dataset.text;el('input').focus()}});
+  el('addBtn').onclick=add;el('csvBtn').onclick=exportCsv;el('copyBtn').onclick=copyTable;el('clearBtn').onclick=clearDemo;el('input').addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='Enter')add()});render();
+})();
+</script>
+</body>
+</html>
